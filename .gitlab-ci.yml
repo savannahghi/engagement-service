@@ -1,4 +1,4 @@
-image: eu.gcr.io/savannah-emr/golang-ci-image:0.0.2
+image: eu.gcr.io/savannah-emr/golang-ci-image:0.0.4
 
 stages:
   - test
@@ -23,7 +23,7 @@ lint_and_test:
     - go vet $(go list ./... | grep -v /vendor/)
     - golint -set_exit_status $(go list ./... | grep -v /vendor/)
     - errcheck -ignore 'os:.*,' $(go list ./... | grep -v /vendor/)
-    - gosec ./...
+    - gosec -exclude=G101 ./...
     - go-acc -o coverage.txt --ignore generated,cmd ./...
     - grep -v "generated.go" coverage.txt | grep -v "_gen.go" | grep -v "mocks.go" | grep -v "*resolver*go" | grep -v "server.go" > coverage.out
     - go tool cover -html=coverage.out -o coverage.html
@@ -43,12 +43,12 @@ lint_and_test:
 deploy_develop_to_staging:
   before_script:
     - apk add --update --no-cache curl py-pip
-    - apk add --update make ca-certificates openssl 
+    - apk add --update make ca-certificates openssl
     - update-ca-certificates
     # Download and install Google Cloud SDK
     - wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz
     - source  $CI_PROJECT_DIR/gcloud.sh
-    - tar zxvf google-cloud-sdk.tar.gz && ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
+    - tar zxf google-cloud-sdk.tar.gz && ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
     # Instead of writing our GCP service account private key into a file, supply it as env variable
     - google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $GCLOUD_STAGING_SERVICE_ACCOUNT
     - google-cloud-sdk/bin/gcloud config set project bewell-app-testing
@@ -58,33 +58,28 @@ deploy_develop_to_staging:
   stage: deploy
   only:
     - develop
-  variables:   
+  variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
-  resource_group: staging  # control deploy concurrency
+  resource_group: staging # control deploy concurrency
   script:
-    - docker build --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app-testing/debug-staging:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app-testing/feed-staging:$(echo $CI_COMMIT_SHA | cut -c1-8)
     - google-cloud-sdk/bin/gcloud auth configure-docker
-    - docker -- push eu.gcr.io/bewell-app-testing/debug-staging:$(echo $CI_COMMIT_SHA | cut -c1-8)
-    - |
-      google-cloud-sdk/bin/gcloud run deploy debug-staging --image eu.gcr.io/bewell-app-testing/debug-staging:$(echo $CI_COMMIT_SHA | cut -c1-8) \
-      --region europe-west1 --platform managed --allow-unauthenticated --update-env-vars "GOOGLE_CLOUD_PROJECT=$STAGING_GOOGLE_CLOUD_PROJECT,\
-      FIREBASE_WEB_API_KEY=$STAGING_FIREBASE_WEB_API_KEY,ROOT_COLLECTION_SUFFIX=$STAGING_ROOT_COLLECTION_SUFFIX"
-    - |   
-    - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker debug-staging --quiet
+    - docker -- push eu.gcr.io/bewell-app-testing/feed-staging:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - google-cloud-sdk/bin/gcloud run deploy feed-staging --image eu.gcr.io/bewell-app-testing/feed-staging:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated --update-env-vars "GOOGLE_CLOUD_PROJECT=$STAGING_GOOGLE_CLOUD_PROJECT,FIREBASE_WEB_API_KEY=$STAGING_FIREBASE_WEB_API_KEY"
+    - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker feed-staging --quiet
   tags:
     - healthcloud-multi
-
 
 deploy_develop_to_testing:
   before_script:
     - apk add --update --no-cache curl py-pip
-    - apk add --update make ca-certificates openssl 
+    - apk add --update make ca-certificates openssl
     - update-ca-certificates
     # Download and install Google Cloud SDK
     - wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz
     - source  $CI_PROJECT_DIR/gcloud.sh
-    - tar zxvf google-cloud-sdk.tar.gz && ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
+    - tar zxf google-cloud-sdk.tar.gz && ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
     # Instead of writing our GCP service account private key into a file, supply it as env variable
     - google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
     - google-cloud-sdk/bin/gcloud config set project bewell-app
@@ -94,34 +89,28 @@ deploy_develop_to_testing:
   stage: deploy
   only:
     - develop
-  variables:    
+  variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
-  resource_group: staging  # control deploy concurrency
+  resource_group: staging # control deploy concurrency
   script:
-    - docker build --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/debug-testing:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-testing:$(echo $CI_COMMIT_SHA | cut -c1-8)
     - google-cloud-sdk/bin/gcloud auth configure-docker
-    - docker -- push eu.gcr.io/bewell-app/debug-testing:$(echo $CI_COMMIT_SHA | cut -c1-8)
-    - |
-      google-cloud-sdk/bin/gcloud run deploy debug-testing --image eu.gcr.io/bewell-app/debug-testing:$(echo $CI_COMMIT_SHA | cut -c1-8) \
-      --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,\
-      FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY,ROOT_COLLECTION_SUFFIX=$TESTING_ROOT_COLLECTION_SUFFIX"
-    - |   
-    - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker debug-testing --quiet
+    - docker -- push eu.gcr.io/bewell-app/feed-testing:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - google-cloud-sdk/bin/gcloud run deploy feed-testing --image eu.gcr.io/bewell-app/feed-testing:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY"
+    - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker feed-testing --quiet
   tags:
     - healthcloud-multi
-
-
 
 deploy_master_to_prod:
   before_script:
     - apk add --update --no-cache curl py-pip
-    - apk add --update make ca-certificates openssl 
+    - apk add --update make ca-certificates openssl
     - update-ca-certificates
     # Download and install Google Cloud SDK
     - wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz
     - source  $CI_PROJECT_DIR/gcloud.sh
-    - tar zxvf google-cloud-sdk.tar.gz && ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
+    - tar zxf google-cloud-sdk.tar.gz && ./google-cloud-sdk/install.sh --usage-reporting=false --path-update=true
     # Instead of writing our GCP service account private key into a file, supply it as env variable
     - google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
     - google-cloud-sdk/bin/gcloud config set project bewell-app
@@ -131,18 +120,15 @@ deploy_master_to_prod:
   stage: deploy
   only:
     - master
-  variables:   
+  variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
-  resource_group: staging  # control deploy concurrency
+  resource_group: staging # control deploy concurrency
   script:
-    - docker build --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/debug-prod:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-prod:$(echo $CI_COMMIT_SHA | cut -c1-8)
     - google-cloud-sdk/bin/gcloud auth configure-docker
-    - docker -- push eu.gcr.io/bewell-app/debug-prod:$(echo $CI_COMMIT_SHA | cut -c1-8)
-    - |
-      google-cloud-sdk/bin/gcloud run deploy debug-prod --image eu.gcr.io/bewell-app/debug-prod:$(echo $CI_COMMIT_SHA | cut -c1-8) \
-      --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,\
-      FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY,ROOT_COLLECTION_SUFFIX=$PROD_ROOT_COLLECTION_SUFFIX"
-    - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker debug-prod --quiet
+    - docker -- push eu.gcr.io/bewell-app/feed-prod:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - google-cloud-sdk/bin/gcloud run deploy feed-prod --image eu.gcr.io/bewell-app/feed-prod:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY"
+    - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker feed-prod --quiet
   tags:
     - healthcloud-multi
