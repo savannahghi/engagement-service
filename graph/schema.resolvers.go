@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.slade360emr.com/go/cms/graph/generated"
-	"gitlab.slade360emr.com/go/cms/graph/model"
+	"gitlab.slade360emr.com/go/feed/graph/generated"
+	"gitlab.slade360emr.com/go/feed/graph/model"
 )
 
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {

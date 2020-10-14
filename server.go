@@ -7,8 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"gitlab.slade360emr.com/go/cms/graph"
-	"gitlab.slade360emr.com/go/cms/graph/generated"
+	"gitlab.slade360emr.com/go/feed/graph"
+	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
 const defaultPort = "8080"

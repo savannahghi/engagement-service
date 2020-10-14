@@ -1,4 +1,4 @@
-module gitlab.slade360emr.com/go/cms
+module gitlab.slade360emr.com/go/feed
 
 go 1.13
 

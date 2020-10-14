@@ -14,7 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"gitlab.slade360emr.com/go/cms/graph/model"
+	"gitlab.slade360emr.com/go/feed/graph/model"
 )
 
 // region    ************************** generated!.gotpl **************************
@@ -252,7 +252,7 @@ func (ec *executionContext) field_Mutation_createTodo_args(ctx context.Context, 
 	var arg0 model.NewTodo
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewTodo2gitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐNewTodo(ctx, tmp)
+		arg0, err = ec.unmarshalNNewTodo2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐNewTodo(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -353,7 +353,7 @@ func (ec *executionContext) _Mutation_createTodo(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTodo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -388,7 +388,7 @@ func (ec *executionContext) _Query_todos(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.Todo)
 	fc.Result = res
-	return ec.marshalNTodo2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
+	return ec.marshalNTodo2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTodoᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -599,7 +599,7 @@ func (ec *executionContext) _Todo_user(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -2219,7 +2219,7 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewTodo2gitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐNewTodo(ctx context.Context, v interface{}) (model.NewTodo, error) {
+func (ec *executionContext) unmarshalNNewTodo2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐNewTodo(ctx context.Context, v interface{}) (model.NewTodo, error) {
 	res, err := ec.unmarshalInputNewTodo(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -2239,11 +2239,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTodo2gitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v model.Todo) graphql.Marshaler {
 	return ec._Todo(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTodo2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTodoᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Todo) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2267,7 +2267,7 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgitlabᚗslade360emrᚗcomᚋgo�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTodo2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐTodo(ctx, sel, v[i])
+			ret[i] = ec.marshalNTodo2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTodo(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2280,7 +2280,7 @@ func (ec *executionContext) marshalNTodo2ᚕᚖgitlabᚗslade360emrᚗcomᚋgo�
 	return ret
 }
 
-func (ec *executionContext) marshalNTodo2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v *model.Todo) graphql.Marshaler {
+func (ec *executionContext) marshalNTodo2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTodo(ctx context.Context, sel ast.SelectionSet, v *model.Todo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2290,7 +2290,7 @@ func (ec *executionContext) marshalNTodo2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋcm
 	return ec._Todo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋcmsᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
