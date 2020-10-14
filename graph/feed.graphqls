@@ -1,0 +1,28 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type ContentItem {
+  id: Int!
+  author: Author!
+  title: String!
+  shortDescription: String
+  body: String!
+  views: Int!
+  likes: Int!
+  tags: [Tag]!
+}
+
+type Author {
+  id: Int!
+  username: String!
+}
+
+type Tag {
+  id: Int!
+  type: String!
+}
+
+type Query {
+  contentItems: [ContentItem!]!
+}
