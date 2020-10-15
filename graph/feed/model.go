@@ -14,7 +14,7 @@ type GhostCMSPost struct {
 	Slug         string        `json:"slug,omitempty"`
 	Title        string        `json:"title,omitempty"`
 	URL          string        `json:"url,omitempty"`
-	ReadingTime  string        `json:"reading_time,omitempty"`
+	ReadingTime  int           `json:"reading_time,omitempty"`
 	Tags         []GhostCMSTag `json:"tags,omitempty"`
 }
 
@@ -31,3 +31,8 @@ type GhostCMSTag struct {
 
 // IsEntity ...
 func (g GhostCMSTag) IsEntity() {}
+
+//GhostCMSServerResponse ...
+type GhostCMSServerResponse struct {
+	Posts []*GhostCMSPost `json:"posts,omitempty"`
+}

@@ -8,7 +8,7 @@ type GhostCMSPost @key(fields: "id") {
   slug: String
   title: String
   URL: String
-  readingTime: String
+  readingTime: Int
   tags: [GhostCMSTag]
 }
 

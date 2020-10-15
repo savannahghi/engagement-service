@@ -1,6 +1,6 @@
 module gitlab.slade360emr.com/go/feed
 
-go 1.13
+go 1.15
 
 require (
 	github.com/99designs/gqlgen v0.13.0

@@ -2,20 +2,23 @@ package feed
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
 
+	"net/http"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 )
 
 // Feed service constants
 const (
-	apiRoot = "/ghost/api/v3/content/posts/?"
-
 	ghostCMSAPIEndpoint = "GHOST_CMS_API_ENDPOINT"
 
 	ghostCMSAPIKey = "GHOST_CMS_API_KEY"
+
+	apiRoot = "/ghost/api/v3/content/posts/?"
 
 	includeTags = "&include=tags"
 
@@ -46,7 +49,7 @@ func NewService() *Service {
 }
 
 // Service organizes Feed functionality
-// APIEndpoint should be of the form https://bewell.ghost.io
+// APIEndpoint should be of the form https://<name>.ghost.io
 type Service struct {
 	APIEndpoint  string
 	APIKey       string
@@ -82,14 +85,76 @@ func (s Service) composeRequest(reqType requestType) *string {
 func (s Service) GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error) {
 	s.checkPreconditions()
 	url := s.composeRequest(feedRequest)
-	_, err := http.NewRequest(http.MethodGet, *url, nil)
+	req, err := http.NewRequest(http.MethodGet, *url, nil)
 	if err != nil {
-		log.Fatalf("Failed to create action request with error; %v", err)
-		// fail silently
-		return nil, nil
+		return nil, fmt.Errorf("failed to create action request with error; %v", err)
 	}
 
-	// continue
+	c := &http.Client{Timeout: time.Second * 300}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
+	}
 
-	return nil, nil
+	defer resp.Body.Close()
+
+	var rr GhostCMSServerResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
+		return nil, fmt.Errorf("failed to decoder response with err %v", err)
+	}
+
+	return rr.Posts, nil
+}
+
+// GetFaqsContent fetech content of frequently asked question
+func (s Service) GetFaqsContent(ctx context.Context) ([]*GhostCMSPost, error) {
+	s.checkPreconditions()
+	url := s.composeRequest(faqsRequest)
+	req, err := http.NewRequest(http.MethodGet, *url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create action request with error; %v", err)
+	}
+
+	c := &http.Client{Timeout: time.Second * 300}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
+	}
+
+	defer resp.Body.Close()
+
+	var rr GhostCMSServerResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
+		return nil, fmt.Errorf("failed to decoder response with err %v", err)
+	}
+
+	return rr.Posts, nil
+}
+
+// GetLibraryContent gets library content to be show under libary section of the app
+func (s Service) GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error) {
+	s.checkPreconditions()
+	url := s.composeRequest(libraryRequest)
+	req, err := http.NewRequest(http.MethodGet, *url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create action request with error; %v", err)
+	}
+
+	c := &http.Client{Timeout: time.Second * 300}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
+	}
+
+	defer resp.Body.Close()
+
+	var rr GhostCMSServerResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
+		return nil, fmt.Errorf("failed to decoder response with err %v", err)
+	}
+
+	return rr.Posts, nil
 }

@@ -24,7 +24,7 @@ const serverTimeoutSeconds = 120
 var allowedOrigins = []string{
 	"https://healthcloud.co.ke",
 	"https://bewell.healthcloud.co.ke",
-	"http://localhost:8080",
+	"http://localhost:5000",
 	"https://feed-staging.healthcloud.co.ke",
 	"https://feed-testing.healthcloud.co.ke",
 	"https://feed-prod.healthcloud.co.ke",

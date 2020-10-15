@@ -5,18 +5,17 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
 func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*feed.GhostCMSPost, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.feedService.GetLibraryContent(ctx)
 }
 
 func (r *queryResolver) GetFaqsContent(ctx context.Context) ([]*feed.GhostCMSPost, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.feedService.GetFaqsContent(ctx)
 }
 
 func (r *queryResolver) GetFeedContent(ctx context.Context) ([]*feed.GhostCMSPost, error) {

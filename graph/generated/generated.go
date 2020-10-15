@@ -379,7 +379,7 @@ type Query {
   slug: String
   title: String
   URL: String
-  readingTime: String
+  readingTime: Int
   tags: [GhostCMSTag]
 }
 
@@ -923,9 +923,9 @@ func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
@@ -3565,6 +3565,15 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	return graphql.MarshalID(*v)
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	return graphql.MarshalInt(v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
