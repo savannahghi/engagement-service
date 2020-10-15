@@ -59,7 +59,7 @@ func (s Service) newRequest(url string, method string, body []byte) (*http.Respo
 }
 
 // GetFaqs Fetches Faqs from CMS
-func (s Service) GetFaqs(ctx context.Context, faqResp *model.FaqGraphqlResponse) ([]*model.Faq, error) {
+func (s Service) GetFaqs(ctx context.Context) ([]*model.Faq, error) {
 	jsonQuery := map[string]string{
 		"query": `
             { 
@@ -77,14 +77,14 @@ func (s Service) GetFaqs(ctx context.Context, faqResp *model.FaqGraphqlResponse)
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	}
 
-	jsonByte, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		panic(err)
-	}
-	err = json.Unmarshal(jsonByte, faqResp)
-	if err != nil {
-		panic(err)
-	}
+	// jsonByte, err := ioutil.ReadAll(response.Body)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// err = json.Unmarshal(jsonByte, faqResp)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	faqItems := []*model.Faq{}
 	return faqItems, nil
