@@ -1,0 +1,20 @@
+type GhostCMSPost @key(fields: "id") {
+  id: ID
+  createdAt: Date
+  excerpt: String
+  featureImage: String
+  html: String
+  publishedAt: Date
+  slug: String
+  title: String
+  URL: String
+  readingTime: String
+  tags: [GhostCMSTag]
+}
+
+type GhostCMSTag @key(fields: "id") {
+  id: ID
+  name: String
+  slug: String
+  URL: String
+}

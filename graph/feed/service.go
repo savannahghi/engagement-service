@@ -1,145 +1,95 @@
 package feed
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
-	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph/model"
 )
 
 // Feed service constants
 const (
-	requestTimeoutSeconds  = 30
-	strapiGraphQlServerURL = "STRAPI_GRAPHQL_SERVER_URL"
+	apiRoot = "/ghost/api/v3/content/posts/?"
+
+	ghostCMSAPIEndpoint = "GHOST_CMS_API_ENDPOINT"
+
+	ghostCMSAPIKey = "GHOST_CMS_API_KEY"
+
+	includeTags = "&include=tags"
+
+	allowedFeedTagFilter = "&filter=tag:welcome&filter=tag:how-to&filter=tag:what-is&filter=tag:getting-started"
+
+	allowedFAQsTagFilter = "&filter=tag:faqs&filter=tag:how-to"
+
+	allowedLibraryTagFilter = "&filter=tag:diet&filter=tag:health-tips"
+)
+
+type requestType int
+
+const (
+	feedRequest requestType = iota + 1
+	faqsRequest
+	libraryRequest
 )
 
 // NewService creates a new Feed Service
 func NewService() *Service {
-
-	cmsServerURL := base.MustGetEnvVar(strapiGraphQlServerURL)
+	e := base.MustGetEnvVar(ghostCMSAPIEndpoint)
+	a := base.MustGetEnvVar(ghostCMSAPIKey)
 	return &Service{
-		cmsServerURL: cmsServerURL,
+		APIEndpoint:  e,
+		APIKey:       a,
+		PostsAPIRoot: fmt.Sprintf("%v%vkey=%v", e, apiRoot, a),
 	}
 }
 
 // Service organizes Feed functionality
+// APIEndpoint should be of the form https://bewell.ghost.io
 type Service struct {
-	cmsServerURL string
+	APIEndpoint  string
+	APIKey       string
+	PostsAPIRoot string
 }
 
 func (s Service) checkPreconditions() {
-	if s.cmsServerURL == "" {
-		log.Panicf("the feed Service has an emty CMS Server URL")
+	if s.APIEndpoint == "" {
+		log.Panicf("Ghost API endpoint must be present")
+	}
+
+	if s.APIKey == "" {
+		log.Panicf("Ghost API key must be present")
 	}
 }
 
-func (s Service) newRequest(url string, method string, body []byte) (*http.Response, error) {
-	buffer := bytes.NewBuffer(body)
-	request, err := http.NewRequest(method, url, buffer)
-	if err != nil {
-		return nil, err
+func (s Service) composeRequest(reqType requestType) *string {
+	var urlRequest string
+	switch reqType {
+	case feedRequest:
+		urlRequest = fmt.Sprintf("%v%v%v", s.PostsAPIRoot, includeTags, allowedFeedTagFilter)
+	case faqsRequest:
+		urlRequest = fmt.Sprintf("%v%v%v", s.PostsAPIRoot, includeTags, allowedFAQsTagFilter)
+	case libraryRequest:
+		urlRequest = fmt.Sprintf("%v%v%v", s.PostsAPIRoot, includeTags, allowedLibraryTagFilter)
 	}
 
-	request.Header.Set("Accept", "application/json")
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Content-Length", strconv.Itoa(buffer.Len()))
-
-	client := &http.Client{
-		Timeout: time.Second * requestTimeoutSeconds,
-	}
-	return client.Do(request)
+	return &urlRequest
 }
 
-// GetFaqs Fetches Faqs from CMS
-func (s Service) GetFaqs(ctx context.Context) ([]*model.Faq, error) {
-	jsonQuery := map[string]string{
-		"query": `
-            { 
-                faqs {
-					question,
-					answer
-                }
-            }
-        `,
-	}
-	jsonQueryValue, _ := json.Marshal(jsonQuery)
-	response, err := s.newRequest(s.cmsServerURL, "POST", jsonQueryValue)
-	defer response.Body.Close()
+// GetFeedContent fetches posts that populate the feed. Since the feed right now is naive,
+// we just dump what we get. However, posts for the feed will be of specific tags. Check `allowedFeedTagFilter` above
+func (s Service) GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error) {
+	s.checkPreconditions()
+	url := s.composeRequest(feedRequest)
+	_, err := http.NewRequest(http.MethodGet, *url, nil)
 	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
+		log.Fatalf("Failed to create action request with error; %v", err)
+		// fail silently
+		return nil, nil
 	}
 
-	// jsonByte, err := ioutil.ReadAll(response.Body)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// err = json.Unmarshal(jsonByte, faqResp)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	// continue
 
-	faqItems := []*model.Faq{}
-	return faqItems, nil
-
-}
-
-// GetLibraryContent Fetches Library Content from CMS
-func (s Service) GetLibraryContent(ctx context.Context) ([]*model.LibraryItem, error) {
-	jsonQuery := map[string]string{
-		"query": `
-            { 
-                libraryItem {
-					title,
-					description
-                }
-            }
-        `,
-	}
-	jsonQueryValue, _ := json.Marshal(jsonQuery)
-	response, err := s.newRequest(s.cmsServerURL, "POST", jsonQueryValue)
-	defer response.Body.Close()
-	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
-	}
-	data, _ := ioutil.ReadAll(response.Body)
-	fmt.Println(string(data))
-
-	libraryContent := make([]*model.LibraryItem, 0)
-
-	return libraryContent, nil
-
-}
-
-// GetFeedItems Fetches Feed Items from CMS
-func (s Service) GetFeedItems(ctx context.Context) ([]*model.FeedItem, error) {
-	jsonQuery := map[string]string{
-		"query": `
-            { 
-                feedItems {
-					title,
-					description
-                }
-            }
-        `,
-	}
-	jsonQueryValue, _ := json.Marshal(jsonQuery)
-	response, err := s.newRequest(s.cmsServerURL, "POST", jsonQueryValue)
-	defer response.Body.Close()
-	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
-	}
-	data, _ := ioutil.ReadAll(response.Body)
-	fmt.Println(string(data))
-
-	feedItems := make([]*model.FeedItem, 0)
-
-	return feedItems, nil
+	return nil, nil
 }

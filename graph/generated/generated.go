@@ -6,14 +6,17 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"gitlab.slade360emr.com/go/feed/graph/model"
+	"gitlab.slade360emr.com/go/feed/graph/feed"
 )
 
 // region    ************************** generated!.gotpl **************************
@@ -34,6 +37,8 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Entity() EntityResolver
+	GhostCMSPost() GhostCMSPostResolver
 	Query() QueryResolver
 }
 
@@ -41,32 +46,58 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Faq struct {
-		Answer   func(childComplexity int) int
-		Question func(childComplexity int) int
+	Entity struct {
+		FindGhostCMSPostByID func(childComplexity int, id *string) int
+		FindGhostCMSTagByID  func(childComplexity int, id *string) int
 	}
 
-	FeedItem struct {
-		Description func(childComplexity int) int
-		Title       func(childComplexity int) int
+	GhostCMSPost struct {
+		CreatedAt    func(childComplexity int) int
+		Excerpt      func(childComplexity int) int
+		FeatureImage func(childComplexity int) int
+		HTML         func(childComplexity int) int
+		ID           func(childComplexity int) int
+		PublishedAt  func(childComplexity int) int
+		ReadingTime  func(childComplexity int) int
+		Slug         func(childComplexity int) int
+		Tags         func(childComplexity int) int
+		Title        func(childComplexity int) int
+		URL          func(childComplexity int) int
 	}
 
-	LibraryItem struct {
-		Description func(childComplexity int) int
-		Title       func(childComplexity int) int
+	GhostCMSTag struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
+		Slug func(childComplexity int) int
+		URL  func(childComplexity int) int
 	}
 
 	Query struct {
-		GetFaqs           func(childComplexity int) int
-		GetFeedItems      func(childComplexity int) int
-		GetLibraryContent func(childComplexity int) int
+		GetFaqsContent     func(childComplexity int) int
+		GetFeedContent     func(childComplexity int) int
+		GetLibraryContent  func(childComplexity int) int
+		__resolve__service func(childComplexity int) int
+		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
+	}
+
+	Service struct {
+		SDL func(childComplexity int) int
 	}
 }
 
+type EntityResolver interface {
+	FindGhostCMSPostByID(ctx context.Context, id *string) (*feed.GhostCMSPost, error)
+	FindGhostCMSTagByID(ctx context.Context, id *string) (*feed.GhostCMSTag, error)
+}
+type GhostCMSPostResolver interface {
+	CreatedAt(ctx context.Context, obj *feed.GhostCMSPost) (*string, error)
+
+	PublishedAt(ctx context.Context, obj *feed.GhostCMSPost) (*string, error)
+}
 type QueryResolver interface {
-	GetLibraryContent(ctx context.Context) ([]*model.LibraryItem, error)
-	GetFaqs(ctx context.Context) ([]*model.Faq, error)
-	GetFeedItems(ctx context.Context) ([]*model.FeedItem, error)
+	GetLibraryContent(ctx context.Context) ([]*feed.GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context) ([]*feed.GhostCMSPost, error)
+	GetFeedContent(ctx context.Context) ([]*feed.GhostCMSPost, error)
 }
 
 type executableSchema struct {
@@ -84,61 +115,148 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "FAQ.answer":
-		if e.complexity.Faq.Answer == nil {
+	case "Entity.findGhostCMSPostByID":
+		if e.complexity.Entity.FindGhostCMSPostByID == nil {
 			break
 		}
 
-		return e.complexity.Faq.Answer(childComplexity), true
+		args, err := ec.field_Entity_findGhostCMSPostByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
 
-	case "FAQ.question":
-		if e.complexity.Faq.Question == nil {
+		return e.complexity.Entity.FindGhostCMSPostByID(childComplexity, args["id"].(*string)), true
+
+	case "Entity.findGhostCMSTagByID":
+		if e.complexity.Entity.FindGhostCMSTagByID == nil {
 			break
 		}
 
-		return e.complexity.Faq.Question(childComplexity), true
+		args, err := ec.field_Entity_findGhostCMSTagByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
 
-	case "FeedItem.description":
-		if e.complexity.FeedItem.Description == nil {
+		return e.complexity.Entity.FindGhostCMSTagByID(childComplexity, args["id"].(*string)), true
+
+	case "GhostCMSPost.createdAt":
+		if e.complexity.GhostCMSPost.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.FeedItem.Description(childComplexity), true
+		return e.complexity.GhostCMSPost.CreatedAt(childComplexity), true
 
-	case "FeedItem.title":
-		if e.complexity.FeedItem.Title == nil {
+	case "GhostCMSPost.excerpt":
+		if e.complexity.GhostCMSPost.Excerpt == nil {
 			break
 		}
 
-		return e.complexity.FeedItem.Title(childComplexity), true
+		return e.complexity.GhostCMSPost.Excerpt(childComplexity), true
 
-	case "LibraryItem.description":
-		if e.complexity.LibraryItem.Description == nil {
+	case "GhostCMSPost.featureImage":
+		if e.complexity.GhostCMSPost.FeatureImage == nil {
 			break
 		}
 
-		return e.complexity.LibraryItem.Description(childComplexity), true
+		return e.complexity.GhostCMSPost.FeatureImage(childComplexity), true
 
-	case "LibraryItem.title":
-		if e.complexity.LibraryItem.Title == nil {
+	case "GhostCMSPost.html":
+		if e.complexity.GhostCMSPost.HTML == nil {
 			break
 		}
 
-		return e.complexity.LibraryItem.Title(childComplexity), true
+		return e.complexity.GhostCMSPost.HTML(childComplexity), true
 
-	case "Query.getFaqs":
-		if e.complexity.Query.GetFaqs == nil {
+	case "GhostCMSPost.id":
+		if e.complexity.GhostCMSPost.ID == nil {
 			break
 		}
 
-		return e.complexity.Query.GetFaqs(childComplexity), true
+		return e.complexity.GhostCMSPost.ID(childComplexity), true
 
-	case "Query.getFeedItems":
-		if e.complexity.Query.GetFeedItems == nil {
+	case "GhostCMSPost.publishedAt":
+		if e.complexity.GhostCMSPost.PublishedAt == nil {
 			break
 		}
 
-		return e.complexity.Query.GetFeedItems(childComplexity), true
+		return e.complexity.GhostCMSPost.PublishedAt(childComplexity), true
+
+	case "GhostCMSPost.readingTime":
+		if e.complexity.GhostCMSPost.ReadingTime == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSPost.ReadingTime(childComplexity), true
+
+	case "GhostCMSPost.slug":
+		if e.complexity.GhostCMSPost.Slug == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSPost.Slug(childComplexity), true
+
+	case "GhostCMSPost.tags":
+		if e.complexity.GhostCMSPost.Tags == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSPost.Tags(childComplexity), true
+
+	case "GhostCMSPost.title":
+		if e.complexity.GhostCMSPost.Title == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSPost.Title(childComplexity), true
+
+	case "GhostCMSPost.URL":
+		if e.complexity.GhostCMSPost.URL == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSPost.URL(childComplexity), true
+
+	case "GhostCMSTag.id":
+		if e.complexity.GhostCMSTag.ID == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSTag.ID(childComplexity), true
+
+	case "GhostCMSTag.name":
+		if e.complexity.GhostCMSTag.Name == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSTag.Name(childComplexity), true
+
+	case "GhostCMSTag.slug":
+		if e.complexity.GhostCMSTag.Slug == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSTag.Slug(childComplexity), true
+
+	case "GhostCMSTag.URL":
+		if e.complexity.GhostCMSTag.URL == nil {
+			break
+		}
+
+		return e.complexity.GhostCMSTag.URL(childComplexity), true
+
+	case "Query.getFaqsContent":
+		if e.complexity.Query.GetFaqsContent == nil {
+			break
+		}
+
+		return e.complexity.Query.GetFaqsContent(childComplexity), true
+
+	case "Query.getFeedContent":
+		if e.complexity.Query.GetFeedContent == nil {
+			break
+		}
+
+		return e.complexity.Query.GetFeedContent(childComplexity), true
 
 	case "Query.getLibraryContent":
 		if e.complexity.Query.GetLibraryContent == nil {
@@ -146,6 +264,32 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetLibraryContent(childComplexity), true
+
+	case "Query._service":
+		if e.complexity.Query.__resolve__service == nil {
+			break
+		}
+
+		return e.complexity.Query.__resolve__service(childComplexity), true
+
+	case "Query._entities":
+		if e.complexity.Query.__resolve_entities == nil {
+			break
+		}
+
+		args, err := ec.field_Query__entities_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
+
+	case "_Service.sdl":
+		if e.complexity.Service.SDL == nil {
+			break
+		}
+
+		return e.complexity.Service.SDL(childComplexity), true
 
 	}
 	return 0, false
@@ -197,38 +341,120 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/feed.graphqls", Input: `# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type LibraryItem {
-  title: String!
-  description: String!
-}
-
-type FAQ {
-  question: String!
-  answer: String!
-}
-
-type FeedItem {
-  title: String!
-  description: String!
-
-}
+	{Name: "graph/external.graphql", Input: `scalar Map
+scalar Any
+scalar Time
+scalar Date
+scalar Markdown
+scalar Decimal
+scalar URL
+scalar ResourceList
+scalar Base64Binary
+scalar Canonical
+scalar Code
+scalar DateTime
+scalar Instant
+scalar Integer
+scalar OID
+scalar PositiveInt
+scalar UnsignedInt
+scalar URI
+scalar UUID
+scalar XHTML`, BuiltIn: false},
+	{Name: "graph/feed.graphql", Input: `
 
 type Query {
-  getLibraryContent: [LibraryItem!]
-  getFaqs: [FAQ!]
-  getFeedItems: [FeedItem!]
+  getLibraryContent: [GhostCMSPost!]
+  getFaqsContent: [GhostCMSPost!]
+  getFeedContent: [GhostCMSPost]
 }
 `, BuiltIn: false},
+	{Name: "graph/types.graphql", Input: `type GhostCMSPost @key(fields: "id") {
+  id: ID
+  createdAt: Date
+  excerpt: String
+  featureImage: String
+  html: String
+  publishedAt: Date
+  slug: String
+  title: String
+  URL: String
+  readingTime: String
+  tags: [GhostCMSTag]
+}
+
+type GhostCMSTag @key(fields: "id") {
+  id: ID
+  name: String
+  slug: String
+  URL: String
+}`, BuiltIn: false},
+	{Name: "federation/directives.graphql", Input: `
+scalar _Any
+scalar _FieldSet
+
+directive @external on FIELD_DEFINITION
+directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
+directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
+directive @extends on OBJECT
+`, BuiltIn: true},
+	{Name: "federation/entity.graphql", Input: `
+# a union of all types that use the @key directive
+union _Entity = GhostCMSPost | GhostCMSTag
+
+# fake type to build resolver interfaces for users to implement
+type Entity {
+		findGhostCMSPostByID(id: ID,): GhostCMSPost!
+	findGhostCMSTagByID(id: ID,): GhostCMSTag!
+
+}
+
+type _Service {
+  sdl: String
+}
+
+extend type Query {
+  _entities(representations: [_Any!]!): [_Entity]!
+  _service: _Service!
+}
+`, BuiltIn: true},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Entity_findGhostCMSPostByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findGhostCMSTagByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -242,6 +468,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []map[string]interface{}
+	if tmp, ok := rawArgs["representations"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("representations"))
+		arg0, err = ec.unmarshalN_Any2ᚕmapᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["representations"] = arg0
 	return args, nil
 }
 
@@ -283,7 +524,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _FAQ_question(ctx context.Context, field graphql.CollectedField, obj *model.Faq) (ret graphql.Marshaler) {
+func (ec *executionContext) _Entity_findGhostCMSPostByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -291,17 +532,24 @@ func (ec *executionContext) _FAQ_question(ctx context.Context, field graphql.Col
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "FAQ",
+		Object:     "Entity",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Entity_findGhostCMSPostByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Question, nil
+		return ec.resolvers.Entity().FindGhostCMSPostByID(rctx, args["id"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -313,12 +561,12 @@ func (ec *executionContext) _FAQ_question(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*feed.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSPost2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FAQ_answer(ctx context.Context, field graphql.CollectedField, obj *model.Faq) (ret graphql.Marshaler) {
+func (ec *executionContext) _Entity_findGhostCMSTagByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -326,17 +574,24 @@ func (ec *executionContext) _FAQ_answer(ctx context.Context, field graphql.Colle
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "FAQ",
+		Object:     "Entity",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Entity_findGhostCMSTagByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Answer, nil
+		return ec.resolvers.Entity().FindGhostCMSTagByID(rctx, args["id"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -348,12 +603,12 @@ func (ec *executionContext) _FAQ_answer(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*feed.GhostCMSTag)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNGhostCMSTag2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSTag(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FeedItem_title(ctx context.Context, field graphql.CollectedField, obj *model.FeedItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_id(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -361,7 +616,231 @@ func (ec *executionContext) _FeedItem_title(ctx context.Context, field graphql.C
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "FeedItem",
+		Object:     "GhostCMSPost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSPost_createdAt(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSPost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.GhostCMSPost().CreatedAt(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSPost_excerpt(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSPost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Excerpt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSPost_featureImage(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSPost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FeatureImage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSPost_html(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSPost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HTML, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSPost_publishedAt(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSPost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.GhostCMSPost().PublishedAt(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalODate2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSPost_slug(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSPost",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Slug, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSPost_title(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSPost",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -378,17 +857,14 @@ func (ec *executionContext) _FeedItem_title(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FeedItem_description(ctx context.Context, field graphql.CollectedField, obj *model.FeedItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_URL(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -396,7 +872,7 @@ func (ec *executionContext) _FeedItem_description(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "FeedItem",
+		Object:     "GhostCMSPost",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -406,24 +882,21 @@ func (ec *executionContext) _FeedItem_description(ctx context.Context, field gra
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
+		return obj.URL, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _LibraryItem_title(ctx context.Context, field graphql.CollectedField, obj *model.LibraryItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_readingTime(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -431,7 +904,7 @@ func (ec *executionContext) _LibraryItem_title(ctx context.Context, field graphq
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "LibraryItem",
+		Object:     "GhostCMSPost",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -441,24 +914,21 @@ func (ec *executionContext) _LibraryItem_title(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Title, nil
+		return obj.ReadingTime, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _LibraryItem_description(ctx context.Context, field graphql.CollectedField, obj *model.LibraryItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _GhostCMSPost_tags(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSPost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -466,7 +936,7 @@ func (ec *executionContext) _LibraryItem_description(ctx context.Context, field 
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "LibraryItem",
+		Object:     "GhostCMSPost",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -476,21 +946,146 @@ func (ec *executionContext) _LibraryItem_description(ctx context.Context, field 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
+		return obj.Tags, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
+		return graphql.Null
+	}
+	res := resTmp.([]feed.GhostCMSTag)
+	fc.Result = res
+	return ec.marshalOGhostCMSTag2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSTag(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSTag_id(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSTag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
 		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSTag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSTag_name(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSTag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSTag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
 		return graphql.Null
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSTag_slug(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSTag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSTag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Slug, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _GhostCMSTag_URL(ctx context.Context, field graphql.CollectedField, obj *feed.GhostCMSTag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GhostCMSTag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getLibraryContent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -520,12 +1115,12 @@ func (ec *executionContext) _Query_getLibraryContent(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.LibraryItem)
+	res := resTmp.([]*feed.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalOLibraryItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItemᚄ(ctx, field.Selections, res)
+	return ec.marshalOGhostCMSPost2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPostᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getFaqs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -543,7 +1138,7 @@ func (ec *executionContext) _Query_getFaqs(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFaqs(rctx)
+		return ec.resolvers.Query().GetFaqsContent(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -552,12 +1147,12 @@ func (ec *executionContext) _Query_getFaqs(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Faq)
+	res := resTmp.([]*feed.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalOFAQ2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaqᚄ(ctx, field.Selections, res)
+	return ec.marshalOGhostCMSPost2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPostᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getFeedItems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getFeedContent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -575,7 +1170,7 @@ func (ec *executionContext) _Query_getFeedItems(ctx context.Context, field graph
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFeedItems(rctx)
+		return ec.resolvers.Query().GetFeedContent(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -584,9 +1179,86 @@ func (ec *executionContext) _Query_getFeedItems(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.FeedItem)
+	res := resTmp.([]*feed.GhostCMSPost)
 	fc.Result = res
-	return ec.marshalOFeedItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItemᚄ(ctx, field.Selections, res)
+	return ec.marshalOGhostCMSPost2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query__entities_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.__resolve_entities(ctx, args["representations"].([]map[string]interface{}))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]fedruntime.Entity)
+	fc.Result = res
+	return ec.marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query__service(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.__resolve__service(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(fedruntime.Service)
+	fc.Result = res
+	return ec.marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -658,6 +1330,38 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) __Service_sdl(ctx context.Context, field graphql.CollectedField, obj *fedruntime.Service) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "_Service",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SDL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -1751,31 +2455,76 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, obj fedruntime.Entity) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case feed.GhostCMSPost:
+		return ec._GhostCMSPost(ctx, sel, &obj)
+	case *feed.GhostCMSPost:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._GhostCMSPost(ctx, sel, obj)
+	case feed.GhostCMSTag:
+		return ec._GhostCMSTag(ctx, sel, &obj)
+	case *feed.GhostCMSTag:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._GhostCMSTag(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
 
-var fAQImplementors = []string{"FAQ"}
+var entityImplementors = []string{"Entity"}
 
-func (ec *executionContext) _FAQ(ctx context.Context, sel ast.SelectionSet, obj *model.Faq) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, fAQImplementors)
+func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, entityImplementors)
+
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Entity",
+	})
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("FAQ")
-		case "question":
-			out.Values[i] = ec._FAQ_question(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "answer":
-			out.Values[i] = ec._FAQ_answer(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			out.Values[i] = graphql.MarshalString("Entity")
+		case "findGhostCMSPostByID":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findGhostCMSPostByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "findGhostCMSTagByID":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findGhostCMSTagByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -1787,27 +2536,57 @@ func (ec *executionContext) _FAQ(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
-var feedItemImplementors = []string{"FeedItem"}
+var ghostCMSPostImplementors = []string{"GhostCMSPost", "_Entity"}
 
-func (ec *executionContext) _FeedItem(ctx context.Context, sel ast.SelectionSet, obj *model.FeedItem) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, feedItemImplementors)
+func (ec *executionContext) _GhostCMSPost(ctx context.Context, sel ast.SelectionSet, obj *feed.GhostCMSPost) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSPostImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("FeedItem")
+			out.Values[i] = graphql.MarshalString("GhostCMSPost")
+		case "id":
+			out.Values[i] = ec._GhostCMSPost_id(ctx, field, obj)
+		case "createdAt":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._GhostCMSPost_createdAt(ctx, field, obj)
+				return res
+			})
+		case "excerpt":
+			out.Values[i] = ec._GhostCMSPost_excerpt(ctx, field, obj)
+		case "featureImage":
+			out.Values[i] = ec._GhostCMSPost_featureImage(ctx, field, obj)
+		case "html":
+			out.Values[i] = ec._GhostCMSPost_html(ctx, field, obj)
+		case "publishedAt":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._GhostCMSPost_publishedAt(ctx, field, obj)
+				return res
+			})
+		case "slug":
+			out.Values[i] = ec._GhostCMSPost_slug(ctx, field, obj)
 		case "title":
-			out.Values[i] = ec._FeedItem_title(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "description":
-			out.Values[i] = ec._FeedItem_description(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			out.Values[i] = ec._GhostCMSPost_title(ctx, field, obj)
+		case "URL":
+			out.Values[i] = ec._GhostCMSPost_URL(ctx, field, obj)
+		case "readingTime":
+			out.Values[i] = ec._GhostCMSPost_readingTime(ctx, field, obj)
+		case "tags":
+			out.Values[i] = ec._GhostCMSPost_tags(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -1819,27 +2598,25 @@ func (ec *executionContext) _FeedItem(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
-var libraryItemImplementors = []string{"LibraryItem"}
+var ghostCMSTagImplementors = []string{"GhostCMSTag", "_Entity"}
 
-func (ec *executionContext) _LibraryItem(ctx context.Context, sel ast.SelectionSet, obj *model.LibraryItem) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, libraryItemImplementors)
+func (ec *executionContext) _GhostCMSTag(ctx context.Context, sel ast.SelectionSet, obj *feed.GhostCMSTag) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ghostCMSTagImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("LibraryItem")
-		case "title":
-			out.Values[i] = ec._LibraryItem_title(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "description":
-			out.Values[i] = ec._LibraryItem_description(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			out.Values[i] = graphql.MarshalString("GhostCMSTag")
+		case "id":
+			out.Values[i] = ec._GhostCMSTag_id(ctx, field, obj)
+		case "name":
+			out.Values[i] = ec._GhostCMSTag_name(ctx, field, obj)
+		case "slug":
+			out.Values[i] = ec._GhostCMSTag_slug(ctx, field, obj)
+		case "URL":
+			out.Values[i] = ec._GhostCMSTag_URL(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -1877,7 +2654,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_getLibraryContent(ctx, field)
 				return res
 			})
-		case "getFaqs":
+		case "getFaqsContent":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -1885,10 +2662,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getFaqs(ctx, field)
+				res = ec._Query_getFaqsContent(ctx, field)
 				return res
 			})
-		case "getFeedItems":
+		case "getFeedContent":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -1896,13 +2673,65 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getFeedItems(ctx, field)
+				res = ec._Query_getFeedContent(ctx, field)
+				return res
+			})
+		case "_entities":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query__entities(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "_service":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query__service(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var _ServiceImplementors = []string{"_Service"}
+
+func (ec *executionContext) __Service(ctx context.Context, sel ast.SelectionSet, obj *fedruntime.Service) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, _ServiceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("_Service")
+		case "sdl":
+			out.Values[i] = ec.__Service_sdl(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2174,34 +3003,32 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNFAQ2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaq(ctx context.Context, sel ast.SelectionSet, v *model.Faq) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._FAQ(ctx, sel, v)
+func (ec *executionContext) marshalNGhostCMSPost2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v feed.GhostCMSPost) graphql.Marshaler {
+	return ec._GhostCMSPost(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNFeedItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItem(ctx context.Context, sel ast.SelectionSet, v *model.FeedItem) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSPost2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v *feed.GhostCMSPost) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._FeedItem(ctx, sel, v)
+	return ec._GhostCMSPost(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNLibraryItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItem(ctx context.Context, sel ast.SelectionSet, v *model.LibraryItem) graphql.Marshaler {
+func (ec *executionContext) marshalNGhostCMSTag2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v feed.GhostCMSTag) graphql.Marshaler {
+	return ec._GhostCMSTag(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGhostCMSTag2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v *feed.GhostCMSTag) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._LibraryItem(ctx, sel, v)
+	return ec._GhostCMSTag(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2217,6 +3044,113 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalN_Any2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
+	res, err := graphql.UnmarshalMap(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalN_Any2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalMap(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalN_Any2ᚕmapᚄ(ctx context.Context, v interface{}) ([]map[string]interface{}, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]map[string]interface{}, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalN_Any2map(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalN_Any2ᚕmapᚄ(ctx context.Context, sel ast.SelectionSet, v []map[string]interface{}) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalN_Any2map(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v []fedruntime.Entity) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalN_FieldSet2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalN_FieldSet2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx context.Context, sel ast.SelectionSet, v fedruntime.Service) graphql.Marshaler {
+	return ec.__Service(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -2472,7 +3406,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) marshalOFAQ2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaqᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Faq) graphql.Marshaler {
+func (ec *executionContext) unmarshalODate2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalString(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODate2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) marshalOGhostCMSPost2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v []*feed.GhostCMSPost) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -2499,7 +3448,7 @@ func (ec *executionContext) marshalOFAQ2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFAQ2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaq(ctx, sel, v[i])
+			ret[i] = ec.marshalOGhostCMSPost2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2512,7 +3461,7 @@ func (ec *executionContext) marshalOFAQ2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalOFeedItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.FeedItem) graphql.Marshaler {
+func (ec *executionContext) marshalOGhostCMSPost2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*feed.GhostCMSPost) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -2539,7 +3488,7 @@ func (ec *executionContext) marshalOFeedItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFeedItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItem(ctx, sel, v[i])
+			ret[i] = ec.marshalNGhostCMSPost2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2552,7 +3501,18 @@ func (ec *executionContext) marshalOFeedItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalOLibraryItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LibraryItem) graphql.Marshaler {
+func (ec *executionContext) marshalOGhostCMSPost2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSPost(ctx context.Context, sel ast.SelectionSet, v *feed.GhostCMSPost) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._GhostCMSPost(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOGhostCMSTag2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v feed.GhostCMSTag) graphql.Marshaler {
+	return ec._GhostCMSTag(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOGhostCMSTag2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSTag(ctx context.Context, sel ast.SelectionSet, v []feed.GhostCMSTag) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -2579,7 +3539,7 @@ func (ec *executionContext) marshalOLibraryItem2ᚕᚖgitlabᚗslade360emrᚗcom
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNLibraryItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItem(ctx, sel, v[i])
+			ret[i] = ec.marshalOGhostCMSTag2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐGhostCMSTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2590,6 +3550,21 @@ func (ec *executionContext) marshalOLibraryItem2ᚕᚖgitlabᚗslade360emrᚗcom
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalID(*v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2614,6 +3589,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.__Entity(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

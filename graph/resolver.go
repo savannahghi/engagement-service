@@ -3,8 +3,6 @@
 package graph
 
 import (
-	"log"
-
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 )
 
@@ -18,10 +16,4 @@ func NewResolver() *Resolver {
 // Resolver serves as dependency injection for your app, add any dependencies you require here.
 type Resolver struct {
 	feedService *feed.Service
-}
-
-func (r Resolver) checkPreconditions() {
-	if r.feedService == nil {
-		log.Fatalf("nil whatsapp service in resolver")
-	}
 }

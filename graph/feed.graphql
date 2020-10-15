@@ -1,0 +1,7 @@
+
+
+type Query {
+  getLibraryContent: [GhostCMSPost!]
+  getFaqsContent: [GhostCMSPost!]
+  getFeedContent: [GhostCMSPost]
+}

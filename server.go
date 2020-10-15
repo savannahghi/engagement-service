@@ -73,6 +73,11 @@ func main() {
 // Router sets up the ginContext router
 func Router() (*mux.Router, error) {
 
+	fc := &base.FirebaseClient{}
+	firebaseApp, err := fc.InitFirebase()
+	if err != nil {
+		return nil, err
+	}
 	r := mux.NewRouter() // gorilla mux
 	r.Use(
 		handlers.RecoveryHandler(
@@ -90,7 +95,7 @@ func Router() (*mux.Router, error) {
 
 	// Authenticated routes
 	gqlR := r.Path("/graphql").Subrouter()
-
+	gqlR.Use(base.AuthenticationMiddleware(firebaseApp))
 	gqlR.Methods(
 		http.MethodPost, http.MethodGet, http.MethodOptions,
 	).HandlerFunc(graphqlHandler())
