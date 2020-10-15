@@ -3,6 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 	"time"
@@ -14,8 +15,8 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/debug/graph"
-	"gitlab.slade360emr.com/go/debug/graph/generated"
+	"gitlab.slade360emr.com/go/feed/graph"
+	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
 const serverTimeoutSeconds = 120
@@ -23,15 +24,13 @@ const serverTimeoutSeconds = 120
 var allowedOrigins = []string{
 	"https://healthcloud.co.ke",
 	"https://bewell.healthcloud.co.ke",
-	"http://localhost:5000",
-	"https://api-gateway-test.healthcloud.co.ke",
-	"https://api-gateway-prod.healthcloud.co.ke",
-	"https://feed-staging-uyajqt434q-ew.a.run.app",
-	"https://feed-testing-uyajqt434q-ew.a.run.app",
-	"https://feed-prod-uyajqt434q-ew.a.run.app",
+	"http://localhost:8080",
+	"https://feed-staging.healthcloud.co.ke",
+	"https://feed-testing.healthcloud.co.ke",
+	"https://feed-prod.healthcloud.co.ke",
 }
 var allowedHeaders = []string{
-	"debug", "Accept", "Accept-Charset", "Accept-Language",
+	"Authorization", "Accept", "Accept-Charset", "Accept-Language",
 	"Accept-Encoding", "Origin", "Host", "User-Agent", "Content-Length",
 	"Content-Type",
 }
@@ -67,16 +66,13 @@ func main() {
 		WriteTimeout: serverTimeoutSeconds * time.Second,
 		ReadTimeout:  serverTimeoutSeconds * time.Second,
 	}
+	log.Infof("Server running at port %v", addr)
 	log.Fatal(srv.ListenAndServe())
 }
 
 // Router sets up the ginContext router
 func Router() (*mux.Router, error) {
-	fc := &base.FirebaseClient{}
-	firebaseApp, err := fc.InitFirebase()
-	if err != nil {
-		return nil, err
-	}
+
 	r := mux.NewRouter() // gorilla mux
 	r.Use(
 		handlers.RecoveryHandler(
@@ -89,13 +85,26 @@ func Router() (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 
+	// check server status.
+	r.Path("/health").HandlerFunc(HealthStatusCheck)
+
 	// Authenticated routes
 	gqlR := r.Path("/graphql").Subrouter()
-	gqlR.Use(base.AuthenticationMiddleware(firebaseApp))
+
 	gqlR.Methods(
 		http.MethodPost, http.MethodGet, http.MethodOptions,
 	).HandlerFunc(graphqlHandler())
 	return r, nil
+
+}
+
+//HealthStatusCheck endpoint to check if the server is working.
+func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
+
+	err := json.NewEncoder(w).Encode(true)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 

@@ -2,27 +2,24 @@
 #
 # https://gqlgen.com/getting-started/
 
-type ContentItem {
-  id: Int!
-  author: Author!
+type LibraryItem {
   title: String!
-  shortDescription: String
-  body: String!
-  views: Int!
-  likes: Int!
-  tags: [Tag]!
+  description: String!
 }
 
-type Author {
-  id: Int!
-  username: String!
+type FAQ {
+  question: String!
+  answer: String!
 }
 
-type Tag {
-  id: Int!
-  type: String!
+type FeedItem {
+  title: String!
+  description: String!
+
 }
 
 type Query {
-  contentItems: [ContentItem!]!
+  getLibraryContent: [LibraryItem!]
+  getFaqs: [FAQ!]
+  getFeedItems: [FeedItem!]
 }

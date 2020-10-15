@@ -2,23 +2,17 @@
 
 package model
 
-type Author struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
+type Faq struct {
+	Question string `json:"question"`
+	Answer   string `json:"answer"`
 }
 
-type ContentItem struct {
-	ID               int     `json:"id"`
-	Author           *Author `json:"author"`
-	Title            string  `json:"title"`
-	ShortDescription *string `json:"shortDescription"`
-	Body             string  `json:"body"`
-	Views            int     `json:"views"`
-	Likes            int     `json:"likes"`
-	Tags             []*Tag  `json:"tags"`
+type FeedItem struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
-type Tag struct {
-	ID   int    `json:"id"`
-	Type string `json:"type"`
+type LibraryItem struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }

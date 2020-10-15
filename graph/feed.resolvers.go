@@ -5,15 +5,24 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"gitlab.slade360emr.com/go/feed/graph/generated"
 	"gitlab.slade360emr.com/go/feed/graph/model"
 )
 
-func (r *queryResolver) ContentItems(ctx context.Context) ([]*model.ContentItem, error) {
+func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*model.LibraryItem, error) {
 	r.checkPreconditions()
-	panic(fmt.Errorf("not implemented"))
+	return r.feedService.GetLibraryContent(ctx)
+}
+
+func (r *queryResolver) GetFaqs(ctx context.Context) ([]*model.Faq, error) {
+	r.checkPreconditions()
+	return r.feedService.GetFaqs(ctx)
+}
+
+func (r *queryResolver) GetFeedItems(ctx context.Context) ([]*model.FeedItem, error) {
+	r.checkPreconditions()
+	return r.feedService.GetFeedItems(ctx)
 }
 
 // Query returns generated.QueryResolver implementation.

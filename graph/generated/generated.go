@@ -8,7 +8,6 @@ import (
 	"errors"
 	"strconv"
 	"sync"
-	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -42,34 +41,32 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Author struct {
-		ID       func(childComplexity int) int
-		Username func(childComplexity int) int
+	Faq struct {
+		Answer   func(childComplexity int) int
+		Question func(childComplexity int) int
 	}
 
-	ContentItem struct {
-		Author           func(childComplexity int) int
-		Body             func(childComplexity int) int
-		ID               func(childComplexity int) int
-		Likes            func(childComplexity int) int
-		ShortDescription func(childComplexity int) int
-		Tags             func(childComplexity int) int
-		Title            func(childComplexity int) int
-		Views            func(childComplexity int) int
+	FeedItem struct {
+		Description func(childComplexity int) int
+		Title       func(childComplexity int) int
+	}
+
+	LibraryItem struct {
+		Description func(childComplexity int) int
+		Title       func(childComplexity int) int
 	}
 
 	Query struct {
-		ContentItems func(childComplexity int) int
-	}
-
-	Tag struct {
-		ID   func(childComplexity int) int
-		Type func(childComplexity int) int
+		GetFaqs           func(childComplexity int) int
+		GetFeedItems      func(childComplexity int) int
+		GetLibraryContent func(childComplexity int) int
 	}
 }
 
 type QueryResolver interface {
-	ContentItems(ctx context.Context) ([]*model.ContentItem, error)
+	GetLibraryContent(ctx context.Context) ([]*model.LibraryItem, error)
+	GetFaqs(ctx context.Context) ([]*model.Faq, error)
+	GetFeedItems(ctx context.Context) ([]*model.FeedItem, error)
 }
 
 type executableSchema struct {
@@ -87,96 +84,68 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Author.id":
-		if e.complexity.Author.ID == nil {
+	case "FAQ.answer":
+		if e.complexity.Faq.Answer == nil {
 			break
 		}
 
-		return e.complexity.Author.ID(childComplexity), true
+		return e.complexity.Faq.Answer(childComplexity), true
 
-	case "Author.username":
-		if e.complexity.Author.Username == nil {
+	case "FAQ.question":
+		if e.complexity.Faq.Question == nil {
 			break
 		}
 
-		return e.complexity.Author.Username(childComplexity), true
+		return e.complexity.Faq.Question(childComplexity), true
 
-	case "ContentItem.author":
-		if e.complexity.ContentItem.Author == nil {
+	case "FeedItem.description":
+		if e.complexity.FeedItem.Description == nil {
 			break
 		}
 
-		return e.complexity.ContentItem.Author(childComplexity), true
+		return e.complexity.FeedItem.Description(childComplexity), true
 
-	case "ContentItem.body":
-		if e.complexity.ContentItem.Body == nil {
+	case "FeedItem.title":
+		if e.complexity.FeedItem.Title == nil {
 			break
 		}
 
-		return e.complexity.ContentItem.Body(childComplexity), true
+		return e.complexity.FeedItem.Title(childComplexity), true
 
-	case "ContentItem.id":
-		if e.complexity.ContentItem.ID == nil {
+	case "LibraryItem.description":
+		if e.complexity.LibraryItem.Description == nil {
 			break
 		}
 
-		return e.complexity.ContentItem.ID(childComplexity), true
+		return e.complexity.LibraryItem.Description(childComplexity), true
 
-	case "ContentItem.likes":
-		if e.complexity.ContentItem.Likes == nil {
+	case "LibraryItem.title":
+		if e.complexity.LibraryItem.Title == nil {
 			break
 		}
 
-		return e.complexity.ContentItem.Likes(childComplexity), true
+		return e.complexity.LibraryItem.Title(childComplexity), true
 
-	case "ContentItem.shortDescription":
-		if e.complexity.ContentItem.ShortDescription == nil {
+	case "Query.getFaqs":
+		if e.complexity.Query.GetFaqs == nil {
 			break
 		}
 
-		return e.complexity.ContentItem.ShortDescription(childComplexity), true
+		return e.complexity.Query.GetFaqs(childComplexity), true
 
-	case "ContentItem.tags":
-		if e.complexity.ContentItem.Tags == nil {
+	case "Query.getFeedItems":
+		if e.complexity.Query.GetFeedItems == nil {
 			break
 		}
 
-		return e.complexity.ContentItem.Tags(childComplexity), true
+		return e.complexity.Query.GetFeedItems(childComplexity), true
 
-	case "ContentItem.title":
-		if e.complexity.ContentItem.Title == nil {
+	case "Query.getLibraryContent":
+		if e.complexity.Query.GetLibraryContent == nil {
 			break
 		}
 
-		return e.complexity.ContentItem.Title(childComplexity), true
-
-	case "ContentItem.views":
-		if e.complexity.ContentItem.Views == nil {
-			break
-		}
-
-		return e.complexity.ContentItem.Views(childComplexity), true
-
-	case "Query.contentItems":
-		if e.complexity.Query.ContentItems == nil {
-			break
-		}
-
-		return e.complexity.Query.ContentItems(childComplexity), true
-
-	case "Tag.id":
-		if e.complexity.Tag.ID == nil {
-			break
-		}
-
-		return e.complexity.Tag.ID(childComplexity), true
-
-	case "Tag.type":
-		if e.complexity.Tag.Type == nil {
-			break
-		}
-
-		return e.complexity.Tag.Type(childComplexity), true
+		return e.complexity.Query.GetLibraryContent(childComplexity), true
 
 	}
 	return 0, false
@@ -228,34 +197,32 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema.graphqls", Input: `# GraphQL schema example
+	{Name: "graph/feed.graphqls", Input: `# GraphQL schema example
 #
 # https://gqlgen.com/getting-started/
 
-type ContentItem {
-  id: Int!
-  author: Author!
+type LibraryItem {
   title: String!
-  shortDescription: String
-  body: String!
-  views: Int!
-  likes: Int!
-  tags: [Tag]!
+  description: String!
 }
 
-type Author {
-  id: Int!
-  username: String!
+type FAQ {
+  question: String!
+  answer: String!
 }
 
-type Tag {
-  id: Int!
-  type: String!
+type FeedItem {
+  title: String!
+  description: String!
+
 }
 
 type Query {
-  contentItems: [ContentItem!]!
-}`, BuiltIn: false},
+  getLibraryContent: [LibraryItem!]
+  getFaqs: [FAQ!]
+  getFeedItems: [FeedItem!]
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -316,7 +283,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Author_id(ctx context.Context, field graphql.CollectedField, obj *model.Author) (ret graphql.Marshaler) {
+func (ec *executionContext) _FAQ_question(ctx context.Context, field graphql.CollectedField, obj *model.Faq) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -324,7 +291,7 @@ func (ec *executionContext) _Author_id(ctx context.Context, field graphql.Collec
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Author",
+		Object:     "FAQ",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -334,42 +301,7 @@ func (ec *executionContext) _Author_id(ctx context.Context, field graphql.Collec
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Author_username(ctx context.Context, field graphql.CollectedField, obj *model.Author) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Author",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Username, nil
+		return obj.Question, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -386,7 +318,7 @@ func (ec *executionContext) _Author_username(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ContentItem_id(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _FAQ_answer(ctx context.Context, field graphql.CollectedField, obj *model.Faq) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -394,7 +326,7 @@ func (ec *executionContext) _ContentItem_id(ctx context.Context, field graphql.C
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
+		Object:     "FAQ",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -404,7 +336,7 @@ func (ec *executionContext) _ContentItem_id(ctx context.Context, field graphql.C
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Answer, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -416,12 +348,12 @@ func (ec *executionContext) _ContentItem_id(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ContentItem_author(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _FeedItem_title(ctx context.Context, field graphql.CollectedField, obj *model.FeedItem) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -429,42 +361,7 @@ func (ec *executionContext) _ContentItem_author(ctx context.Context, field graph
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Author, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Author)
-	fc.Result = res
-	return ec.marshalNAuthor2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐAuthor(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ContentItem_title(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
+		Object:     "FeedItem",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -491,7 +388,7 @@ func (ec *executionContext) _ContentItem_title(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ContentItem_shortDescription(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _FeedItem_description(ctx context.Context, field graphql.CollectedField, obj *model.FeedItem) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -499,7 +396,7 @@ func (ec *executionContext) _ContentItem_shortDescription(ctx context.Context, f
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
+		Object:     "FeedItem",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -509,39 +406,7 @@ func (ec *executionContext) _ContentItem_shortDescription(ctx context.Context, f
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ShortDescription, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ContentItem_body(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Body, nil
+		return obj.Description, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -558,7 +423,7 @@ func (ec *executionContext) _ContentItem_body(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ContentItem_views(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _LibraryItem_title(ctx context.Context, field graphql.CollectedField, obj *model.LibraryItem) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -566,7 +431,7 @@ func (ec *executionContext) _ContentItem_views(ctx context.Context, field graphq
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
+		Object:     "LibraryItem",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -576,7 +441,7 @@ func (ec *executionContext) _ContentItem_views(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Views, nil
+		return obj.Title, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -588,12 +453,12 @@ func (ec *executionContext) _ContentItem_views(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ContentItem_likes(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
+func (ec *executionContext) _LibraryItem_description(ctx context.Context, field graphql.CollectedField, obj *model.LibraryItem) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -601,7 +466,7 @@ func (ec *executionContext) _ContentItem_likes(ctx context.Context, field graphq
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
+		Object:     "LibraryItem",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -611,7 +476,7 @@ func (ec *executionContext) _ContentItem_likes(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Likes, nil
+		return obj.Description, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -623,47 +488,12 @@ func (ec *executionContext) _ContentItem_likes(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _ContentItem_tags(ctx context.Context, field graphql.CollectedField, obj *model.ContentItem) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ContentItem",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Tags, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Tag)
-	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTag(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_contentItems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getLibraryContent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -681,21 +511,82 @@ func (ec *executionContext) _Query_contentItems(ctx context.Context, field graph
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ContentItems(rctx)
+		return ec.resolvers.Query().GetLibraryContent(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.ContentItem)
+	res := resTmp.([]*model.LibraryItem)
 	fc.Result = res
-	return ec.marshalNContentItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐContentItemᚄ(ctx, field.Selections, res)
+	return ec.marshalOLibraryItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItemᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getFaqs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetFaqs(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Faq)
+	fc.Result = res
+	return ec.marshalOFAQ2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaqᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getFeedItems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetFeedItems(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.FeedItem)
+	fc.Result = res
+	return ec.marshalOFeedItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItemᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -767,76 +658,6 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Tag_id(ctx context.Context, field graphql.CollectedField, obj *model.Tag) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Tag",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Tag_type(ctx context.Context, field graphql.CollectedField, obj *model.Tag) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Tag",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Type, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -1934,24 +1755,24 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** object.gotpl ****************************
 
-var authorImplementors = []string{"Author"}
+var fAQImplementors = []string{"FAQ"}
 
-func (ec *executionContext) _Author(ctx context.Context, sel ast.SelectionSet, obj *model.Author) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, authorImplementors)
+func (ec *executionContext) _FAQ(ctx context.Context, sel ast.SelectionSet, obj *model.Faq) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fAQImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Author")
-		case "id":
-			out.Values[i] = ec._Author_id(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("FAQ")
+		case "question":
+			out.Values[i] = ec._FAQ_question(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "username":
-			out.Values[i] = ec._Author_username(ctx, field, obj)
+		case "answer":
+			out.Values[i] = ec._FAQ_answer(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -1966,51 +1787,56 @@ func (ec *executionContext) _Author(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
-var contentItemImplementors = []string{"ContentItem"}
+var feedItemImplementors = []string{"FeedItem"}
 
-func (ec *executionContext) _ContentItem(ctx context.Context, sel ast.SelectionSet, obj *model.ContentItem) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, contentItemImplementors)
+func (ec *executionContext) _FeedItem(ctx context.Context, sel ast.SelectionSet, obj *model.FeedItem) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, feedItemImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("ContentItem")
-		case "id":
-			out.Values[i] = ec._ContentItem_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "author":
-			out.Values[i] = ec._ContentItem_author(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			out.Values[i] = graphql.MarshalString("FeedItem")
 		case "title":
-			out.Values[i] = ec._ContentItem_title(ctx, field, obj)
+			out.Values[i] = ec._FeedItem_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "shortDescription":
-			out.Values[i] = ec._ContentItem_shortDescription(ctx, field, obj)
-		case "body":
-			out.Values[i] = ec._ContentItem_body(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._FeedItem_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "views":
-			out.Values[i] = ec._ContentItem_views(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var libraryItemImplementors = []string{"LibraryItem"}
+
+func (ec *executionContext) _LibraryItem(ctx context.Context, sel ast.SelectionSet, obj *model.LibraryItem) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, libraryItemImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LibraryItem")
+		case "title":
+			out.Values[i] = ec._LibraryItem_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "likes":
-			out.Values[i] = ec._ContentItem_likes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "tags":
-			out.Values[i] = ec._ContentItem_tags(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._LibraryItem_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2040,7 +1866,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "contentItems":
+		case "getLibraryContent":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2048,48 +1874,35 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_contentItems(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
+				res = ec._Query_getLibraryContent(ctx, field)
+				return res
+			})
+		case "getFaqs":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getFaqs(ctx, field)
+				return res
+			})
+		case "getFeedItems":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getFeedItems(ctx, field)
 				return res
 			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var tagImplementors = []string{"Tag"}
-
-func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *model.Tag) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, tagImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Tag")
-		case "id":
-			out.Values[i] = ec._Tag_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "type":
-			out.Values[i] = ec._Tag_type(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2346,16 +2159,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAuthor2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐAuthor(ctx context.Context, sel ast.SelectionSet, v *model.Author) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Author(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2371,66 +2174,34 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNContentItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐContentItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ContentItem) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNContentItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐContentItem(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalNContentItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐContentItem(ctx context.Context, sel ast.SelectionSet, v *model.ContentItem) graphql.Marshaler {
+func (ec *executionContext) marshalNFAQ2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaq(ctx context.Context, sel ast.SelectionSet, v *model.Faq) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._ContentItem(ctx, sel, v)
+	return ec._FAQ(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
+func (ec *executionContext) marshalNFeedItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItem(ctx context.Context, sel ast.SelectionSet, v *model.FeedItem) graphql.Marshaler {
+	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
+		return graphql.Null
 	}
-	return res
+	return ec._FeedItem(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNLibraryItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItem(ctx context.Context, sel ast.SelectionSet, v *model.LibraryItem) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._LibraryItem(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2446,43 +2217,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNTag2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTag(ctx context.Context, sel ast.SelectionSet, v []*model.Tag) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOTag2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTag(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -2738,6 +2472,126 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
+func (ec *executionContext) marshalOFAQ2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaqᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Faq) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNFAQ2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFaq(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOFeedItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.FeedItem) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNFeedItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐFeedItem(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOLibraryItem2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LibraryItem) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNLibraryItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐLibraryItem(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2760,13 +2614,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
-}
-
-func (ec *executionContext) marshalOTag2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋmodelᚐTag(ctx context.Context, sel ast.SelectionSet, v *model.Tag) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Tag(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
