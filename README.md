@@ -1,9 +1,9 @@
-# Debug micro-service
+# Feed service
 
-[![pipeline status](https://gitlab.slade360emr.com/go/debug/badges/develop/pipeline.svg)](https://gitlab.slade360emr.com/go/debug/-/commits/develop)
-[![coverage report](https://gitlab.slade360emr.com/go/debug/badges/develop/coverage.svg)](https://gitlab.slade360emr.com/go/debug/-/commits/develop)
+[![pipeline status](https://gitlab.slade360emr.com/go/feed/badges/develop/pipeline.svg)](https://gitlab.slade360emr.com/go/feed/-/commits/develop)
+[![coverage report](https://gitlab.slade360emr.com/go/feed/badges/develop/coverage.svg)](https://gitlab.slade360emr.com/go/fedd/-/commits/develop)
 
-A library and service with debug and monitoring helpers e.g a debug endpoint, healthcheck endpoint etc.
+A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app
 
 ## Environment variables
 
@@ -22,5 +22,5 @@ export GOPRIVATE="gitlab.slade360emr.com/go/*,gitlab.slade360emr.com/optimalheal
 The server deploys to Google Cloud Run. For Cloud Run, the necessary environment
 variables are:
 
-- `GOOGLE_CLOUD_PROJECT`
-- `FIREBASE_WEB_API_KEY`
+- `GHOST_CMS_API_ENDPOINT`
+- `GHOST_CMS_API_KEY`
