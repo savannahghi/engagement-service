@@ -5,6 +5,86 @@
 
 A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app
 
+## Getting Feed Content
+
+```graphql
+
+query GetFeeds{
+    getFeedContent{
+        id
+        createdAt
+        excerpt
+        featureImage
+        html
+        publishedAt
+        slug
+        title
+        URL
+        readingTime
+        tags {
+            id
+            name
+            slug
+            URL
+        }
+    }
+}
+```
+
+## Getting FAQs content
+
+```graphql
+
+query GetFaq{
+    getFaqsContent{
+        id
+        createdAt
+        excerpt
+        featureImage
+        html
+        publishedAt
+        slug
+        title
+        URL
+        readingTime
+        tags {
+            id
+            name
+            slug
+            URL
+        }
+    }
+}
+```
+
+
+## Getting Library content
+
+```graphql
+
+query GetLibrary{
+    getLibraryContent{
+        id
+        createdAt
+        excerpt
+        featureImage
+        html
+        publishedAt
+        slug
+        title
+        URL
+        readingTime
+        tags {
+            id
+            name
+            slug
+            URL
+        }
+    }
+}
+```
+
+
 ## Environment variables
 
 For local development, you need to *export* the following env vars:
