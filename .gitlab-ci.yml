@@ -63,10 +63,10 @@ deploy_develop_to_staging:
     DOCKER_TLS_CERTDIR: ""
   resource_group: staging # control deploy concurrency
   script:
-    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app-testing/feed-staging:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app-testing/feed-staging:latest
     - google-cloud-sdk/bin/gcloud auth configure-docker
-    - docker -- push eu.gcr.io/bewell-app-testing/feed-staging:$(echo $CI_COMMIT_SHA | cut -c1-8)
-    - google-cloud-sdk/bin/gcloud run deploy feed-staging --image eu.gcr.io/bewell-app-testing/feed-staging:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated --update-env-vars "GOOGLE_CLOUD_PROJECT=$STAGING_GOOGLE_CLOUD_PROJECT,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY"
+    - docker -- push eu.gcr.io/bewell-app-testing/feed-staging:latest
+    - google-cloud-sdk/bin/gcloud run deploy feed-staging --image eu.gcr.io/bewell-app-testing/feed-staging:latest --region europe-west1 --platform managed --allow-unauthenticated --update-env-vars "GOOGLE_CLOUD_PROJECT=$STAGING_GOOGLE_CLOUD_PROJECT,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY"
     - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker feed-staging --quiet
   tags:
     - healthcloud-multi
@@ -94,10 +94,10 @@ deploy_develop_to_testing:
     DOCKER_TLS_CERTDIR: ""
   resource_group: staging # control deploy concurrency
   script:
-    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-testing:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-testing:latest
     - google-cloud-sdk/bin/gcloud auth configure-docker
-    - docker -- push eu.gcr.io/bewell-app/feed-testing:$(echo $CI_COMMIT_SHA | cut -c1-8)
-    - google-cloud-sdk/bin/gcloud run deploy feed-testing --image eu.gcr.io/bewell-app/feed-testing:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY"
+    - docker -- push eu.gcr.io/bewell-app/feed-testing:latest
+    - google-cloud-sdk/bin/gcloud run deploy feed-testing --image eu.gcr.io/bewell-app/feed-testing:latest --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY"
     - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker feed-testing --quiet
   tags:
     - healthcloud-multi
@@ -125,10 +125,10 @@ deploy_master_to_prod:
     DOCKER_TLS_CERTDIR: ""
   resource_group: staging # control deploy concurrency
   script:
-    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-prod:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-prod:latest
     - google-cloud-sdk/bin/gcloud auth configure-docker
-    - docker -- push eu.gcr.io/bewell-app/feed-prod:$(echo $CI_COMMIT_SHA | cut -c1-8)
-    - google-cloud-sdk/bin/gcloud run deploy feed-prod --image eu.gcr.io/bewell-app/feed-prod:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY"
+    - docker -- push eu.gcr.io/bewell-app/feed-prod:latest
+    - google-cloud-sdk/bin/gcloud run deploy feed-prod --image eu.gcr.io/bewell-app/feed-prod:latest --region europe-west1 --platform managed --allow-unauthenticated  --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY"
     - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker feed-prod --quiet
   tags:
     - healthcloud-multi
