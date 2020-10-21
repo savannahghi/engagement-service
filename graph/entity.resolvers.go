@@ -5,17 +5,35 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
-func (r *entityResolver) FindGhostCMSPostByID(ctx context.Context, id *string) (*feed.GhostCMSPost, error) {
-	return nil, nil
-}
+func (r *entityResolver) FindFeedByUIDAndFlavour(ctx context.Context, uid string, flavour feed.Flavour) (*feed.Feed, error) {
+	r.checkPreconditions()
 
-func (r *entityResolver) FindGhostCMSTagByID(ctx context.Context, id *string) (*feed.GhostCMSTag, error) {
-	return nil, nil
+	agg, err := feed.NewCollection(r.repository, r.notificationService)
+	if err != nil {
+		return nil, fmt.Errorf("can't initialize feed aggregate")
+	}
+
+	feed, err := agg.GetFeed(
+		ctx,
+		uid,
+		flavour,
+		feed.BooleanFilterBoth,
+		nil,
+		nil,
+		nil,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("can't instantiate new feed: %w", err)
+	}
+
+	return feed, nil
 }
 
 // Entity returns generated.EntityResolver implementation.

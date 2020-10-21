@@ -1,89 +1,26 @@
 # Feed service
 
 [![pipeline status](https://gitlab.slade360emr.com/go/feed/badges/develop/pipeline.svg)](https://gitlab.slade360emr.com/go/feed/-/commits/develop)
-[![coverage report](https://gitlab.slade360emr.com/go/feed/badges/develop/coverage.svg)](https://gitlab.slade360emr.com/go/fedd/-/commits/develop)
+[![coverage report](https://gitlab.slade360emr.com/go/feed/badges/develop/coverage.svg)](https://gitlab.slade360emr.com/go/feed/-/commits/develop)
 
-A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app
+A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app.
 
-## Getting Feed Content
+## JSON Schema Files
+This project uses JSON Schema to validate inputs and outputs.
 
-```graphql
+### Schema file hosting
 
-query GetFeeds{
-    getFeedContent{
-        id
-        createdAt
-        excerpt
-        featureImage
-        html
-        publishedAt
-        slug
-        title
-        URL
-        readingTime
-        tags {
-            id
-            name
-            slug
-            URL
-        }
-    }
-}
-```
+In order for module references to work, the schema files in 
+`graph/feed/schema` need to be hosted. We use 
+https://firebase.google.com/docs/hosting for that.
 
-## Getting FAQs content
+The schema files are hosted at https://schema.healthcloud.co.ke/
+e.g https://schema.healthcloud.co.ke//event.schema.json .
 
-```graphql
-
-query GetFaq{
-    getFaqsContent{
-        id
-        createdAt
-        excerpt
-        featureImage
-        html
-        publishedAt
-        slug
-        title
-        URL
-        readingTime
-        tags {
-            id
-            name
-            slug
-            URL
-        }
-    }
-}
-```
-
-
-## Getting Library content
-
-```graphql
-
-query GetLibrary{
-    getLibraryContent{
-        id
-        createdAt
-        excerpt
-        featureImage
-        html
-        publishedAt
-        slug
-        title
-        URL
-        readingTime
-        tags {
-            id
-            name
-            slug
-            URL
-        }
-    }
-}
-```
-
+This is in the `bewell-app` project. You need to 
+`npm install -g firebase-tools` and `firebase login` first. After that,
+any time the schema files change, run `firebase deploy` to host the
+updated files.
 
 ## Environment variables
 
@@ -104,3 +41,16 @@ variables are:
 
 - `GHOST_CMS_API_ENDPOINT`
 - `GHOST_CMS_API_KEY`
+
+## Service architecture
+
+The design of this service aspires to follow the principles of _domain driven
+design_ and _hexagonal architecture_.
+
+For the feed, the domain object is _feed.Feed_ . The aggregate is 
+_feed.FeedAggregate_. There's a _feed.Repository_ interface that can be used
+to adapt to alternative databases. There's a _feed.NotificationService_
+interface that can be used to adapt to alternative message buses.
+
+The communications to the outside world occur over both REST and GraphQL. At
+the time of writing, there's a plan to add gRPC and messaging ports.

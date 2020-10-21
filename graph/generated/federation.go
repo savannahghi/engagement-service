@@ -39,28 +39,18 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 		}
 		switch typeName {
 
-		case "GhostCMSPost":
-			id0, err := ec.unmarshalOID2ᚖstring(ctx, rep["id"])
+		case "Feed":
+			id0, err := ec.unmarshalNString2string(ctx, rep["uid"])
 			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "uid"))
+			}
+			id1, err := ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐFlavour(ctx, rep["flavour"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "flavour"))
 			}
 
-			entity, err := ec.resolvers.Entity().FindGhostCMSPostByID(ctx,
-				id0)
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, entity)
-
-		case "GhostCMSTag":
-			id0, err := ec.unmarshalOID2ᚖstring(ctx, rep["id"])
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
-			}
-
-			entity, err := ec.resolvers.Entity().FindGhostCMSTagByID(ctx,
-				id0)
+			entity, err := ec.resolvers.Entity().FindFeedByUIDAndFlavour(ctx,
+				id0, id1)
 			if err != nil {
 				return nil, err
 			}

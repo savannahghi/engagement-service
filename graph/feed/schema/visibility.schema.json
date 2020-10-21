@@ -1,0 +1,15 @@
+{
+    "$id": "https://schema.healthcloud.co.ke/visibility.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Be.Well Feed Item and Nudge Visibility",
+    "definitions": {
+        "visibility": {
+            "type": "string",
+            "enum": [
+                "SHOW",
+                "HIDE"
+            ]
+        }
+    },
+    "$ref": "#/definitions/visibility"
+}

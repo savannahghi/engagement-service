@@ -1,7 +1,271 @@
+scalar Time
+scalar Map
 
+enum BooleanFilter {
+  TRUE
+  FALSE
+  BOTH
+}
+
+enum Flavour {
+  PRO
+  CONSUMER
+}
+
+enum Keys {
+  actions
+  nudges
+  items
+}
+
+# Status of an item or nudge
+enum Status {
+  PENDING
+  DONE
+}
+
+# Visibility of an item or nudge
+enum Visibility {
+  SHOW
+  HIDE
+}
+
+enum ActionType {
+  PRIMARY
+  SECONDARY
+  OVERFLOW
+  FLOATING
+}
+
+enum Handling {
+  INLINE
+  FULL_PAGE
+}
+
+enum Channel {
+  FCM
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+# Feed is the top level access point for a user's feed.
+type Feed @key(fields: "uid flavour") {
+  uid: String!
+  flavour: Flavour!
+  actions: [Action!]!
+  nudges: [Nudge!]!
+  items: [Item!]!
+}
+
+input NudgeInput {
+  id: String!
+  sequenceNumber: Int!
+  visibility: Visibility!
+  status: Status!
+  title: String!
+  text: String!
+  actions: [ActionInput!]!
+  users: [String!]!
+  groups: [String]
+  image: ImageInput
+  notificationChannels: [Channel]
+}
+
+type Nudge {
+  id: String!
+  sequenceNumber: Int!
+  visibility: Visibility!
+  status: Status!
+  title: String!
+  text: String!
+  actions: [Action!]!
+  groups: [String]
+  users: [String]
+  image: Image
+  notificationChannels: [Channel]
+}
+
+input ItemInput {
+  id: String!
+  sequenceNumber: Int!
+  expiry: Time!
+  persistent: Boolean!
+  status: Status!
+  visibility: Visibility!
+  icon: ImageInput!
+  author: String!
+  tagline: String!
+  label: String!
+  timestamp: Time!
+  summary: String!
+  text: String!
+  images: [ImageInput]
+  videos: [VideoInput]
+  actions: [ActionInput]
+  conversations: [MessageInput]
+  users: [String!]!
+  groups: [String]
+  notificationChannels: [Channel]
+}
+
+type Item {
+  id: String!
+  sequenceNumber: Int!
+  expiry: Time!
+  persistent: Boolean!
+  status: Status!
+  visibility: Visibility!
+  icon: Image!
+  author: String!
+  tagline: String!
+  label: String!
+  timestamp: Time!
+  summary: String!
+  text: String!
+  images: [Image]
+  videos: [Video]
+  actions: [Action]
+  conversations: [Message]
+  users: [String]
+  groups: [String]
+  notificationChannels: [Channel]
+}
+
+input ActionInput {
+  id: String!
+  sequenceNumber: Int!
+  name: String!
+  actionType: ActionType!
+  handling: Handling!
+  event: EventInput!
+}
+
+type Action {
+  id: String!
+  sequenceNumber: Int!
+  name: String!
+  actionType: ActionType!
+  handling: Handling!
+  event: Event!
+}
+
+type Event {
+  id: String!
+  name: String!
+  context: Context
+  payload: Payload
+}
+
+input EventInput {
+  name: String!
+  context: ContextInput!
+  payload: PayloadInput!
+}
+
+type Context {
+  userID: String!
+  flavour: Flavour!
+  organizationID: String!
+  locationID: String!
+  timestamp: Time!
+}
+
+input ContextInput {
+  userID: String!
+  organizationID: String!
+  locationID: String!
+  timestamp: Time!
+}
+
+type Payload {
+  data: Map!
+}
+
+input PayloadInput {
+  data: Map!
+}
+
+type Image {
+  id: String!
+  base64: String!
+}
+
+input ImageInput {
+  base64: String!
+}
+
+type Message {
+  id: String!
+  sequenceNumber: Int!
+  text: String!
+  replyTo: String
+  postedByUID: String!
+  postedByName: String!
+}
+
+input MessageInput {
+  text: String!
+  replyTo: String
+  postedByUID: String!
+  postedByName: String!
+}
+
+type Video {
+  id: String!
+  url: String!
+}
+
+input VideoInput {
+  url: String!
+}
+
+type Document {
+  id: String!
+  base64: String!
+}
+
+input DocumentInput {
+  base64: String!
+}
+
+type FilterParams {
+  labels: [String]
+}
+
+input FilterParamsInput {
+  labels: [String]
+}
 
 type Query {
-  getLibraryContent: [GhostCMSPost!]
-  getFaqsContent: [GhostCMSPost!]
-  getFeedContent: [GhostCMSPost]
+  getFeed(
+    flavour: Flavour!
+    persistent: BooleanFilter!
+    status: Status
+    visibility: Visibility
+    expired: BooleanFilter
+    filterParams: FilterParamsInput
+  ): Feed!
+}
+
+type Mutation {
+  resolveFeedItem(flavour: Flavour!, itemID: String!): Item!
+  unresolveFeedItem(flavour: Flavour!, itemID: String!): Item!
+  pinFeedItem(flavour: Flavour!, itemID: String!): Item!
+  unpinFeedItem(flavour: Flavour!, itemID: String!): Item!
+  hideFeedItem(flavour: Flavour!, itemID: String!): Item!
+  showFeedItem(flavour: Flavour!, itemID: String!): Item!
+  hideNudge(flavour: Flavour!, nudgeID: String!): Nudge!
+  showNudge(flavour: Flavour!, nudgeID: String!): Nudge!
+  postMessage(
+    flavour: Flavour!
+    itemID: String!
+    message: MessageInput!
+  ): Message!
+  deleteMessage(
+    flavour: Flavour!
+    itemID: String!
+    messageID: String!
+  ): Boolean!
+  processEvent(flavour: Flavour!, event: EventInput!): Boolean!
 }

@@ -1,0 +1,17 @@
+{
+    "$id": "https://schema.healthcloud.co.ke/channels.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Be.Well Notification Channels",
+    "definitions": {
+        "channel": {
+            "type": "string",
+            "enum": [
+                "FCM",
+                "EMAIL",
+                "SMS",
+                "WHATSAPP"
+            ]
+        }
+    },
+    "$ref": "#/definitions/channel"
+}
