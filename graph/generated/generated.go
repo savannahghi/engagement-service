@@ -120,7 +120,7 @@ type ComplexityRoot struct {
 		Visibility           func(childComplexity int) int
 	}
 
-	Message struct {
+	Msg struct {
 		ID             func(childComplexity int) int
 		PostedByName   func(childComplexity int) int
 		PostedByUID    func(childComplexity int) int
@@ -539,47 +539,47 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Item.Visibility(childComplexity), true
 
-	case "Message.id":
-		if e.complexity.Message.ID == nil {
+	case "Msg.id":
+		if e.complexity.Msg.ID == nil {
 			break
 		}
 
-		return e.complexity.Message.ID(childComplexity), true
+		return e.complexity.Msg.ID(childComplexity), true
 
-	case "Message.postedByName":
-		if e.complexity.Message.PostedByName == nil {
+	case "Msg.postedByName":
+		if e.complexity.Msg.PostedByName == nil {
 			break
 		}
 
-		return e.complexity.Message.PostedByName(childComplexity), true
+		return e.complexity.Msg.PostedByName(childComplexity), true
 
-	case "Message.postedByUID":
-		if e.complexity.Message.PostedByUID == nil {
+	case "Msg.postedByUID":
+		if e.complexity.Msg.PostedByUID == nil {
 			break
 		}
 
-		return e.complexity.Message.PostedByUID(childComplexity), true
+		return e.complexity.Msg.PostedByUID(childComplexity), true
 
-	case "Message.replyTo":
-		if e.complexity.Message.ReplyTo == nil {
+	case "Msg.replyTo":
+		if e.complexity.Msg.ReplyTo == nil {
 			break
 		}
 
-		return e.complexity.Message.ReplyTo(childComplexity), true
+		return e.complexity.Msg.ReplyTo(childComplexity), true
 
-	case "Message.sequenceNumber":
-		if e.complexity.Message.SequenceNumber == nil {
+	case "Msg.sequenceNumber":
+		if e.complexity.Msg.SequenceNumber == nil {
 			break
 		}
 
-		return e.complexity.Message.SequenceNumber(childComplexity), true
+		return e.complexity.Msg.SequenceNumber(childComplexity), true
 
-	case "Message.text":
-		if e.complexity.Message.Text == nil {
+	case "Msg.text":
+		if e.complexity.Msg.Text == nil {
 			break
 		}
 
-		return e.complexity.Message.Text(childComplexity), true
+		return e.complexity.Msg.Text(childComplexity), true
 
 	case "Mutation.deleteMessage":
 		if e.complexity.Mutation.DeleteMessage == nil {
@@ -1018,7 +1018,7 @@ input ItemInput {
   images: [ImageInput]
   videos: [VideoInput]
   actions: [ActionInput]
-  conversations: [MessageInput]
+  conversations: [MsgInput]
   users: [String!]!
   groups: [String]
   notificationChannels: [Channel]
@@ -1041,7 +1041,7 @@ type Item {
   images: [Image]
   videos: [Video]
   actions: [Action]
-  conversations: [Message]
+  conversations: [Msg]
   users: [String]
   groups: [String]
   notificationChannels: [Channel]
@@ -1110,7 +1110,7 @@ input ImageInput {
   base64: String!
 }
 
-type Message {
+type Msg {
   id: String!
   sequenceNumber: Int!
   text: String!
@@ -1119,7 +1119,7 @@ type Message {
   postedByName: String!
 }
 
-input MessageInput {
+input MsgInput {
   text: String!
   replyTo: String
   postedByUID: String!
@@ -1175,8 +1175,8 @@ type Mutation {
   postMessage(
     flavour: Flavour!
     itemID: String!
-    message: MessageInput!
-  ): Message!
+    message: MsgInput!
+  ): Msg!
   deleteMessage(
     flavour: Flavour!
     itemID: String!
@@ -1374,7 +1374,7 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 	var arg2 feed.Message
 	if tmp, ok := rawArgs["message"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
-		arg2, err = ec.unmarshalNMessageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, tmp)
+		arg2, err = ec.unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3143,7 +3143,7 @@ func (ec *executionContext) _Item_conversations(ctx context.Context, field graph
 	}
 	res := resTmp.([]feed.Message)
 	fc.Result = res
-	return ec.marshalOMessage2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, field.Selections, res)
+	return ec.marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Item_users(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
@@ -3242,7 +3242,7 @@ func (ec *executionContext) _Item_notificationChannels(ctx context.Context, fiel
 	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐChannel(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_id(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3250,7 +3250,7 @@ func (ec *executionContext) _Message_id(ctx context.Context, field graphql.Colle
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Message",
+		Object:     "Msg",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -3277,7 +3277,7 @@ func (ec *executionContext) _Message_id(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3285,7 +3285,7 @@ func (ec *executionContext) _Message_sequenceNumber(ctx context.Context, field g
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Message",
+		Object:     "Msg",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -3312,7 +3312,7 @@ func (ec *executionContext) _Message_sequenceNumber(ctx context.Context, field g
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_text(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_text(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3320,7 +3320,7 @@ func (ec *executionContext) _Message_text(ctx context.Context, field graphql.Col
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Message",
+		Object:     "Msg",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -3347,7 +3347,7 @@ func (ec *executionContext) _Message_text(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_replyTo(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_replyTo(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3355,7 +3355,7 @@ func (ec *executionContext) _Message_replyTo(ctx context.Context, field graphql.
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Message",
+		Object:     "Msg",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -3379,7 +3379,7 @@ func (ec *executionContext) _Message_replyTo(ctx context.Context, field graphql.
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_postedByUID(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_postedByUID(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3387,7 +3387,7 @@ func (ec *executionContext) _Message_postedByUID(ctx context.Context, field grap
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Message",
+		Object:     "Msg",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -3414,7 +3414,7 @@ func (ec *executionContext) _Message_postedByUID(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Message_postedByName(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3422,7 +3422,7 @@ func (ec *executionContext) _Message_postedByName(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "Message",
+		Object:     "Msg",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -3824,7 +3824,7 @@ func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field gra
 	}
 	res := resTmp.(*feed.Message)
 	fc.Result = res
-	return ec.marshalNMessage2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6036,7 +6036,7 @@ func (ec *executionContext) unmarshalInputItemInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conversations"))
-			it.Conversations, err = ec.unmarshalOMessageInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, v)
+			it.Conversations, err = ec.unmarshalOMsgInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6070,7 +6070,7 @@ func (ec *executionContext) unmarshalInputItemInput(ctx context.Context, obj int
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputMessageInput(ctx context.Context, obj interface{}) (feed.Message, error) {
+func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj interface{}) (feed.Message, error) {
 	var it feed.Message
 	var asMap = obj.(map[string]interface{})
 
@@ -6689,41 +6689,41 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var messageImplementors = []string{"Message"}
+var msgImplementors = []string{"Msg"}
 
-func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, obj *feed.Message) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, messageImplementors)
+func (ec *executionContext) _Msg(ctx context.Context, sel ast.SelectionSet, obj *feed.Message) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, msgImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Message")
+			out.Values[i] = graphql.MarshalString("Msg")
 		case "id":
-			out.Values[i] = ec._Message_id(ctx, field, obj)
+			out.Values[i] = ec._Msg_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "sequenceNumber":
-			out.Values[i] = ec._Message_sequenceNumber(ctx, field, obj)
+			out.Values[i] = ec._Msg_sequenceNumber(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "text":
-			out.Values[i] = ec._Message_text(ctx, field, obj)
+			out.Values[i] = ec._Msg_text(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "replyTo":
-			out.Values[i] = ec._Message_replyTo(ctx, field, obj)
+			out.Values[i] = ec._Msg_replyTo(ctx, field, obj)
 		case "postedByUID":
-			out.Values[i] = ec._Message_postedByUID(ctx, field, obj)
+			out.Values[i] = ec._Msg_postedByUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "postedByName":
-			out.Values[i] = ec._Message_postedByName(ctx, field, obj)
+			out.Values[i] = ec._Msg_postedByName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -7530,22 +7530,22 @@ func (ec *executionContext) marshalNMap2map(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNMessage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v feed.Message) graphql.Marshaler {
-	return ec._Message(ctx, sel, &v)
+func (ec *executionContext) marshalNMsg2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v feed.Message) graphql.Marshaler {
+	return ec._Msg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMessage2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v *feed.Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v *feed.Message) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._Message(ctx, sel, v)
+	return ec._Msg(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNMessageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) (feed.Message, error) {
-	res, err := ec.unmarshalInputMessageInput(ctx, v)
+func (ec *executionContext) unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) (feed.Message, error) {
+	res, err := ec.unmarshalInputMsgInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -8293,11 +8293,11 @@ func (ec *executionContext) unmarshalOImageInput2ᚕgitlabᚗslade360emrᚗcom�
 	return res, nil
 }
 
-func (ec *executionContext) marshalOMessage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v feed.Message) graphql.Marshaler {
-	return ec._Message(ctx, sel, &v)
+func (ec *executionContext) marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v feed.Message) graphql.Marshaler {
+	return ec._Msg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOMessage2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v []feed.Message) graphql.Marshaler {
+func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v []feed.Message) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -8324,7 +8324,7 @@ func (ec *executionContext) marshalOMessage2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOMessage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, sel, v[i])
+			ret[i] = ec.marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -8337,12 +8337,12 @@ func (ec *executionContext) marshalOMessage2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOMessageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) (feed.Message, error) {
-	res, err := ec.unmarshalInputMessageInput(ctx, v)
+func (ec *executionContext) unmarshalOMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) (feed.Message, error) {
+	res, err := ec.unmarshalInputMsgInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOMessageInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) ([]feed.Message, error) {
+func (ec *executionContext) unmarshalOMsgInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) ([]feed.Message, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -8358,7 +8358,7 @@ func (ec *executionContext) unmarshalOMessageInput2ᚕgitlabᚗslade360emrᚗcom
 	res := make([]feed.Message, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOMessageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, vSlice[i])
+		res[i], err = ec.unmarshalOMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}

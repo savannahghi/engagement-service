@@ -57,7 +57,10 @@ models:
   VideoInput:
     model:
       - gitlab.slade360emr.com/go/feed/graph/feed.Video
-  MessageInput:
+  MsgInput:
+    model:
+      - gitlab.slade360emr.com/go/feed/graph/feed.Message
+  Msg:
     model:
       - gitlab.slade360emr.com/go/feed/graph/feed.Message
   ImageInput:

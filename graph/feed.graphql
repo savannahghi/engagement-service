@@ -103,7 +103,7 @@ input ItemInput {
   images: [ImageInput]
   videos: [VideoInput]
   actions: [ActionInput]
-  conversations: [MessageInput]
+  conversations: [MsgInput]
   users: [String!]!
   groups: [String]
   notificationChannels: [Channel]
@@ -126,7 +126,7 @@ type Item {
   images: [Image]
   videos: [Video]
   actions: [Action]
-  conversations: [Message]
+  conversations: [Msg]
   users: [String]
   groups: [String]
   notificationChannels: [Channel]
@@ -195,7 +195,7 @@ input ImageInput {
   base64: String!
 }
 
-type Message {
+type Msg {
   id: String!
   sequenceNumber: Int!
   text: String!
@@ -204,7 +204,7 @@ type Message {
   postedByName: String!
 }
 
-input MessageInput {
+input MsgInput {
   text: String!
   replyTo: String
   postedByUID: String!
@@ -260,8 +260,8 @@ type Mutation {
   postMessage(
     flavour: Flavour!
     itemID: String!
-    message: MessageInput!
-  ): Message!
+    message: MsgInput!
+  ): Msg!
   deleteMessage(
     flavour: Flavour!
     itemID: String!

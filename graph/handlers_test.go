@@ -442,7 +442,7 @@ func TestGraphQLPostMessage(t *testing.T) {
 	mutation PostMessage(
 		$flavour: Flavour!, 
 		$itemID: String!,
-		$message: MessageInput!
+		$message: MsgInput!
 	  ) {
 		postMessage(flavour: $flavour, itemID: $itemID, message: $message) {
 		  id
