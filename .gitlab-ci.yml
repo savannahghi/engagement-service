@@ -128,7 +128,7 @@ deploy_develop_to_testing:
     - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-testing:latest
     - google-cloud-sdk/bin/gcloud auth configure-docker
     - docker -- push eu.gcr.io/bewell-app/feed-testing:latest
-    - google-cloud-sdk/bin/gcloud run deploy feed-testing --image eu.gcr.io/bewell-app/feed-testing:latest --region europe-west1 --platform managed --allow-unauthenticated --update-env-vars "GOOGLE_CLOUD_PROJECT=$GCLOUD_PRODUCTION_SERVICE_ACCOUNT,SCHEMA_HOST=$TESTING_SCHEMA_HOST,ENVIRONMENT=$TESTING_ENVIRONMENT,JWT_KEY=$PROD_JWT_KEY,SENTRY_DSN=$PROD_SENTRY_DSN,ROOT_COLLECTION_SUFFIX=$TESTING_ROOT_COLLECTION_SUFFIX"
+    - google-cloud-sdk/bin/gcloud run deploy feed-testing --image eu.gcr.io/bewell-app/feed-testing:latest --region europe-west1 --platform managed --allow-unauthenticated --update-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,SCHEMA_HOST=$TESTING_SCHEMA_HOST,ENVIRONMENT=$TESTING_ENVIRONMENT,JWT_KEY=$PROD_JWT_KEY,SENTRY_DSN=$PROD_SENTRY_DSN,ROOT_COLLECTION_SUFFIX=$TESTING_ROOT_COLLECTION_SUFFIX"
     - google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker feed-testing --quiet
   tags:
     - healthcloud-multi
