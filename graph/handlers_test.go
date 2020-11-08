@@ -2031,7 +2031,7 @@ query GetFeed(
 		notificationChannels
 		}
 	}
-	}	  
+}	  
 	 `
 
 	gql["variables"] = map[string]interface{}{
@@ -5331,6 +5331,7 @@ func getBearerTokenHeader(t *testing.T) string {
 
 	return fmt.Sprintf("Bearer %s", idTokens.IDToken)
 }
+
 func getInterserviceClient(t *testing.T, rootDomain string) *base.InterServiceClient {
 	service := base.ISCService{
 		Name:       "feed",
