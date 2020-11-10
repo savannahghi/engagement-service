@@ -179,7 +179,7 @@ input ContextInput {
 }
 
 type Payload {
-  data: Map!
+  data: Map
 }
 
 input PayloadInput {

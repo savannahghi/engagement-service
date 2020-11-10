@@ -1094,7 +1094,7 @@ input ContextInput {
 }
 
 type Payload {
-  data: Map!
+  data: Map
 }
 
 input PayloadInput {
@@ -4309,14 +4309,11 @@ func (ec *executionContext) _Payload_data(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(map[string]interface{})
 	fc.Result = res
-	return ec.marshalNMap2map(ctx, field.Selections, res)
+	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6897,9 +6894,6 @@ func (ec *executionContext) _Payload(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = graphql.MarshalString("Payload")
 		case "data":
 			out.Values[i] = ec._Payload_data(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8291,6 +8285,21 @@ func (ec *executionContext) unmarshalOImageInput2ᚕgitlabᚗslade360emrᚗcom�
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalMap(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalMap(v)
 }
 
 func (ec *executionContext) marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v feed.Message) graphql.Marshaler {

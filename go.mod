@@ -3,12 +3,13 @@ module gitlab.slade360emr.com/go/feed
 go 1.15
 
 require (
-	cloud.google.com/go v0.71.0 // indirect
 	cloud.google.com/go/firestore v1.3.0
+	cloud.google.com/go/logging v1.1.2 // indirect
 	cloud.google.com/go/pubsub v1.8.2
 	github.com/99designs/gqlgen v0.13.0
-	github.com/aws/aws-sdk-go v1.35.23 // indirect
+	github.com/aws/aws-sdk-go v1.35.24 // indirect
 	github.com/gobuffalo/here v0.6.2 // indirect
+	github.com/google/pprof v0.0.0-20201109224723-20978b51388d // indirect
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
@@ -22,10 +23,11 @@ require (
 	github.com/vektah/gqlparser/v2 v2.1.0
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	gitlab.slade360emr.com/go/base v0.0.53
-	golang.org/x/sys v0.0.0-20201107080550-4d91cf3a1aaf // indirect
-	golang.org/x/tools v0.0.0-20201105220310-78b158585360 // indirect
+	gitlab.slade360emr.com/go/base v0.0.54
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
+	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58 // indirect
+	golang.org/x/sys v0.0.0-20201109165425-215b40eba54c // indirect
+	golang.org/x/tools v0.0.0-20201110030525-169ad6d6ecb2 // indirect
 	google.golang.org/api v0.35.0
-	google.golang.org/genproto v0.0.0-20201106154455-f9bfe239b0ba // indirect
-	google.golang.org/grpc v1.33.2 // indirect
+	google.golang.org/genproto v0.0.0-20201109203340-2640f1f9cdfb // indirect
 )

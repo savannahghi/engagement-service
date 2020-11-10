@@ -5,6 +5,10 @@
 
 A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app.
 
+## Interservice API
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/d023a368982c38ed7c66)
+
 ## JSON Schema Files
 This project uses JSON Schema to validate inputs and outputs.
 
