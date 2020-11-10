@@ -11,6 +11,14 @@ import (
 	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
+func (r *entityResolver) FindActionByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Action, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *entityResolver) FindEventByID(ctx context.Context, id string) (*feed.Event, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *entityResolver) FindFeedByUIDAndFlavour(ctx context.Context, uid string, flavour feed.Flavour) (*feed.Feed, error) {
 	r.checkPreconditions()
 
@@ -34,6 +42,14 @@ func (r *entityResolver) FindFeedByUIDAndFlavour(ctx context.Context, uid string
 	}
 
 	return feed, nil
+}
+
+func (r *entityResolver) FindItemByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Item, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *entityResolver) FindNudgeByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Nudge, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Entity returns generated.EntityResolver implementation.

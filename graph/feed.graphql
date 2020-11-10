@@ -72,7 +72,7 @@ input NudgeInput {
   notificationChannels: [Channel]
 }
 
-type Nudge {
+type Nudge @key(fields: "id sequenceNumber") {
   id: String!
   sequenceNumber: Int!
   visibility: Visibility!
@@ -109,7 +109,7 @@ input ItemInput {
   notificationChannels: [Channel]
 }
 
-type Item {
+type Item @key(fields: "id sequenceNumber") {
   id: String!
   sequenceNumber: Int!
   expiry: Time!
@@ -141,7 +141,7 @@ input ActionInput {
   event: EventInput!
 }
 
-type Action {
+type Action @key(fields: "id sequenceNumber") {
   id: String!
   sequenceNumber: Int!
   name: String!
@@ -150,7 +150,7 @@ type Action {
   event: Event!
 }
 
-type Event {
+type Event @key(fields: "id")  {
   id: String!
   name: String!
   context: Context

@@ -39,6 +39,38 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 		}
 		switch typeName {
 
+		case "Action":
+			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
+			}
+			id1, err := ec.unmarshalNInt2int(ctx, rep["sequenceNumber"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "sequenceNumber"))
+			}
+
+			entity, err := ec.resolvers.Entity().FindActionByIDAndSequenceNumber(ctx,
+				id0, id1)
+			if err != nil {
+				return nil, err
+			}
+
+			list = append(list, entity)
+
+		case "Event":
+			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
+			}
+
+			entity, err := ec.resolvers.Entity().FindEventByID(ctx,
+				id0)
+			if err != nil {
+				return nil, err
+			}
+
+			list = append(list, entity)
+
 		case "Feed":
 			id0, err := ec.unmarshalNString2string(ctx, rep["uid"])
 			if err != nil {
@@ -50,6 +82,42 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 			}
 
 			entity, err := ec.resolvers.Entity().FindFeedByUIDAndFlavour(ctx,
+				id0, id1)
+			if err != nil {
+				return nil, err
+			}
+
+			list = append(list, entity)
+
+		case "Item":
+			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
+			}
+			id1, err := ec.unmarshalNInt2int(ctx, rep["sequenceNumber"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "sequenceNumber"))
+			}
+
+			entity, err := ec.resolvers.Entity().FindItemByIDAndSequenceNumber(ctx,
+				id0, id1)
+			if err != nil {
+				return nil, err
+			}
+
+			list = append(list, entity)
+
+		case "Nudge":
+			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
+			}
+			id1, err := ec.unmarshalNInt2int(ctx, rep["sequenceNumber"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "sequenceNumber"))
+			}
+
+			entity, err := ec.resolvers.Entity().FindNudgeByIDAndSequenceNumber(ctx,
 				id0, id1)
 			if err != nil {
 				return nil, err

@@ -1087,6 +1087,9 @@ func (ac *Action) ValidateAndMarshal() ([]byte, error) {
 	return validateAndMarshal(actionSchemaFile, ac)
 }
 
+// IsEntity marks this as an Apollo federation GraphQL entity
+func (ac Action) IsEntity() {}
+
 // Event An event indicating that this action was triggered
 type Event struct {
 	// A unique identifier for each action
@@ -1116,6 +1119,9 @@ func (ev *Event) ValidateAndUnmarshal(b []byte) error {
 func (ev *Event) ValidateAndMarshal() ([]byte, error) {
 	return validateAndMarshal(eventSchemaFile, ev)
 }
+
+// IsEntity marks this as an Apollo federation GraphQL entity
+func (ev Event) IsEntity() {}
 
 // Context identifies when/where/why/who/what/how an event occured.
 type Context struct {
@@ -1222,6 +1228,9 @@ func (nu *Nudge) ValidateAndMarshal() ([]byte, error) {
 	return validateAndMarshal(nudgeSchemaFile, nu)
 }
 
+// IsEntity marks this as an Apollo federation GraphQL entity
+func (nu Nudge) IsEntity() {}
+
 // Item is a single item in a feed or in an inbox
 type Item struct {
 	// A unique identifier for each feed item
@@ -1306,6 +1315,9 @@ func (it *Item) ValidateAndUnmarshal(b []byte) error {
 func (it *Item) ValidateAndMarshal() ([]byte, error) {
 	return validateAndMarshal(itemSchemaFile, it)
 }
+
+// IsEntity marks this as an Apollo federation GraphQL entity
+func (it Item) IsEntity() {}
 
 // Image A PNG image, encoded in Base 64
 type Image struct {
