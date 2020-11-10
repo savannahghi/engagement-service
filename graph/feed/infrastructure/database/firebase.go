@@ -535,6 +535,9 @@ func (fr Repository) GetMessages(
 		}
 		if !base.StringSliceContains(seenMessageIDs, msg.ID) {
 			messages = append(messages, *msg)
+			if msg.Timestamp.IsZero() {
+				msg.Timestamp = time.Now() // backwards compat after schema change
+			}
 			seenMessageIDs = append(seenMessageIDs, msg.ID)
 		}
 	}
@@ -561,6 +564,9 @@ func (fr Repository) GetMessage(
 	message, ok := el.(*feed.Message)
 	if !ok {
 		return nil, fmt.Errorf("expected a message, got %T", el)
+	}
+	if message.Timestamp.IsZero() {
+		message.Timestamp = time.Now() // backwards compat after schema change
 	}
 	return message, nil
 }
@@ -934,6 +940,9 @@ func (fr Repository) getMessages(
 				"unable to unmarshal message from firebase doc: %w", err)
 		}
 		if !base.StringSliceContains(seenMessageIDs, message.ID) {
+			if message.Timestamp.IsZero() {
+				message.Timestamp = time.Now() // backfill after schema change
+			}
 			messages = append(messages, *message)
 			seenMessageIDs = append(seenMessageIDs, message.ID)
 		}
