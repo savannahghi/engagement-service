@@ -6,21 +6,26 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
-func (r *entityResolver) FindActionByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Action, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *entityResolver) FindEventByID(ctx context.Context, id string) (*feed.Event, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *entityResolver) FindFeedByUIDAndFlavour(ctx context.Context, uid string, flavour feed.Flavour) (*feed.Feed, error) {
+func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*feed.Feed, error) {
 	r.checkPreconditions()
+
+	components := strings.Split(id, "|")
+	if len(components) != 2 {
+		return nil, fmt.Errorf(
+			"expected `id` to be a string with exactly two parts separated by a | i.e the uid and flavour as `uid|flavour`")
+	}
+
+	uid := components[0]
+	flavour := feed.Flavour(components[1])
+	if !flavour.IsValid() {
+		return nil, fmt.Errorf("%s is not a valid flavour", flavour)
+	}
 
 	agg, err := feed.NewCollection(r.repository, r.notificationService)
 	if err != nil {
@@ -42,14 +47,6 @@ func (r *entityResolver) FindFeedByUIDAndFlavour(ctx context.Context, uid string
 	}
 
 	return feed, nil
-}
-
-func (r *entityResolver) FindItemByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Item, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *entityResolver) FindNudgeByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Nudge, error) {
-	panic(fmt.Errorf("not implemented"))
 }
 
 // Entity returns generated.EntityResolver implementation.

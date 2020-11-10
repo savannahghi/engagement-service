@@ -3,6 +3,7 @@ package messaging_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -67,6 +68,7 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 					ReplyTo:      uuid.New().String(),
 					PostedByUID:  uuid.New().String(),
 					PostedByName: uuid.New().String(),
+					Timestamp:    time.Now(),
 				},
 			},
 			wantErr: false,
@@ -77,9 +79,10 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 			args: args{
 				channel: "message.post",
 				el: &feed.Message{
-					ID:      uuid.New().String(),
-					Text:    uuid.New().String(),
-					ReplyTo: uuid.New().String(),
+					ID:        uuid.New().String(),
+					Text:      uuid.New().String(),
+					ReplyTo:   uuid.New().String(),
+					Timestamp: time.Now(),
 				},
 			},
 			wantErr: true,

@@ -112,20 +112,22 @@ type Status string
 
 // known item and nudge statuses
 const (
-	StatusPending Status = "PENDING"
-	StatusDone    Status = "DONE"
+	StatusPending    Status = "PENDING"
+	StatusInProgress Status = "IN_PROGRESS"
+	StatusDone       Status = "DONE"
 )
 
 // AllStatus is the set of known statuses
 var AllStatus = []Status{
 	StatusPending,
+	StatusInProgress,
 	StatusDone,
 }
 
 // IsValid returns true if a status is valid
 func (e Status) IsValid() bool {
 	switch e {
-	case StatusPending, StatusDone:
+	case StatusPending, StatusInProgress, StatusDone:
 		return true
 	}
 	return false

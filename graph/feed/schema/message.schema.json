@@ -33,6 +33,12 @@
                 "text": {
                     "type": "string",
                     "description": "Rich text that can include any unicode e.g emoji"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When this message was created. RFC3339.",
+                    "$comment": "The feed viewer should use this to calculate a HUMANIZED age"
                 }
             },
             "additionalProperties": false,
@@ -40,7 +46,8 @@
                 "id",
                 "text",
                 "postedByUID",
-                "postedByName"
+                "postedByName",
+                "timestamp"
             ]
         }
     },

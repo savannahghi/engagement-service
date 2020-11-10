@@ -462,6 +462,7 @@ func TestGraphQLPostMessage(t *testing.T) {
 			"replyTo":      uuid.New().String(),
 			"postedByUID":  uuid.New().String(),
 			"postedByName": uuid.New().String(),
+			"timestamp":    time.Now().Format(time.RFC3339),
 		},
 	}
 	validQueryReader, err := mapToJSONReader(gql)
@@ -5633,6 +5634,7 @@ func getTestItem() feed.Item {
 				ReplyTo:      "msg-1",
 				PostedByName: uuid.New().String(),
 				PostedByUID:  uuid.New().String(),
+				Timestamp:    time.Now(),
 			},
 		},
 		Documents: []feed.Document{
@@ -5733,6 +5735,7 @@ func getTestMessage() feed.Message {
 		ReplyTo:        uuid.New().String(),
 		PostedByUID:    uuid.New().String(),
 		PostedByName:   uuid.New().String(),
+		Timestamp:      time.Now(),
 	}
 }
 

@@ -70,11 +70,7 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindActionByIDAndSequenceNumber func(childComplexity int, id string, sequenceNumber int) int
-		FindEventByID                   func(childComplexity int, id string) int
-		FindFeedByUIDAndFlavour         func(childComplexity int, uid string, flavour feed.Flavour) int
-		FindItemByIDAndSequenceNumber   func(childComplexity int, id string, sequenceNumber int) int
-		FindNudgeByIDAndSequenceNumber  func(childComplexity int, id string, sequenceNumber int) int
+		FindFeedByID func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -87,6 +83,7 @@ type ComplexityRoot struct {
 	Feed struct {
 		Actions func(childComplexity int) int
 		Flavour func(childComplexity int) int
+		ID      func(childComplexity int) int
 		Items   func(childComplexity int) int
 		Nudges  func(childComplexity int) int
 		UID     func(childComplexity int) int
@@ -131,6 +128,7 @@ type ComplexityRoot struct {
 		ReplyTo        func(childComplexity int) int
 		SequenceNumber func(childComplexity int) int
 		Text           func(childComplexity int) int
+		Timestamp      func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -182,11 +180,7 @@ type ComplexityRoot struct {
 }
 
 type EntityResolver interface {
-	FindActionByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Action, error)
-	FindEventByID(ctx context.Context, id string) (*feed.Event, error)
-	FindFeedByUIDAndFlavour(ctx context.Context, uid string, flavour feed.Flavour) (*feed.Feed, error)
-	FindItemByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Item, error)
-	FindNudgeByIDAndSequenceNumber(ctx context.Context, id string, sequenceNumber int) (*feed.Nudge, error)
+	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
 }
 type MutationResolver interface {
 	ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
@@ -311,65 +305,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Document.ID(childComplexity), true
 
-	case "Entity.findActionByIDAndSequenceNumber":
-		if e.complexity.Entity.FindActionByIDAndSequenceNumber == nil {
+	case "Entity.findFeedByID":
+		if e.complexity.Entity.FindFeedByID == nil {
 			break
 		}
 
-		args, err := ec.field_Entity_findActionByIDAndSequenceNumber_args(context.TODO(), rawArgs)
+		args, err := ec.field_Entity_findFeedByID_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Entity.FindActionByIDAndSequenceNumber(childComplexity, args["id"].(string), args["sequenceNumber"].(int)), true
-
-	case "Entity.findEventByID":
-		if e.complexity.Entity.FindEventByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findEventByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindEventByID(childComplexity, args["id"].(string)), true
-
-	case "Entity.findFeedByUIDAndFlavour":
-		if e.complexity.Entity.FindFeedByUIDAndFlavour == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findFeedByUIDAndFlavour_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindFeedByUIDAndFlavour(childComplexity, args["uid"].(string), args["flavour"].(feed.Flavour)), true
-
-	case "Entity.findItemByIDAndSequenceNumber":
-		if e.complexity.Entity.FindItemByIDAndSequenceNumber == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findItemByIDAndSequenceNumber_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindItemByIDAndSequenceNumber(childComplexity, args["id"].(string), args["sequenceNumber"].(int)), true
-
-	case "Entity.findNudgeByIDAndSequenceNumber":
-		if e.complexity.Entity.FindNudgeByIDAndSequenceNumber == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findNudgeByIDAndSequenceNumber_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindNudgeByIDAndSequenceNumber(childComplexity, args["id"].(string), args["sequenceNumber"].(int)), true
+		return e.complexity.Entity.FindFeedByID(childComplexity, args["id"].(string)), true
 
 	case "Event.context":
 		if e.complexity.Event.Context == nil {
@@ -412,6 +358,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Feed.Flavour(childComplexity), true
+
+	case "Feed.id":
+		if e.complexity.Feed.ID == nil {
+			break
+		}
+
+		return e.complexity.Feed.ID(childComplexity), true
 
 	case "Feed.items":
 		if e.complexity.Feed.Items == nil {
@@ -636,6 +589,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Msg.Text(childComplexity), true
+
+	case "Msg.timestamp":
+		if e.complexity.Msg.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.Msg.Timestamp(childComplexity), true
 
 	case "Mutation.deleteMessage":
 		if e.complexity.Mutation.DeleteMessage == nil {
@@ -992,6 +952,7 @@ enum Keys {
 # Status of an item or nudge
 enum Status {
   PENDING
+  IN_PROGRESS
   DONE
 }
 
@@ -1021,7 +982,8 @@ enum Channel {
 }
 
 # Feed is the top level access point for a user's feed.
-type Feed @key(fields: "uid flavour") {
+type Feed @key(fields: "id") {
+  id: String!
   uid: String!
   flavour: Flavour!
   actions: [Action!]!
@@ -1043,7 +1005,7 @@ input NudgeInput {
   notificationChannels: [Channel]
 }
 
-type Nudge @key(fields: "id sequenceNumber") {
+type Nudge {
   id: String!
   sequenceNumber: Int!
   visibility: Visibility!
@@ -1080,7 +1042,7 @@ input ItemInput {
   notificationChannels: [Channel]
 }
 
-type Item @key(fields: "id sequenceNumber") {
+type Item {
   id: String!
   sequenceNumber: Int!
   expiry: Time!
@@ -1112,7 +1074,7 @@ input ActionInput {
   event: EventInput!
 }
 
-type Action @key(fields: "id sequenceNumber") {
+type Action {
   id: String!
   sequenceNumber: Int!
   name: String!
@@ -1121,7 +1083,7 @@ type Action @key(fields: "id sequenceNumber") {
   event: Event!
 }
 
-type Event @key(fields: "id")  {
+type Event {
   id: String!
   name: String!
   context: Context
@@ -1173,6 +1135,7 @@ type Msg {
   replyTo: String
   postedByUID: String!
   postedByName: String!
+  timestamp: Time!
 }
 
 input MsgInput {
@@ -1180,6 +1143,7 @@ input MsgInput {
   replyTo: String
   postedByUID: String!
   postedByName: String!
+  timestamp: Time!
 }
 
 type Video {
@@ -1228,11 +1192,7 @@ extend type Mutation {
   showFeedItem(flavour: Flavour!, itemID: String!): Item!
   hideNudge(flavour: Flavour!, nudgeID: String!): Nudge!
   showNudge(flavour: Flavour!, nudgeID: String!): Nudge!
-  postMessage(
-    flavour: Flavour!
-    itemID: String!
-    message: MsgInput!
-  ): Msg!
+  postMessage(flavour: Flavour!, itemID: String!, message: MsgInput!): Msg!
   deleteMessage(
     flavour: Flavour!
     itemID: String!
@@ -1253,15 +1213,11 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Action | Event | Feed | Item | Nudge
+union _Entity = Feed
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
-		findActionByIDAndSequenceNumber(id: String!,sequenceNumber: Int!,): Action!
-	findEventByID(id: String!,): Event!
-	findFeedByUIDAndFlavour(uid: String!,flavour: Flavour!,): Feed!
-	findItemByIDAndSequenceNumber(id: String!,sequenceNumber: Int!,): Item!
-	findNudgeByIDAndSequenceNumber(id: String!,sequenceNumber: Int!,): Nudge!
+		findFeedByID(id: String!,): Feed!
 
 }
 
@@ -1281,7 +1237,7 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Entity_findActionByIDAndSequenceNumber_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1293,102 +1249,6 @@ func (ec *executionContext) field_Entity_findActionByIDAndSequenceNumber_args(ct
 		}
 	}
 	args["id"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["sequenceNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sequenceNumber"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["sequenceNumber"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findEventByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findFeedByUIDAndFlavour_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["uid"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("uid"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["uid"] = arg0
-	var arg1 feed.Flavour
-	if tmp, ok := rawArgs["flavour"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg1, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐFlavour(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["flavour"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findItemByIDAndSequenceNumber_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["sequenceNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sequenceNumber"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["sequenceNumber"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findNudgeByIDAndSequenceNumber_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 int
-	if tmp, ok := rawArgs["sequenceNumber"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sequenceNumber"))
-		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["sequenceNumber"] = arg1
 	return args, nil
 }
 
@@ -2257,7 +2117,7 @@ func (ec *executionContext) _Document_base64(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Entity_findActionByIDAndSequenceNumber(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2274,7 +2134,7 @@ func (ec *executionContext) _Entity_findActionByIDAndSequenceNumber(ctx context.
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findActionByIDAndSequenceNumber_args(ctx, rawArgs)
+	args, err := ec.field_Entity_findFeedByID_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -2282,91 +2142,7 @@ func (ec *executionContext) _Entity_findActionByIDAndSequenceNumber(ctx context.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindActionByIDAndSequenceNumber(rctx, args["id"].(string), args["sequenceNumber"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*feed.Action)
-	fc.Result = res
-	return ec.marshalNAction2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findEventByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findEventByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindEventByID(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*feed.Event)
-	fc.Result = res
-	return ec.marshalNEvent2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findFeedByUIDAndFlavour(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findFeedByUIDAndFlavour_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindFeedByUIDAndFlavour(rctx, args["uid"].(string), args["flavour"].(feed.Flavour))
+		return ec.resolvers.Entity().FindFeedByID(rctx, args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2381,90 +2157,6 @@ func (ec *executionContext) _Entity_findFeedByUIDAndFlavour(ctx context.Context,
 	res := resTmp.(*feed.Feed)
 	fc.Result = res
 	return ec.marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐFeed(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findItemByIDAndSequenceNumber(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findItemByIDAndSequenceNumber_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindItemByIDAndSequenceNumber(rctx, args["id"].(string), args["sequenceNumber"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*feed.Item)
-	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐItem(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findNudgeByIDAndSequenceNumber(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findNudgeByIDAndSequenceNumber_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindNudgeByIDAndSequenceNumber(rctx, args["id"].(string), args["sequenceNumber"].(int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*feed.Nudge)
-	fc.Result = res
-	return ec.marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐNudge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
@@ -2599,6 +2291,41 @@ func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.Co
 	res := resTmp.(feed.Payload)
 	fc.Result = res
 	return ec.marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Feed_id(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Feed",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_uid(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
@@ -3762,6 +3489,41 @@ func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Msg_timestamp(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Msg",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_resolveFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6420,6 +6182,14 @@ func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj inte
 			if err != nil {
 				return it, err
 			}
+		case "timestamp":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
+			it.Timestamp, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -6574,20 +6344,6 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case feed.Action:
-		return ec._Action(ctx, sel, &obj)
-	case *feed.Action:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Action(ctx, sel, obj)
-	case feed.Event:
-		return ec._Event(ctx, sel, &obj)
-	case *feed.Event:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Event(ctx, sel, obj)
 	case feed.Feed:
 		return ec._Feed(ctx, sel, &obj)
 	case *feed.Feed:
@@ -6595,20 +6351,6 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Feed(ctx, sel, obj)
-	case feed.Item:
-		return ec._Item(ctx, sel, &obj)
-	case *feed.Item:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Item(ctx, sel, obj)
-	case feed.Nudge:
-		return ec._Nudge(ctx, sel, &obj)
-	case *feed.Nudge:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Nudge(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -6618,7 +6360,7 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 
 // region    **************************** object.gotpl ****************************
 
-var actionImplementors = []string{"Action", "_Entity"}
+var actionImplementors = []string{"Action"}
 
 func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, obj *feed.Action) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, actionImplementors)
@@ -6764,7 +6506,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
-		case "findActionByIDAndSequenceNumber":
+		case "findFeedByID":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -6772,63 +6514,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Entity_findActionByIDAndSequenceNumber(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findEventByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findEventByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findFeedByUIDAndFlavour":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findFeedByUIDAndFlavour(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findItemByIDAndSequenceNumber":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findItemByIDAndSequenceNumber(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findNudgeByIDAndSequenceNumber":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findNudgeByIDAndSequenceNumber(ctx, field)
+				res = ec._Entity_findFeedByID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -6845,7 +6531,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 	return out
 }
 
-var eventImplementors = []string{"Event", "_Entity"}
+var eventImplementors = []string{"Event"}
 
 func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *feed.Event) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, eventImplementors)
@@ -6892,6 +6578,11 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Feed")
+		case "id":
+			out.Values[i] = ec._Feed_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "uid":
 			out.Values[i] = ec._Feed_uid(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6984,7 +6675,7 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
-var itemImplementors = []string{"Item", "_Entity"}
+var itemImplementors = []string{"Item"}
 
 func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj *feed.Item) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, itemImplementors)
@@ -7123,6 +6814,11 @@ func (ec *executionContext) _Msg(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "timestamp":
+			out.Values[i] = ec._Msg_timestamp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7215,7 +6911,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
-var nudgeImplementors = []string{"Nudge", "_Entity"}
+var nudgeImplementors = []string{"Nudge"}
 
 func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, obj *feed.Nudge) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, nudgeImplementors)
@@ -7718,16 +7414,6 @@ func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNAction2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx context.Context, sel ast.SelectionSet, v *feed.Action) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Action(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNActionInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx context.Context, v interface{}) (feed.Action, error) {
 	res, err := ec.unmarshalInputActionInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7796,16 +7482,6 @@ func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋ
 
 func (ec *executionContext) marshalNEvent2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx context.Context, sel ast.SelectionSet, v feed.Event) graphql.Marshaler {
 	return ec._Event(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNEvent2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx context.Context, sel ast.SelectionSet, v *feed.Event) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Event(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx context.Context, v interface{}) (feed.Event, error) {

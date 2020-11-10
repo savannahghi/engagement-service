@@ -134,6 +134,7 @@ func getTestItem() feed.Item {
 				ReplyTo:      "msg-1",
 				PostedByName: uuid.New().String(),
 				PostedByUID:  uuid.New().String(),
+				Timestamp:    time.Now(),
 			},
 		},
 		Documents: []feed.Document{
@@ -250,6 +251,7 @@ func TestMessage_ValidateAndUnmarshal(t *testing.T) {
 		Text:         "some message text",
 		PostedByName: uuid.New().String(),
 		PostedByUID:  uuid.New().String(),
+		Timestamp:    time.Now(),
 	}
 	validBytes, err := json.Marshal(validElement)
 	assert.Nil(t, err)
@@ -377,6 +379,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				ReplyTo:      "msg-1",
 				PostedByName: uuid.New().String(),
 				PostedByUID:  uuid.New().String(),
+				Timestamp:    time.Now(),
 			},
 		},
 		Users: []string{
@@ -865,6 +868,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						ReplyTo:      "msg-1",
 						PostedByName: uuid.New().String(),
 						PostedByUID:  uuid.New().String(),
+						Timestamp:    time.Now(),
 					},
 				},
 				Users: []string{
@@ -1138,6 +1142,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								ReplyTo:      "msg-1",
 								PostedByName: uuid.New().String(),
 								PostedByUID:  uuid.New().String(),
+								Timestamp:    time.Now(),
 							},
 						},
 						Users: []string{
@@ -1484,6 +1489,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						ReplyTo:      "msg-1",
 						PostedByName: uuid.New().String(),
 						PostedByUID:  uuid.New().String(),
+						Timestamp:    time.Now(),
 					},
 				},
 				Users: []string{
@@ -1586,6 +1592,7 @@ func TestMessage_ValidateAndMarshal(t *testing.T) {
 				ReplyTo:      tt.fields.ReplyTo,
 				PostedByName: tt.fields.PostedByName,
 				PostedByUID:  tt.fields.PostedByUID,
+				Timestamp:    time.Now(),
 			}
 			got, err := msg.ValidateAndMarshal()
 			if (err != nil) != tt.wantErr {
@@ -3653,6 +3660,7 @@ func getTestMessage() feed.Message {
 		ReplyTo:        uuid.New().String(),
 		PostedByUID:    uuid.New().String(),
 		PostedByName:   uuid.New().String(),
+		Timestamp:      time.Now(),
 	}
 }
 

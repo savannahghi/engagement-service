@@ -138,6 +138,9 @@ func (agg Collection) GetFeed(
 		return nil, fmt.Errorf("feed retrieval error: %w", err)
 	}
 
+	// set the ID (computed, not stored)
+	feed.ID = feed.getID()
+
 	// inject the repository and notification service into the returned feed
 	feed.repository = agg.repository
 	feed.notificationService = agg.notificationService
@@ -177,6 +180,9 @@ func (agg Collection) GetThinFeed(
 		Nudges:  []Nudge{},
 	}
 
+	// set the ID (computed, not stored)
+	feed.ID = feed.getID()
+
 	// inject the repository and notification service into the returned feed
 	feed.repository = agg.repository
 	feed.notificationService = agg.notificationService
@@ -204,6 +210,9 @@ type Feed struct {
 	repository          Repository
 	notificationService NotificationService
 
+	// a string composed by concatenating the UID, a "|" and a flavour
+	ID string `json:"id" firestore:"-"`
+
 	// user identifier - who does this feed belong to?
 	// this is also the unique identifier for a feed
 	UID string `json:"uid" firestore:"uid"`
@@ -221,6 +230,10 @@ type Feed struct {
 	Nudges []Nudge `json:"nudges" firestore:"nudges"`
 }
 
+func (fe Feed) getID() string {
+	return fmt.Sprintf("%s|%s", fe.UID, fe.Flavour.String())
+}
+
 func (fe Feed) checkPreconditions() error {
 	if fe.repository == nil {
 		return fmt.Errorf("feed has a nil repository")
@@ -236,6 +249,10 @@ func (fe Feed) checkPreconditions() error {
 
 	if !fe.Flavour.IsValid() {
 		return fmt.Errorf("feed does not have a valid flavour")
+	}
+
+	if fe.ID == "" {
+		fe.ID = fe.getID()
 	}
 
 	return nil
@@ -1362,6 +1379,9 @@ type Message struct {
 
 	// The UID of the user that posted the message
 	PostedByName string `json:"postedByName" firestore:"postedByName"`
+
+	// when this message was sent
+	Timestamp time.Time `json:"timestamp" firestore:"timestamp"`
 }
 
 // ValidateAndUnmarshal checks that the input data is valid as per the

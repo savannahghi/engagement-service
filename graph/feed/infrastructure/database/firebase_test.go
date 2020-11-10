@@ -49,6 +49,7 @@ func getTestMessage() feed.Message {
 		ReplyTo:        uuid.New().String(),
 		PostedByUID:    uuid.New().String(),
 		PostedByName:   uuid.New().String(),
+		Timestamp:      time.Now(),
 	}
 }
 

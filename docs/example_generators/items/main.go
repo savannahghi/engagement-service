@@ -106,6 +106,7 @@ func getTestItem() feed.Item {
 				ReplyTo:      "msg-1",
 				PostedByName: uuid.New().String(),
 				PostedByUID:  uuid.New().String(),
+				Timestamp:    time.Now(),
 			},
 		},
 		Documents: []feed.Document{

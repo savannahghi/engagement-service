@@ -5,6 +5,10 @@
   "description": "A feed is an endless stream of feed items, whose contents are described below",
   "type": "object",
   "properties": {
+    "id": {
+      "type": "string",
+      "$comment": "Not required - intentionally, for backwards compat"
+    },
     "uid": {
       "type": "string"
     },
