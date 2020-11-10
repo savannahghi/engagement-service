@@ -123,7 +123,7 @@ deploy_develop_to_testing:
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
-  resource_group: staging # control deploy concurrency
+  resource_group: testing # control deploy concurrency
   script:
     - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/feed-testing:latest
     - google-cloud-sdk/bin/gcloud auth configure-docker
