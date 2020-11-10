@@ -29,5 +29,5 @@ require (
 	golang.org/x/sys v0.0.0-20201109165425-215b40eba54c // indirect
 	golang.org/x/tools v0.0.0-20201110124207-079ba7bd75cd // indirect
 	google.golang.org/api v0.35.0
-	google.golang.org/genproto v0.0.0-20201109203340-2640f1f9cdfb // indirect
+	google.golang.org/genproto v0.0.0-20201110150050-8816d57aaa9a // indirect
 )
