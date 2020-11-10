@@ -1448,11 +1448,32 @@ func validateAgainstSchema(sch string, b []byte) error {
 		)
 	}
 	if !result.Valid() {
+		errMsgs := []string{}
+		for _, vErr := range result.Errors() {
+			errType := vErr.Type()
+			val := vErr.Value()
+			context := vErr.Context().String()
+			field := vErr.Field()
+			desc := vErr.Description()
+			descFormat := vErr.DescriptionFormat()
+			details := vErr.Details()
+			errMsg := fmt.Sprintf(
+				"errType: %s\nval: %s\ncontext: %s\nfield: %s\ndesc: %s\ndescFormat: %s\ndetails: %s\n",
+				errType,
+				val,
+				context,
+				field,
+				desc,
+				descFormat,
+				details,
+			)
+			errMsgs = append(errMsgs, errMsg)
+		}
 		return fmt.Errorf(
 			"the result of validating `%s` against %s is not valid: %#v",
 			string(b),
 			sch,
-			result,
+			errMsgs,
 		)
 	}
 	return nil
