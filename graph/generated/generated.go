@@ -1208,7 +1208,7 @@ input FilterParamsInput {
   labels: [String]
 }
 
-type Query {
+extend type Query {
   getFeed(
     flavour: Flavour!
     persistent: BooleanFilter!
@@ -1219,7 +1219,7 @@ type Query {
   ): Feed!
 }
 
-type Mutation {
+extend type Mutation {
   resolveFeedItem(flavour: Flavour!, itemID: String!): Item!
   unresolveFeedItem(flavour: Flavour!, itemID: String!): Item!
   pinFeedItem(flavour: Flavour!, itemID: String!): Item!
