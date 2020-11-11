@@ -377,6 +377,10 @@ func (fe Feed) PublishFeedItem(
 		return nil, fmt.Errorf("cano't publish nil feed item")
 	}
 
+	if item.SequenceNumber == 0 {
+		item.SequenceNumber = int(time.Now().Unix())
+	}
+
 	err := fe.ValidateElement(item)
 	if err != nil {
 		return nil, fmt.Errorf("invalid item: %w", err)
@@ -656,6 +660,10 @@ func (fe Feed) PublishNudge(
 		return nil, fmt.Errorf("can't publish nil nudge")
 	}
 
+	if nudge.SequenceNumber == 0 {
+		nudge.SequenceNumber = int(time.Now().Unix())
+	}
+
 	err := fe.ValidateElement(nudge)
 	if err != nil {
 		return nil, fmt.Errorf("invalid nudge: %w", err)
@@ -860,6 +868,10 @@ func (fe Feed) PublishAction(
 		return nil, fmt.Errorf("can't publish nil nudge")
 	}
 
+	if action.SequenceNumber == 0 {
+		action.SequenceNumber = int(time.Now().Unix())
+	}
+
 	err := fe.ValidateElement(action)
 	if err != nil {
 		return nil, fmt.Errorf("invalid action: %w", err)
@@ -929,7 +941,7 @@ func (fe Feed) PostMessage(
 	}
 
 	if message.SequenceNumber == 0 {
-		message.SequenceNumber = int(time.Now().UnixNano())
+		message.SequenceNumber = int(time.Now().Unix())
 	}
 
 	err := fe.ValidateElement(message)

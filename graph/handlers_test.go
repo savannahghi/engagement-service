@@ -5345,7 +5345,7 @@ func getInterserviceClient(t *testing.T, rootDomain string) *base.InterServiceCl
 }
 
 func randomPort() int {
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().Unix())
 	min := 32768
 	max := 60999
 	port := rand.Intn(max-min+1) + min
