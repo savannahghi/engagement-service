@@ -21,7 +21,7 @@ const (
 	base64PDFSample = "JVBERi0xLjUKJbXtrvsKNCAwIG9iago8PCAvTGVuZ3RoIDUgMCBSCiAgIC9GaWx0ZXIgL0ZsYXRlRGVjb2RlCj4+CnN0cmVhbQp4nDNUMABCXUMQpWdkopCcy1XIFcgFADCwBFQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCiAgIDI3CmVuZG9iagozIDAgb2JqCjw8Cj4+CmVuZG9iagoyIDAgb2JqCjw8IC9UeXBlIC9QYWdlICUgMQogICAvUGFyZW50IDEgMCBSCiAgIC9NZWRpYUJveCBbIDAgMCAwLjI0IDAuMjQgXQogICAvQ29udGVudHMgNCAwIFIKICAgL0dyb3VwIDw8CiAgICAgIC9UeXBlIC9Hcm91cAogICAgICAvUyAvVHJhbnNwYXJlbmN5CiAgICAgIC9JIHRydWUKICAgICAgL0NTIC9EZXZpY2VSR0IKICAgPj4KICAgL1Jlc291cmNlcyAzIDAgUgo+PgplbmRvYmoKMSAwIG9iago8PCAvVHlwZSAvUGFnZXMKICAgL0tpZHMgWyAyIDAgUiBdCiAgIC9Db3VudCAxCj4+CmVuZG9iago2IDAgb2JqCjw8IC9Qcm9kdWNlciAoY2Fpcm8gMS4xNi4wIChodHRwczovL2NhaXJvZ3JhcGhpY3Mub3JnKSkKICAgL0NyZWF0aW9uRGF0ZSAoRDoyMDIwMTAzMDA4MDkwOCswMycwMCkKPj4KZW5kb2JqCjcgMCBvYmoKPDwgL1R5cGUgL0NhdGFsb2cKICAgL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAzODEgMDAwMDAgbiAKMDAwMDAwMDE2MSAwMDAwMCBuIAowMDAwMDAwMTQwIDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDExOSAwMDAwMCBuIAowMDAwMDAwNDQ2IDAwMDAwIG4gCjAwMDAwMDA1NjIgMDAwMDAgbiAKdHJhaWxlcgo8PCAvU2l6ZSA4CiAgIC9Sb290IDcgMCBSCiAgIC9JbmZvIDYgMCBSCj4+CnN0YXJ0eHJlZgo2MTQKJSVFT0YK"
 	sampleVideoURL  = "https://www.youtube.com/watch?v=bPiofmZGb8o"
 
-	intMax = 9223372036854775807
+	intMax = 9007199254740990
 )
 
 func getEmptyJson(t *testing.T) []byte {
@@ -129,12 +129,13 @@ func getTestItem() feed.Item {
 		},
 		Conversations: []feed.Message{
 			{
-				ID:           "msg-2",
-				Text:         "hii ni reply",
-				ReplyTo:      "msg-1",
-				PostedByName: uuid.New().String(),
-				PostedByUID:  uuid.New().String(),
-				Timestamp:    time.Now(),
+				ID:             "msg-2",
+				SequenceNumber: 1,
+				Text:           "hii ni reply",
+				ReplyTo:        "msg-1",
+				PostedByName:   uuid.New().String(),
+				PostedByUID:    uuid.New().String(),
+				Timestamp:      time.Now(),
 			},
 		},
 		Documents: []feed.Document{
@@ -247,11 +248,12 @@ func TestMessage_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
 	validElement := feed.Message{
-		ID:           uuid.New().String(),
-		Text:         "some message text",
-		PostedByName: uuid.New().String(),
-		PostedByUID:  uuid.New().String(),
-		Timestamp:    time.Now(),
+		ID:             uuid.New().String(),
+		SequenceNumber: 1,
+		Text:           "some message text",
+		PostedByName:   uuid.New().String(),
+		PostedByUID:    uuid.New().String(),
+		Timestamp:      time.Now(),
 	}
 	validBytes, err := json.Marshal(validElement)
 	assert.Nil(t, err)
@@ -374,12 +376,13 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		},
 		Conversations: []feed.Message{
 			{
-				ID:           "msg-2",
-				Text:         "hii ni reply",
-				ReplyTo:      "msg-1",
-				PostedByName: uuid.New().String(),
-				PostedByUID:  uuid.New().String(),
-				Timestamp:    time.Now(),
+				ID:             "msg-2",
+				SequenceNumber: 1,
+				Text:           "hii ni reply",
+				ReplyTo:        "msg-1",
+				PostedByName:   uuid.New().String(),
+				PostedByUID:    uuid.New().String(),
+				Timestamp:      time.Now(),
 			},
 		},
 		Users: []string{
@@ -863,12 +866,13 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				},
 				Conversations: []feed.Message{
 					{
-						ID:           "msg-2",
-						Text:         "hii ni reply",
-						ReplyTo:      "msg-1",
-						PostedByName: uuid.New().String(),
-						PostedByUID:  uuid.New().String(),
-						Timestamp:    time.Now(),
+						ID:             "msg-2",
+						SequenceNumber: 1,
+						Text:           "hii ni reply",
+						ReplyTo:        "msg-1",
+						PostedByName:   uuid.New().String(),
+						PostedByUID:    uuid.New().String(),
+						Timestamp:      time.Now(),
 					},
 				},
 				Users: []string{
@@ -1137,12 +1141,13 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						},
 						Conversations: []feed.Message{
 							{
-								ID:           "msg-2",
-								Text:         "hii ni reply",
-								ReplyTo:      "msg-1",
-								PostedByName: uuid.New().String(),
-								PostedByUID:  uuid.New().String(),
-								Timestamp:    time.Now(),
+								ID:             "msg-2",
+								SequenceNumber: 1,
+								Text:           "hii ni reply",
+								ReplyTo:        "msg-1",
+								PostedByName:   uuid.New().String(),
+								PostedByUID:    uuid.New().String(),
+								Timestamp:      time.Now(),
 							},
 						},
 						Users: []string{
@@ -1484,12 +1489,13 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				},
 				Conversations: []feed.Message{
 					{
-						ID:           "msg-2",
-						Text:         "hii ni reply",
-						ReplyTo:      "msg-1",
-						PostedByName: uuid.New().String(),
-						PostedByUID:  uuid.New().String(),
-						Timestamp:    time.Now(),
+						ID:             "msg-2",
+						SequenceNumber: 1,
+						Text:           "hii ni reply",
+						ReplyTo:        "msg-1",
+						PostedByName:   uuid.New().String(),
+						PostedByUID:    uuid.New().String(),
+						Timestamp:      time.Now(),
 					},
 				},
 				Users: []string{
@@ -1557,11 +1563,12 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 
 func TestMessage_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
-		ID           string
-		Text         string
-		ReplyTo      string
-		PostedByName string
-		PostedByUID  string
+		ID             string
+		SequenceNumber int
+		Text           string
+		ReplyTo        string
+		PostedByName   string
+		PostedByUID    string
 	}
 	tests := []struct {
 		name    string
@@ -1571,11 +1578,12 @@ func TestMessage_ValidateAndMarshal(t *testing.T) {
 		{
 			name: "valid case",
 			fields: fields{
-				ID:           "msg-2",
-				Text:         "this is a message",
-				ReplyTo:      "msg-1",
-				PostedByName: uuid.New().String(),
-				PostedByUID:  uuid.New().String(),
+				ID:             "msg-2",
+				SequenceNumber: 1,
+				Text:           "this is a message",
+				ReplyTo:        "msg-1",
+				PostedByName:   uuid.New().String(),
+				PostedByUID:    uuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -1587,12 +1595,13 @@ func TestMessage_ValidateAndMarshal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := &feed.Message{
-				ID:           tt.fields.ID,
-				Text:         tt.fields.Text,
-				ReplyTo:      tt.fields.ReplyTo,
-				PostedByName: tt.fields.PostedByName,
-				PostedByUID:  tt.fields.PostedByUID,
-				Timestamp:    time.Now(),
+				ID:             tt.fields.ID,
+				SequenceNumber: tt.fields.SequenceNumber,
+				Text:           tt.fields.Text,
+				ReplyTo:        tt.fields.ReplyTo,
+				PostedByName:   tt.fields.PostedByName,
+				PostedByUID:    tt.fields.PostedByUID,
+				Timestamp:      time.Now(),
 			}
 			got, err := msg.ValidateAndMarshal()
 			if (err != nil) != tt.wantErr {

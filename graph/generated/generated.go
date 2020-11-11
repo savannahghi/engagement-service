@@ -1139,6 +1139,8 @@ type Msg {
 }
 
 input MsgInput {
+  id: String!
+  sequenceNumber: Int!
   text: String!
   replyTo: String
   postedByUID: String!
@@ -6150,6 +6152,22 @@ func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj inte
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sequenceNumber":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sequenceNumber"))
+			it.SequenceNumber, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "text":
 			var err error
 

@@ -11,9 +11,8 @@
                     "description": "A unique identifier for each action"
                 },
                 "sequenceNumber": {
-                    "type": "integer",
-                    "description": "A higher sequence number means that it came later; no other meaning should be imputed"
-                },
+                    "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber"
+                }, 
                 "actionType": {
                     "type": "string",
                     "description": "Primary actions get dominant visual treatment; secondary actions less so; overflow are hidden; floating actions are material FABs",

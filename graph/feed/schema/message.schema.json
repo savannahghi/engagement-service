@@ -13,9 +13,8 @@
                     "minLength": 3
                 },
                 "sequenceNumber": {
-                    "type": "integer",
-                    "description": "A higher sequence number means that it came later; no other meaning should be imputed"
-                },
+                    "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber"
+                }, 
                 "replyTo": {
                     "type": "string",
                     "description": "The unique ID of any message that this one is replying to - a thread"

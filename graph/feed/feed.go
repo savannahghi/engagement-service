@@ -401,11 +401,15 @@ func (fe Feed) PublishFeedItem(
 }
 
 // DeleteFeedItem removes a feed item
-func (fe Feed) DeleteFeedItem(ctx context.Context, itemID string) error {
+func (fe Feed) DeleteFeedItem(
+	ctx context.Context,
+	itemID string,
+) error {
 	if err := fe.checkPreconditions(); err != nil {
 		return fmt.Errorf("feed precondition check failed: %w", err)
 	}
 
+	// TODO Delete all feed items...all sequence numbers
 	item, err := fe.GetFeedItem(ctx, itemID)
 	if err != nil {
 		// fails to error because this should be idempotent
@@ -433,6 +437,7 @@ func (fe Feed) ResolveFeedItem(
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
 
+	// TODO New feed item with incremented sequence number
 	item, err := fe.repository.GetFeedItem(ctx, fe.UID, fe.Flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)

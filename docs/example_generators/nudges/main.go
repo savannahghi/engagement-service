@@ -13,7 +13,7 @@ import (
 
 const (
 	base64PNGSample = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAFNeavDAAAACklEQVQIHWNgAAAAAgABz8g15QAAAABJRU5ErkJggg=="
-	intMax          = 9223372036854775807
+	intMax          = 9007199254740990
 )
 
 func main() {

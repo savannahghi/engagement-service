@@ -11,7 +11,7 @@ import (
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 )
 
-const intMax = 9223372036854775807
+const intMax = 9007199254740990
 
 func main() {
 	msg := getTestMessage()

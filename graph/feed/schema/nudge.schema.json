@@ -11,9 +11,8 @@
                     "description": "A unique identifier for each nudge"
                 },
                 "sequenceNumber": {
-                    "type": "integer",
-                    "description": "A higher sequence number means that it came later; no other meaning should be imputed"
-                },
+                    "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber"
+                }, 
                 "title": {
                     "type": "string",
                     "minLength": 3,

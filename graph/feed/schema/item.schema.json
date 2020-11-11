@@ -12,9 +12,8 @@
                     "description": "A unique identifier for each feed item"
                 },
                 "sequenceNumber": {
-                    "type": "integer",
-                    "description": "A higher sequence number means that it came later; no other meaning should be imputed"
-                },
+                    "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber"
+                }, 
                 "persistent": {
                     "type": "boolean",
                     "description": "If a feed item is persistent, it also goes to the inbox AND triggers a push notification. Pinning a feed item makes it persistent."

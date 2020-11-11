@@ -208,6 +208,8 @@ type Msg {
 }
 
 input MsgInput {
+  id: String!
+  sequenceNumber: Int!
   text: String!
   replyTo: String
   postedByUID: String!

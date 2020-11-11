@@ -32,7 +32,7 @@ const (
 	base64PDFSample       = "JVBERi0xLjUKJbXtrvsKNCAwIG9iago8PCAvTGVuZ3RoIDUgMCBSCiAgIC9GaWx0ZXIgL0ZsYXRlRGVjb2RlCj4+CnN0cmVhbQp4nDNUMABCXUMQpWdkopCcy1XIFcgFADCwBFQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCiAgIDI3CmVuZG9iagozIDAgb2JqCjw8Cj4+CmVuZG9iagoyIDAgb2JqCjw8IC9UeXBlIC9QYWdlICUgMQogICAvUGFyZW50IDEgMCBSCiAgIC9NZWRpYUJveCBbIDAgMCAwLjI0IDAuMjQgXQogICAvQ29udGVudHMgNCAwIFIKICAgL0dyb3VwIDw8CiAgICAgIC9UeXBlIC9Hcm91cAogICAgICAvUyAvVHJhbnNwYXJlbmN5CiAgICAgIC9JIHRydWUKICAgICAgL0NTIC9EZXZpY2VSR0IKICAgPj4KICAgL1Jlc291cmNlcyAzIDAgUgo+PgplbmRvYmoKMSAwIG9iago8PCAvVHlwZSAvUGFnZXMKICAgL0tpZHMgWyAyIDAgUiBdCiAgIC9Db3VudCAxCj4+CmVuZG9iago2IDAgb2JqCjw8IC9Qcm9kdWNlciAoY2Fpcm8gMS4xNi4wIChodHRwczovL2NhaXJvZ3JhcGhpY3Mub3JnKSkKICAgL0NyZWF0aW9uRGF0ZSAoRDoyMDIwMTAzMDA4MDkwOCswMycwMCkKPj4KZW5kb2JqCjcgMCBvYmoKPDwgL1R5cGUgL0NhdGFsb2cKICAgL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAzODEgMDAwMDAgbiAKMDAwMDAwMDE2MSAwMDAwMCBuIAowMDAwMDAwMTQwIDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDExOSAwMDAwMCBuIAowMDAwMDAwNDQ2IDAwMDAwIG4gCjAwMDAwMDA1NjIgMDAwMDAgbiAKdHJhaWxlcgo8PCAvU2l6ZSA4CiAgIC9Sb290IDcgMCBSCiAgIC9JbmZvIDYgMCBSCj4+CnN0YXJ0eHJlZgo2MTQKJSVFT0YK"
 	sampleVideoURL        = "https://www.youtube.com/watch?v=bPiofmZGb8o"
 	testHTTPClientTimeout = 180
-	intMax                = 9223372036854775807
+	intMax                = 9007199254740990
 )
 
 // these are set up once in TestMain and used by all the acceptance tests in
@@ -458,11 +458,13 @@ func TestGraphQLPostMessage(t *testing.T) {
 		"flavour": fl.String(),
 		"itemID":  testItem.ID,
 		"message": map[string]string{
-			"text":         uuid.New().String(),
-			"replyTo":      uuid.New().String(),
-			"postedByUID":  uuid.New().String(),
-			"postedByName": uuid.New().String(),
-			"timestamp":    time.Now().Format(time.RFC3339),
+			"id":             uuid.New().String(),
+			"text":           uuid.New().String(),
+			"replyTo":        uuid.New().String(),
+			"postedByUID":    uuid.New().String(),
+			"postedByName":   uuid.New().String(),
+			"timestamp":      time.Now().Format(time.RFC3339),
+			"sequenceNumber": fmt.Sprintf("%d", time.Now().Unix()),
 		},
 	}
 	validQueryReader, err := mapToJSONReader(gql)
@@ -5629,12 +5631,13 @@ func getTestItem() feed.Item {
 		},
 		Conversations: []feed.Message{
 			{
-				ID:           "msg-2",
-				Text:         "hii ni reply",
-				ReplyTo:      "msg-1",
-				PostedByName: uuid.New().String(),
-				PostedByUID:  uuid.New().String(),
-				Timestamp:    time.Now(),
+				ID:             "msg-2",
+				Text:           "hii ni reply",
+				ReplyTo:        "msg-1",
+				PostedByName:   uuid.New().String(),
+				PostedByUID:    uuid.New().String(),
+				Timestamp:      time.Now(),
+				SequenceNumber: int(time.Now().Unix()),
 			},
 		},
 		Documents: []feed.Document{
