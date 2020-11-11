@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
@@ -29,39 +29,39 @@ func getTextExpiry() time.Time {
 
 func getTestImage() feed.Image {
 	return feed.Image{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PNGSample,
 	}
 }
 
 func getTestVideo() feed.Video {
 	return feed.Video{
-		ID:  uuid.New().String(),
+		ID:  ksuid.New().String(),
 		URL: sampleVideoURL,
 	}
 }
 
 func getTestMessage() feed.Message {
 	return feed.Message{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
-		Text:           uuid.New().String(),
-		ReplyTo:        uuid.New().String(),
-		PostedByUID:    uuid.New().String(),
-		PostedByName:   uuid.New().String(),
+		Text:           ksuid.New().String(),
+		ReplyTo:        ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
+		PostedByName:   ksuid.New().String(),
 		Timestamp:      time.Now(),
 	}
 }
 
 func getTestEvent() feed.Event {
 	return feed.Event{
-		ID:   uuid.New().String(),
+		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
 		Context: feed.Context{
-			UserID:         uuid.New().String(),
+			UserID:         ksuid.New().String(),
 			Flavour:        feed.FlavourConsumer,
-			OrganizationID: uuid.New().String(),
-			LocationID:     uuid.New().String(),
+			OrganizationID: ksuid.New().String(),
+			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
 		},
 	}
@@ -69,7 +69,7 @@ func getTestEvent() feed.Event {
 
 func getTestAction() feed.Action {
 	return feed.Action{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
@@ -80,26 +80,26 @@ func getTestAction() feed.Action {
 
 func getTestDocument() feed.Document {
 	return feed.Document{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PDFSample,
 	}
 }
 
 func testItem() *feed.Item {
 	return &feed.Item{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Expiry:         getTextExpiry(),
 		Persistent:     true,
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
 		Icon:           getTestImage(),
-		Author:         uuid.New().String(),
-		Tagline:        uuid.New().String(),
-		Label:          uuid.New().String(),
+		Author:         ksuid.New().String(),
+		Tagline:        ksuid.New().String(),
+		Label:          ksuid.New().String(),
 		Timestamp:      time.Now(),
-		Summary:        uuid.New().String(),
-		Text:           uuid.New().String(),
+		Summary:        ksuid.New().String(),
+		Text:           ksuid.New().String(),
 		Images: []feed.Image{
 			getTestImage(),
 		},
@@ -113,10 +113,10 @@ func testItem() *feed.Item {
 			getTestMessage(),
 		},
 		Users: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Groups: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Documents: []feed.Document{
 			getTestDocument(),
@@ -132,21 +132,21 @@ func testItem() *feed.Item {
 
 func testNudge() *feed.Nudge {
 	return &feed.Nudge{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Title:          uuid.New().String(),
+		Title:          ksuid.New().String(),
 		Image:          getTestImage(),
-		Text:           uuid.New().String(),
+		Text:           ksuid.New().String(),
 		Actions: []feed.Action{
 			getTestAction(),
 		},
 		Users: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Groups: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		NotificationChannels: []feed.Channel{
 			feed.ChannelEmail,
@@ -199,7 +199,7 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 	persistent := feed.BooleanFilterBoth
 	status := feed.StatusPending
@@ -243,7 +243,7 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 				visibility: visibility,
 				expired:    expired,
 				filterParams: &feed.FilterParams{
-					Labels: []string{uuid.New().String()},
+					Labels: []string{ksuid.New().String()},
 				},
 			},
 			wantErr: false,
@@ -283,7 +283,7 @@ func TestFirebaseRepository_GetFeedItem(t *testing.T) {
 	assert.NotNil(t, fr)
 
 	testItem := testItem()
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
@@ -318,7 +318,7 @@ func TestFirebaseRepository_GetFeedItem(t *testing.T) {
 				ctx:     ctx,
 				uid:     uid,
 				flavour: flavour,
-				itemID:  uuid.New().String(),
+				itemID:  ksuid.New().String(),
 			},
 			wantErr: false,
 			wantNil: true,
@@ -370,7 +370,7 @@ func TestFirebaseRepository_SaveFeedItem(t *testing.T) {
 		{
 			name: "pro item",
 			args: args{
-				uid:     uuid.New().String(),
+				uid:     ksuid.New().String(),
 				flavour: feed.FlavourConsumer,
 				item:    proItem,
 			},
@@ -379,7 +379,7 @@ func TestFirebaseRepository_SaveFeedItem(t *testing.T) {
 		{
 			name: "consumer item",
 			args: args{
-				uid:     uuid.New().String(),
+				uid:     ksuid.New().String(),
 				flavour: feed.FlavourPro,
 				item:    consumerItem,
 			},
@@ -420,7 +420,7 @@ func TestFirebaseRepository_DeleteFeedItem(t *testing.T) {
 	assert.NotNil(t, fr)
 
 	testItem := testItem()
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
@@ -451,7 +451,7 @@ func TestFirebaseRepository_DeleteFeedItem(t *testing.T) {
 			args: args{
 				uid:     uid,
 				flavour: flavour,
-				itemID:  uuid.New().String(),
+				itemID:  ksuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -480,7 +480,7 @@ func TestFirebaseRepository_GetNudge(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 	nudge := testNudge()
 
@@ -536,7 +536,7 @@ func TestFirebaseRepository_SaveNudge(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 	nudge := testNudge()
 
@@ -589,7 +589,7 @@ func TestFirebaseRepository_DeleteNudge(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 	nudge := testNudge()
 
@@ -621,7 +621,7 @@ func TestFirebaseRepository_DeleteNudge(t *testing.T) {
 			args: args{
 				uid:     uid,
 				flavour: flavour,
-				nudgeID: uuid.New().String(),
+				nudgeID: ksuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -650,7 +650,7 @@ func TestFirebaseRepository_GetAction(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourPro
 
 	action := getTestAction()
@@ -707,7 +707,7 @@ func TestFirebaseRepository_SaveAction(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourPro
 	action := getTestAction()
 
@@ -760,7 +760,7 @@ func TestFirebaseRepository_DeleteAction(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 	action := getTestAction()
 
@@ -792,7 +792,7 @@ func TestFirebaseRepository_DeleteAction(t *testing.T) {
 			args: args{
 				uid:      uid,
 				flavour:  flavour,
-				actionID: uuid.New().String(),
+				actionID: ksuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -822,7 +822,7 @@ func TestFirebaseRepository_PostMessage(t *testing.T) {
 	assert.NotNil(t, fr)
 
 	testItem := testItem()
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
@@ -883,7 +883,7 @@ func TestFirebaseRepository_UpdateFeedItem(t *testing.T) {
 	assert.NotNil(t, fr)
 
 	testItem := testItem()
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
@@ -946,7 +946,7 @@ func TestFirebaseRepository_UpdateNudge(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 	nudge := testNudge()
 
@@ -1011,7 +1011,7 @@ func TestFirebaseRepository_DeleteMessage(t *testing.T) {
 	assert.NotNil(t, fr)
 
 	testItem := testItem()
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
@@ -1052,8 +1052,8 @@ func TestFirebaseRepository_DeleteMessage(t *testing.T) {
 				ctx:       ctx,
 				uid:       uid,
 				flavour:   flavour,
-				itemID:    uuid.New().String(),
-				messageID: uuid.New().String(),
+				itemID:    ksuid.New().String(),
+				messageID: ksuid.New().String(),
 			},
 			wantErr: false,
 		},

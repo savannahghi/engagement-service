@@ -38,6 +38,12 @@
                     "type": "string",
                     "$ref": "https://schema.healthcloud.co.ke/status.schema.json#/definitions/status"
                 },
+                "expiry": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When this nudge should be expired/removed, automatically. RFC3339.",
+                    "$comment": "The feed viewer should AUTOMATICALLY hide any expired nudge"
+                },
                 "image": {
                     "type": "object",
                     "$ref": "https://schema.healthcloud.co.ke/image.schema.json#/definitions/image"
@@ -71,6 +77,7 @@
             "required": [
                 "id",
                 "sequenceNumber",
+                "expiry",
                 "visibility",
                 "status",
                 "title",

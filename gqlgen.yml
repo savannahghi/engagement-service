@@ -54,21 +54,12 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
-  VideoInput:
-    model:
-      - gitlab.slade360emr.com/go/feed/graph/feed.Video
   MsgInput:
     model:
       - gitlab.slade360emr.com/go/feed/graph/feed.Message
   Msg:
     model:
       - gitlab.slade360emr.com/go/feed/graph/feed.Message
-  ImageInput:
-    model:
-      - gitlab.slade360emr.com/go/feed/graph/feed.Image
-  DocumentInput:
-    model:
-      - gitlab.slade360emr.com/go/feed/graph/feed.Document
   EventInput:
     model:
       - gitlab.slade360emr.com/go/feed/graph/feed.Event
@@ -78,15 +69,6 @@ models:
   ContextInput:
     model:
       - gitlab.slade360emr.com/go/feed/graph/feed.Context
-  ActionInput:
-    model:
-      - gitlab.slade360emr.com/go/feed/graph/feed.Action
-  ItemInput:
-    model:
-      - gitlab.slade360emr.com/go/feed/graph/feed.Item
-  NudgeInput:
-    model:
-      - gitlab.slade360emr.com/go/feed/graph/feed.Nudge
   FilterParamsInput:
     model:
       - gitlab.slade360emr.com/go/feed/graph/feed.FilterParams

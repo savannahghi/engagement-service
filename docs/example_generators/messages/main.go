@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 )
 
@@ -24,12 +24,12 @@ func main() {
 
 func getTestMessage() feed.Message {
 	return feed.Message{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
-		Text:           uuid.New().String(),
-		ReplyTo:        uuid.New().String(),
-		PostedByUID:    uuid.New().String(),
-		PostedByName:   uuid.New().String(),
+		Text:           ksuid.New().String(),
+		ReplyTo:        ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
+		PostedByName:   ksuid.New().String(),
 		Timestamp:      time.Now(),
 	}
 }

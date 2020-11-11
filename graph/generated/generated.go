@@ -147,6 +147,7 @@ type ComplexityRoot struct {
 
 	Nudge struct {
 		Actions              func(childComplexity int) int
+		Expiry               func(childComplexity int) int
 		Groups               func(childComplexity int) int
 		ID                   func(childComplexity int) int
 		Image                func(childComplexity int) int
@@ -736,6 +737,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Nudge.Actions(childComplexity), true
 
+	case "Nudge.expiry":
+		if e.complexity.Nudge.Expiry == nil {
+			break
+		}
+
+		return e.complexity.Nudge.Expiry(childComplexity), true
+
 	case "Nudge.groups":
 		if e.complexity.Nudge.Groups == nil {
 			break
@@ -991,54 +999,18 @@ type Feed @key(fields: "id") {
   items: [Item!]!
 }
 
-input NudgeInput {
-  id: String!
-  sequenceNumber: Int!
-  visibility: Visibility!
-  status: Status!
-  title: String!
-  text: String!
-  actions: [ActionInput!]!
-  users: [String!]!
-  groups: [String]
-  image: ImageInput
-  notificationChannels: [Channel]
-}
-
 type Nudge {
   id: String!
   sequenceNumber: Int!
   visibility: Visibility!
   status: Status!
+  expiry: Time
   title: String!
   text: String!
   actions: [Action!]!
   groups: [String]
   users: [String]
   image: Image
-  notificationChannels: [Channel]
-}
-
-input ItemInput {
-  id: String!
-  sequenceNumber: Int!
-  expiry: Time!
-  persistent: Boolean!
-  status: Status!
-  visibility: Visibility!
-  icon: ImageInput!
-  author: String!
-  tagline: String!
-  label: String!
-  timestamp: Time!
-  summary: String!
-  text: String!
-  images: [ImageInput]
-  videos: [VideoInput]
-  actions: [ActionInput]
-  conversations: [MsgInput]
-  users: [String!]!
-  groups: [String]
   notificationChannels: [Channel]
 }
 
@@ -1063,15 +1035,6 @@ type Item {
   users: [String]
   groups: [String]
   notificationChannels: [Channel]
-}
-
-input ActionInput {
-  id: String!
-  sequenceNumber: Int!
-  name: String!
-  actionType: ActionType!
-  handling: Handling!
-  event: EventInput!
 }
 
 type Action {
@@ -1124,10 +1087,6 @@ type Image {
   base64: String!
 }
 
-input ImageInput {
-  base64: String!
-}
-
 type Msg {
   id: String!
   sequenceNumber: Int!
@@ -1153,16 +1112,8 @@ type Video {
   url: String!
 }
 
-input VideoInput {
-  url: String!
-}
-
 type Document {
   id: String!
-  base64: String!
-}
-
-input DocumentInput {
   base64: String!
 }
 
@@ -4130,6 +4081,38 @@ func (ec *executionContext) _Nudge_status(ctx context.Context, field graphql.Col
 	return ec.marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐStatus(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Nudge_expiry(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Nudge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Expiry, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Nudge_title(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -5774,66 +5757,6 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputActionInput(ctx context.Context, obj interface{}) (feed.Action, error) {
-	var it feed.Action
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "sequenceNumber":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sequenceNumber"))
-			it.SequenceNumber, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "name":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			it.Name, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "actionType":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("actionType"))
-			it.ActionType, err = ec.unmarshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐActionType(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "handling":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("handling"))
-			it.Handling, err = ec.unmarshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐHandling(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "event":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("event"))
-			it.Event, err = ec.unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj interface{}) (feed.Context, error) {
 	var it feed.Context
 	var asMap = obj.(map[string]interface{})
@@ -5869,26 +5792,6 @@ func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
 			it.Timestamp, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputDocumentInput(ctx context.Context, obj interface{}) (feed.Document, error) {
-	var it feed.Document
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "base64":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("base64"))
-			it.Base64, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5945,198 +5848,6 @@ func (ec *executionContext) unmarshalInputFilterParamsInput(ctx context.Context,
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("labels"))
 			it.Labels, err = ec.unmarshalOString2ᚕstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputImageInput(ctx context.Context, obj interface{}) (feed.Image, error) {
-	var it feed.Image
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "base64":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("base64"))
-			it.Base64, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputItemInput(ctx context.Context, obj interface{}) (feed.Item, error) {
-	var it feed.Item
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "sequenceNumber":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sequenceNumber"))
-			it.SequenceNumber, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "expiry":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expiry"))
-			it.Expiry, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "persistent":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("persistent"))
-			it.Persistent, err = ec.unmarshalNBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "status":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			it.Status, err = ec.unmarshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "visibility":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-			it.Visibility, err = ec.unmarshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVisibility(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "icon":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("icon"))
-			it.Icon, err = ec.unmarshalNImageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "author":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("author"))
-			it.Author, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "tagline":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tagline"))
-			it.Tagline, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "label":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("label"))
-			it.Label, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "timestamp":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
-			it.Timestamp, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "summary":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("summary"))
-			it.Summary, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "text":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
-			it.Text, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "images":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
-			it.Images, err = ec.unmarshalOImageInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "videos":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("videos"))
-			it.Videos, err = ec.unmarshalOVideoInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "actions":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("actions"))
-			it.Actions, err = ec.unmarshalOActionInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "conversations":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("conversations"))
-			it.Conversations, err = ec.unmarshalOMsgInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "users":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("users"))
-			it.Users, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "groups":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groups"))
-			it.Groups, err = ec.unmarshalOString2ᚕstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "notificationChannels":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notificationChannels"))
-			it.NotificationChannels, err = ec.unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐChannel(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6214,106 +5925,6 @@ func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj inte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputNudgeInput(ctx context.Context, obj interface{}) (feed.Nudge, error) {
-	var it feed.Nudge
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "sequenceNumber":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sequenceNumber"))
-			it.SequenceNumber, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "visibility":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-			it.Visibility, err = ec.unmarshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVisibility(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "status":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			it.Status, err = ec.unmarshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "title":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
-			it.Title, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "text":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
-			it.Text, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "actions":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("actions"))
-			it.Actions, err = ec.unmarshalNActionInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐActionᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "users":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("users"))
-			it.Users, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "groups":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groups"))
-			it.Groups, err = ec.unmarshalOString2ᚕstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "image":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
-			it.Image, err = ec.unmarshalOImageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "notificationChannels":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notificationChannels"))
-			it.NotificationChannels, err = ec.unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐChannel(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj interface{}) (feed.Payload, error) {
 	var it feed.Payload
 	var asMap = obj.(map[string]interface{})
@@ -6325,26 +5936,6 @@ func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
 			it.Data, err = ec.unmarshalNMap2map(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputVideoInput(ctx context.Context, obj interface{}) (feed.Video, error) {
-	var it feed.Video
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "url":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
-			it.URL, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6960,6 +6551,8 @@ func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "expiry":
+			out.Values[i] = ec._Nudge_expiry(ctx, field, obj)
 		case "title":
 			out.Values[i] = ec._Nudge_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -7432,32 +7025,6 @@ func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalNActionInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx context.Context, v interface{}) (feed.Action, error) {
-	res, err := ec.unmarshalInputActionInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNActionInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐActionᚄ(ctx context.Context, v interface{}) ([]feed.Action, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]feed.Action, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNActionInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
 func (ec *executionContext) unmarshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐActionType(ctx context.Context, v interface{}) (feed.ActionType, error) {
 	var res feed.ActionType
 	err := res.UnmarshalGQL(v)
@@ -7543,11 +7110,6 @@ func (ec *executionContext) marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋf
 
 func (ec *executionContext) marshalNImage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx context.Context, sel ast.SelectionSet, v feed.Image) graphql.Marshaler {
 	return ec._Image(ctx, sel, &v)
-}
-
-func (ec *executionContext) unmarshalNImageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx context.Context, v interface{}) (feed.Image, error) {
-	res, err := ec.unmarshalInputImageInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -7735,36 +7297,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
@@ -8172,35 +7704,6 @@ func (ec *executionContext) marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOActionInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx context.Context, v interface{}) (feed.Action, error) {
-	res, err := ec.unmarshalInputActionInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOActionInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx context.Context, v interface{}) ([]feed.Action, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]feed.Action, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOActionInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐAction(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8371,35 +7874,6 @@ func (ec *executionContext) marshalOImage2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋf
 	return ret
 }
 
-func (ec *executionContext) unmarshalOImageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx context.Context, v interface{}) (feed.Image, error) {
-	res, err := ec.unmarshalInputImageInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOImageInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx context.Context, v interface{}) ([]feed.Image, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]feed.Image, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOImageInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
 func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
@@ -8457,35 +7931,6 @@ func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfee
 	}
 	wg.Wait()
 	return ret
-}
-
-func (ec *executionContext) unmarshalOMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) (feed.Message, error) {
-	res, err := ec.unmarshalInputMsgInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOMsgInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) ([]feed.Message, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]feed.Message, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐMessage(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
 }
 
 func (ec *executionContext) marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐPayload(ctx context.Context, sel ast.SelectionSet, v feed.Payload) graphql.Marshaler {
@@ -8568,6 +8013,15 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return graphql.MarshalString(*v)
 }
 
+func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := graphql.UnmarshalTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	return graphql.MarshalTime(v)
+}
+
 func (ec *executionContext) marshalOVideo2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx context.Context, sel ast.SelectionSet, v feed.Video) graphql.Marshaler {
 	return ec._Video(ctx, sel, &v)
 }
@@ -8610,35 +8064,6 @@ func (ec *executionContext) marshalOVideo2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋf
 	}
 	wg.Wait()
 	return ret
-}
-
-func (ec *executionContext) unmarshalOVideoInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx context.Context, v interface{}) (feed.Video, error) {
-	res, err := ec.unmarshalInputVideoInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOVideoInput2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx context.Context, v interface{}) ([]feed.Video, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]feed.Video, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOVideoInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
 }
 
 func (ec *executionContext) unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (*feed.Visibility, error) {

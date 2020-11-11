@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
@@ -63,12 +63,12 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 			args: args{
 				channel: "message.post",
 				el: &feed.Message{
-					ID:             uuid.New().String(),
+					ID:             ksuid.New().String(),
 					SequenceNumber: 1,
-					Text:           uuid.New().String(),
-					ReplyTo:        uuid.New().String(),
-					PostedByUID:    uuid.New().String(),
-					PostedByName:   uuid.New().String(),
+					Text:           ksuid.New().String(),
+					ReplyTo:        ksuid.New().String(),
+					PostedByUID:    ksuid.New().String(),
+					PostedByName:   ksuid.New().String(),
 					Timestamp:      time.Now(),
 				},
 			},
@@ -80,9 +80,9 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 			args: args{
 				channel: "message.post",
 				el: &feed.Message{
-					ID:        uuid.New().String(),
-					Text:      uuid.New().String(),
-					ReplyTo:   uuid.New().String(),
+					ID:        ksuid.New().String(),
+					Text:      ksuid.New().String(),
+					ReplyTo:   ksuid.New().String(),
 					Timestamp: time.Now(),
 				},
 			},

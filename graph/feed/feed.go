@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"github.com/xeipuuv/gojsonschema"
 	"gitlab.slade360emr.com/go/base"
 )
@@ -72,132 +72,6 @@ var ErrNilFeedItem = fmt.Errorf("nil feed item")
 type Element interface {
 	ValidateAndUnmarshal(b []byte) error
 	ValidateAndMarshal() ([]byte, error)
-}
-
-// NewCollection initializes a user feed that is backed by an in-memory map
-func NewCollection(
-	repository Repository,
-	notificationService NotificationService,
-) (*Collection, error) {
-	feedCollection := &Collection{
-		repository:          repository,
-		notificationService: notificationService,
-	}
-	err := feedCollection.checkPreconditions()
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize feeds: %w", err)
-	}
-	return feedCollection, nil
-}
-
-// Collection organizes the top level methods for interaction with feeds
-type Collection struct {
-	repository          Repository
-	notificationService NotificationService
-}
-
-func (agg Collection) checkPreconditions() error {
-	if agg.repository == nil {
-		return fmt.Errorf(
-			"incorrectly initialized feed aggregate: nil repository")
-	}
-
-	if agg.notificationService == nil {
-		return fmt.Errorf(
-			"incorrectly initialized feed aggregate: nil notification service")
-	}
-
-	return nil
-}
-
-// GetFeed retrieves a feed
-func (agg Collection) GetFeed(
-	ctx context.Context,
-	uid string,
-	flavour Flavour,
-	persistent BooleanFilter,
-	status *Status,
-	visibility *Visibility,
-	expired *BooleanFilter,
-	filterParams *FilterParams,
-) (*Feed, error) {
-	if err := agg.checkPreconditions(); err != nil {
-		return nil, fmt.Errorf("precondition check failed: %w", err)
-	}
-	feed, err := agg.repository.GetFeed(
-		ctx,
-		uid,
-		flavour,
-		persistent,
-		status,
-		visibility,
-		expired,
-		filterParams,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("feed retrieval error: %w", err)
-	}
-
-	// set the ID (computed, not stored)
-	feed.ID = feed.getID()
-
-	// inject the repository and notification service into the returned feed
-	feed.repository = agg.repository
-	feed.notificationService = agg.notificationService
-
-	if err := feed.checkPreconditions(); err != nil {
-		return nil, fmt.Errorf(
-			"the retrieved feed failed precondition checks: %w", err)
-	}
-
-	if err := agg.notificationService.Notify(
-		ctx, FeedRetrievalTopic, feed); err != nil {
-		return nil, fmt.Errorf(
-			"unable to notify feed to channel: %w", err)
-	}
-
-	return feed, nil
-}
-
-// GetThinFeed gets a feed with only the UID, flavour and dependencies
-// filled in.
-//
-// It is used for efficient instantiation of feeds by code that does not need
-// the full detail.
-func (agg Collection) GetThinFeed(
-	ctx context.Context,
-	uid string,
-	flavour Flavour,
-) (*Feed, error) {
-	if err := agg.checkPreconditions(); err != nil {
-		return nil, fmt.Errorf("precondition check failed: %w", err)
-	}
-	feed := &Feed{
-		UID:     uid,
-		Flavour: flavour,
-		Actions: []Action{},
-		Items:   []Item{},
-		Nudges:  []Nudge{},
-	}
-
-	// set the ID (computed, not stored)
-	feed.ID = feed.getID()
-
-	// inject the repository and notification service into the returned feed
-	feed.repository = agg.repository
-	feed.notificationService = agg.notificationService
-
-	if err := feed.checkPreconditions(); err != nil {
-		return nil, fmt.Errorf(
-			"the retrieved feed failed precondition checks: %w", err)
-	}
-
-	if err := agg.notificationService.Notify(
-		ctx, ThinFeedRetrievalTopic, feed); err != nil {
-		return nil, fmt.Errorf(
-			"unable to notify feed to channel: %w", err)
-	}
-	return feed, nil
 }
 
 // Feed manages and serializes the nudges, actions and feed items that a
@@ -384,6 +258,12 @@ func (fe Feed) PublishFeedItem(
 	err := fe.ValidateElement(item)
 	if err != nil {
 		return nil, fmt.Errorf("invalid item: %w", err)
+	}
+
+	for _, action := range item.Actions {
+		if action.ActionType == ActionTypeFloating {
+			return nil, fmt.Errorf("floating actions are only allowed at the global level")
+		}
 	}
 
 	item, err = fe.repository.SaveFeedItem(ctx, fe.UID, fe.Flavour, item)
@@ -679,6 +559,12 @@ func (fe Feed) PublishNudge(
 		return nil, fmt.Errorf("invalid nudge: %w", err)
 	}
 
+	for _, action := range nudge.Actions {
+		if action.ActionType == ActionTypeFloating {
+			return nil, fmt.Errorf("floating actions are only allowed at the global level")
+		}
+	}
+
 	nudge, err = fe.repository.SaveNudge(ctx, fe.UID, fe.Flavour, nudge)
 	if err != nil {
 		return nil, fmt.Errorf("unable to publish nudge: %w", err)
@@ -943,7 +829,7 @@ func (fe Feed) PostMessage(
 	}
 
 	if message.ID == "" {
-		message.ID = uuid.New().String()
+		message.ID = ksuid.New().String()
 	}
 
 	if message.SequenceNumber == 0 {
@@ -1047,7 +933,7 @@ func (fe Feed) ProcessEvent(
 	}
 
 	if event.ID == "" {
-		event.ID = uuid.New().String()
+		event.ID = ksuid.New().String()
 	}
 
 	if event.Context.UserID == "" {
@@ -1057,6 +943,14 @@ func (fe Feed) ProcessEvent(
 	err := fe.ValidateElement(event)
 	if err != nil {
 		return fmt.Errorf("invalid event: %w", err)
+	}
+
+	if event.Context.Flavour != fe.Flavour {
+		return fmt.Errorf(
+			"the event context flavour (%s) does not match the feed flavour (%s)",
+			event.Context.Flavour,
+			fe.Flavour,
+		)
 	}
 
 	err = fe.repository.SaveIncomingEvent(ctx, event)
@@ -1130,10 +1024,10 @@ type Event struct {
 	Name string `json:"name" firestore:"name"`
 
 	// Technical metadata - when/where/why/who/what/how etc
-	Context Context `json:"context" firestore:"context"`
+	Context Context `json:"context,omitempty" firestore:"context,omitempty"`
 
 	// The actual 'business data' carried by the event
-	Payload Payload `json:"payload" firestore:"payload"`
+	Payload Payload `json:"payload,omitempty" firestore:"payload,omitempty"`
 }
 
 // ValidateAndUnmarshal checks that the input data is valid as per the
@@ -1221,6 +1115,9 @@ type Nudge struct {
 
 	// whether the nudge is done (acted on) or pending
 	Status Status `json:"status" firestore:"status"`
+
+	// When this nudge should be expired/removed, automatically. RFC3339.
+	Expiry time.Time `json:"expiry" firestore:"expiry"`
 
 	// the title (lead line) of the nudge
 	Title string `json:"title" firestore:"title"`

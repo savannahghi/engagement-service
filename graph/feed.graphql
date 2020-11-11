@@ -60,54 +60,18 @@ type Feed @key(fields: "id") {
   items: [Item!]!
 }
 
-input NudgeInput {
-  id: String!
-  sequenceNumber: Int!
-  visibility: Visibility!
-  status: Status!
-  title: String!
-  text: String!
-  actions: [ActionInput!]!
-  users: [String!]!
-  groups: [String]
-  image: ImageInput
-  notificationChannels: [Channel]
-}
-
 type Nudge {
   id: String!
   sequenceNumber: Int!
   visibility: Visibility!
   status: Status!
+  expiry: Time
   title: String!
   text: String!
   actions: [Action!]!
   groups: [String]
   users: [String]
   image: Image
-  notificationChannels: [Channel]
-}
-
-input ItemInput {
-  id: String!
-  sequenceNumber: Int!
-  expiry: Time!
-  persistent: Boolean!
-  status: Status!
-  visibility: Visibility!
-  icon: ImageInput!
-  author: String!
-  tagline: String!
-  label: String!
-  timestamp: Time!
-  summary: String!
-  text: String!
-  images: [ImageInput]
-  videos: [VideoInput]
-  actions: [ActionInput]
-  conversations: [MsgInput]
-  users: [String!]!
-  groups: [String]
   notificationChannels: [Channel]
 }
 
@@ -132,15 +96,6 @@ type Item {
   users: [String]
   groups: [String]
   notificationChannels: [Channel]
-}
-
-input ActionInput {
-  id: String!
-  sequenceNumber: Int!
-  name: String!
-  actionType: ActionType!
-  handling: Handling!
-  event: EventInput!
 }
 
 type Action {
@@ -193,10 +148,6 @@ type Image {
   base64: String!
 }
 
-input ImageInput {
-  base64: String!
-}
-
 type Msg {
   id: String!
   sequenceNumber: Int!
@@ -222,16 +173,8 @@ type Video {
   url: String!
 }
 
-input VideoInput {
-  url: String!
-}
-
 type Document {
   id: String!
-  base64: String!
-}
-
-input DocumentInput {
   base64: String!
 }
 

@@ -1,16 +1,11 @@
 APIS
 ==================
 
-GraphQL
--------
+The GraphQL and REST APIs have been documented as Postman collections and
+linked on the main README.
 
-TODO Verify this from the gateway and assemble examples as GraphQLbin
-
-REST
------
-
-Before you start
-+++++++++++++++++
+ISC authentication
+-------------------
 In order to manually test the interservice REST APIs, you need to generate a
 bearer token. There's a CLI in the `login` service 
 ( https://gitlab.slade360emr.com/go/login ). For token generation to work,
@@ -47,5 +42,3 @@ Our *rule engine* will apply pre-built or custom logic blocks to these events.
 
 In order to get a *realtime view* of what's happening, these events shall also
 be denormalized and streamed into our data lake or data warehouse.
-
-TODO Go starter scripts to react to Events, deployed as Cloud Functions

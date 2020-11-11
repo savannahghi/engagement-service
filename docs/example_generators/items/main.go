@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 )
 
@@ -27,7 +27,7 @@ func main() {
 
 func getTestItem() feed.Item {
 	return feed.Item{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
@@ -57,7 +57,7 @@ func getTestItem() feed.Item {
 		},
 		Actions: []feed.Action{
 			{
-				ID:             uuid.New().String(),
+				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
@@ -104,8 +104,8 @@ func getTestItem() feed.Item {
 				ID:           "msg-2",
 				Text:         "hii ni reply",
 				ReplyTo:      "msg-1",
-				PostedByName: uuid.New().String(),
-				PostedByUID:  uuid.New().String(),
+				PostedByName: ksuid.New().String(),
+				PostedByUID:  ksuid.New().String(),
 				Timestamp:    time.Now(),
 			},
 		},
@@ -131,7 +131,7 @@ func getTestItem() feed.Item {
 
 func getTestDocument() feed.Document {
 	return feed.Document{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PDFSample,
 	}
 }

@@ -8,12 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
-	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
 )
 
 const (
@@ -29,28 +27,6 @@ func getEmptyJson(t *testing.T) []byte {
 	assert.Nil(t, err)
 	assert.NotNil(t, emptyJSONBytes)
 	return emptyJSONBytes
-}
-
-func getFeedAggregate(t *testing.T) *feed.Collection {
-	ctx := context.Background()
-
-	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
-
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
-
-	agg, err := feed.NewCollection(fr, ns)
-	assert.Nil(t, err)
-	assert.NotNil(t, agg)
-
-	return agg
 }
 
 func getTestItem() feed.Item {
@@ -85,7 +61,7 @@ func getTestItem() feed.Item {
 		},
 		Actions: []feed.Action{
 			{
-				ID:             uuid.New().String(),
+				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
@@ -133,8 +109,8 @@ func getTestItem() feed.Item {
 				SequenceNumber: 1,
 				Text:           "hii ni reply",
 				ReplyTo:        "msg-1",
-				PostedByName:   uuid.New().String(),
-				PostedByUID:    uuid.New().String(),
+				PostedByName:   ksuid.New().String(),
+				PostedByUID:    ksuid.New().String(),
 				Timestamp:      time.Now(),
 			},
 		},
@@ -158,26 +134,6 @@ func getTestItem() feed.Item {
 	}
 }
 
-func getTestFeedAggregate(t *testing.T) *feed.Collection {
-	ctx := context.Background()
-	repository, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, repository)
-
-	notificationService, err := messaging.NewMockNotificationService()
-	assert.Nil(t, err)
-	assert.NotNil(t, notificationService)
-
-	agg, err := feed.NewCollection(
-		repository,
-		notificationService,
-	)
-	assert.NotNil(t, agg)
-	assert.Nil(t, err)
-
-	return agg
-}
-
 func TestNewInMemoryFeed(t *testing.T) {
 	feeds := getTestFeedAggregate(t)
 	assert.NotNil(t, feeds)
@@ -186,7 +142,7 @@ func TestNewInMemoryFeed(t *testing.T) {
 func TestVideo_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 	validVideo := feed.Video{
-		ID:  uuid.New().String(),
+		ID:  ksuid.New().String(),
 		URL: "https://www.youtube.com/watch?v=mlv36Yxy3Wk",
 	}
 	validVideoJSONBytes, err := json.Marshal(validVideo)
@@ -248,11 +204,11 @@ func TestMessage_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
 	validElement := feed.Message{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Text:           "some message text",
-		PostedByName:   uuid.New().String(),
-		PostedByUID:    uuid.New().String(),
+		PostedByName:   ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
 		Timestamp:      time.Now(),
 	}
 	validBytes, err := json.Marshal(validElement)
@@ -332,7 +288,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		},
 		Actions: []feed.Action{
 			{
-				ID:             uuid.New().String(),
+				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
@@ -380,8 +336,8 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				SequenceNumber: 1,
 				Text:           "hii ni reply",
 				ReplyTo:        "msg-1",
-				PostedByName:   uuid.New().String(),
-				PostedByUID:    uuid.New().String(),
+				PostedByName:   ksuid.New().String(),
+				PostedByUID:    ksuid.New().String(),
 				Timestamp:      time.Now(),
 			},
 		},
@@ -611,7 +567,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
 	validElement := feed.Action{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Name:           "ACTION_NAME",
 		ActionType:     feed.ActionTypeSecondary,
@@ -697,7 +653,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 		Flavour: feed.FlavourConsumer,
 		Actions: []feed.Action{
 			{
-				ID:             uuid.New().String(),
+				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
@@ -822,7 +778,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				},
 				Actions: []feed.Action{
 					{
-						ID:             uuid.New().String(),
+						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
 						ActionType:     feed.ActionTypeSecondary,
@@ -870,8 +826,8 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Text:           "hii ni reply",
 						ReplyTo:        "msg-1",
-						PostedByName:   uuid.New().String(),
-						PostedByUID:    uuid.New().String(),
+						PostedByName:   ksuid.New().String(),
+						PostedByUID:    ksuid.New().String(),
 						Timestamp:      time.Now(),
 					},
 				},
@@ -972,7 +928,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 				Flavour: feed.FlavourPro,
 				Actions: []feed.Action{
 					{
-						ID:             uuid.New().String(),
+						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
 						ActionType:     feed.ActionTypeSecondary,
@@ -1097,7 +1053,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						},
 						Actions: []feed.Action{
 							{
-								ID:             uuid.New().String(),
+								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           "ACTION_NAME",
 								ActionType:     feed.ActionTypeSecondary,
@@ -1145,8 +1101,8 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								SequenceNumber: 1,
 								Text:           "hii ni reply",
 								ReplyTo:        "msg-1",
-								PostedByName:   uuid.New().String(),
-								PostedByUID:    uuid.New().String(),
+								PostedByName:   ksuid.New().String(),
+								PostedByUID:    ksuid.New().String(),
 								Timestamp:      time.Now(),
 							},
 						},
@@ -1445,7 +1401,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				},
 				Actions: []feed.Action{
 					{
-						ID:             uuid.New().String(),
+						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
 						ActionType:     feed.ActionTypeSecondary,
@@ -1493,8 +1449,8 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Text:           "hii ni reply",
 						ReplyTo:        "msg-1",
-						PostedByName:   uuid.New().String(),
-						PostedByUID:    uuid.New().String(),
+						PostedByName:   ksuid.New().String(),
+						PostedByUID:    ksuid.New().String(),
 						Timestamp:      time.Now(),
 					},
 				},
@@ -1582,8 +1538,8 @@ func TestMessage_ValidateAndMarshal(t *testing.T) {
 				SequenceNumber: 1,
 				Text:           "this is a message",
 				ReplyTo:        "msg-1",
-				PostedByName:   uuid.New().String(),
-				PostedByUID:    uuid.New().String(),
+				PostedByName:   ksuid.New().String(),
+				PostedByUID:    ksuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -1668,7 +1624,7 @@ func TestImage_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
 	validElement := feed.Image{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PNGSample,
 	}
 	validBytes, err := json.Marshal(validElement)
@@ -2107,218 +2063,12 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 	}
 }
 
-func TestAggregate_GetThinFeed(t *testing.T) {
-	ctx := context.Background()
-	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
-
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
-
-	agg, err := feed.NewCollection(fr, ns)
-	assert.Nil(t, err)
-	assert.NotZero(t, agg)
-
-	type args struct {
-		ctx     context.Context
-		uid     string
-		flavour feed.Flavour
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "default case - success",
-			args: args{
-				ctx:     ctx,
-				uid:     uuid.New().String(),
-				flavour: feed.FlavourConsumer,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := agg.GetThinFeed(
-				tt.args.ctx,
-				tt.args.uid,
-				tt.args.flavour,
-			)
-			if (err != nil) != tt.wantErr {
-				t.Errorf(
-					"Aggregate.GetThinFeed() error = %v, wantErr %v",
-					err,
-					tt.wantErr,
-				)
-				return
-			}
-			if !tt.wantErr {
-				assert.NotNil(t, got)
-			}
-		})
-	}
-}
-
-func TestAggregate_GetFeed(t *testing.T) {
-	ctx := context.Background()
-	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
-
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
-
-	agg, err := feed.NewCollection(fr, ns)
-	assert.Nil(t, err)
-	assert.NotZero(t, agg)
-
-	uid := uuid.New().String()
-	flavour := feed.FlavourConsumer
-	persistent := feed.BooleanFilterBoth
-	status := feed.StatusPending
-	visibility := feed.VisibilityHide
-	expired := feed.BooleanFilterFalse
-
-	type args struct {
-		ctx          context.Context
-		uid          string
-		flavour      feed.Flavour
-		persistent   feed.BooleanFilter
-		status       feed.Status
-		visibility   feed.Visibility
-		expired      feed.BooleanFilter
-		filterParams *feed.FilterParams
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "no filter params",
-			args: args{
-				ctx:          ctx,
-				uid:          uid,
-				flavour:      flavour,
-				persistent:   persistent,
-				status:       status,
-				visibility:   visibility,
-				expired:      expired,
-				filterParams: nil,
-			},
-			wantErr: false,
-		},
-		{
-			name: "with filter params",
-			args: args{
-				ctx:        ctx,
-				uid:        uid,
-				flavour:    flavour,
-				persistent: persistent,
-				status:     status,
-				visibility: visibility,
-				expired:    expired,
-				filterParams: &feed.FilterParams{
-					Labels: []string{uuid.New().String()},
-				},
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := agg.GetFeed(
-				tt.args.ctx,
-				tt.args.uid,
-				tt.args.flavour,
-				tt.args.persistent,
-				&tt.args.status,
-				&tt.args.visibility,
-				&tt.args.expired,
-				tt.args.filterParams,
-			)
-			if (err != nil) != tt.wantErr {
-				t.Errorf(
-					"Aggregate.GetFeed() error = %v, wantErr %v",
-					err,
-					tt.wantErr,
-				)
-				return
-			}
-			if !tt.wantErr {
-				assert.NotNil(t, got)
-			}
-		})
-	}
-}
-
-func TestNewAggregate(t *testing.T) {
-	ctx := context.Background()
-	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
-
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
-
-	type args struct {
-		repository          feed.Repository
-		notificationService feed.NotificationService
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "happy case",
-			args: args{
-				repository:          fr,
-				notificationService: ns,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := feed.NewCollection(
-				tt.args.repository, tt.args.notificationService)
-			if (err != nil) != tt.wantErr {
-				t.Errorf(
-					"NewAggregate() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr {
-				assert.NotNil(t, got)
-			}
-		})
-	}
-}
-
 func TestFeed_GetItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2357,7 +2107,7 @@ func TestFeed_GetItem(t *testing.T) {
 			name: "invalid case - item that does not exist",
 			args: args{
 				ctx:    ctx,
-				itemID: uuid.New().String(),
+				itemID: ksuid.New().String(),
 			},
 			wantErr: false,
 			wantNil: true,
@@ -2381,7 +2131,7 @@ func TestFeed_GetNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -2419,7 +2169,7 @@ func TestFeed_GetNudge(t *testing.T) {
 			name: "invalid case - nudge that does not exist",
 			args: args{
 				ctx:     ctx,
-				nudgeID: uuid.New().String(),
+				nudgeID: ksuid.New().String(),
 			},
 			wantErr: false,
 			wantNil: true,
@@ -2443,7 +2193,7 @@ func TestFeed_GetAction(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -2479,7 +2229,7 @@ func TestFeed_GetAction(t *testing.T) {
 			name: "invalid case - action that does not exist",
 			args: args{
 				ctx:      ctx,
-				actionID: uuid.New().String(),
+				actionID: ksuid.New().String(),
 			},
 			wantErr: false,
 			wantNil: true,
@@ -2505,7 +2255,7 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
@@ -2562,7 +2312,7 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2600,7 +2350,7 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 			name: "non existent ID, should not fail",
 			args: args{
 				ctx:    ctx,
-				itemID: uuid.New().String(),
+				itemID: ksuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -2619,7 +2369,7 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2675,7 +2425,7 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2731,7 +2481,7 @@ func TestFeed_PinFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2787,7 +2537,7 @@ func TestFeed_UnpinFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2843,7 +2593,7 @@ func TestFeed_HideFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2899,7 +2649,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
@@ -2954,7 +2704,7 @@ func TestFeed_PublishNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
@@ -3006,7 +2756,7 @@ func TestFeed_DeleteNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3055,7 +2805,7 @@ func TestFeed_ResolveNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3103,7 +2853,7 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3151,7 +2901,7 @@ func TestFeed_HideNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3199,7 +2949,7 @@ func TestFeed_ShowNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3247,7 +2997,7 @@ func TestFeed_PublishAction(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3298,7 +3048,7 @@ func TestFeed_DeleteAction(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3329,7 +3079,7 @@ func TestFeed_DeleteAction(t *testing.T) {
 			name: "action that does not exist - should not error",
 			args: args{
 				ctx:      ctx,
-				actionID: uuid.New().String(),
+				actionID: ksuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -3347,7 +3097,7 @@ func TestFeed_PostMessage(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3383,7 +3133,7 @@ func TestFeed_PostMessage(t *testing.T) {
 			name: "unsuccessful post - non existent item",
 			args: args{
 				ctx:     ctx,
-				itemID:  uuid.New().String(),
+				itemID:  ksuid.New().String(),
 				message: &message,
 			},
 			wantErr: false,
@@ -3416,7 +3166,7 @@ func TestFeed_DeleteMessage(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
@@ -3456,7 +3206,7 @@ func TestFeed_DeleteMessage(t *testing.T) {
 			args: args{
 				ctx:       ctx,
 				itemID:    item.ID,
-				messageID: uuid.New().String(),
+				messageID: ksuid.New().String(),
 			},
 			wantErr: false,
 		},
@@ -3476,7 +3226,7 @@ func TestFeed_ProcessEvent(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
-	uid := uuid.New().String()
+	uid := ksuid.New().String()
 	fe, err := agg.GetThinFeed(ctx, uid, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
@@ -3622,7 +3372,7 @@ func TestDocument_ValidateAndMarshal(t *testing.T) {
 		{
 			name: "valid PDF document",
 			fields: fields{
-				ID:     uuid.New().String(),
+				ID:     ksuid.New().String(),
 				Base64: base64PDFSample,
 			},
 			wantErr: false,
@@ -3630,8 +3380,8 @@ func TestDocument_ValidateAndMarshal(t *testing.T) {
 		{
 			name: "invalid PDF document",
 			fields: fields{
-				ID:     uuid.New().String(),
-				Base64: uuid.New().String(),
+				ID:     ksuid.New().String(),
+				Base64: ksuid.New().String(),
 			},
 			wantErr: true,
 		},
@@ -3656,19 +3406,19 @@ func TestDocument_ValidateAndMarshal(t *testing.T) {
 
 func getTestDocument() feed.Document {
 	return feed.Document{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PDFSample,
 	}
 }
 
 func getTestMessage() feed.Message {
 	return feed.Message{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
-		Text:           uuid.New().String(),
-		ReplyTo:        uuid.New().String(),
-		PostedByUID:    uuid.New().String(),
-		PostedByName:   uuid.New().String(),
+		Text:           ksuid.New().String(),
+		ReplyTo:        ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
+		PostedByName:   ksuid.New().String(),
 		Timestamp:      time.Now(),
 	}
 }
@@ -3679,19 +3429,19 @@ func getTestSequenceNumber() int {
 
 func testItem() *feed.Item {
 	return &feed.Item{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Expiry:         getTextExpiry(),
 		Persistent:     true,
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
 		Icon:           getTestImage(),
-		Author:         uuid.New().String(),
-		Tagline:        uuid.New().String(),
-		Label:          uuid.New().String(),
+		Author:         ksuid.New().String(),
+		Tagline:        ksuid.New().String(),
+		Label:          ksuid.New().String(),
 		Timestamp:      time.Now(),
-		Summary:        uuid.New().String(),
-		Text:           uuid.New().String(),
+		Summary:        ksuid.New().String(),
+		Text:           ksuid.New().String(),
 		Images: []feed.Image{
 			getTestImage(),
 		},
@@ -3705,10 +3455,10 @@ func testItem() *feed.Item {
 			getTestMessage(),
 		},
 		Users: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Groups: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Documents: []feed.Document{
 			getTestDocument(),
@@ -3728,27 +3478,27 @@ func getTextExpiry() time.Time {
 
 func getTestImage() feed.Image {
 	return feed.Image{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PNGSample,
 	}
 }
 
 func getTestVideo() feed.Video {
 	return feed.Video{
-		ID:  uuid.New().String(),
+		ID:  ksuid.New().String(),
 		URL: sampleVideoURL,
 	}
 }
 
 func getTestEvent() feed.Event {
 	return feed.Event{
-		ID:   uuid.New().String(),
+		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
 		Context: feed.Context{
-			UserID:         uuid.New().String(),
+			UserID:         ksuid.New().String(),
 			Flavour:        feed.FlavourConsumer,
-			OrganizationID: uuid.New().String(),
-			LocationID:     uuid.New().String(),
+			OrganizationID: ksuid.New().String(),
+			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
 		},
 	}
@@ -3756,7 +3506,7 @@ func getTestEvent() feed.Event {
 
 func getTestAction() feed.Action {
 	return feed.Action{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
@@ -3767,21 +3517,21 @@ func getTestAction() feed.Action {
 
 func testNudge() *feed.Nudge {
 	return &feed.Nudge{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Title:          uuid.New().String(),
+		Title:          ksuid.New().String(),
 		Image:          getTestImage(),
-		Text:           uuid.New().String(),
+		Text:           ksuid.New().String(),
 		Actions: []feed.Action{
 			getTestAction(),
 		},
 		Users: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Groups: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		NotificationChannels: []feed.Channel{
 			feed.ChannelEmail,

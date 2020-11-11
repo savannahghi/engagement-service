@@ -12,7 +12,6 @@ Welcome to Be.Well Feed Docs's documentation!
 
    data_model
    apis
-   frontend_reactive
 
 Indices and tables
 ==================

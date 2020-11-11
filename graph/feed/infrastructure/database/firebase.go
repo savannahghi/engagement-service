@@ -121,6 +121,33 @@ func (fr Repository) GetFeed(
 		return nil, fmt.Errorf("unable to get items: %w", err)
 	}
 
+	// only add default content if...
+	// - the `persistent` filter is set to "BOTH"
+	// - all other filters are nil
+	if persistent == feed.BooleanFilterBoth && status == nil && visibility == nil && expired == nil && filterParams == nil {
+		// there are no filters operating on the feed so if it is blank it means there is NO content
+		if len(actions) == 0 {
+			actions, err = feed.SetDefaultActions(ctx, uid, flavour, fr)
+			if err != nil {
+				return nil, fmt.Errorf("unable to set default actions: %w", err)
+			}
+		}
+
+		if len(nudges) == 0 {
+			nudges, err = feed.SetDefaultNudges(ctx, uid, flavour, fr)
+			if err != nil {
+				return nil, fmt.Errorf("unable to set default nudges: %w", err)
+			}
+		}
+
+		if len(actions) == 0 {
+			actions, err = feed.SetDefaultActions(ctx, uid, flavour, fr)
+			if err != nil {
+				return nil, fmt.Errorf("unable to set default items: %w", err)
+			}
+		}
+	}
+
 	feed := &feed.Feed{
 		UID:     uid,
 		Flavour: flavour,
@@ -742,6 +769,8 @@ func (fr Repository) getItemsQuery(
 		itemsQuery = itemsQuery.Where("persistent", "==", true)
 	case feed.BooleanFilterFalse:
 		itemsQuery = itemsQuery.Where("persistent", "==", false)
+
+		// feed.BooleanFilterBoth is "passed": no filters added to the query
 	}
 
 	if status != nil {
@@ -820,7 +849,8 @@ func (fr Repository) getActionsQuery(
 	flavour feed.Flavour,
 ) *firestore.Query {
 	query := fr.getActionsCollection(uid, flavour).Query.OrderBy(
-		"id", firestore.Desc).OrderBy("sequenceNumber", firestore.Desc)
+		"id", firestore.Desc,
+	).OrderBy("sequenceNumber", firestore.Desc)
 	return &query
 }
 
@@ -858,8 +888,13 @@ func (fr Repository) getNudgesQuery(
 	status *feed.Status,
 	visibility *feed.Visibility,
 ) *firestore.Query {
-	nudgesQuery := fr.getNudgesCollection(uid, flavour).Query.OrderBy(
-		"id", firestore.Desc).OrderBy("sequenceNumber", firestore.Desc)
+	nudgesQuery := fr.getNudgesCollection(
+		uid, flavour,
+	).Query.OrderBy("expiry", firestore.Desc).OrderBy(
+		"id", firestore.Desc,
+	).OrderBy("sequenceNumber", firestore.Desc).Where(
+		"expiry", "<", time.Now(),
+	)
 	if status != nil {
 		nudgesQuery = nudgesQuery.Where("status", "==", status)
 	}

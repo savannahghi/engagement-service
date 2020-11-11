@@ -9,6 +9,10 @@ A service that fetches and preprocesses content for the feed,library and faqs se
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/d023a368982c38ed7c66)
 
+## GraphQL API
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/0f20d40221953b0b6708)
+
 ## JSON Schema Files
 This project uses JSON Schema to validate inputs and outputs.
 

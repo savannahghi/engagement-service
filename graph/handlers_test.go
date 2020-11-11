@@ -16,9 +16,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/rs/xid"
+	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/feed/graph"
@@ -458,11 +458,11 @@ func TestGraphQLPostMessage(t *testing.T) {
 		"flavour": fl.String(),
 		"itemID":  testItem.ID,
 		"message": map[string]string{
-			"id":             uuid.New().String(),
-			"text":           uuid.New().String(),
-			"replyTo":        uuid.New().String(),
-			"postedByUID":    uuid.New().String(),
-			"postedByName":   uuid.New().String(),
+			"id":             ksuid.New().String(),
+			"text":           ksuid.New().String(),
+			"replyTo":        ksuid.New().String(),
+			"postedByUID":    ksuid.New().String(),
+			"postedByName":   ksuid.New().String(),
 			"timestamp":      time.Now().Format(time.RFC3339),
 			"sequenceNumber": fmt.Sprintf("%d", time.Now().Unix()),
 		},
@@ -2134,10 +2134,10 @@ func TestRoutes(t *testing.T) {
 
 	uid := xid.New().String()
 	fl := feed.FlavourConsumer
-	itemID := uuid.New().String()
-	nudgeID := uuid.New().String()
-	actionID := uuid.New().String()
-	messageID := uuid.New().String()
+	itemID := ksuid.New().String()
+	nudgeID := ksuid.New().String()
+	actionID := ksuid.New().String()
+	messageID := ksuid.New().String()
 
 	type args struct {
 		routeName string
@@ -2477,7 +2477,6 @@ func TestGetFeed(t *testing.T) {
 	type args struct {
 		url        string
 		httpMethod string
-		headers    map[string]string
 		body       io.Reader
 	}
 	tests := []struct {
@@ -2496,7 +2495,6 @@ func TestGetFeed(t *testing.T) {
 					consumer,
 				),
 				httpMethod: http.MethodGet,
-				headers:    getDefaultHeaders(t, baseURL),
 				body:       nil,
 			},
 			wantStatus: http.StatusOK,
@@ -2512,7 +2510,6 @@ func TestGetFeed(t *testing.T) {
 					consumer,
 				),
 				httpMethod: http.MethodGet,
-				headers:    getDefaultHeaders(t, baseURL),
 				body:       nil,
 			},
 			wantStatus: http.StatusOK,
@@ -2528,7 +2525,6 @@ func TestGetFeed(t *testing.T) {
 					consumer,
 				),
 				httpMethod: http.MethodGet,
-				headers:    getDefaultHeaders(t, baseURL),
 				body:       nil,
 			},
 			wantStatus: http.StatusOK,
@@ -2544,7 +2540,6 @@ func TestGetFeed(t *testing.T) {
 					consumer,
 				),
 				httpMethod: http.MethodGet,
-				headers:    getDefaultHeaders(t, baseURL),
 				body:       nil,
 			},
 			wantStatus: http.StatusOK,
@@ -2561,7 +2556,6 @@ func TestGetFeed(t *testing.T) {
 					string(filterParamsJSONBytes),
 				),
 				httpMethod: http.MethodGet,
-				headers:    getDefaultHeaders(t, baseURL),
 				body:       nil,
 			},
 			wantStatus: http.StatusOK,
@@ -2585,7 +2579,7 @@ func TestGetFeed(t *testing.T) {
 				return
 			}
 
-			for k, v := range tt.args.headers {
+			for k, v := range getDefaultHeaders(t, baseURL) {
 				r.Header.Add(k, v)
 			}
 
@@ -2681,7 +2675,7 @@ func TestGetFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodGet,
 				headers:    headers,
@@ -2802,7 +2796,7 @@ func TestGetNudge(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodGet,
 				headers:    headers,
@@ -2923,7 +2917,7 @@ func TestGetAction(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodGet,
 				headers:    headers,
@@ -3155,7 +3149,7 @@ func TestDeleteFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodDelete,
 				headers:    headers,
@@ -3276,7 +3270,7 @@ func TestDeleteNudge(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodDelete,
 				headers:    headers,
@@ -3397,7 +3391,7 @@ func TestDeleteAction(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodDelete,
 				headers:    headers,
@@ -3666,7 +3660,7 @@ func TestDeleteMessage(t *testing.T) {
 					uid,
 					fl.String(),
 					testItem.ID,
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodDelete,
 				headers:    headers,
@@ -4009,7 +4003,7 @@ func TestResolveNudge(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -4130,7 +4124,7 @@ func TestUnresolveNudge(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -4251,7 +4245,7 @@ func TestShowNudge(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -4372,7 +4366,7 @@ func TestHideNudge(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -4604,7 +4598,7 @@ func TestResolveFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -4725,7 +4719,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -4846,7 +4840,7 @@ func TestPinFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -4967,7 +4961,7 @@ func TestUnpinFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -5088,7 +5082,7 @@ func TestHideFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -5209,7 +5203,7 @@ func TestShowFeedItem(t *testing.T) {
 					baseURL,
 					uid,
 					fl.String(),
-					uuid.New().String(),
+					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
@@ -5557,7 +5551,7 @@ func postMessage(
 
 func getTestItem() feed.Item {
 	return feed.Item{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
@@ -5587,7 +5581,7 @@ func getTestItem() feed.Item {
 		},
 		Actions: []feed.Action{
 			{
-				ID:             uuid.New().String(),
+				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
@@ -5634,8 +5628,8 @@ func getTestItem() feed.Item {
 				ID:             "msg-2",
 				Text:           "hii ni reply",
 				ReplyTo:        "msg-1",
-				PostedByName:   uuid.New().String(),
-				PostedByUID:    uuid.New().String(),
+				PostedByName:   ksuid.New().String(),
+				PostedByUID:    ksuid.New().String(),
 				Timestamp:      time.Now(),
 				SequenceNumber: int(time.Now().Unix()),
 			},
@@ -5662,28 +5656,29 @@ func getTestItem() feed.Item {
 
 func getTestDocument() feed.Document {
 	return feed.Document{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PDFSample,
 	}
 }
 
 func testNudge() *feed.Nudge {
 	return &feed.Nudge{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
+		Expiry:         time.Now().Add(time.Hour * 24),
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Title:          uuid.New().String(),
+		Title:          ksuid.New().String(),
 		Image:          getTestImage(),
-		Text:           uuid.New().String(),
+		Text:           ksuid.New().String(),
 		Actions: []feed.Action{
 			getTestAction(),
 		},
 		Users: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Groups: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		NotificationChannels: []feed.Channel{
 			feed.ChannelEmail,
@@ -5700,20 +5695,20 @@ func getTestSequenceNumber() int {
 
 func getTestImage() feed.Image {
 	return feed.Image{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PNGSample,
 	}
 }
 
 func getTestEvent() feed.Event {
 	return feed.Event{
-		ID:   uuid.New().String(),
+		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
 		Context: feed.Context{
-			UserID:         uuid.New().String(),
+			UserID:         ksuid.New().String(),
 			Flavour:        feed.FlavourConsumer,
-			OrganizationID: uuid.New().String(),
-			LocationID:     uuid.New().String(),
+			OrganizationID: ksuid.New().String(),
+			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
 		},
 	}
@@ -5721,7 +5716,7 @@ func getTestEvent() feed.Event {
 
 func getTestAction() feed.Action {
 	return feed.Action{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
@@ -5732,12 +5727,12 @@ func getTestAction() feed.Action {
 
 func getTestMessage() feed.Message {
 	return feed.Message{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
-		Text:           uuid.New().String(),
-		ReplyTo:        uuid.New().String(),
-		PostedByUID:    uuid.New().String(),
-		PostedByName:   uuid.New().String(),
+		Text:           ksuid.New().String(),
+		ReplyTo:        ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
+		PostedByName:   ksuid.New().String(),
 		Timestamp:      time.Now(),
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 )
 
@@ -27,21 +27,21 @@ func main() {
 
 func testNudge() *feed.Nudge {
 	return &feed.Nudge{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Title:          uuid.New().String(),
+		Title:          ksuid.New().String(),
 		Image:          getTestImage(),
-		Text:           uuid.New().String(),
+		Text:           ksuid.New().String(),
 		Actions: []feed.Action{
 			getTestAction(),
 		},
 		Users: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		Groups: []string{
-			uuid.New().String(),
+			ksuid.New().String(),
 		},
 		NotificationChannels: []feed.Channel{
 			feed.ChannelEmail,
@@ -59,20 +59,20 @@ func getTestSequenceNumber() int {
 
 func getTestImage() feed.Image {
 	return feed.Image{
-		ID:     uuid.New().String(),
+		ID:     ksuid.New().String(),
 		Base64: base64PNGSample,
 	}
 }
 
 func getTestEvent() feed.Event {
 	return feed.Event{
-		ID:   uuid.New().String(),
+		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
 		Context: feed.Context{
-			UserID:         uuid.New().String(),
+			UserID:         ksuid.New().String(),
 			Flavour:        feed.FlavourConsumer,
-			OrganizationID: uuid.New().String(),
-			LocationID:     uuid.New().String(),
+			OrganizationID: ksuid.New().String(),
+			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
 		},
 	}
@@ -80,7 +80,7 @@ func getTestEvent() feed.Event {
 
 func getTestAction() feed.Action {
 	return feed.Action{
-		ID:             uuid.New().String(),
+		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
