@@ -409,15 +409,15 @@ func (fe Feed) DeleteFeedItem(
 		return fmt.Errorf("feed precondition check failed: %w", err)
 	}
 
-	// TODO Delete all feed items...all sequence numbers
 	item, err := fe.GetFeedItem(ctx, itemID)
-	if err != nil {
-		// fails to error because this should be idempotent
+	if err != nil || item == nil {
+		// fails to error because it should be safe to retry deletes
 		return nil // does not exist, nothing to delete
 	}
 
-	if item == nil {
-		return nil
+	err = fe.repository.DeleteFeedItem(ctx, fe.UID, fe.Flavour, itemID)
+	if err != nil {
+		return fmt.Errorf("unable to delete item: %s", err)
 	}
 
 	if err := fe.notificationService.Notify(
@@ -437,7 +437,6 @@ func (fe Feed) ResolveFeedItem(
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
 
-	// TODO New feed item with incremented sequence number
 	item, err := fe.repository.GetFeedItem(ctx, fe.UID, fe.Flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -448,6 +447,7 @@ func (fe Feed) ResolveFeedItem(
 	}
 
 	item.Status = StatusDone
+	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
@@ -482,6 +482,7 @@ func (fe Feed) PinFeedItem(
 	}
 
 	item.Persistent = true
+	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
@@ -516,6 +517,7 @@ func (fe Feed) UnpinFeedItem(
 	}
 
 	item.Persistent = false
+	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
@@ -550,6 +552,7 @@ func (fe Feed) UnresolveFeedItem(
 	}
 
 	item.Status = StatusPending
+	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
@@ -587,6 +590,7 @@ func (fe Feed) HideFeedItem(
 	}
 
 	item.Visibility = VisibilityHide
+	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
@@ -621,6 +625,7 @@ func (fe Feed) ShowFeedItem(
 	}
 
 	item.Visibility = VisibilityShow
+	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
@@ -706,6 +711,7 @@ func (fe Feed) ResolveNudge(
 	}
 
 	nudge.Status = StatusDone
+	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
 	if err != nil {
@@ -739,6 +745,7 @@ func (fe Feed) UnresolveNudge(
 	}
 
 	nudge.Status = StatusPending
+	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
 	if err != nil {
@@ -772,6 +779,7 @@ func (fe Feed) HideNudge(
 	}
 
 	nudge.Visibility = VisibilityHide
+	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
 	if err != nil {
@@ -801,6 +809,7 @@ func (fe Feed) ShowNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 	}
 
 	nudge.Visibility = VisibilityShow
+	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
 	if err != nil {
@@ -822,12 +831,8 @@ func (fe Feed) DeleteNudge(ctx context.Context, nudgeID string) error {
 	}
 
 	nudge, err := fe.GetNudge(ctx, nudgeID)
-	if err != nil {
+	if err != nil || nudge == nil {
 		return nil // no error, "re-deleting" a nudge should not cause an error
-	}
-
-	if nudge == nil {
-		return nil
 	}
 
 	err = fe.repository.DeleteNudge(ctx, fe.UID, fe.Flavour, nudgeID)
@@ -903,12 +908,8 @@ func (fe Feed) DeleteAction(ctx context.Context, actionID string) error {
 	}
 
 	action, err := fe.GetAction(ctx, actionID)
-	if err != nil {
+	if err != nil || action == nil {
 		return nil // no harm "re-deleting" an already deleted action
-	}
-
-	if action == nil {
-		return nil
 	}
 
 	err = fe.repository.DeleteAction(ctx, fe.UID, fe.Flavour, actionID)
@@ -993,12 +994,8 @@ func (fe Feed) DeleteMessage(
 		itemID,
 		messageID,
 	)
-	if err != nil {
+	if err != nil || message == nil {
 		return nil // no harm "re-deleting" an already deleted message
-	}
-
-	if message == nil {
-		return nil
 	}
 
 	err = fe.repository.DeleteMessage(

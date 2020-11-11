@@ -19,7 +19,7 @@ type Repository interface {
 		filterParams *FilterParams,
 	) (*Feed, error)
 
-	// getting a single item from a feed
+	// getting a the LATEST VERSION of a feed item from a feed
 	GetFeedItem(
 		ctx context.Context,
 		uid string,
@@ -51,7 +51,7 @@ type Repository interface {
 		itemID string,
 	) error
 
-	// getting a single nudge from a feed
+	// getting THE LATEST VERSION OF a nudge from a feed
 	GetNudge(
 		ctx context.Context,
 		uid string,
@@ -83,7 +83,7 @@ type Repository interface {
 		nudgeID string,
 	) error
 
-	// getting a single action
+	// getting THE LATEST VERSION OF a single action
 	GetAction(
 		ctx context.Context,
 		uid string,
@@ -116,7 +116,7 @@ type Repository interface {
 		message *Message,
 	) (*Message, error)
 
-	// GetMessage retrieves a message
+	// GetMessage retrieves THE LATEST VERSION OF a message
 	GetMessage(
 		ctx context.Context,
 		uid string,
