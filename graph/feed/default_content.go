@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	defaultSequenceNumber     = 1
-	futureHours               = 878400 // a century of leap years...
+	defaultSequenceNumber = 1
+	futureHours           = 878400 // hours in a century of leap years...
+
 	getConsultationActionName = "GET_CONSULTATION"
 	getMedicineActionName     = "GET_MEDICINE"
 	getTestActionName         = "GET_TEST"
@@ -25,10 +26,12 @@ const (
 	completeProfileActionName = "COMPLETE_PROFILE"
 	completeKYCActionName     = "COMPLETE_KYC"
 
-	defaultOrg      = "default-org-id-please-change"
-	defaultLocation = "default-location-id-please-change"
-
+	defaultOrg        = "default-org-id-please-change"
+	defaultLocation   = "default-location-id-please-change"
 	defaultContentDir = "/graph/feed/content"
+	defaultIconPath   = "/graph/feed/content/bewell_logo.png"
+	defaultAuthor     = "Be.Well Team"
+	defaultLabel      = "WELCOME"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -233,7 +236,7 @@ func defaultConsumerItems(
 ) ([]Item, error) {
 	var items []Item
 	fns := []itemGenerator{
-		// TODO Consumer default feed item generators
+		simpleConsumerWelcome,
 	}
 	for _, fn := range fns {
 		item, err := fn(ctx, uid, flavour, repository)
@@ -253,7 +256,7 @@ func defaultProItems(
 ) ([]Item, error) {
 	var items []Item
 	fns := []itemGenerator{
-		// TODO Pro default feed item generators
+		simpleProWelcome,
 	}
 	for _, fn := range fns {
 		item, err := fn(ctx, uid, flavour, repository)
@@ -263,6 +266,76 @@ func defaultProItems(
 		items = append(items, *item)
 	}
 	return items, nil
+}
+
+func simpleConsumerWelcome(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Item, error) {
+	persistent := false
+	tagline := "Welcome to Be.Well"
+	summary := "What is Be.Well?"
+	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
+	images := []Image{}
+	documents := []Document{}
+	videos := []Video{}
+	actions := []Action{}
+	conversations := []Message{}
+	return createFeedItem(
+		ctx,
+		uid,
+		flavour,
+		defaultAuthor,
+		tagline,
+		defaultLabel,
+		defaultIconPath,
+		summary,
+		text,
+		images,
+		documents,
+		videos,
+		actions,
+		conversations,
+		persistent,
+		repository,
+	)
+}
+
+func simpleProWelcome(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Item, error) {
+	persistent := false
+	tagline := "Welcome to Be.Well"
+	summary := "What is Be.Well?"
+	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to provide affordable high-quality healthcare - whether online or in person."
+	images := []Image{}
+	documents := []Document{}
+	videos := []Video{}
+	actions := []Action{}
+	conversations := []Message{}
+	return createFeedItem(
+		ctx,
+		uid,
+		flavour,
+		defaultAuthor,
+		tagline,
+		defaultLabel,
+		defaultIconPath,
+		summary,
+		text,
+		images,
+		documents,
+		videos,
+		actions,
+		conversations,
+		persistent,
+		repository,
+	)
 }
 
 func defaultSeeDoctorAction(
@@ -627,4 +700,65 @@ func createAction(
 		return nil, fmt.Errorf("unable to save action: %w", err)
 	}
 	return action, nil
+}
+
+func createFeedItem(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	author string,
+	tagline string,
+	label string,
+	iconImagePath string,
+	summary string,
+	text string,
+	images []Image,
+	documents []Document,
+	videos []Video,
+	actions []Action,
+	conversations []Message,
+	persistent bool,
+	repository Repository,
+) (*Item, error) {
+	b64, err := imagePathToBase64(iconImagePath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load nudge image: %w", err)
+	}
+
+	future := time.Now().Add(time.Hour * futureHours)
+	item := &Item{
+		ID:             ksuid.New().String(),
+		SequenceNumber: defaultSequenceNumber,
+		Expiry:         future,
+		Persistent:     persistent,
+		Status:         StatusPending,
+		Visibility:     VisibilityShow,
+		Icon: Image{
+			ID:     ksuid.New().String(),
+			Base64: b64,
+		},
+		Author:               author,
+		Tagline:              tagline,
+		Label:                label,
+		Timestamp:            time.Now(),
+		Summary:              summary,
+		Text:                 text,
+		Images:               images,
+		Documents:            documents,
+		Videos:               videos,
+		Actions:              actions,
+		Conversations:        conversations,
+		Groups:               []string{},
+		Users:                []string{uid},
+		NotificationChannels: []Channel{},
+	}
+	_, err = item.ValidateAndMarshal()
+	if err != nil {
+		return nil, fmt.Errorf("item validation error: %w", err)
+	}
+	item, err = repository.SaveFeedItem(ctx, uid, flavour, item)
+	if err != nil {
+		return nil, fmt.Errorf("unable to save item: %w", err)
+	}
+	return item, nil
 }
