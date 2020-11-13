@@ -27,7 +27,12 @@ const (
 
 	defaultOrg      = "default-org-id-please-change"
 	defaultLocation = "default-location-id-please-change"
+
+	defaultContentDir = "/graph/feed/content"
 )
+
+// embed default content assets (e.g images and documents) in the binary
+var _ = pkger.Dir(defaultContentDir)
 
 type actionGenerator func(
 	ctx context.Context,
