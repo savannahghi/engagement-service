@@ -3,7 +3,6 @@ package messaging
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"cloud.google.com/go/pubsub"
@@ -160,12 +159,10 @@ func (ps PubSubNotificationService) Notify(
 
 	// Block until the result is returned and a server-generated
 	// ID is returned for the published message.
-	id, err := result.Get(ctx)
+	_, err = result.Get(ctx) // message id ignored for now
 	if err != nil {
 		return fmt.Errorf("unable to publish message: %w", err)
 	}
-
-	log.Printf("published %T to %s, got ID %s", el, topicID, id)
 
 	return nil
 }

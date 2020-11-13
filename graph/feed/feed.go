@@ -1204,29 +1204,29 @@ type Item struct {
 	Text string `json:"text" firestore:"text"`
 
 	// Images that are either uploaded or taken directly with the camera
-	Images []Image `json:"images" firestore:"images"`
+	Images []Image `json:"images,omitempty" firestore:"images,omitempty"`
 
 	// Documents that are attached to the item
-	Documents []Document `json:"documents" firestore:"documents"`
+	Documents []Document `json:"documents,omitempty" firestore:"documents,omitempty"`
 
 	// URLs to embedded videos e.g CMS URLs, with authentication
-	Videos []Video `json:"videos" firestore:"videos"`
+	Videos []Video `json:"videos,omitempty" firestore:"videos,omitempty"`
 
 	// Actions are the primary, secondary and overflow actions associated
 	// with a feed item
-	Actions []Action `json:"actions" firestore:"actions"`
+	Actions []Action `json:"actions,omitempty" firestore:"actions,omitempty"`
 
 	// Conversations are messages and replies around a feed item
-	Conversations []Message `json:"conversations" firestore:"conversations"`
+	Conversations []Message `json:"conversations,omitempty" firestore:"conversations,omitempty"`
 
 	// Identifiers of all the users that got this message
-	Users []string `json:"users" firestore:"users"`
+	Users []string `json:"users,omitempty" firestore:"users,omitempty"`
 
 	// Identifiers of all the groups that got this message
-	Groups []string `json:"groups" firestore:"groups"`
+	Groups []string `json:"groups,omitempty" firestore:"groups,omitempty"`
 
 	// How the user should be notified of this new item, if at all
-	NotificationChannels []Channel `json:"notificationChannels" firestore:"notificationChannels"`
+	NotificationChannels []Channel `json:"notificationChannels,omitempty" firestore:"notificationChannels,omitempty"`
 }
 
 // ValidateAndUnmarshal checks that the input data is valid as per the
@@ -1349,7 +1349,6 @@ func validateAgainstSchema(sch string, b []byte) error {
 	documentLoader := gojsonschema.NewStringLoader(string(b))
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		log.Printf("Schema JSON source: %s", schemaLoader.JsonSource())
 		return fmt.Errorf(
 			"failed to validate `%s` against %s, got %#v: %w",
 			string(b),
@@ -1465,7 +1464,6 @@ func getSchemaURL() string {
 				log.Printf("schema URL error status code: %s", resp.Status)
 			}
 			if resp.StatusCode == http.StatusOK {
-				log.Printf("the schema URL %s is OK", schemaHost)
 				return schemaHost // we want this case to be the most common
 			}
 		}

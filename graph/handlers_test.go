@@ -50,9 +50,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// run the tests
-	log.Printf("about to run tests")
 	code := m.Run()
-	log.Printf("finished running tests")
 
 	// cleanup here
 	defer func() {
@@ -272,7 +270,6 @@ func TestGraphQLProcessEvent(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -400,7 +397,6 @@ func TestGraphQLDeleteMessage(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -536,7 +532,6 @@ func TestGraphQLPostMessage(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -688,7 +683,6 @@ func TestGraphQLHideNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -840,7 +834,6 @@ func TestGraphQLShowNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1014,7 +1007,6 @@ func TestGraphQLResolveFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1188,7 +1180,6 @@ func TestGraphQLUnresolveFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1360,7 +1351,6 @@ func TestGraphQLPinFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1532,7 +1522,6 @@ func TestGraphQLUnpinFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1705,7 +1694,6 @@ func TestGraphQLHideFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1878,7 +1866,6 @@ func TestGraphQLShowFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2115,7 +2102,6 @@ query GetFeed(
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2569,13 +2555,14 @@ func TestGetFeed(t *testing.T) {
 				tt.args.url,
 				tt.args.body,
 			)
-			assert.Nil(t, err)
+
 			if err != nil {
+				t.Errorf("can't create new request: %v", err)
 				return
 			}
 
-			assert.NotNil(t, r)
 			if r == nil {
+				t.Errorf("nil request")
 				return
 			}
 
@@ -2584,35 +2571,40 @@ func TestGetFeed(t *testing.T) {
 			}
 
 			resp, err := client.Do(r)
-			assert.Nil(t, err)
 			if err != nil {
+				t.Errorf("HTTP error: %v", err)
 				return
 			}
 
-			assert.NotNil(t, resp)
-			if resp == nil {
+			if !tt.wantErr && resp == nil {
+				t.Errorf("unexpected nil response (did not expect an error)")
+				return
+			}
+
+			if tt.wantErr {
+				// early exit
 				return
 			}
 
 			data, err := ioutil.ReadAll(resp.Body)
-			assert.Nil(t, err)
 			if err != nil {
+				t.Errorf("can't read response body: %v", err)
 				return
 			}
 
-			assert.NotNil(t, data)
 			if data == nil {
+				t.Errorf("nil response body data")
 				return
 			}
 
-			log.Printf("response: %s", string(data))
-			if (err != nil) != tt.wantErr {
-				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantStatus != resp.StatusCode {
+				t.Errorf("expected status %d, got %d and response %s", tt.wantStatus, resp.StatusCode, string(data))
 				return
 			}
-			assert.Equal(t, tt.wantStatus, resp.StatusCode)
-			if !tt.wantErr {
-				assert.NotNil(t, resp)
+
+			if !tt.wantErr && resp == nil {
+				t.Errorf("unexpected nil response (did not expect an error)")
+				return
 			}
 		})
 	}
@@ -2728,7 +2720,6 @@ func TestGetFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2849,7 +2840,6 @@ func TestGetNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2970,7 +2960,6 @@ func TestGetAction(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3081,7 +3070,6 @@ func TestPublishFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3202,7 +3190,6 @@ func TestDeleteFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3323,7 +3310,6 @@ func TestDeleteNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3444,7 +3430,6 @@ func TestDeleteAction(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3574,7 +3559,6 @@ func TestPostMessage(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3713,7 +3697,6 @@ func TestDeleteMessage(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3824,7 +3807,6 @@ func TestProcessEvent(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3935,7 +3917,6 @@ func TestPublishNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4056,7 +4037,6 @@ func TestResolveNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4177,7 +4157,6 @@ func TestUnresolveNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4298,7 +4277,6 @@ func TestShowNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4419,7 +4397,6 @@ func TestHideNudge(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4530,7 +4507,6 @@ func TestPublishAction(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4651,7 +4627,6 @@ func TestResolveFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4772,7 +4747,6 @@ func TestUnresolveFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -4893,7 +4867,6 @@ func TestPinFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -5014,7 +4987,6 @@ func TestUnpinFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -5135,7 +5107,6 @@ func TestHideFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -5256,7 +5227,6 @@ func TestShowFeedItem(t *testing.T) {
 				return
 			}
 
-			log.Printf("response: %s", string(data))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return

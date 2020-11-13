@@ -610,6 +610,7 @@ func imagePathToBase64(path string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("can't open pkger image path: %w", err)
 	}
+	defer img.Close()
 
 	imgBytes, err := ioutil.ReadAll(img)
 	if err != nil {

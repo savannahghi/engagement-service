@@ -1014,8 +1014,6 @@ func ProcessEvent(
 			return
 		}
 
-		log.Printf("event data: %s", string(data))
-
 		event := &feed.Event{}
 		err = event.ValidateAndUnmarshal(data)
 		if err != nil {
@@ -1048,7 +1046,6 @@ func ProcessEvent(
 
 func respondWithError(w http.ResponseWriter, code int, err error) {
 	errMap := base.ErrorMap(err)
-	log.Printf("handler error: %#v", err)
 	errBytes, err := json.Marshal(errMap)
 	if err != nil {
 		errBytes = []byte(fmt.Sprintf("error: %s", err))
@@ -1196,7 +1193,6 @@ func getOptionalBooleanFilterQueryParam(r *http.Request, paramName string) (*fee
 
 	boolFilter := feed.BooleanFilter(val)
 	if !boolFilter.IsValid() {
-		log.Printf("boolean filter val: %s", val)
 		return nil, fmt.Errorf("optional bool: `%s` is not a valid boolean filter value", val)
 	}
 
@@ -1211,7 +1207,6 @@ func getRequiredBooleanFilterQueryParam(r *http.Request, paramName string) (feed
 
 	boolFilter := feed.BooleanFilter(val)
 	if !boolFilter.IsValid() {
-		log.Printf("boolean filter val: %s", val)
 		return "", fmt.Errorf("required bool: `%s` is not a valid boolean filter value", val)
 	}
 
@@ -1277,9 +1272,6 @@ func getStringVar(r *http.Request, varName string) (string, error) {
 		return "", fmt.Errorf("can't get string var from a nil request")
 	}
 	pathVars := mux.Vars(r)
-	if base.IsDebug() {
-		log.Printf("Mux var: %#v", pathVars)
-	}
 	pathVar, found := pathVars[varName]
 	if !found {
 		return "", fmt.Errorf("the request does not have a path var named `%s`", varName)
@@ -1288,13 +1280,11 @@ func getStringVar(r *http.Request, varName string) (string, error) {
 }
 
 func schemaHandler() (http.Handler, error) {
-	log.Printf("schema handler invoked")
 	f, err := pkger.Open(schemaDir)
 	if err != nil {
 		return nil, fmt.Errorf("can't open pkger schema dir: %w", err)
 	}
+	defer f.Close()
 
-	dir := f.Path().String()
-	log.Printf("pkger schema dir: %s", dir)
 	return http.StripPrefix("/schema", http.FileServer(f)), nil
 }
