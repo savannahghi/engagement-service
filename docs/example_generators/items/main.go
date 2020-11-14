@@ -62,20 +62,6 @@ func getTestItem() feed.Item {
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "THIS_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						OrganizationID: "org-1",
-						LocationID:     "loc-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": 1},
-					},
-				},
 			},
 			{
 				ID:             "action-1",
@@ -83,20 +69,6 @@ func getTestItem() feed.Item {
 				Name:           "First action",
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "AN_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						LocationID:     "location-1",
-						OrganizationID: "organization-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": "1"},
-					},
-				},
 			},
 		},
 		Conversations: []feed.Message{

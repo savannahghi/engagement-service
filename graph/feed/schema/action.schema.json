@@ -34,9 +34,6 @@
                 "name": {
                     "type": "string",
                     "description": "A friendly name for the action; rich text with Unicode, can include emoji"
-                },
-                "event": {
-                    "$ref": "https://schema.healthcloud.co.ke/event.schema.json#/definitions/event"
                 }
             },
             "required": [
@@ -44,8 +41,7 @@
                 "sequenceNumber",
                 "name",
                 "actionType",
-                "handling",
-                "event"
+                "handling"
             ],
             "additionalProperties": false
         }

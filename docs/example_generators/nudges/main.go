@@ -64,20 +64,6 @@ func getTestImage() feed.Image {
 	}
 }
 
-func getTestEvent() feed.Event {
-	return feed.Event{
-		ID:   ksuid.New().String(),
-		Name: "TEST_EVENT",
-		Context: feed.Context{
-			UserID:         ksuid.New().String(),
-			Flavour:        feed.FlavourConsumer,
-			OrganizationID: ksuid.New().String(),
-			LocationID:     ksuid.New().String(),
-			Timestamp:      time.Now(),
-		},
-	}
-}
-
 func getTestAction() feed.Action {
 	return feed.Action{
 		ID:             ksuid.New().String(),
@@ -85,6 +71,5 @@ func getTestAction() feed.Action {
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
 		Handling:       feed.HandlingFullPage,
-		Event:          getTestEvent(),
 	}
 }

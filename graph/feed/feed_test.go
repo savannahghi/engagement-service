@@ -66,20 +66,6 @@ func getTestItem() feed.Item {
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "THIS_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourPro,
-						OrganizationID: "org-1",
-						LocationID:     "loc-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": 1},
-					},
-				},
 			},
 			{
 				ID:             "action-1",
@@ -87,20 +73,6 @@ func getTestItem() feed.Item {
 				Name:           "First action",
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "AN_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						LocationID:     "location-1",
-						OrganizationID: "organization-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": "1"},
-					},
-				},
 			},
 		},
 		Conversations: []feed.Message{
@@ -293,20 +265,6 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "THIS_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						OrganizationID: "org-1",
-						LocationID:     "loc-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": 1},
-					},
-				},
 			},
 			{
 				ID:             "action-1",
@@ -314,20 +272,6 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				Name:           "First action",
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "AN_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourPro,
-						LocationID:     "location-1",
-						OrganizationID: "organization-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": "1"},
-					},
-				},
 			},
 		},
 		Conversations: []feed.Message{
@@ -465,20 +409,6 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 				Name:           "First action",
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "AN_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						LocationID:     "location-1",
-						OrganizationID: "organization-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": "1"},
-					},
-				},
 			},
 		},
 		Groups: []string{
@@ -572,20 +502,6 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		Name:           "ACTION_NAME",
 		ActionType:     feed.ActionTypeSecondary,
 		Handling:       feed.HandlingFullPage,
-		Event: feed.Event{
-			ID:   "event-1",
-			Name: "THIS_EVENT",
-			Context: feed.Context{
-				UserID:         "user-1",
-				Flavour:        feed.FlavourConsumer,
-				OrganizationID: "org-1",
-				LocationID:     "loc-1",
-				Timestamp:      time.Now(),
-			},
-			Payload: feed.Payload{
-				Data: map[string]interface{}{"a": 1},
-			},
-		},
 	}
 	validBytes, err := json.Marshal(validElement)
 	assert.Nil(t, err)
@@ -598,7 +514,6 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		Name           string
 		ActionType     feed.ActionType
 		Handling       feed.Handling
-		Event          feed.Event
 	}
 	type args struct {
 		b []byte
@@ -632,7 +547,6 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 				Name:           tt.fields.Name,
 				ActionType:     tt.fields.ActionType,
 				Handling:       tt.fields.Handling,
-				Event:          tt.fields.Event,
 			}
 			if err := ac.ValidateAndUnmarshal(
 				tt.args.b); (err != nil) != tt.wantErr {
@@ -658,20 +572,6 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "THIS_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						OrganizationID: "org-1",
-						LocationID:     "loc-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": 1},
-					},
-				},
 			},
 			{
 				ID:             "action-1",
@@ -679,20 +579,6 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Name:           "First action",
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "AN_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourPro,
-						LocationID:     "location-1",
-						OrganizationID: "organization-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": "1"},
-					},
-				},
 			},
 		},
 		Nudges: []feed.Nudge{
@@ -714,20 +600,6 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						Name:           "First action",
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "AN_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourConsumer,
-								LocationID:     "location-1",
-								OrganizationID: "organization-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": "1"},
-							},
-						},
 					},
 				},
 				Groups: []string{
@@ -783,20 +655,6 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						Name:           "ACTION_NAME",
 						ActionType:     feed.ActionTypeSecondary,
 						Handling:       feed.HandlingFullPage,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "THIS_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourConsumer,
-								OrganizationID: "org-1",
-								LocationID:     "loc-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": 1},
-							},
-						},
 					},
 					{
 						ID:             "action-1",
@@ -804,20 +662,6 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						Name:           "First action",
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "AN_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourPro,
-								LocationID:     "location-1",
-								OrganizationID: "organization-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": "1"},
-							},
-						},
 					},
 				},
 				Conversations: []feed.Message{
@@ -933,20 +777,6 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Name:           "ACTION_NAME",
 						ActionType:     feed.ActionTypeSecondary,
 						Handling:       feed.HandlingFullPage,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "THIS_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourConsumer,
-								OrganizationID: "org-1",
-								LocationID:     "loc-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": 1},
-							},
-						},
 					},
 					{
 						ID:             "action-1",
@@ -954,20 +784,6 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Name:           "First action",
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "AN_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourConsumer,
-								LocationID:     "location-1",
-								OrganizationID: "organization-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": "1"},
-							},
-						},
 					},
 				},
 				Nudges: []feed.Nudge{
@@ -989,20 +805,6 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								Name:           "First action",
 								ActionType:     feed.ActionTypePrimary,
 								Handling:       feed.HandlingInline,
-								Event: feed.Event{
-									ID:   "event-1",
-									Name: "AN_EVENT",
-									Context: feed.Context{
-										UserID:         "user-1",
-										Flavour:        feed.FlavourConsumer,
-										LocationID:     "location-1",
-										OrganizationID: "organization-1",
-										Timestamp:      time.Now(),
-									},
-									Payload: feed.Payload{
-										Data: map[string]interface{}{"a": "1"},
-									},
-								},
 							},
 						},
 						Groups: []string{
@@ -1058,20 +860,6 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								Name:           "ACTION_NAME",
 								ActionType:     feed.ActionTypeSecondary,
 								Handling:       feed.HandlingFullPage,
-								Event: feed.Event{
-									ID:   "event-1",
-									Name: "THIS_EVENT",
-									Context: feed.Context{
-										UserID:         "user-1",
-										Flavour:        feed.FlavourConsumer,
-										OrganizationID: "org-1",
-										LocationID:     "loc-1",
-										Timestamp:      time.Now(),
-									},
-									Payload: feed.Payload{
-										Data: map[string]interface{}{"a": 1},
-									},
-								},
 							},
 							{
 								ID:             "action-1",
@@ -1079,20 +867,6 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								Name:           "First action",
 								ActionType:     feed.ActionTypePrimary,
 								Handling:       feed.HandlingInline,
-								Event: feed.Event{
-									ID:   "event-1",
-									Name: "AN_EVENT",
-									Context: feed.Context{
-										UserID:         "user-1",
-										Flavour:        feed.FlavourPro,
-										LocationID:     "location-1",
-										OrganizationID: "organization-1",
-										Timestamp:      time.Now(),
-									},
-									Payload: feed.Payload{
-										Data: map[string]interface{}{"a": "1"},
-									},
-								},
 							},
 						},
 						Conversations: []feed.Message{
@@ -1165,7 +939,6 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 		Name           string
 		ActionType     feed.ActionType
 		Handling       feed.Handling
-		Event          feed.Event
 	}
 	tests := []struct {
 		name    string
@@ -1180,20 +953,6 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 				Name:           "First action",
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "AN_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						LocationID:     "location-1",
-						OrganizationID: "organization-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": "1"},
-					},
-				},
 			},
 			wantErr: false,
 		},
@@ -1210,7 +969,6 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 				Name:           tt.fields.Name,
 				ActionType:     tt.fields.ActionType,
 				Handling:       tt.fields.Handling,
-				Event:          tt.fields.Event,
 			}
 			got, err := ac.ValidateAndMarshal()
 			if (err != nil) != tt.wantErr {
@@ -1267,20 +1025,6 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 						Name:           "First action",
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "AN_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourConsumer,
-								LocationID:     "location-1",
-								OrganizationID: "organization-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": "1"},
-							},
-						},
 					},
 				},
 				Groups: []string{
@@ -1406,20 +1150,6 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						Name:           "ACTION_NAME",
 						ActionType:     feed.ActionTypeSecondary,
 						Handling:       feed.HandlingFullPage,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "THIS_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourConsumer,
-								OrganizationID: "org-1",
-								LocationID:     "loc-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": 1},
-							},
-						},
 					},
 					{
 						ID:             "action-1",
@@ -1427,20 +1157,6 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						Name:           "First action",
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
-						Event: feed.Event{
-							ID:   "event-1",
-							Name: "AN_EVENT",
-							Context: feed.Context{
-								UserID:         "user-1",
-								Flavour:        feed.FlavourPro,
-								LocationID:     "location-1",
-								OrganizationID: "organization-1",
-								Timestamp:      time.Now(),
-							},
-							Payload: feed.Payload{
-								Data: map[string]interface{}{"a": "1"},
-							},
-						},
 					},
 				},
 				Conversations: []feed.Message{
@@ -3511,7 +3227,6 @@ func getTestAction() feed.Action {
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
 		Handling:       feed.HandlingFullPage,
-		Event:          getTestEvent(),
 	}
 }
 

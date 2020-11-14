@@ -679,17 +679,6 @@ func createAction(
 		Name:           name,
 		ActionType:     actionType,
 		Handling:       handling,
-		Event: Event{
-			ID:   ksuid.New().String(),
-			Name: name,
-			Context: Context{
-				UserID:         uid,
-				Flavour:        flavour,
-				OrganizationID: defaultOrg,
-				LocationID:     defaultLocation,
-				Timestamp:      time.Now(),
-			},
-		},
 	}
 	_, err := action.ValidateAndMarshal()
 	if err != nil {

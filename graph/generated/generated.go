@@ -49,7 +49,6 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Action struct {
 		ActionType     func(childComplexity int) int
-		Event          func(childComplexity int) int
 		Handling       func(childComplexity int) int
 		ID             func(childComplexity int) int
 		Name           func(childComplexity int) int
@@ -221,13 +220,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Action.ActionType(childComplexity), true
-
-	case "Action.event":
-		if e.complexity.Action.Event == nil {
-			break
-		}
-
-		return e.complexity.Action.Event(childComplexity), true
 
 	case "Action.handling":
 		if e.complexity.Action.Handling == nil {
@@ -1043,7 +1035,6 @@ type Action {
   name: String!
   actionType: ActionType!
   handling: Handling!
-  event: Event!
 }
 
 type Event {
@@ -1788,41 +1779,6 @@ func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.
 	res := resTmp.(feed.Handling)
 	fc.Result = res
 	return ec.marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐHandling(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Action_event(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Action",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Event, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(feed.Event)
-	fc.Result = res
-	return ec.marshalNEvent2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
@@ -6005,11 +5961,6 @@ func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "event":
-			out.Values[i] = ec._Action_event(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7063,10 +7014,6 @@ func (ec *executionContext) marshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋg
 func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐContext(ctx context.Context, v interface{}) (feed.Context, error) {
 	res, err := ec.unmarshalInputContextInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNEvent2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx context.Context, sel ast.SelectionSet, v feed.Event) graphql.Marshaler {
-	return ec._Event(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐEvent(ctx context.Context, v interface{}) (feed.Event, error) {

@@ -584,20 +584,6 @@ func TestGraphQLHideNudge(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  groups
 		  users
@@ -735,20 +721,6 @@ func TestGraphQLShowNudge(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  groups
 		  users
@@ -903,20 +875,6 @@ func TestGraphQLResolveFeedItem(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  conversations {
 			id
@@ -1076,20 +1034,6 @@ func TestGraphQLUnresolveFeedItem(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  conversations {
 			id
@@ -1248,20 +1192,6 @@ func TestGraphQLPinFeedItem(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  conversations {
 			id
@@ -1419,20 +1349,6 @@ func TestGraphQLUnpinFeedItem(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  conversations {
 			id
@@ -1590,20 +1506,6 @@ func TestGraphQLHideFeedItem(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  conversations {
 			id
@@ -1762,20 +1664,6 @@ func TestGraphQLShowFeedItem(t *testing.T) {
 			name
 			actionType
 			handling
-			event {
-			  id
-			  name
-			  context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			  }
-			  payload {
-				data
-			  }
-			}
 		  }
 		  conversations {
 			id
@@ -1906,25 +1794,11 @@ query GetFeed(
 		uid
 		flavour
 		actions {
-		id
-		sequenceNumber
-		name
-		actionType
-		handling
-		event {
 			id
+			sequenceNumber
 			name
-			context {
-			userID
-			flavour
-			organizationID
-			locationID
-			timestamp
-			}
-			payload {
-			data
-			}
-		}
+			actionType
+			handling
 		}
 		nudges {
 		id
@@ -1939,20 +1813,6 @@ query GetFeed(
 			name
 			actionType
 			handling
-			event {
-			id
-			name
-			context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			}
-			payload {
-				data
-			}
-			}
 		}
 		groups
 		users
@@ -1993,20 +1853,6 @@ query GetFeed(
 			name
 			actionType
 			handling
-			event {
-			id
-			name
-			context {
-				userID
-				flavour
-				organizationID
-				locationID
-				timestamp
-			}
-			payload {
-				data
-			}
-			}
 		}
 		conversations {
 			id
@@ -5556,20 +5402,6 @@ func getTestItem() feed.Item {
 				Name:           "ACTION_NAME",
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "THIS_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						OrganizationID: "org-1",
-						LocationID:     "loc-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": 1},
-					},
-				},
 			},
 			{
 				ID:             "action-1",
@@ -5577,20 +5409,6 @@ func getTestItem() feed.Item {
 				Name:           "First action",
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
-				Event: feed.Event{
-					ID:   "event-1",
-					Name: "AN_EVENT",
-					Context: feed.Context{
-						UserID:         "user-1",
-						Flavour:        feed.FlavourConsumer,
-						LocationID:     "location-1",
-						OrganizationID: "organization-1",
-						Timestamp:      time.Now(),
-					},
-					Payload: feed.Payload{
-						Data: map[string]interface{}{"a": "1"},
-					},
-				},
 			},
 		},
 		Conversations: []feed.Message{
@@ -5691,7 +5509,6 @@ func getTestAction() feed.Action {
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
 		Handling:       feed.HandlingFullPage,
-		Event:          getTestEvent(),
 	}
 }
 

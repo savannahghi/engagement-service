@@ -991,10 +991,6 @@ type Action struct {
 	// How the action should be handled e.g inline or full page.
 	// This is a hint for frontend logic.
 	Handling Handling `json:"handling" firestore:"handling"`
-
-	// This is the event emitted by the action. When the action is created,
-	// it
-	Event Event `json:"event" firestore:"event"`
 }
 
 // ValidateAndUnmarshal checks that the input data is valid as per the

@@ -74,7 +74,6 @@ func getTestAction() feed.Action {
 		Name:           "TEST_ACTION",
 		ActionType:     feed.ActionTypePrimary,
 		Handling:       feed.HandlingFullPage,
-		Event:          getTestEvent(),
 	}
 }
 
