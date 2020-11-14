@@ -977,3 +977,140 @@ func TestBooleanFilter_MarshalGQL(t *testing.T) {
 		})
 	}
 }
+
+func TestLinkType_MarshalGQL(t *testing.T) {
+	tests := []struct {
+		name  string
+		e     feed.LinkType
+		wantW string
+	}{
+		{
+			name:  "PDF document",
+			e:     feed.LinkTypePdfDocument,
+			wantW: `"PDF_DOCUMENT"`,
+		},
+		{
+			name:  "PNG Image",
+			e:     feed.LinkTypePngImage,
+			wantW: `"PNG_IMAGE"`,
+		},
+		{
+			name:  "YouTube Video",
+			e:     feed.LinkTypeYoutubeVideo,
+			wantW: `"YOUTUBE_VIDEO"`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			tt.e.MarshalGQL(w)
+			if gotW := w.String(); gotW != tt.wantW {
+				t.Errorf("LinkType.MarshalGQL() = %v, want %v", gotW, tt.wantW)
+			}
+		})
+	}
+}
+
+func TestLinkType_UnmarshalGQL(t *testing.T) {
+	l := feed.LinkType("")
+	type args struct {
+		v interface{}
+	}
+	tests := []struct {
+		name    string
+		e       *feed.LinkType
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "invalid link type",
+			e:    &l,
+			args: args{
+				v: "bogus",
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid - pdf",
+			e:    &l,
+			args: args{
+				v: "PDF_DOCUMENT",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.e.UnmarshalGQL(tt.args.v); (err != nil) != tt.wantErr {
+				t.Errorf("LinkType.UnmarshalGQL() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestLinkType_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		e    feed.LinkType
+		want bool
+	}{
+		{
+			name: "PDF document",
+			e:    feed.LinkTypePdfDocument,
+			want: true,
+		},
+		{
+			name: "PNG Image",
+			e:    feed.LinkTypePngImage,
+			want: true,
+		},
+		{
+			name: "YouTube Video",
+			e:    feed.LinkTypeYoutubeVideo,
+			want: true,
+		},
+		{
+			name: "invalid link type",
+			e:    feed.LinkType("bogus"),
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.IsValid(); got != tt.want {
+				t.Errorf("LinkType.IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLinkType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		e    feed.LinkType
+		want string
+	}{
+		{
+			name: "YouTube video",
+			e:    feed.LinkTypeYoutubeVideo,
+			want: "YOUTUBE_VIDEO",
+		},
+		{
+			name: "PDF document",
+			e:    feed.LinkTypePdfDocument,
+			want: "PDF_DOCUMENT",
+		},
+		{
+			name: "PNG image",
+			e:    feed.LinkTypePngImage,
+			want: "PNG_IMAGE",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.String(); got != tt.want {
+				t.Errorf("LinkType.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -1,0 +1,363 @@
+[debug] [2020-11-11T07:20:23.809Z] ----------------------------------------------------------------------
+[debug] [2020-11-11T07:20:23.811Z] Command:       /usr/bin/node /usr/bin/firebase deploy
+[debug] [2020-11-11T07:20:23.812Z] CLI Version:   8.15.1
+[debug] [2020-11-11T07:20:23.812Z] Platform:      linux
+[debug] [2020-11-11T07:20:23.812Z] Node Version:  v13.14.0
+[debug] [2020-11-11T07:20:23.815Z] Time:          Wed Nov 11 2020 10:20:23 GMT+0300 (East Africa Time)
+[debug] [2020-11-11T07:20:23.815Z] ----------------------------------------------------------------------
+[debug] [2020-11-11T07:20:23.815Z] 
+[debug] [2020-11-11T07:20:23.821Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-11-11T07:20:23.831Z] > authorizing via signed-in user
+[debug] [2020-11-11T07:20:23.831Z] [iam] checking project bewell-app for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2020-11-11T07:20:23.834Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-11-11T07:20:23.834Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2020-11-11T07:20:24.520Z] <<< HTTP RESPONSE 200 {"cache-control":"no-cache, no-store, max-age=0, must-revalidate","expires":"Mon, 01 Jan 1990 00:00:00 GMT","date":"Wed, 11 Nov 2020 07:20:26 GMT","pragma":"no-cache","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-11T07:20:24.535Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/bewell-app:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2020-11-11T07:20:27.222Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Wed, 11 Nov 2020 07:20:28 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=1830","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-11T07:20:27.224Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/bewell-app  
+ 
+[debug] [2020-11-11T07:20:28.496Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Wed, 11 Nov 2020 07:20:30 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] 
+[info] === Deploying to 'bewell-app'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2020-11-11T07:20:28.500Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions  
+ {"config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2020-11-11T07:20:31.954Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Wed, 11 Nov 2020 07:20:33 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] i  hosting[bewell-app]: beginning deploy... 
+[info] i  hosting[bewell-app]: found 18 files in . 
+[debug] [2020-11-11T07:20:31.979Z] [hosting] hash cache [] stored for 18 files
+[debug] [2020-11-11T07:20:31.980Z] [hosting][hash queue][FINAL] {"max":8,"min":0,"avg":2.2777777777777777,"active":0,"complete":18,"success":18,"errored":0,"retried":0,"total":18,"elapsed":12}
+[debug] [2020-11-11T07:20:31.980Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/0e38aa845e1e2cb1:populateFiles  
+ <request body omitted>
+[debug] [2020-11-11T07:20:34.464Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Wed, 11 Nov 2020 07:20:36 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-11T07:20:34.472Z] [hosting][populate queue][FINAL] {"max":2489,"min":2489,"avg":2489,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":2494}
+[debug] [2020-11-11T07:20:34.472Z] [hosting] uploads queued: 5
+[debug] [2020-11-11T07:20:37.687Z] [hosting][upload queue][FINAL] {"max":3220,"min":2811,"avg":3014.6,"active":0,"complete":5,"success":5,"errored":0,"retried":0,"total":5,"elapsed":3221}
+[info] ✔  hosting[bewell-app]: file upload complete 
+[debug] [2020-11-11T07:20:37.688Z] [hosting] deploy completed after 5732ms
+[debug] [2020-11-11T07:20:38.331Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "site": "bewell-app"
+    },
+    "site": "bewell-app",
+    "version": "sites/bewell-app/versions/0e38aa845e1e2cb1"
+  }
+]
+[info] i  hosting[bewell-app]: finalizing version... 
+[debug] [2020-11-11T07:20:38.333Z] >>> HTTP REQUEST PATCH https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/0e38aa845e1e2cb1?updateMask=status  
+ {"status":"FINALIZED"}
+[debug] [2020-11-11T07:20:40.788Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Wed, 11 Nov 2020 07:20:42 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-11T07:20:40.788Z] [hosting] finalized version for bewell-app: {"name":"sites/bewell-app/versions/0e38aa845e1e2cb1","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-11T07:20:32.821533Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-11T07:20:42.322108Z","finalizeUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: version finalized 
+[info] i  hosting[bewell-app]: releasing new version... 
+[debug] [2020-11-11T07:20:40.789Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/releases?version_name=sites/bewell-app/versions/0e38aa845e1e2cb1  
+ {"message":null}
+[debug] [2020-11-11T07:20:43.166Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Wed, 11 Nov 2020 07:20:44 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-11T07:20:43.168Z] [hosting] release: {"name":"sites/bewell-app/releases/1605079244050457","version":{"name":"sites/bewell-app/versions/0e38aa845e1e2cb1","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-11T07:20:32.821533Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-11T07:20:42.322108Z","finalizeUser":{"email":"ngure@hyperionconsult.com"},"preview":{}},"type":"DEPLOY","releaseTime":"2020-11-11T07:20:44.050457672Z","releaseUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: release complete 
+[info] 
+[info] ✔  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/bewell-app/overview
+[info] Hosting URL: https://bewell-app.web.app
+[debug] [2020-11-12T11:28:27.594Z] ----------------------------------------------------------------------
+[debug] [2020-11-12T11:28:27.595Z] Command:       /usr/bin/node /usr/bin/firebase deploy
+[debug] [2020-11-12T11:28:27.596Z] CLI Version:   8.15.1
+[debug] [2020-11-12T11:28:27.596Z] Platform:      linux
+[debug] [2020-11-12T11:28:27.596Z] Node Version:  v13.14.0
+[debug] [2020-11-12T11:28:27.613Z] Time:          Thu Nov 12 2020 14:28:27 GMT+0300 (East Africa Time)
+[debug] [2020-11-12T11:28:27.613Z] ----------------------------------------------------------------------
+[debug] [2020-11-12T11:28:27.613Z] 
+[debug] [2020-11-12T11:28:27.630Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-11-12T11:28:27.631Z] > authorizing via signed-in user
+[debug] [2020-11-12T11:28:27.631Z] [iam] checking project bewell-app for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2020-11-12T11:28:27.633Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-11-12T11:28:27.633Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2020-11-12T11:28:29.200Z] <<< HTTP RESPONSE 200 {"pragma":"no-cache","date":"Thu, 12 Nov 2020 11:28:28 GMT","cache-control":"no-cache, no-store, max-age=0, must-revalidate","expires":"Mon, 01 Jan 1990 00:00:00 GMT","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-12T11:28:29.240Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/bewell-app:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2020-11-12T11:28:31.939Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Thu, 12 Nov 2020 11:28:31 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=1832","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-12T11:28:31.942Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/bewell-app  
+ 
+[debug] [2020-11-12T11:28:33.179Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Thu, 12 Nov 2020 11:28:32 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] 
+[info] === Deploying to 'bewell-app'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2020-11-12T11:28:33.184Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions  
+ {"config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2020-11-12T11:28:36.438Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Thu, 12 Nov 2020 11:28:36 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] i  hosting[bewell-app]: beginning deploy... 
+[info] i  hosting[bewell-app]: found 18 files in . 
+[debug] [2020-11-12T11:28:36.461Z] [hosting] hash cache [] stored for 18 files
+[debug] [2020-11-12T11:28:36.461Z] [hosting][hash queue][FINAL] {"max":8,"min":1,"avg":1.3888888888888888,"active":0,"complete":18,"success":18,"errored":0,"retried":0,"total":18,"elapsed":12}
+[debug] [2020-11-12T11:28:36.461Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/a6df77121eb31c6d:populateFiles  
+ <request body omitted>
+[debug] [2020-11-12T11:28:38.864Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Thu, 12 Nov 2020 11:28:38 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-12T11:28:38.867Z] [hosting][populate queue][FINAL] {"max":2405,"min":2405,"avg":2405,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":2407}
+[debug] [2020-11-12T11:28:38.869Z] [hosting] uploads queued: 1
+[debug] [2020-11-12T11:28:41.432Z] [hosting][upload queue][FINAL] {"max":2567,"min":2567,"avg":2567,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":2567}
+[info] ✔  hosting[bewell-app]: file upload complete 
+[debug] [2020-11-12T11:28:41.434Z] [hosting] deploy completed after 4994ms
+[debug] [2020-11-12T11:28:42.074Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "site": "bewell-app"
+    },
+    "site": "bewell-app",
+    "version": "sites/bewell-app/versions/a6df77121eb31c6d"
+  }
+]
+[info] i  hosting[bewell-app]: finalizing version... 
+[debug] [2020-11-12T11:28:42.075Z] >>> HTTP REQUEST PATCH https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/a6df77121eb31c6d?updateMask=status  
+ {"status":"FINALIZED"}
+[debug] [2020-11-12T11:28:44.489Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Thu, 12 Nov 2020 11:28:44 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-12T11:28:44.490Z] [hosting] finalized version for bewell-app: {"name":"sites/bewell-app/versions/a6df77121eb31c6d","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-12T11:28:35.692046Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-12T11:28:44.153127Z","finalizeUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: version finalized 
+[info] i  hosting[bewell-app]: releasing new version... 
+[debug] [2020-11-12T11:28:44.491Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/releases?version_name=sites/bewell-app/versions/a6df77121eb31c6d  
+ {"message":null}
+[debug] [2020-11-12T11:28:46.895Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Thu, 12 Nov 2020 11:28:46 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-12T11:28:46.895Z] [hosting] release: {"name":"sites/bewell-app/releases/1605180525897785","version":{"name":"sites/bewell-app/versions/a6df77121eb31c6d","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-12T11:28:35.692046Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-12T11:28:44.153127Z","finalizeUser":{"email":"ngure@hyperionconsult.com"},"preview":{}},"type":"DEPLOY","releaseTime":"2020-11-12T11:28:45.897785243Z","releaseUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: release complete 
+[info] 
+[info] ✔  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/bewell-app/overview
+[info] Hosting URL: https://bewell-app.web.app
+[debug] [2020-11-13T02:38:06.488Z] ----------------------------------------------------------------------
+[debug] [2020-11-13T02:38:06.490Z] Command:       /usr/bin/node /usr/bin/firebase deploy
+[debug] [2020-11-13T02:38:06.490Z] CLI Version:   8.15.1
+[debug] [2020-11-13T02:38:06.490Z] Platform:      linux
+[debug] [2020-11-13T02:38:06.490Z] Node Version:  v13.14.0
+[debug] [2020-11-13T02:38:06.491Z] Time:          Fri Nov 13 2020 05:38:06 GMT+0300 (East Africa Time)
+[debug] [2020-11-13T02:38:06.491Z] ----------------------------------------------------------------------
+[debug] [2020-11-13T02:38:06.491Z] 
+[debug] [2020-11-13T02:38:06.496Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-11-13T02:38:06.497Z] > authorizing via signed-in user
+[debug] [2020-11-13T02:38:06.497Z] [iam] checking project bewell-app for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2020-11-13T02:38:06.500Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-11-13T02:38:06.500Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2020-11-13T02:38:07.143Z] <<< HTTP RESPONSE 200 {"date":"Fri, 13 Nov 2020 02:38:07 GMT","pragma":"no-cache","cache-control":"no-cache, no-store, max-age=0, must-revalidate","expires":"Mon, 01 Jan 1990 00:00:00 GMT","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-13T02:38:07.160Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/bewell-app:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2020-11-13T02:38:09.846Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Fri, 13 Nov 2020 02:38:10 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=1853","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-T050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-13T02:38:09.848Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/bewell-app  
+ 
+[debug] [2020-11-13T02:38:11.013Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Fri, 13 Nov 2020 02:38:11 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] 
+[info] === Deploying to 'bewell-app'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2020-11-13T02:38:11.017Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions  
+ {"config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2020-11-13T02:38:14.232Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Fri, 13 Nov 2020 02:38:14 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] i  hosting[bewell-app]: beginning deploy... 
+[info] i  hosting[bewell-app]: found 18 files in . 
+[debug] [2020-11-13T02:38:14.267Z] [hosting] hash cache [] stored for 18 files
+[debug] [2020-11-13T02:38:14.267Z] [hosting][hash queue][FINAL] {"max":7,"min":1,"avg":1.3333333333333333,"active":0,"complete":18,"success":18,"errored":0,"retried":0,"total":18,"elapsed":10}
+[debug] [2020-11-13T02:38:14.268Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/06a7c86df44082c7:populateFiles  
+ <request body omitted>
+[debug] [2020-11-13T02:38:16.744Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Fri, 13 Nov 2020 02:38:16 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-13T02:38:16.752Z] [hosting][populate queue][FINAL] {"max":2481,"min":2481,"avg":2481,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":2486}
+[debug] [2020-11-13T02:38:16.753Z] [hosting] uploads queued: 1
+[debug] [2020-11-13T02:38:20.102Z] [hosting][upload queue][FINAL] {"max":3355,"min":3355,"avg":3355,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":3356}
+[info] ✔  hosting[bewell-app]: file upload complete 
+[debug] [2020-11-13T02:38:20.102Z] [hosting] deploy completed after 5865ms
+[debug] [2020-11-13T02:38:20.882Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "site": "bewell-app"
+    },
+    "site": "bewell-app",
+    "version": "sites/bewell-app/versions/06a7c86df44082c7"
+  }
+]
+[info] i  hosting[bewell-app]: finalizing version... 
+[debug] [2020-11-13T02:38:20.883Z] >>> HTTP REQUEST PATCH https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/06a7c86df44082c7?updateMask=status  
+ {"status":"FINALIZED"}
+[debug] [2020-11-13T02:38:23.293Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Fri, 13 Nov 2020 02:38:23 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-13T02:38:23.293Z] [hosting] finalized version for bewell-app: {"name":"sites/bewell-app/versions/06a7c86df44082c7","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-13T02:38:13.880211Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-13T02:38:23.413613Z","finalizeUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: version finalized 
+[info] i  hosting[bewell-app]: releasing new version... 
+[debug] [2020-11-13T02:38:23.294Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/releases?version_name=sites/bewell-app/versions/06a7c86df44082c7  
+ {"message":null}
+[debug] [2020-11-13T02:38:25.640Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Fri, 13 Nov 2020 02:38:25 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-13T02:38:25.641Z] [hosting] release: {"name":"sites/bewell-app/releases/1605235105095297","version":{"name":"sites/bewell-app/versions/06a7c86df44082c7","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-13T02:38:13.880211Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-13T02:38:23.413613Z","finalizeUser":{"email":"ngure@hyperionconsult.com"},"preview":{}},"type":"DEPLOY","releaseTime":"2020-11-13T02:38:25.095297440Z","releaseUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: release complete 
+[info] 
+[info] ✔  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/bewell-app/overview
+[info] Hosting URL: https://bewell-app.web.app
+[debug] [2020-11-14T15:20:38.493Z] ----------------------------------------------------------------------
+[debug] [2020-11-14T15:20:38.495Z] Command:       /usr/bin/node /usr/bin/firebase deploy
+[debug] [2020-11-14T15:20:38.495Z] CLI Version:   8.16.1
+[debug] [2020-11-14T15:20:38.495Z] Platform:      linux
+[debug] [2020-11-14T15:20:38.503Z] Node Version:  v13.14.0
+[debug] [2020-11-14T15:20:38.504Z] Time:          Sat Nov 14 2020 18:20:38 GMT+0300 (East Africa Time)
+[debug] [2020-11-14T15:20:38.504Z] ----------------------------------------------------------------------
+[debug] [2020-11-14T15:20:38.504Z] 
+[debug] [2020-11-14T15:20:38.505Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2020-11-14T15:20:38.518Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-11-14T15:20:38.518Z] > authorizing via signed-in user
+[debug] [2020-11-14T15:20:38.519Z] [iam] checking project bewell-app for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2020-11-14T15:20:38.521Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-11-14T15:20:38.521Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2020-11-14T15:20:39.656Z] <<< HTTP RESPONSE 200 {"expires":"Mon, 01 Jan 1990 00:00:00 GMT","date":"Sun, 15 Nov 2020 05:00:02 GMT","pragma":"no-cache","cache-control":"no-cache, no-store, max-age=0, must-revalidate","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T15:20:39.688Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/bewell-app:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2020-11-14T15:20:40.070Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2020-11-14T15:20:40.070Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2020-11-14T15:20:42.323Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:00:05 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=1805","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T15:20:42.326Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/bewell-app  
+ 
+[debug] [2020-11-14T15:20:43.255Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:00:06 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] 
+[info] === Deploying to 'bewell-app'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2020-11-14T15:20:43.259Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions  
+ {"config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2020-11-14T15:20:46.461Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:00:09 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] i  hosting[bewell-app]: beginning deploy... 
+[info] i  hosting[bewell-app]: found 18 files in . 
+[debug] [2020-11-14T15:20:46.482Z] [hosting] hash cache [] stored for 18 files
+[debug] [2020-11-14T15:20:46.483Z] [hosting][hash queue][FINAL] {"max":9,"min":1,"avg":3.1666666666666665,"active":0,"complete":18,"success":18,"errored":0,"retried":0,"total":18,"elapsed":12}
+[debug] [2020-11-14T15:20:46.483Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/0a0eb7694df9a5ad:populateFiles  
+ <request body omitted>
+[debug] [2020-11-14T15:20:48.864Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:00:12 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T15:20:48.867Z] [hosting][populate queue][FINAL] {"max":2385,"min":2385,"avg":2385,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":2386}
+[debug] [2020-11-14T15:20:48.867Z] [hosting] uploads queued: 1
+[debug] [2020-11-14T15:20:51.942Z] [hosting][upload queue][FINAL] {"max":3077,"min":3077,"avg":3077,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":3077}
+[info] ✔  hosting[bewell-app]: file upload complete 
+[debug] [2020-11-14T15:20:51.944Z] [hosting] deploy completed after 5480ms
+[debug] [2020-11-14T15:20:52.635Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "site": "bewell-app"
+    },
+    "site": "bewell-app",
+    "version": "sites/bewell-app/versions/0a0eb7694df9a5ad"
+  }
+]
+[info] i  hosting[bewell-app]: finalizing version... 
+[debug] [2020-11-14T15:20:52.640Z] >>> HTTP REQUEST PATCH https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/0a0eb7694df9a5ad?updateMask=status  
+ {"status":"FINALIZED"}
+[debug] [2020-11-14T15:20:55.028Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:00:18 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T15:20:55.029Z] [hosting] finalized version for bewell-app: {"name":"sites/bewell-app/versions/0a0eb7694df9a5ad","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-15T05:00:09.103782Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-15T05:00:18.151914Z","finalizeUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: version finalized 
+[info] i  hosting[bewell-app]: releasing new version... 
+[debug] [2020-11-14T15:20:55.030Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/releases?version_name=sites/bewell-app/versions/0a0eb7694df9a5ad  
+ {"message":null}
+[debug] [2020-11-14T15:20:57.460Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:00:20 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T15:20:57.460Z] [hosting] release: {"name":"sites/bewell-app/releases/1605416419898462","version":{"name":"sites/bewell-app/versions/0a0eb7694df9a5ad","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-15T05:00:09.103782Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-15T05:00:18.151914Z","finalizeUser":{"email":"ngure@hyperionconsult.com"},"preview":{}},"type":"DEPLOY","releaseTime":"2020-11-15T05:00:19.898462625Z","releaseUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: release complete 
+[info] 
+[info] ✔  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/bewell-app/overview
+[info] Hosting URL: https://bewell-app.web.app
+[debug] [2020-11-14T16:14:36.858Z] ----------------------------------------------------------------------
+[debug] [2020-11-14T16:14:36.860Z] Command:       /usr/bin/node /usr/bin/firebase deploy
+[debug] [2020-11-14T16:14:36.860Z] CLI Version:   8.16.1
+[debug] [2020-11-14T16:14:36.860Z] Platform:      linux
+[debug] [2020-11-14T16:14:36.860Z] Node Version:  v13.14.0
+[debug] [2020-11-14T16:14:36.861Z] Time:          Sat Nov 14 2020 19:14:36 GMT+0300 (East Africa Time)
+[debug] [2020-11-14T16:14:36.861Z] ----------------------------------------------------------------------
+[debug] [2020-11-14T16:14:36.861Z] 
+[debug] [2020-11-14T16:14:36.865Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-11-14T16:14:36.867Z] > authorizing via signed-in user
+[debug] [2020-11-14T16:14:36.867Z] [iam] checking project bewell-app for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2020-11-14T16:14:36.869Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2020-11-14T16:14:36.870Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2020-11-14T16:14:37.508Z] <<< HTTP RESPONSE 200 {"cache-control":"no-cache, no-store, max-age=0, must-revalidate","expires":"Mon, 01 Jan 1990 00:00:00 GMT","pragma":"no-cache","date":"Sun, 15 Nov 2020 05:54:00 GMT","content-type":"application/json; charset=utf-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","server":"scaffolding on HTTPServer2","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T16:14:37.532Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/bewell-app:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2020-11-14T16:14:40.226Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:54:03 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=1826","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T16:14:40.228Z] >>> HTTP REQUEST GET https://firebase.googleapis.com/v1beta1/projects/bewell-app  
+ 
+[debug] [2020-11-14T16:14:41.351Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:54:04 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] 
+[info] === Deploying to 'bewell-app'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2020-11-14T16:14:41.357Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions  
+ {"config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2020-11-14T16:14:44.594Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:54:07 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[info] i  hosting[bewell-app]: beginning deploy... 
+[info] i  hosting[bewell-app]: found 66 files in . 
+[debug] [2020-11-14T16:14:44.936Z] [hosting] hash cache [] stored for 66 files
+[debug] [2020-11-14T16:14:44.936Z] [hosting][hash queue][FINAL] {"max":311,"min":7,"avg":173.6060606060606,"active":0,"complete":66,"success":66,"errored":0,"retried":0,"total":66,"elapsed":324}
+[debug] [2020-11-14T16:14:44.937Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/c477932798f680ec:populateFiles  
+ <request body omitted>
+[debug] [2020-11-14T16:14:47.486Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:54:10 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T16:14:47.526Z] [hosting][populate queue][FINAL] {"max":2566,"min":2566,"avg":2566,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":2591}
+[debug] [2020-11-14T16:14:47.526Z] [hosting] uploads queued: 48
+[debug] [2020-11-14T16:15:18.047Z] [hosting][upload queue][FINAL] {"max":30553,"min":8565,"avg":22472.916666666668,"active":0,"complete":48,"success":48,"errored":0,"retried":0,"total":48,"elapsed":30558}
+[info] ✔  hosting[bewell-app]: file upload complete 
+[debug] [2020-11-14T16:15:18.064Z] [hosting] deploy completed after 33467ms
+[debug] [2020-11-14T16:15:18.904Z] [
+  {
+    "config": {
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "site": "bewell-app"
+    },
+    "site": "bewell-app",
+    "version": "sites/bewell-app/versions/c477932798f680ec"
+  }
+]
+[info] i  hosting[bewell-app]: finalizing version... 
+[debug] [2020-11-14T16:15:18.908Z] >>> HTTP REQUEST PATCH https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/versions/c477932798f680ec?updateMask=status  
+ {"status":"FINALIZED"}
+[debug] [2020-11-14T16:15:21.304Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:54:44 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T16:15:21.305Z] [hosting] finalized version for bewell-app: {"name":"sites/bewell-app/versions/c477932798f680ec","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-15T05:54:07.294102Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-15T05:54:44.439104Z","finalizeUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: version finalized 
+[info] i  hosting[bewell-app]: releasing new version... 
+[debug] [2020-11-14T16:15:21.306Z] >>> HTTP REQUEST POST https://firebasehosting.googleapis.com/v1beta1/sites/bewell-app/releases?version_name=sites/bewell-app/versions/c477932798f680ec  
+ {"message":null}
+[debug] [2020-11-14T16:15:23.649Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sun, 15 Nov 2020 05:54:46 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","alt-svc":"h3-Q050=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2020-11-14T16:15:23.650Z] [hosting] release: {"name":"sites/bewell-app/releases/1605419686131121","version":{"name":"sites/bewell-app/versions/c477932798f680ec","status":"FINALIZED","config":{},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2020-11-15T05:54:07.294102Z","createUser":{"email":"ngure@hyperionconsult.com"},"finalizeTime":"2020-11-15T05:54:44.439104Z","finalizeUser":{"email":"ngure@hyperionconsult.com"},"preview":{}},"type":"DEPLOY","releaseTime":"2020-11-15T05:54:46.131121017Z","releaseUser":{"email":"ngure@hyperionconsult.com"}}
+[info] ✔  hosting[bewell-app]: release complete 
+[info] 
+[info] ✔  Deploy complete! 
+[info] 
+[info] Project Console: https://console.firebase.google.com/project/bewell-app/overview
+[info] Hosting URL: https://bewell-app.web.app

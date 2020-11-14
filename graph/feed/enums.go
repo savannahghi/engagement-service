@@ -398,3 +398,52 @@ func (e *BooleanFilter) UnmarshalGQL(v interface{}) error {
 func (e BooleanFilter) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
+
+// LinkType determines how a linked asset is handled on the feed
+type LinkType string
+
+// known link types
+const (
+	LinkTypeYoutubeVideo LinkType = "YOUTUBE_VIDEO"
+	LinkTypePngImage     LinkType = "PNG_IMAGE"
+	LinkTypePdfDocument  LinkType = "PDF_DOCUMENT"
+)
+
+// AllLinkType is the set of all known link types
+var AllLinkType = []LinkType{
+	LinkTypeYoutubeVideo,
+	LinkTypePngImage,
+	LinkTypePdfDocument,
+}
+
+// IsValid is true only when a link type is avalid
+func (e LinkType) IsValid() bool {
+	switch e {
+	case LinkTypeYoutubeVideo, LinkTypePngImage, LinkTypePdfDocument:
+		return true
+	}
+	return false
+}
+
+func (e LinkType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL reads a link type from the supplied input
+func (e *LinkType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LinkType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LinkType", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes a link type to the supplied writer
+func (e LinkType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}

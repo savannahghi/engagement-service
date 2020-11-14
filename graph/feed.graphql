@@ -50,6 +50,12 @@ enum Channel {
   WHATSAPP
 }
 
+enum LinkType {
+  YOUTUBE_VIDEO
+  PNG_IMAGE
+  PDF_DOCUMENT
+}
+
 # Feed is the top level access point for a user's feed.
 type Feed @key(fields: "id") {
   id: String!
@@ -170,6 +176,12 @@ input MsgInput {
 type Video {
   id: String!
   url: String!
+}
+
+type Link {
+  id: String!
+  url: String!
+  linkType: String!
 }
 
 type Document {

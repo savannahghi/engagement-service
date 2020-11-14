@@ -39,6 +39,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Entity() EntityResolver
+	Link() LinkResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -120,6 +121,12 @@ type ComplexityRoot struct {
 		Visibility           func(childComplexity int) int
 	}
 
+	Link struct {
+		ID       func(childComplexity int) int
+		LinkType func(childComplexity int) int
+		URL      func(childComplexity int) int
+	}
+
 	Msg struct {
 		ID             func(childComplexity int) int
 		PostedByName   func(childComplexity int) int
@@ -181,6 +188,9 @@ type ComplexityRoot struct {
 
 type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
+}
+type LinkResolver interface {
+	LinkType(ctx context.Context, obj *feed.Link) (string, error)
 }
 type MutationResolver interface {
 	ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
@@ -540,6 +550,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Item.Visibility(childComplexity), true
+
+	case "Link.id":
+		if e.complexity.Link.ID == nil {
+			break
+		}
+
+		return e.complexity.Link.ID(childComplexity), true
+
+	case "Link.linkType":
+		if e.complexity.Link.LinkType == nil {
+			break
+		}
+
+		return e.complexity.Link.LinkType(childComplexity), true
+
+	case "Link.url":
+		if e.complexity.Link.URL == nil {
+			break
+		}
+
+		return e.complexity.Link.URL(childComplexity), true
 
 	case "Msg.id":
 		if e.complexity.Msg.ID == nil {
@@ -981,6 +1012,12 @@ enum Channel {
   WHATSAPP
 }
 
+enum LinkType {
+  YOUTUBE_VIDEO
+  PNG_IMAGE
+  PDF_DOCUMENT
+}
+
 # Feed is the top level access point for a user's feed.
 type Feed @key(fields: "id") {
   id: String!
@@ -1101,6 +1138,12 @@ input MsgInput {
 type Video {
   id: String!
   url: String!
+}
+
+type Link {
+  id: String!
+  url: String!
+  linkType: String!
 }
 
 type Document {
@@ -3191,6 +3234,111 @@ func (ec *executionContext) _Item_notificationChannels(ctx context.Context, fiel
 	res := resTmp.([]feed.Channel)
 	fc.Result = res
 	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐChannel(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Link_id(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Link",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Link_url(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Link",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Link",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Link().LinkType(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
@@ -6325,6 +6473,52 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Item_groups(ctx, field, obj)
 		case "notificationChannels":
 			out.Values[i] = ec._Item_notificationChannels(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var linkImplementors = []string{"Link"}
+
+func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj *feed.Link) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, linkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Link")
+		case "id":
+			out.Values[i] = ec._Link_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "url":
+			out.Values[i] = ec._Link_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "linkType":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Link_linkType(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

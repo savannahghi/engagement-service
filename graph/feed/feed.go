@@ -41,14 +41,15 @@ const (
 	MessageDeleteTopic     = "message.delete"
 	IncomingEventTopic     = "incoming.event"
 
-	videoSchemaFile      = "video.schema.json"
+	linkSchemaFile       = "link.schema.json"
+	videoSchemaFile      = "video.schema.json" // TODO Remove
 	messageSchemaFile    = "message.schema.json"
 	actionSchemaFile     = "action.schema.json"
 	nudgeSchemaFile      = "nudge.schema.json"
 	itemSchemaFile       = "item.schema.json"
 	feedSchemaFile       = "feed.schema.json"
-	imageSchemaFile      = "image.schema.json"
-	documentSchemaFile   = "document.schema.json"
+	imageSchemaFile      = "image.schema.json"    // TODO Remove
+	documentSchemaFile   = "document.schema.json" // TODO Remove
 	contextSchemaFile    = "context.schema.json"
 	payloadSchemaFile    = "payload.schema.json"
 	eventSchemaFile      = "event.schema.json"
@@ -1332,6 +1333,36 @@ func (vi *Video) ValidateAndUnmarshal(b []byte) error {
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (vi *Video) ValidateAndMarshal() ([]byte, error) {
 	return validateAndMarshal(videoSchemaFile, vi)
+}
+
+// Link holds references to media that is part of the feed.
+// The URL should embed authentication details.
+// The treatment will depend on the specified asset type.
+type Link struct {
+	// A unique identifier for each feed item
+	ID string `json:"id" firestore:"id"`
+
+	// A URL at which the video can be accessed.
+	// For a private video, the URL should include authentication information.
+	URL string `json:"url" firestore:"url"`
+
+	// LinkType of link
+	LinkType LinkType `json:"linkType" firestore:"linkType"`
+}
+
+// ValidateAndUnmarshal checks that the input data is valid as per the
+// relevant JSON schema and unmarshals it if it is
+func (l *Link) ValidateAndUnmarshal(b []byte) error {
+	err := validateAndUnmarshal(linkSchemaFile, b, l)
+	if err != nil {
+		return fmt.Errorf("invalid video JSON: %w", err)
+	}
+	return nil
+}
+
+// ValidateAndMarshal validates against JSON schema then marshals to JSON
+func (l *Link) ValidateAndMarshal() ([]byte, error) {
+	return validateAndMarshal(linkSchemaFile, l)
 }
 
 // FilterParams organizes the parameters needed to filter persistent feed items

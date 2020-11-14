@@ -11,6 +11,10 @@ import (
 	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
+func (r *linkResolver) LinkType(ctx context.Context, obj *feed.Link) (string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
 	r.checkPreconditions()
 
@@ -172,11 +176,15 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour feed.Flavour, persi
 	return feed, nil
 }
 
+// Link returns generated.LinkResolver implementation.
+func (r *Resolver) Link() generated.LinkResolver { return &linkResolver{r} }
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+type linkResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

@@ -3256,3 +3256,88 @@ func testNudge() *feed.Nudge {
 		},
 	}
 }
+
+func TestLink_ValidateAndUnmarshal(t *testing.T) {
+	emptyJSONBytes := getEmptyJson(t)
+	validLink := feed.Link{
+		ID:       ksuid.New().String(),
+		URL:      sampleVideoURL,
+		LinkType: feed.LinkTypeYoutubeVideo,
+	}
+	validLinkJSONBytes, err := json.Marshal(validLink)
+	assert.Nil(t, err)
+	assert.NotNil(t, validLinkJSONBytes)
+	assert.Greater(t, len(validLinkJSONBytes), 3)
+
+	type args struct {
+		b []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid link",
+			args: args{
+				b: validLinkJSONBytes,
+			},
+			wantErr: false,
+		},
+		{
+			name: "empty JSON - invalid",
+			args: args{
+				b: emptyJSONBytes,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &feed.Link{}
+			if err := l.ValidateAndUnmarshal(tt.args.b); (err != nil) != tt.wantErr {
+				t.Errorf("Link.ValidateAndUnmarshal() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestLink_ValidateAndMarshal(t *testing.T) {
+	type fields struct {
+		ID   string
+		URL  string
+		Type feed.LinkType
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "valid link",
+			fields: fields{
+				ID:   ksuid.New().String(),
+				URL:  sampleVideoURL,
+				Type: feed.LinkTypeYoutubeVideo,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := &feed.Link{
+				ID:       tt.fields.ID,
+				URL:      tt.fields.URL,
+				LinkType: tt.fields.Type,
+			}
+			got, err := l.ValidateAndMarshal()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Link.ValidateAndMarshal() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				assert.NotNil(t, got)
+			}
+		})
+	}
+}

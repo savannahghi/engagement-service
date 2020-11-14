@@ -1,0 +1,35 @@
+{
+    "$id": "https://schema.healthcloud.co.ke/link.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Be.Well Feed Links",
+    "type": "object",
+    "description": "A URL to an asset; this URL should embed authentication details, if necessary",
+    "definitions": {
+        "link": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "linkType": {
+                    "type": "string",
+                    "enum":[
+                        "YOUTUBE_VIDEO",
+                        "PNG_IMAGE",
+                        "PDF_DOCUMENT"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "url",
+                "linkType"
+            ]
+        }
+    },
+    "$ref": "#/definitions/link"
+}
