@@ -2,9 +2,7 @@ package feed
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"time"
 
 	"github.com/markbates/pkger"
@@ -13,6 +11,7 @@ import (
 
 const (
 	defaultSequenceNumber = 1
+	defaultPostedByUID    = "hOcaUv8dqqgmWYf9HEhjdudgf0b2"
 	futureHours           = 878400 // hours in a century of leap years...
 
 	getConsultationActionName = "GET_CONSULTATION"
@@ -25,13 +24,17 @@ const (
 	addNHIFActionName         = "ADD_NHIF"
 	completeProfileActionName = "COMPLETE_PROFILE"
 	completeKYCActionName     = "COMPLETE_KYC"
+	hideItemActionName        = "HIDE_ITEM"
+	pinItemActionName         = "PIN_ITEM"
+	resolveItemActionName     = "RESOLVE_ITEM"
 
 	defaultOrg        = "default-org-id-please-change"
 	defaultLocation   = "default-location-id-please-change"
-	defaultContentDir = "/graph/feed/content"
-	defaultIconPath   = "/graph/feed/content/bewell_logo.png"
+	defaultContentDir = "/graph/feed/static"
+	defaultIconPath   = staticBase + "bewell_logo.png"
 	defaultAuthor     = "Be.Well Team"
 	defaultLabel      = "WELCOME"
+	staticBase        = "https://static.healthcloud.co.ke"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -228,116 +231,6 @@ func defaultProActions(
 	return actions, nil
 }
 
-func defaultConsumerItems(
-	ctx context.Context,
-	uid string,
-	flavour Flavour,
-	repository Repository,
-) ([]Item, error) {
-	var items []Item
-	fns := []itemGenerator{
-		simpleConsumerWelcome,
-	}
-	for _, fn := range fns {
-		item, err := fn(ctx, uid, flavour, repository)
-		if err != nil {
-			return nil, fmt.Errorf("error when generating item: %w", err)
-		}
-		items = append(items, *item)
-	}
-	return items, nil
-}
-
-func defaultProItems(
-	ctx context.Context,
-	uid string,
-	flavour Flavour,
-	repository Repository,
-) ([]Item, error) {
-	var items []Item
-	fns := []itemGenerator{
-		simpleProWelcome,
-	}
-	for _, fn := range fns {
-		item, err := fn(ctx, uid, flavour, repository)
-		if err != nil {
-			return nil, fmt.Errorf("error when generating item: %w", err)
-		}
-		items = append(items, *item)
-	}
-	return items, nil
-}
-
-func simpleConsumerWelcome(
-	ctx context.Context,
-	uid string,
-	flavour Flavour,
-	repository Repository,
-) (*Item, error) {
-	persistent := false
-	tagline := "Welcome to Be.Well"
-	summary := "What is Be.Well?"
-	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
-	images := []Image{}
-	documents := []Document{}
-	videos := []Video{}
-	actions := []Action{}
-	conversations := []Message{}
-	return createFeedItem(
-		ctx,
-		uid,
-		flavour,
-		defaultAuthor,
-		tagline,
-		defaultLabel,
-		defaultIconPath,
-		summary,
-		text,
-		images,
-		documents,
-		videos,
-		actions,
-		conversations,
-		persistent,
-		repository,
-	)
-}
-
-func simpleProWelcome(
-	ctx context.Context,
-	uid string,
-	flavour Flavour,
-	repository Repository,
-) (*Item, error) {
-	persistent := false
-	tagline := "Welcome to Be.Well"
-	summary := "What is Be.Well?"
-	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to provide affordable high-quality healthcare - whether online or in person."
-	images := []Image{}
-	documents := []Document{}
-	videos := []Video{}
-	actions := []Action{}
-	conversations := []Message{}
-	return createFeedItem(
-		ctx,
-		uid,
-		flavour,
-		defaultAuthor,
-		tagline,
-		defaultLabel,
-		defaultIconPath,
-		summary,
-		text,
-		images,
-		documents,
-		videos,
-		actions,
-		conversations,
-		persistent,
-		repository,
-	)
-}
-
 func defaultSeeDoctorAction(
 	ctx context.Context,
 	uid string,
@@ -465,7 +358,7 @@ func addInsuranceNudge(
 ) (*Nudge, error) {
 	title := "Add Insurance"
 	text := "Link your existing medical cover"
-	pkgerImgPath := "/graph/feed/content/nudges/add_insurance.png"
+	pkgerImgPath := staticBase + "nudges/add_insurance.png"
 	addInsuranceAction, err := createAction(
 		ctx,
 		uid,
@@ -502,7 +395,7 @@ func addNHIFNudge(
 ) (*Nudge, error) {
 	title := "Add NHIF"
 	text := "Link your NHIF cover"
-	pkgerImgPath := "/graph/feed/content/nudges/add_insurance.png"
+	pkgerImgPath := staticBase + "nudges/add_insurance.png"
 	addNHIFAction, err := createAction(
 		ctx,
 		uid,
@@ -539,7 +432,7 @@ func completeProfileNudge(
 ) (*Nudge, error) {
 	title := "Complete your profile"
 	text := "Fill in your Be.Well profile to unlock more rewards"
-	pkgerImgPath := "/graph/feed/content/nudges/complete_profile.png"
+	pkgerImgPath := staticBase + "nudges/complete_profile.png"
 	completeProfileAction, err := createAction(
 		ctx,
 		uid,
@@ -576,7 +469,7 @@ func completeKYCNudge(
 ) (*Nudge, error) {
 	title := "Complete your business profile"
 	text := "Fill in your Be.Well usiness profile in order to start transacting"
-	pkgerImgPath := "/graph/feed/content/nudges/complete_kyc.png"
+	pkgerImgPath := staticBase + "nudges/complete_kyc.png"
 	completeKYCAction, err := createAction(
 		ctx,
 		uid,
@@ -605,35 +498,16 @@ func completeKYCNudge(
 	)
 }
 
-func imagePathToBase64(path string) (string, error) {
-	img, err := pkger.Open(path)
-	if err != nil {
-		return "", fmt.Errorf("can't open pkger image path: %w", err)
-	}
-	defer img.Close()
-
-	imgBytes, err := ioutil.ReadAll(img)
-	if err != nil {
-		return "", fmt.Errorf("can't read image: %w", err)
-	}
-	return base64.StdEncoding.EncodeToString(imgBytes), nil
-}
-
 func createNudge(
 	ctx context.Context,
 	uid string,
 	flavour Flavour,
 	title string,
 	text string,
-	pkgerImagePath string,
+	imageURL string,
 	actions []Action,
 	repository Repository,
 ) (*Nudge, error) {
-	b64, err := imagePathToBase64(pkgerImagePath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to load nudge image: %w", err)
-	}
-
 	future := time.Now().Add(time.Hour * futureHours)
 	nudge := &Nudge{
 		ID:             ksuid.New().String(),
@@ -643,16 +517,15 @@ func createNudge(
 		Expiry:         future,
 		Title:          title,
 		Text:           text,
-		Image: Image{
-			ID:     ksuid.New().String(),
-			Base64: b64,
+		Links: []Link{
+			GetPNGImageLink(imageURL),
 		},
 		Actions:              actions,
 		Groups:               []string{},
 		Users:                []string{uid},
 		NotificationChannels: []Channel{},
 	}
-	_, err = nudge.ValidateAndMarshal()
+	_, err := nudge.ValidateAndMarshal()
 	if err != nil {
 		return nil, fmt.Errorf("nudge validation error: %w", err)
 	}
@@ -699,50 +572,38 @@ func createFeedItem(
 	author string,
 	tagline string,
 	label string,
-	iconImagePath string,
+	iconImageURL string,
 	summary string,
 	text string,
-	images []Image,
-	documents []Document,
-	videos []Video,
+	links []Link,
 	actions []Action,
 	conversations []Message,
 	persistent bool,
 	repository Repository,
 ) (*Item, error) {
-	b64, err := imagePathToBase64(iconImagePath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to load nudge image: %w", err)
-	}
-
 	future := time.Now().Add(time.Hour * futureHours)
 	item := &Item{
-		ID:             ksuid.New().String(),
-		SequenceNumber: defaultSequenceNumber,
-		Expiry:         future,
-		Persistent:     persistent,
-		Status:         StatusPending,
-		Visibility:     VisibilityShow,
-		Icon: Image{
-			ID:     ksuid.New().String(),
-			Base64: b64,
-		},
+		ID:                   ksuid.New().String(),
+		SequenceNumber:       defaultSequenceNumber,
+		Expiry:               future,
+		Persistent:           persistent,
+		Status:               StatusPending,
+		Visibility:           VisibilityShow,
+		Icon:                 GetPNGImageLink(iconImageURL),
 		Author:               author,
 		Tagline:              tagline,
 		Label:                label,
 		Timestamp:            time.Now(),
 		Summary:              summary,
 		Text:                 text,
-		Images:               images,
-		Documents:            documents,
-		Videos:               videos,
+		Links:                links,
 		Actions:              actions,
 		Conversations:        conversations,
 		Groups:               []string{},
 		Users:                []string{uid},
 		NotificationChannels: []Channel{},
 	}
-	_, err = item.ValidateAndMarshal()
+	_, err := item.ValidateAndMarshal()
 	if err != nil {
 		return nil, fmt.Errorf("item validation error: %w", err)
 	}
@@ -751,4 +612,414 @@ func createFeedItem(
 		return nil, fmt.Errorf("unable to save item: %w", err)
 	}
 	return item, nil
+}
+
+func defaultConsumerItems(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) ([]Item, error) {
+	var items []Item
+	fns := []itemGenerator{
+		ultimateComposite,
+		simpleConsumerWelcome,
+	}
+	for _, fn := range fns {
+		item, err := fn(ctx, uid, flavour, repository)
+		if err != nil {
+			return nil, fmt.Errorf("error when generating item: %w", err)
+		}
+		items = append(items, *item)
+	}
+	return items, nil
+}
+
+func defaultProItems(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) ([]Item, error) {
+	var items []Item
+	fns := []itemGenerator{
+		ultimateComposite,
+		simpleProWelcome,
+	}
+	for _, fn := range fns {
+		item, err := fn(ctx, uid, flavour, repository)
+		if err != nil {
+			return nil, fmt.Errorf("error when generating item: %w", err)
+		}
+		items = append(items, *item)
+	}
+	return items, nil
+}
+
+func simpleConsumerWelcome(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Item, error) {
+	persistent := false
+	tagline := "Welcome to Be.Well"
+	summary := "What is Be.Well?"
+	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
+	links := getFeedWelcomeVideos()
+	actions := []Action{}
+	conversations := getConsumerWelcomeThread()
+	return createFeedItem(
+		ctx,
+		uid,
+		flavour,
+		defaultAuthor,
+		tagline,
+		defaultLabel,
+		defaultIconPath,
+		summary,
+		text,
+		links,
+		actions,
+		conversations,
+		persistent,
+		repository,
+	)
+}
+
+func simpleProWelcome(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Item, error) {
+	persistent := false
+	tagline := "Welcome to Be.Well"
+	summary := "What is Be.Well?"
+	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to provide affordable high-quality healthcare - whether online or in person."
+	links := getFeedWelcomeVideos()
+	actions := []Action{}
+	conversations := getProWelcomeThread()
+	return createFeedItem(
+		ctx,
+		uid,
+		flavour,
+		defaultAuthor,
+		tagline,
+		defaultLabel,
+		defaultIconPath,
+		summary,
+		text,
+		links,
+		actions,
+		conversations,
+		persistent,
+		repository,
+	)
+}
+
+func ultimateComposite(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Item, error) {
+	// here's what Be.Well can do for you... / help you do for your patients
+	persistent := false
+	tagline := "This is Be.Well..."
+	summary := "This is Be.Well..."
+	text := "This is Be.Well..."
+	links := []Link{
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_01.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_02.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_03.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_04.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_05.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_06.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_07.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_08.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_09.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_10.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_11.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_12.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_13.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_14.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_15.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_16.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_17.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_18.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_19.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_20.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_21.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_22.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_23.png"),
+		GetPNGImageLink(staticBase + "/items/images/bewell_banner_24.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_25.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_26.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_27.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_28.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_29.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_30.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_31.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_32.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_33.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_34.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_35.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_36.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_37.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_38.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_39.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_40.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_41.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_42.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_43.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_44.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_45.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_46.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_47.png"),
+		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_48.png"),
+	}
+	resolveAction, err := createAction(
+		ctx,
+		uid,
+		flavour,
+		resolveItemActionName,
+		ActionTypePrimary,
+		HandlingInline,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create resolve action: %w", err)
+	}
+
+	pinAction, err := createAction(
+		ctx,
+		uid,
+		flavour,
+		pinItemActionName,
+		ActionTypePrimary,
+		HandlingInline,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create pin action: %w", err)
+	}
+
+	hideAction, err := createAction(
+		ctx,
+		uid,
+		flavour,
+		hideItemActionName,
+		ActionTypePrimary,
+		HandlingInline,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create hide action: %w", err)
+	}
+
+	actions := []Action{
+		*resolveAction,
+		*pinAction,
+		*hideAction,
+	}
+	conversations := []Message{}
+	return createFeedItem(
+		ctx,
+		uid,
+		flavour,
+		defaultAuthor,
+		tagline,
+		defaultLabel,
+		defaultIconPath,
+		summary,
+		text,
+		links,
+		actions,
+		conversations,
+		persistent,
+		repository,
+	)
+}
+
+func getMessage(
+	text string,
+	replyTo *Message,
+	postedByName string,
+) Message {
+	msg := Message{
+		ID:             ksuid.New().String(),
+		SequenceNumber: defaultSequenceNumber,
+		Text:           text,
+		PostedByUID:    defaultPostedByUID,
+		PostedByName:   postedByName,
+		Timestamp:      time.Now(),
+	}
+	if replyTo != nil {
+		msg.ReplyTo = replyTo.ID
+	}
+	return msg
+}
+
+func getConsumerWelcomeThread() []Message {
+	welcome := getMessage(
+		"Welcome to Be.Well. We are glad to meet you!",
+		nil,
+		"Be.Well",
+	)
+	pharmacyReply := getMessage(
+		"I'm the medications service. I'll ensure that you get quality and affordable medications, on time. 👋!",
+		&welcome,
+		"Medications Service",
+	)
+
+	deliveryAssistant := getMessage(
+		"I'm the delivery assistant. I help the medications service get medicines to you on time. 👋!",
+		&pharmacyReply,
+		"Delivery Assistant",
+	)
+
+	dispensingAssistant := getMessage(
+		"I'm the dispensing assistant. I help your preferred pharmacy prepare your order before you go for it. 👋!",
+		&pharmacyReply,
+		"Dispensing Assistant",
+	)
+
+	testsReply := getMessage(
+		"I'm the tests service. I'll ensure that you get quality and affordable diagnostic tests. 👋!",
+		&welcome,
+		"Tests Service",
+	)
+
+	consultationsReply := getMessage(
+		"I'm the consultations service. I'll ensure that you can get in-person or remote(tele) advice from qualified medical professionals. 👋!",
+		&welcome,
+		"Consultations Service",
+	)
+
+	teleconsultAssistant := getMessage(
+		"I'm the teleconsultations assistant. I'll ensure that you can reach a qualified medical professional via video or audio conference, whenever you need to. If you have an emergency, I'll help you find the nearest hospital for emergencies. 👋!",
+		&consultationsReply,
+		"Teleconsultations Assistant",
+	)
+
+	bookingAssistant := getMessage(
+		"I'm the booking assistant. I'll help you book appointments for your care and remind you when it's time. 👋!",
+		&consultationsReply,
+		"Booking Assistant",
+	)
+
+	coachingReply := getMessage(
+		"I'm the coaching service. I'll link you up to *awesome* wellness and fitness coaches. 👋!",
+		&welcome,
+		"Coaching Service",
+	)
+
+	insuranceReply := getMessage(
+		"I'm the insurance service. I'll get you great quotes for medical cover and assist you when you need to use your insurance. 👋!",
+		&welcome,
+		"Coaching Service",
+	)
+
+	remindersReply := getMessage(
+		"I'm the reminders service. I'll help you remember things related to your health. It could be an appointment or when you need to take some medication etc. Try me 👋!",
+		&welcome,
+		"Reminders Service",
+	)
+
+	return []Message{
+		welcome,
+		pharmacyReply,
+		deliveryAssistant,
+		dispensingAssistant,
+		testsReply,
+		consultationsReply,
+		teleconsultAssistant,
+		bookingAssistant,
+		coachingReply,
+		insuranceReply,
+		remindersReply,
+	}
+}
+func getProWelcomeThread() []Message {
+	welcome := getMessage(
+		"Welcome to Be.Well. We are glad to meet you!",
+		nil,
+		"Be.Well",
+	)
+	pharmacyReply := getMessage(
+		"I'm the medications service. I'll help you deliver quality and affordable medications, on time. 👋!",
+		&welcome,
+		"Medications Service",
+	)
+
+	deliveryAssistant := getMessage(
+		"I'm the delivery assistant. I help the medications service deliver medicines on time. 👋!",
+		&pharmacyReply,
+		"Delivery Assistant",
+	)
+
+	dispensingAssistant := getMessage(
+		"I'm the dispensing assistant. I help you prepare your orders. 👋!",
+		&pharmacyReply,
+		"Dispensing Assistant",
+	)
+
+	testsReply := getMessage(
+		"I'm the tests service. I'll help you deliver quality and affordable diagnostic tests. 👋!",
+		&welcome,
+		"Tests Service",
+	)
+
+	consultationsReply := getMessage(
+		"I'm the consultations service. I'll set up in-person and remote consultations for you. 👋!",
+		&welcome,
+		"Consultations Service",
+	)
+
+	teleconsultAssistant := getMessage(
+		"I'm the teleconsultations assistant. I'll ensure that you can conduct consultations via video or audio conference, whenever you need to. If you have an emergency, I'll help you find the nearest hospital for emergencies. 👋!",
+		&consultationsReply,
+		"Teleconsultations Assistant",
+	)
+
+	bookingAssistant := getMessage(
+		"I'm the booking assistant. I'll help you book appointments and remind you when it's time. 👋!",
+		&consultationsReply,
+		"Booking Assistant",
+	)
+
+	coachingReply := getMessage(
+		"I'm the coaching service. I'll help you deliver your *awesome* coaching services to clients. 👋!",
+		&welcome,
+		"Coaching Service",
+	)
+
+	remindersReply := getMessage(
+		"I'm the reminders service. I'll help you remember things that you need to do. 👋!",
+		&welcome,
+		"Reminders Service",
+	)
+
+	return []Message{
+		welcome,
+		pharmacyReply,
+		deliveryAssistant,
+		dispensingAssistant,
+		testsReply,
+		consultationsReply,
+		teleconsultAssistant,
+		bookingAssistant,
+		coachingReply,
+		remindersReply,
+	}
+}
+
+func getFeedWelcomeVideos() []Link {
+	return []Link{
+		GetYoutubeVideoLink("https://www.youtube.com/watch?v=gcv2Z2AdpjM"),
+		GetYoutubeVideoLink("https://www.youtube.com/watch?v=W_daZjDET9Q"),
+		GetYoutubeVideoLink("https://www.youtube.com/watch?v=IbtVBXNvpSA"),
+		GetYoutubeVideoLink("https://www.youtube.com/watch?v=mKnlXcS3_Z0"),
+	}
 }

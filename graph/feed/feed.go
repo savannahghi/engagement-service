@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/segmentio/ksuid"
 	"github.com/xeipuuv/gojsonschema"
 	"gitlab.slade360emr.com/go/base"
@@ -41,15 +43,15 @@ const (
 	MessageDeleteTopic     = "message.delete"
 	IncomingEventTopic     = "incoming.event"
 
+	LogoURL        = "https://assets.healthcloud.co.ke/bewell_logo.png"
+	SampleVideoURL = "https://www.youtube.com/watch?v=bPiofmZGb8o"
+
 	linkSchemaFile       = "link.schema.json"
-	videoSchemaFile      = "video.schema.json" // TODO Remove
 	messageSchemaFile    = "message.schema.json"
 	actionSchemaFile     = "action.schema.json"
 	nudgeSchemaFile      = "nudge.schema.json"
 	itemSchemaFile       = "item.schema.json"
 	feedSchemaFile       = "feed.schema.json"
-	imageSchemaFile      = "image.schema.json"    // TODO Remove
-	documentSchemaFile   = "document.schema.json" // TODO Remove
 	contextSchemaFile    = "context.schema.json"
 	payloadSchemaFile    = "payload.schema.json"
 	eventSchemaFile      = "event.schema.json"
@@ -1119,11 +1121,11 @@ type Nudge struct {
 	// the title (lead line) of the nudge
 	Title string `json:"title" firestore:"title"`
 
-	// an illustrative image for the nudge
-	Image Image `json:"image" firestore:"image"`
-
 	// the text/copy of the nudge
 	Text string `json:"text" firestore:"text"`
+
+	// an illustrative image for the nudge
+	Links []Link `json:"links" firestore:"links"`
 
 	// actions to include on the nudge
 	Actions []Action `json:"actions" firestore:"actions"`
@@ -1178,8 +1180,8 @@ type Item struct {
 	// Whether the feed item is to be shown or hidden
 	Visibility Visibility `json:"visibility" firestore:"visibility"`
 
-	// A base64 encoded avatar, icon or placeholder image
-	Icon Image `json:"icon" firestore:"icon"`
+	// A link to a PNG image that would serve as an avatar
+	Icon Link `json:"icon" firestore:"icon"`
 
 	// The person - real or robot - that generated this feed item. Rich text.
 	Author string `json:"author" firestore:"author"`
@@ -1200,14 +1202,8 @@ type Item struct {
 	// Rich text that can include any unicode e.g emoji
 	Text string `json:"text" firestore:"text"`
 
-	// Images that are either uploaded or taken directly with the camera
-	Images []Image `json:"images,omitempty" firestore:"images,omitempty"`
-
-	// Documents that are attached to the item
-	Documents []Document `json:"documents,omitempty" firestore:"documents,omitempty"`
-
-	// URLs to embedded videos e.g CMS URLs, with authentication
-	Videos []Video `json:"videos,omitempty" firestore:"videos,omitempty"`
+	// an illustrative image for the nudge
+	Links []Link `json:"links" firestore:"links"`
 
 	// Actions are the primary, secondary and overflow actions associated
 	// with a feed item
@@ -1233,40 +1229,25 @@ func (it *Item) ValidateAndUnmarshal(b []byte) error {
 	if err != nil {
 		return fmt.Errorf("invalid item JSON: %w", err)
 	}
+
+	if it.Icon.LinkType != LinkTypePngImage {
+		return fmt.Errorf("an icon must be a PNG image")
+	}
+
 	return nil
 }
 
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (it *Item) ValidateAndMarshal() ([]byte, error) {
+	if it.Icon.LinkType != LinkTypePngImage {
+		return nil, fmt.Errorf("an icon must be a PNG image")
+	}
+
 	return validateAndMarshal(itemSchemaFile, it)
 }
 
 // IsEntity marks this as an Apollo federation GraphQL entity
 func (it Item) IsEntity() {}
-
-// Image A PNG image, encoded in Base 64
-type Image struct {
-	// A unique identifier for each message on the thread
-	ID string `json:"id" firestore:"id"`
-
-	// the only valid format is base64 encoded PNG
-	Base64 string `json:"base64" firestore:"base64"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (im *Image) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(imageSchemaFile, b, im)
-	if err != nil {
-		return fmt.Errorf("invalid image JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (im *Image) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(imageSchemaFile, im)
-}
 
 // Message is a message in a thread of conversations attached to a feed item
 type Message struct {
@@ -1307,34 +1288,6 @@ func (msg *Message) ValidateAndMarshal() ([]byte, error) {
 	return validateAndMarshal(messageSchemaFile, msg)
 }
 
-// Video holds references to videos that should play on the feed
-// This URL should embed authentication details
-// The video format should be one that will play on iOS and Android
-// e.g a subset of the formats at https://exoplayer.dev/supported-formats.html
-type Video struct {
-	// A unique identifier for each feed item
-	ID string `json:"id" firestore:"id"`
-
-	// A URL at which the video can be accessed.
-	// For a private video, the URL should include authentication information.
-	URL string `json:"url" firestore:"url"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (vi *Video) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(videoSchemaFile, b, vi)
-	if err != nil {
-		return fmt.Errorf("invalid video JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (vi *Video) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(videoSchemaFile, vi)
-}
-
 // Link holds references to media that is part of the feed.
 // The URL should embed authentication details.
 // The treatment will depend on the specified asset type.
@@ -1350,6 +1303,27 @@ type Link struct {
 	LinkType LinkType `json:"linkType" firestore:"linkType"`
 }
 
+func (l *Link) validateLinkType() error {
+	if !govalidator.IsURL(l.URL) {
+		return fmt.Errorf("%s is not a valid URL", l.URL)
+	}
+	switch l.LinkType {
+	case LinkTypePdfDocument:
+		if !strings.Contains(l.URL, ".png") {
+			return fmt.Errorf("%s does not end with .pdf", l.URL)
+		}
+	case LinkTypePngImage:
+		if !strings.Contains(l.URL, ".png") {
+			return fmt.Errorf("%s does not end with .png", l.URL)
+		}
+	case LinkTypeYoutubeVideo:
+		if !strings.Contains(l.URL, "youtube.com") {
+			return fmt.Errorf("%s is not a youtube.com URL", l.URL)
+		}
+	}
+	return nil
+}
+
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (l *Link) ValidateAndUnmarshal(b []byte) error {
@@ -1357,11 +1331,16 @@ func (l *Link) ValidateAndUnmarshal(b []byte) error {
 	if err != nil {
 		return fmt.Errorf("invalid video JSON: %w", err)
 	}
-	return nil
+
+	return l.validateLinkType()
 }
 
 // ValidateAndMarshal validates against JSON schema then marshals to JSON
 func (l *Link) ValidateAndMarshal() ([]byte, error) {
+	err := l.validateLinkType()
+	if err != nil {
+		return nil, fmt.Errorf("can't marshal invalid link: %w", err)
+	}
 	return validateAndMarshal(linkSchemaFile, l)
 }
 
@@ -1440,30 +1419,6 @@ func validateAndMarshal(sch string, el Element) ([]byte, error) {
 	return bs, nil
 }
 
-// Document is a PDF document, encoded in Base 64
-type Document struct {
-	// A unique identifier for each document
-	ID string `json:"id" firestore:"id"`
-
-	// the only valid format is base64 encoded PNG
-	Base64 string `json:"base64" firestore:"base64"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (doc *Document) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(documentSchemaFile, b, doc)
-	if err != nil {
-		return fmt.Errorf("invalid document JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (doc *Document) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(documentSchemaFile, doc)
-}
-
 // getSchemaURL serves JSON schema from this server and only falls back to a
 // remote schema host when the local server cannot serve the JSON schema files.
 // This has been done so as to reduce the impact of the network and DNS on the
@@ -1498,4 +1453,37 @@ func getSchemaURL() string {
 
 	// fall back to an externally hosted schema
 	return fallbackSchemaHost
+}
+
+// GetPNGImageLink returns an initialized PNG image link.
+//
+// It is used in testing and default data generation.
+func GetPNGImageLink(url string) Link {
+	return Link{
+		ID:       ksuid.New().String(),
+		URL:      url,
+		LinkType: LinkTypePngImage,
+	}
+}
+
+// GetYoutubeVideoLink returns an initialized YouTube video link.
+//
+// It is used in testing and default data generation.
+func GetYoutubeVideoLink(url string) Link {
+	return Link{
+		ID:       ksuid.New().String(),
+		URL:      url,
+		LinkType: LinkTypeYoutubeVideo,
+	}
+}
+
+// GetPDFDocumentLink returns an initialized PDF document link.
+//
+// It is used in testing and default data generation.
+func GetPDFDocumentLink(url string) Link {
+	return Link{
+		ID:       ksuid.New().String(),
+		URL:      url,
+		LinkType: LinkTypePdfDocument,
+	}
 }

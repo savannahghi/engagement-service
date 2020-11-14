@@ -64,11 +64,6 @@ type ComplexityRoot struct {
 		UserID         func(childComplexity int) int
 	}
 
-	Document struct {
-		Base64 func(childComplexity int) int
-		ID     func(childComplexity int) int
-	}
-
 	Entity struct {
 		FindFeedByID func(childComplexity int, id string) int
 	}
@@ -93,11 +88,6 @@ type ComplexityRoot struct {
 		Labels func(childComplexity int) int
 	}
 
-	Image struct {
-		Base64 func(childComplexity int) int
-		ID     func(childComplexity int) int
-	}
-
 	Item struct {
 		Actions              func(childComplexity int) int
 		Author               func(childComplexity int) int
@@ -106,8 +96,8 @@ type ComplexityRoot struct {
 		Groups               func(childComplexity int) int
 		ID                   func(childComplexity int) int
 		Icon                 func(childComplexity int) int
-		Images               func(childComplexity int) int
 		Label                func(childComplexity int) int
+		Links                func(childComplexity int) int
 		NotificationChannels func(childComplexity int) int
 		Persistent           func(childComplexity int) int
 		SequenceNumber       func(childComplexity int) int
@@ -117,7 +107,6 @@ type ComplexityRoot struct {
 		Text                 func(childComplexity int) int
 		Timestamp            func(childComplexity int) int
 		Users                func(childComplexity int) int
-		Videos               func(childComplexity int) int
 		Visibility           func(childComplexity int) int
 	}
 
@@ -156,7 +145,7 @@ type ComplexityRoot struct {
 		Expiry               func(childComplexity int) int
 		Groups               func(childComplexity int) int
 		ID                   func(childComplexity int) int
-		Image                func(childComplexity int) int
+		Links                func(childComplexity int) int
 		NotificationChannels func(childComplexity int) int
 		SequenceNumber       func(childComplexity int) int
 		Status               func(childComplexity int) int
@@ -174,11 +163,6 @@ type ComplexityRoot struct {
 		GetFeed            func(childComplexity int, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
 		__resolve__service func(childComplexity int) int
 		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
-	}
-
-	Video struct {
-		ID  func(childComplexity int) int
-		URL func(childComplexity int) int
 	}
 
 	Service struct {
@@ -294,20 +278,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Context.UserID(childComplexity), true
 
-	case "Document.base64":
-		if e.complexity.Document.Base64 == nil {
-			break
-		}
-
-		return e.complexity.Document.Base64(childComplexity), true
-
-	case "Document.id":
-		if e.complexity.Document.ID == nil {
-			break
-		}
-
-		return e.complexity.Document.ID(childComplexity), true
-
 	case "Entity.findFeedByID":
 		if e.complexity.Entity.FindFeedByID == nil {
 			break
@@ -397,20 +367,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.FilterParams.Labels(childComplexity), true
 
-	case "Image.base64":
-		if e.complexity.Image.Base64 == nil {
-			break
-		}
-
-		return e.complexity.Image.Base64(childComplexity), true
-
-	case "Image.id":
-		if e.complexity.Image.ID == nil {
-			break
-		}
-
-		return e.complexity.Image.ID(childComplexity), true
-
 	case "Item.actions":
 		if e.complexity.Item.Actions == nil {
 			break
@@ -460,19 +416,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Item.Icon(childComplexity), true
 
-	case "Item.images":
-		if e.complexity.Item.Images == nil {
-			break
-		}
-
-		return e.complexity.Item.Images(childComplexity), true
-
 	case "Item.label":
 		if e.complexity.Item.Label == nil {
 			break
 		}
 
 		return e.complexity.Item.Label(childComplexity), true
+
+	case "Item.links":
+		if e.complexity.Item.Links == nil {
+			break
+		}
+
+		return e.complexity.Item.Links(childComplexity), true
 
 	case "Item.notificationChannels":
 		if e.complexity.Item.NotificationChannels == nil {
@@ -536,13 +492,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Item.Users(childComplexity), true
-
-	case "Item.videos":
-		if e.complexity.Item.Videos == nil {
-			break
-		}
-
-		return e.complexity.Item.Videos(childComplexity), true
 
 	case "Item.visibility":
 		if e.complexity.Item.Visibility == nil {
@@ -781,12 +730,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Nudge.ID(childComplexity), true
 
-	case "Nudge.image":
-		if e.complexity.Nudge.Image == nil {
+	case "Nudge.links":
+		if e.complexity.Nudge.Links == nil {
 			break
 		}
 
-		return e.complexity.Nudge.Image(childComplexity), true
+		return e.complexity.Nudge.Links(childComplexity), true
 
 	case "Nudge.notificationChannels":
 		if e.complexity.Nudge.NotificationChannels == nil {
@@ -874,20 +823,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
-
-	case "Video.id":
-		if e.complexity.Video.ID == nil {
-			break
-		}
-
-		return e.complexity.Video.ID(childComplexity), true
-
-	case "Video.url":
-		if e.complexity.Video.URL == nil {
-			break
-		}
-
-		return e.complexity.Video.URL(childComplexity), true
 
 	case "_Service.sdl":
 		if e.complexity.Service.SDL == nil {
@@ -1039,7 +974,7 @@ type Nudge {
   actions: [Action!]!
   groups: [String]
   users: [String]
-  image: Image
+  links: [Link]
   notificationChannels: [Channel]
 }
 
@@ -1050,15 +985,14 @@ type Item {
   persistent: Boolean!
   status: Status!
   visibility: Visibility!
-  icon: Image!
+  icon: Link!
   author: String!
   tagline: String!
   label: String!
   timestamp: Time!
   summary: String!
   text: String!
-  images: [Image]
-  videos: [Video]
+  links: [Link]
   actions: [Action]
   conversations: [Msg]
   users: [String]
@@ -1110,11 +1044,6 @@ input PayloadInput {
   data: Map!
 }
 
-type Image {
-  id: String!
-  base64: String!
-}
-
 type Msg {
   id: String!
   sequenceNumber: Int!
@@ -1135,20 +1064,10 @@ input MsgInput {
   timestamp: Time!
 }
 
-type Video {
-  id: String!
-  url: String!
-}
-
 type Link {
   id: String!
   url: String!
   linkType: String!
-}
-
-type Document {
-  id: String!
-  base64: String!
 }
 
 type FilterParams {
@@ -1999,76 +1918,6 @@ func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphq
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Document_id(ctx context.Context, field graphql.CollectedField, obj *feed.Document) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Document",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Document_base64(ctx context.Context, field graphql.CollectedField, obj *feed.Document) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Document",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Base64, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2487,76 +2336,6 @@ func (ec *executionContext) _FilterParams_labels(ctx context.Context, field grap
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Image_id(ctx context.Context, field graphql.CollectedField, obj *feed.Image) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Image_base64(ctx context.Context, field graphql.CollectedField, obj *feed.Image) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Base64, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Item_id(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2797,9 +2576,9 @@ func (ec *executionContext) _Item_icon(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Image)
+	res := resTmp.(feed.Link)
 	fc.Result = res
-	return ec.marshalNImage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, field.Selections, res)
+	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Item_author(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
@@ -3012,7 +2791,7 @@ func (ec *executionContext) _Item_text(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_images(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_links(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3030,7 +2809,7 @@ func (ec *executionContext) _Item_images(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Images, nil
+		return obj.Links, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3039,41 +2818,9 @@ func (ec *executionContext) _Item_images(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Image)
+	res := resTmp.([]feed.Link)
 	fc.Result = res
-	return ec.marshalOImage2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Item_videos(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Item",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Videos, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]feed.Video)
-	fc.Result = res
-	return ec.marshalOVideo2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Item_actions(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
@@ -4386,7 +4133,7 @@ func (ec *executionContext) _Nudge_users(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_image(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_links(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4404,7 +4151,7 @@ func (ec *executionContext) _Nudge_image(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Image, nil
+		return obj.Links, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4413,9 +4160,9 @@ func (ec *executionContext) _Nudge_image(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(feed.Image)
+	res := resTmp.([]feed.Link)
 	fc.Result = res
-	return ec.marshalOImage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
@@ -4670,76 +4417,6 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Video_id(ctx context.Context, field graphql.CollectedField, obj *feed.Video) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Video",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Video_url(ctx context.Context, field graphql.CollectedField, obj *feed.Video) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Video",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.URL, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) __Service_sdl(ctx context.Context, field graphql.CollectedField, obj *fedruntime.Service) (ret graphql.Marshaler) {
@@ -6167,38 +5844,6 @@ func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
-var documentImplementors = []string{"Document"}
-
-func (ec *executionContext) _Document(ctx context.Context, sel ast.SelectionSet, obj *feed.Document) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, documentImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Document")
-		case "id":
-			out.Values[i] = ec._Document_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "base64":
-			out.Values[i] = ec._Document_base64(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var entityImplementors = []string{"Entity"}
 
 func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -6351,38 +5996,6 @@ func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.Selection
 	return out
 }
 
-var imageImplementors = []string{"Image"}
-
-func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, obj *feed.Image) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, imageImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Image")
-		case "id":
-			out.Values[i] = ec._Image_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "base64":
-			out.Values[i] = ec._Image_base64(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var itemImplementors = []string{"Item"}
 
 func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj *feed.Item) graphql.Marshaler {
@@ -6459,10 +6072,8 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "images":
-			out.Values[i] = ec._Item_images(ctx, field, obj)
-		case "videos":
-			out.Values[i] = ec._Item_videos(ctx, field, obj)
+		case "links":
+			out.Values[i] = ec._Item_links(ctx, field, obj)
 		case "actions":
 			out.Values[i] = ec._Item_actions(ctx, field, obj)
 		case "conversations":
@@ -6717,8 +6328,8 @@ func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Nudge_groups(ctx, field, obj)
 		case "users":
 			out.Values[i] = ec._Nudge_users(ctx, field, obj)
-		case "image":
-			out.Values[i] = ec._Nudge_image(ctx, field, obj)
+		case "links":
+			out.Values[i] = ec._Nudge_links(ctx, field, obj)
 		case "notificationChannels":
 			out.Values[i] = ec._Nudge_notificationChannels(ctx, field, obj)
 		default:
@@ -6817,38 +6428,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var videoImplementors = []string{"Video"}
-
-func (ec *executionContext) _Video(ctx context.Context, sel ast.SelectionSet, obj *feed.Video) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, videoImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Video")
-		case "id":
-			out.Values[i] = ec._Video_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "url":
-			out.Values[i] = ec._Video_url(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7249,10 +6828,6 @@ func (ec *executionContext) marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋf
 	return v
 }
 
-func (ec *executionContext) marshalNImage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx context.Context, sel ast.SelectionSet, v feed.Image) graphql.Marshaler {
-	return ec._Image(ctx, sel, &v)
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7317,6 +6892,10 @@ func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfe
 		return graphql.Null
 	}
 	return ec._Item(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx context.Context, sel ast.SelectionSet, v feed.Link) graphql.Marshaler {
+	return ec._Link(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNMap2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
@@ -7971,11 +7550,11 @@ func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emr�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOImage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx context.Context, sel ast.SelectionSet, v feed.Image) graphql.Marshaler {
-	return ec._Image(ctx, sel, &v)
+func (ec *executionContext) marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx context.Context, sel ast.SelectionSet, v feed.Link) graphql.Marshaler {
+	return ec._Link(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOImage2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx context.Context, sel ast.SelectionSet, v []feed.Image) graphql.Marshaler {
+func (ec *executionContext) marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx context.Context, sel ast.SelectionSet, v []feed.Link) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -8002,7 +7581,7 @@ func (ec *executionContext) marshalOImage2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋf
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOImage2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐImage(ctx, sel, v[i])
+			ret[i] = ec.marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -8161,50 +7740,6 @@ func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v in
 
 func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	return graphql.MarshalTime(v)
-}
-
-func (ec *executionContext) marshalOVideo2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx context.Context, sel ast.SelectionSet, v feed.Video) graphql.Marshaler {
-	return ec._Video(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOVideo2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx context.Context, sel ast.SelectionSet, v []feed.Video) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOVideo2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVideo(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
 }
 
 func (ec *executionContext) unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (*feed.Visibility, error) {

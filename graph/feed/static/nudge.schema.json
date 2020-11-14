@@ -1,0 +1,99 @@
+{
+    "$id": "https://schema.healthcloud.co.ke/nudge.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Be.Well Feed Nudges",
+    "definitions": {
+        "nudge": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "A unique identifier for each nudge"
+                },
+                "sequenceNumber": {
+                    "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber"
+                }, 
+                "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 140,
+                    "description": "An SMS length summary of what the nudge is all about"
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "https://schema.healthcloud.co.ke/action.schema.json#/definitions/action"
+                    },
+                    "minItems": 1
+                },
+                "visibility": {
+                    "type": "string",
+                    "$ref": "https://schema.healthcloud.co.ke/visibility.schema.json#/definitions/visibility"
+                },
+                "status": {
+                    "type": "string",
+                    "$ref": "https://schema.healthcloud.co.ke/status.schema.json#/definitions/status"
+                },
+                "expiry": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When this nudge should be expired/removed, automatically. RFC3339.",
+                    "$comment": "The feed viewer should AUTOMATICALLY hide any expired nudge"
+                },
+                "links": {
+                    "type": "array",
+                    "description": "Links to images, documents etc",
+                    "items": {
+                        "$ref": "https://schema.healthcloud.co.ke/link.schema.json#/definitions/link"
+                    },
+                    "$comment": "This CAN be an empty array, hence no minItems",
+                    "uniqueItems": true
+                },
+                "groups": {
+                    "type": "array",
+                    "description": "Identifiers of all the groups that got this message",
+                    "items": {
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+                },
+                "users": {
+                    "type": "array",
+                    "description": "Identifiers of all the users that got this message",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "notificationChannels": {
+                    "type": "array",
+                    "description": "All the channels through which the target(s) should be notified of the new item",
+                    "items": {
+                        "$ref": "https://schema.healthcloud.co.ke/channels.schema.json#/definitions/channel"
+                    },
+                    "uniqueItems": true
+                }
+            },
+            "required": [
+                "id",
+                "sequenceNumber",
+                "expiry",
+                "visibility",
+                "status",
+                "title",
+                "text",
+                "actions",
+                "groups",
+                "users",
+                "links"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "$ref": "#/definitions/nudge"
+}

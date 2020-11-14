@@ -1,0 +1,36 @@
+{
+    "$id": "https://schema.healthcloud.co.ke/event.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Be.Well Feed Events",
+    "description": "An event indicating that this action was triggered",
+    "definitions": {
+        "event": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 3
+                },
+                "name": {
+                    "type": "string",
+                    "description": "An event name - should be two upper case words separated by an underscore",
+                    "pattern": "^[A-Z]+_[A-Z]+$",
+                    "minLength": 5,
+                    "maxLength": 80
+                },
+                "context": {
+                    "$ref": "https://schema.healthcloud.co.ke/context.schema.json#/definitions/context"
+                },
+                "payload": {
+                    "$ref": "https://schema.healthcloud.co.ke/payload.schema.json#/definitions/payload"
+                }
+            },
+            "required": [
+                "id",
+                "name"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "$ref": "#/definitions/event"
+}

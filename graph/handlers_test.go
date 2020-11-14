@@ -28,9 +28,6 @@ import (
 )
 
 const (
-	base64PNGSample       = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAFNeavDAAAACklEQVQIHWNgAAAAAgABz8g15QAAAABJRU5ErkJggg=="
-	base64PDFSample       = "JVBERi0xLjUKJbXtrvsKNCAwIG9iago8PCAvTGVuZ3RoIDUgMCBSCiAgIC9GaWx0ZXIgL0ZsYXRlRGVjb2RlCj4+CnN0cmVhbQp4nDNUMABCXUMQpWdkopCcy1XIFcgFADCwBFQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCiAgIDI3CmVuZG9iagozIDAgb2JqCjw8Cj4+CmVuZG9iagoyIDAgb2JqCjw8IC9UeXBlIC9QYWdlICUgMQogICAvUGFyZW50IDEgMCBSCiAgIC9NZWRpYUJveCBbIDAgMCAwLjI0IDAuMjQgXQogICAvQ29udGVudHMgNCAwIFIKICAgL0dyb3VwIDw8CiAgICAgIC9UeXBlIC9Hcm91cAogICAgICAvUyAvVHJhbnNwYXJlbmN5CiAgICAgIC9JIHRydWUKICAgICAgL0NTIC9EZXZpY2VSR0IKICAgPj4KICAgL1Jlc291cmNlcyAzIDAgUgo+PgplbmRvYmoKMSAwIG9iago8PCAvVHlwZSAvUGFnZXMKICAgL0tpZHMgWyAyIDAgUiBdCiAgIC9Db3VudCAxCj4+CmVuZG9iago2IDAgb2JqCjw8IC9Qcm9kdWNlciAoY2Fpcm8gMS4xNi4wIChodHRwczovL2NhaXJvZ3JhcGhpY3Mub3JnKSkKICAgL0NyZWF0aW9uRGF0ZSAoRDoyMDIwMTAzMDA4MDkwOCswMycwMCkKPj4KZW5kb2JqCjcgMCBvYmoKPDwgL1R5cGUgL0NhdGFsb2cKICAgL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAzODEgMDAwMDAgbiAKMDAwMDAwMDE2MSAwMDAwMCBuIAowMDAwMDAwMTQwIDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDExOSAwMDAwMCBuIAowMDAwMDAwNDQ2IDAwMDAwIG4gCjAwMDAwMDA1NjIgMDAwMDAgbiAKdHJhaWxlcgo8PCAvU2l6ZSA4CiAgIC9Sb290IDcgMCBSCiAgIC9JbmZvIDYgMCBSCj4+CnN0YXJ0eHJlZgo2MTQKJSVFT0YK"
-	sampleVideoURL        = "https://www.youtube.com/watch?v=bPiofmZGb8o"
 	testHTTPClientTimeout = 180
 	intMax                = 9007199254740990
 )
@@ -587,9 +584,10 @@ func TestGraphQLHideNudge(t *testing.T) {
 		  }
 		  groups
 		  users
-		  image {
+		  links {
 			id
-			base64
+			url
+			linkType
 		  }
 		  notificationChannels
 		}
@@ -724,9 +722,10 @@ func TestGraphQLShowNudge(t *testing.T) {
 		  }
 		  groups
 		  users
-		  image {
+		  links {
 			id
-			base64
+			url
+			linkType
 		  }
 		  notificationChannels
 		}
@@ -861,13 +860,10 @@ func TestGraphQLResolveFeedItem(t *testing.T) {
 		  users
 		  groups
 		  notificationChannels
-		  images {
-			id
-			base64
-		  }
-		  videos {
+		  links {
 			id
 			url
+			linkType
 		  }
 		  actions {
 			id
@@ -886,7 +882,8 @@ func TestGraphQLResolveFeedItem(t *testing.T) {
 		  }
 		  icon {
 			id
-			base64
+			url
+			linkType
 		  }
 		}
 	  }	  
@@ -1020,13 +1017,10 @@ func TestGraphQLUnresolveFeedItem(t *testing.T) {
 		  users
 		  groups
 		  notificationChannels
-		  images {
-			id
-			base64
-		  }
-		  videos {
+		  links {
 			id
 			url
+			linkType
 		  }
 		  actions {
 			id
@@ -1045,7 +1039,8 @@ func TestGraphQLUnresolveFeedItem(t *testing.T) {
 		  }
 		  icon {
 			id
-			base64
+			url
+			linkType
 		  }
 		}
 	  }	  
@@ -1178,13 +1173,10 @@ func TestGraphQLPinFeedItem(t *testing.T) {
 		  users
 		  groups
 		  notificationChannels
-		  images {
-			id
-			base64
-		  }
-		  videos {
+		  links {
 			id
 			url
+			linkType
 		  }
 		  actions {
 			id
@@ -1203,7 +1195,8 @@ func TestGraphQLPinFeedItem(t *testing.T) {
 		  }
 		  icon {
 			id
-			base64
+			url
+			linkType
 		  }
 		}
 	  }	  
@@ -1335,13 +1328,10 @@ func TestGraphQLUnpinFeedItem(t *testing.T) {
 		  users
 		  groups
 		  notificationChannels
-		  images {
-			id
-			base64
-		  }
-		  videos {
+		  links {
 			id
 			url
+			linkType
 		  }
 		  actions {
 			id
@@ -1360,7 +1350,8 @@ func TestGraphQLUnpinFeedItem(t *testing.T) {
 		  }
 		  icon {
 			id
-			base64
+			url
+			linkType
 		  }
 		}
 	  }	  
@@ -1492,13 +1483,10 @@ func TestGraphQLHideFeedItem(t *testing.T) {
 		  users
 		  groups
 		  notificationChannels
-		  images {
-			id
-			base64
-		  }
-		  videos {
+		  links {
 			id
 			url
+			linkType
 		  }
 		  actions {
 			id
@@ -1517,7 +1505,8 @@ func TestGraphQLHideFeedItem(t *testing.T) {
 		  }
 		  icon {
 			id
-			base64
+			url
+			linkType
 		  }
 		}
 	  }	  
@@ -1650,13 +1639,10 @@ func TestGraphQLShowFeedItem(t *testing.T) {
 		  users
 		  groups
 		  notificationChannels
-		  images {
-			id
-			base64
-		  }
-		  videos {
+		  links {
 			id
 			url
+			linkType
 		  }
 		  actions {
 			id
@@ -1675,7 +1661,8 @@ func TestGraphQLShowFeedItem(t *testing.T) {
 		  }
 		  icon {
 			id
-			base64
+			url
+			linkType
 		  }
 		}
 	  }	  
@@ -1801,70 +1788,69 @@ query GetFeed(
 			handling
 		}
 		nudges {
-		id
-		sequenceNumber
-		visibility
-		status
-		title
-		text
-		actions {
 			id
 			sequenceNumber
-			name
-			actionType
-			handling
-		}
-		groups
-		users
-		image {
-			id
-			base64
-		}
-		notificationChannels
+			visibility
+			status
+			title
+			text
+			actions {
+				id
+				sequenceNumber
+				name
+				actionType
+				handling
+			}
+			groups
+			users
+			links {
+				id
+				url
+				linkType
+			}
+			notificationChannels
 		}
 		items {
-		id
-		sequenceNumber
-		expiry
-		persistent
-		status
-		visibility
-		icon {
-			id
-			base64
-		}
-		author
-		tagline
-		label
-		timestamp
-		summary
-		text
-		images {
-			id
-			base64
-		}
-		videos {
-			id
-			url
-		}
-		actions {
 			id
 			sequenceNumber
-			name
-			actionType
-			handling
-		}
-		conversations {
-			id
-			sequenceNumber
+			expiry
+			persistent
+			status
+			visibility
+			icon {
+				id
+				url
+				linkType
+			}
+			author
+			tagline
+			label
+			timestamp
+			summary
 			text
-			replyTo
-			postedByUID
-			postedByName
-		}
-		users
-		groups
-		notificationChannels
+			links {
+				id
+				url
+				linkType
+			  }
+			actions {
+				id
+				sequenceNumber
+				name
+				actionType
+				handling
+			}
+			conversations {
+				id
+				sequenceNumber
+				text
+				replyTo
+				postedByUID
+				postedByName
+			}
+			users
+			groups
+			notificationChannels
 		}
 	}
 }	  
@@ -5373,27 +5359,16 @@ func getTestItem() feed.Item {
 		Persistent:     true,
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Icon: feed.Image{
-			ID:     "icon-1",
-			Base64: base64PNGSample,
-		},
-		Author:    "Bot 1",
-		Tagline:   "Bot speaks...",
-		Label:     "DRUGS",
-		Timestamp: time.Now(),
-		Summary:   "I am a bot...",
-		Text:      "This bot can speak",
-		Images: []feed.Image{
-			{
-				ID:     "img-1",
-				Base64: base64PNGSample,
-			},
-		},
-		Videos: []feed.Video{
-			{
-				ID:  "video-1",
-				URL: "https://www.youtube.com/watch?v=bPiofmZGb8o",
-			},
+		Icon:           feed.GetPNGImageLink(feed.LogoURL),
+		Author:         "Bot 1",
+		Tagline:        "Bot speaks...",
+		Label:          "DRUGS",
+		Timestamp:      time.Now(),
+		Summary:        "I am a bot...",
+		Text:           "This bot can speak",
+		Links: []feed.Link{
+			feed.GetPNGImageLink(feed.LogoURL),
+			feed.GetYoutubeVideoLink(feed.SampleVideoURL),
 		},
 		Actions: []feed.Action{
 			{
@@ -5422,9 +5397,6 @@ func getTestItem() feed.Item {
 				SequenceNumber: int(time.Now().Unix()),
 			},
 		},
-		Documents: []feed.Document{
-			getTestDocument(),
-		},
 		Users: []string{
 			"user-1",
 			"user-2",
@@ -5442,13 +5414,6 @@ func getTestItem() feed.Item {
 	}
 }
 
-func getTestDocument() feed.Document {
-	return feed.Document{
-		ID:     ksuid.New().String(),
-		Base64: base64PDFSample,
-	}
-}
-
 func testNudge() *feed.Nudge {
 	return &feed.Nudge{
 		ID:             ksuid.New().String(),
@@ -5457,8 +5422,10 @@ func testNudge() *feed.Nudge {
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
 		Title:          ksuid.New().String(),
-		Image:          getTestImage(),
-		Text:           ksuid.New().String(),
+		Links: []feed.Link{
+			feed.GetPNGImageLink(feed.LogoURL),
+		},
+		Text: ksuid.New().String(),
 		Actions: []feed.Action{
 			getTestAction(),
 		},
@@ -5479,13 +5446,6 @@ func testNudge() *feed.Nudge {
 
 func getTestSequenceNumber() int {
 	return rand.Intn(intMax)
-}
-
-func getTestImage() feed.Image {
-	return feed.Image{
-		ID:     ksuid.New().String(),
-		Base64: base64PNGSample,
-	}
 }
 
 func getTestEvent() feed.Event {

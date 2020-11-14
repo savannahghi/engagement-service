@@ -30,7 +30,7 @@ import (
 const (
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
-	schemaDir            = "gitlab.slade360emr.com/go/feed:/graph/feed/schema/"
+	schemaDir            = "gitlab.slade360emr.com/go/feed:/graph/feed/static/"
 )
 
 var allowedOrigins = []string{

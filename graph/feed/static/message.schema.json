@@ -1,0 +1,54 @@
+{
+    "$id": "https://schema.healthcloud.co.ke/message.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Be.Well Feed Messages",
+    "definitions": {
+        "message": {
+            "type": "object",
+            "description": "A message in a thread of conversations attached to a feed item",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "A unique identifier for each message on the thread",
+                    "minLength": 3
+                },
+                "sequenceNumber": {
+                    "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber"
+                }, 
+                "replyTo": {
+                    "type": "string",
+                    "description": "The unique ID of any message that this one is replying to - a thread"
+                },
+                "postedByUID": {
+                    "type": "string",
+                    "description": "The UID of the user that posted this message",
+                    "minLength": 3
+                },
+                "postedByName": {
+                    "type": "string",
+                    "description": "The name of the user that posted this message",
+                    "minLength": 3
+                },
+                "text": {
+                    "type": "string",
+                    "description": "Rich text that can include any unicode e.g emoji"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When this message was created. RFC3339.",
+                    "$comment": "The feed viewer should use this to calculate a HUMANIZED age"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "id",
+                "text",
+                "postedByUID",
+                "postedByName",
+                "timestamp"
+            ]
+        }
+    },
+    "$ref": "#/definitions/message"
+}

@@ -13,32 +13,12 @@ import (
 )
 
 const (
-	intMax          = 9007199254740990
-	base64PNGSample = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAFNeavDAAAACklEQVQIHWNgAAAAAgABz8g15QAAAABJRU5ErkJggg=="
-	base64PDFSample = "JVBERi0xLjUKJbXtrvsKNCAwIG9iago8PCAvTGVuZ3RoIDUgMCBSCiAgIC9GaWx0ZXIgL0ZsYXRlRGVjb2RlCj4+CnN0cmVhbQp4nDNUMABCXUMQpWdkopCcy1XIFcgFADCwBFQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCiAgIDI3CmVuZG9iagozIDAgb2JqCjw8Cj4+CmVuZG9iagoyIDAgb2JqCjw8IC9UeXBlIC9QYWdlICUgMQogICAvUGFyZW50IDEgMCBSCiAgIC9NZWRpYUJveCBbIDAgMCAwLjI0IDAuMjQgXQogICAvQ29udGVudHMgNCAwIFIKICAgL0dyb3VwIDw8CiAgICAgIC9UeXBlIC9Hcm91cAogICAgICAvUyAvVHJhbnNwYXJlbmN5CiAgICAgIC9JIHRydWUKICAgICAgL0NTIC9EZXZpY2VSR0IKICAgPj4KICAgL1Jlc291cmNlcyAzIDAgUgo+PgplbmRvYmoKMSAwIG9iago8PCAvVHlwZSAvUGFnZXMKICAgL0tpZHMgWyAyIDAgUiBdCiAgIC9Db3VudCAxCj4+CmVuZG9iago2IDAgb2JqCjw8IC9Qcm9kdWNlciAoY2Fpcm8gMS4xNi4wIChodHRwczovL2NhaXJvZ3JhcGhpY3Mub3JnKSkKICAgL0NyZWF0aW9uRGF0ZSAoRDoyMDIwMTAzMDA4MDkwOCswMycwMCkKPj4KZW5kb2JqCjcgMCBvYmoKPDwgL1R5cGUgL0NhdGFsb2cKICAgL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagp4cmVmCjAgOAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAzODEgMDAwMDAgbiAKMDAwMDAwMDE2MSAwMDAwMCBuIAowMDAwMDAwMTQwIDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDExOSAwMDAwMCBuIAowMDAwMDAwNDQ2IDAwMDAwIG4gCjAwMDAwMDA1NjIgMDAwMDAgbiAKdHJhaWxlcgo8PCAvU2l6ZSA4CiAgIC9Sb290IDcgMCBSCiAgIC9JbmZvIDYgMCBSCj4+CnN0YXJ0eHJlZgo2MTQKJSVFT0YK"
-	sampleVideoURL  = "https://www.youtube.com/watch?v=bPiofmZGb8o"
+	intMax         = 9007199254740990
+	sampleVideoURL = "https://www.youtube.com/watch?v=bPiofmZGb8o"
 )
 
 func getTestSequenceNumber() int {
 	return rand.Intn(intMax)
-}
-
-func getTextExpiry() time.Time {
-	return time.Now().Add(time.Hour * 24000)
-}
-
-func getTestImage() feed.Image {
-	return feed.Image{
-		ID:     ksuid.New().String(),
-		Base64: base64PNGSample,
-	}
-}
-
-func getTestVideo() feed.Video {
-	return feed.Video{
-		ID:  ksuid.New().String(),
-		URL: sampleVideoURL,
-	}
 }
 
 func getTestMessage() feed.Message {
@@ -77,58 +57,6 @@ func getTestAction() feed.Action {
 	}
 }
 
-func getTestDocument() feed.Document {
-	return feed.Document{
-		ID:     ksuid.New().String(),
-		Base64: base64PDFSample,
-	}
-}
-
-func testItem() *feed.Item {
-	return &feed.Item{
-		ID:             ksuid.New().String(),
-		SequenceNumber: getTestSequenceNumber(),
-		Expiry:         getTextExpiry(),
-		Persistent:     true,
-		Status:         feed.StatusPending,
-		Visibility:     feed.VisibilityShow,
-		Icon:           getTestImage(),
-		Author:         ksuid.New().String(),
-		Tagline:        ksuid.New().String(),
-		Label:          ksuid.New().String(),
-		Timestamp:      time.Now(),
-		Summary:        ksuid.New().String(),
-		Text:           ksuid.New().String(),
-		Images: []feed.Image{
-			getTestImage(),
-		},
-		Videos: []feed.Video{
-			getTestVideo(),
-		},
-		Actions: []feed.Action{
-			getTestAction(),
-		},
-		Conversations: []feed.Message{
-			getTestMessage(),
-		},
-		Users: []string{
-			ksuid.New().String(),
-		},
-		Groups: []string{
-			ksuid.New().String(),
-		},
-		Documents: []feed.Document{
-			getTestDocument(),
-		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelEmail,
-			feed.ChannelFcm,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
-		},
-	}
-}
-
 func testNudge() *feed.Nudge {
 	return &feed.Nudge{
 		ID:             ksuid.New().String(),
@@ -136,8 +64,10 @@ func testNudge() *feed.Nudge {
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
 		Title:          ksuid.New().String(),
-		Image:          getTestImage(),
-		Text:           ksuid.New().String(),
+		Links: []feed.Link{
+			feed.GetPNGImageLink(feed.LogoURL),
+		},
+		Text: ksuid.New().String(),
 		Actions: []feed.Action{
 			getTestAction(),
 		},
@@ -281,11 +211,11 @@ func TestFirebaseRepository_GetFeedItem(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	testItem := testItem()
+	testItem := getTestItem()
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := fr.SaveFeedItem(ctx, uid, flavour, &testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -353,8 +283,8 @@ func TestFirebaseRepository_SaveFeedItem(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	proItem := testItem()
-	consumerItem := testItem()
+	proItem := getTestItem()
+	consumerItem := getTestItem()
 
 	type args struct {
 		uid     string
@@ -371,7 +301,7 @@ func TestFirebaseRepository_SaveFeedItem(t *testing.T) {
 			args: args{
 				uid:     ksuid.New().String(),
 				flavour: feed.FlavourConsumer,
-				item:    proItem,
+				item:    &proItem,
 			},
 			wantErr: false,
 		},
@@ -380,7 +310,7 @@ func TestFirebaseRepository_SaveFeedItem(t *testing.T) {
 			args: args{
 				uid:     ksuid.New().String(),
 				flavour: feed.FlavourPro,
-				item:    consumerItem,
+				item:    &consumerItem,
 			},
 			wantErr: false,
 		},
@@ -418,11 +348,11 @@ func TestFirebaseRepository_DeleteFeedItem(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	testItem := testItem()
+	testItem := getTestItem()
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := fr.SaveFeedItem(ctx, uid, flavour, &testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -820,11 +750,11 @@ func TestFirebaseRepository_PostMessage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	testItem := testItem()
+	testItem := getTestItem()
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := fr.SaveFeedItem(ctx, uid, flavour, &testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -881,11 +811,11 @@ func TestFirebaseRepository_UpdateFeedItem(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	testItem := testItem()
+	testItem := getTestItem()
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := fr.SaveFeedItem(ctx, uid, flavour, &testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -1009,11 +939,11 @@ func TestFirebaseRepository_DeleteMessage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	testItem := testItem()
+	testItem := getTestItem()
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	item, err := fr.SaveFeedItem(ctx, uid, flavour, testItem)
+	item, err := fr.SaveFeedItem(ctx, uid, flavour, &testItem)
 	assert.NotNil(t, item)
 	assert.Nil(t, err)
 
@@ -1155,5 +1085,67 @@ func TestFirebaseRepository_SaveOutgoingEvent(t *testing.T) {
 				t.Errorf("FirebaseRepository.SaveOutgoingEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func getTestItem() feed.Item {
+	return feed.Item{
+		ID:             "item-1",
+		SequenceNumber: 1,
+		Expiry:         time.Now(),
+		Persistent:     true,
+		Status:         feed.StatusPending,
+		Visibility:     feed.VisibilityShow,
+		Icon:           feed.GetPNGImageLink(feed.LogoURL),
+		Author:         "Bot 1",
+		Tagline:        "Bot speaks...",
+		Label:          "DRUGS",
+		Timestamp:      time.Now(),
+		Summary:        "I am a bot...",
+		Text:           "This bot can speak",
+		Links: []feed.Link{
+			feed.GetYoutubeVideoLink(sampleVideoURL),
+		},
+		Actions: []feed.Action{
+			{
+				ID:             ksuid.New().String(),
+				SequenceNumber: 1,
+				Name:           "ACTION_NAME",
+				ActionType:     feed.ActionTypeSecondary,
+				Handling:       feed.HandlingFullPage,
+			},
+			{
+				ID:             "action-1",
+				SequenceNumber: 1,
+				Name:           "First action",
+				ActionType:     feed.ActionTypePrimary,
+				Handling:       feed.HandlingInline,
+			},
+		},
+		Conversations: []feed.Message{
+			{
+				ID:             "msg-2",
+				SequenceNumber: 1,
+				Text:           "hii ni reply",
+				ReplyTo:        "msg-1",
+				PostedByName:   ksuid.New().String(),
+				PostedByUID:    ksuid.New().String(),
+				Timestamp:      time.Now(),
+			},
+		},
+		Users: []string{
+			"user-1",
+			"user-2",
+		},
+		Groups: []string{
+			"group-1",
+			"group-2",
+		},
+		NotificationChannels: []feed.Channel{
+			feed.ChannelFcm,
+			feed.ChannelEmail,
+			feed.ChannelSms,
+			feed.ChannelWhatsapp,
+		},
 	}
 }

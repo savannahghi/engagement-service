@@ -1,0 +1,53 @@
+{
+  "$id": "https://schema.healthcloud.co.ke/feed.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Be.Well Feed",
+  "description": "A feed is an endless stream of feed items, whose contents are described below",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "$comment": "Not required - intentionally, for backwards compat"
+    },
+    "uid": {
+      "type": "string"
+    },
+    "flavour": {
+      "type": "string",
+      "$ref": "https://schema.healthcloud.co.ke/flavour.schema.json#/definitions/flavour"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schema.healthcloud.co.ke/action.schema.json#/definitions/action"
+      },
+      "uniqueItems": true,
+      "additionalItems": false
+    },
+    "nudges": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schema.healthcloud.co.ke/nudge.schema.json#/definitions/nudge"
+      },
+      "$comment": "If there's no unique nudge left, leave a persistent rating/feedback card",
+      "uniqueItems": true,
+      "additionalItems": false
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schema.healthcloud.co.ke/item.schema.json#/definitions/item"
+      },
+      "uniqueItems": true,
+      "additionalItems": false
+    }
+  },
+  "required": [
+    "uid",
+    "flavour",
+    "actions",
+    "nudges",
+    "items"
+  ],
+  "additionalProperties": false
+}

@@ -77,7 +77,7 @@ type Nudge {
   actions: [Action!]!
   groups: [String]
   users: [String]
-  image: Image
+  links: [Link]
   notificationChannels: [Channel]
 }
 
@@ -88,15 +88,14 @@ type Item {
   persistent: Boolean!
   status: Status!
   visibility: Visibility!
-  icon: Image!
+  icon: Link!
   author: String!
   tagline: String!
   label: String!
   timestamp: Time!
   summary: String!
   text: String!
-  images: [Image]
-  videos: [Video]
+  links: [Link]
   actions: [Action]
   conversations: [Msg]
   users: [String]
@@ -148,11 +147,6 @@ input PayloadInput {
   data: Map!
 }
 
-type Image {
-  id: String!
-  base64: String!
-}
-
 type Msg {
   id: String!
   sequenceNumber: Int!
@@ -173,20 +167,10 @@ input MsgInput {
   timestamp: Time!
 }
 
-type Video {
-  id: String!
-  url: String!
-}
-
 type Link {
   id: String!
   url: String!
   linkType: String!
-}
-
-type Document {
-  id: String!
-  base64: String!
 }
 
 type FilterParams {
