@@ -9,6 +9,7 @@ import (
 
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
+	"gitlab.slade360emr.com/go/feed/graph/inbox"
 	"gitlab.slade360emr.com/go/feed/graph/library"
 )
 
@@ -22,6 +23,7 @@ func NewResolver(
 		repository:          fr,
 		notificationService: ns,
 		libraryService:      library.NewService(),
+		inboxService:        inbox.NewService(),
 	}, nil
 }
 
@@ -30,6 +32,7 @@ type Resolver struct {
 	repository          feed.Repository
 	notificationService feed.NotificationService
 	libraryService      *library.Service
+	inboxService        *inbox.Service
 }
 
 func (r Resolver) checkPreconditions() {
@@ -43,6 +46,10 @@ func (r Resolver) checkPreconditions() {
 
 	if r.libraryService == nil {
 		log.Panicf("nil library service in resolver")
+	}
+
+	if r.inboxService == nil {
+		log.Panicf("nil inbox service in resolver")
 	}
 }
 
