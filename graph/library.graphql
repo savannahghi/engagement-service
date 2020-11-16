@@ -1,0 +1,28 @@
+scalar Date
+
+type GhostCMSPost {
+  id: ID!
+  excerpt: String!
+  slug: String!
+  title: String!
+  URL: String!
+  html: String!
+  readingTime: Int
+  featureImage: String
+  tags: [GhostCMSTag!]!
+  createdAt: Date!
+  publishedAt: Date!
+}
+
+type GhostCMSTag {
+  id: ID!
+  name: String!
+  slug: String!
+  URL: String!
+}
+
+type Query {
+  getLibraryContent: [GhostCMSPost!]!
+  getFaqsContent: [GhostCMSPost!]!
+  getFeedContent: [GhostCMSPost!]!
+}

@@ -36,6 +36,7 @@ resolver:
 # if they match it will use them, otherwise it will generate them.
 autobind:
   - "gitlab.slade360emr.com/go/feed/graph/feed"
+  - "gitlab.slade360emr.com/go/feed/graph/library"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
