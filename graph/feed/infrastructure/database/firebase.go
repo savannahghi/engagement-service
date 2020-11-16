@@ -140,13 +140,6 @@ func (fr Repository) GetFeed(
 			}
 		}
 
-		if len(actions) == 0 {
-			actions, err = feed.SetDefaultActions(ctx, uid, flavour, fr)
-			if err != nil {
-				return nil, fmt.Errorf("unable to set default actions: %w", err)
-			}
-		}
-
 		if len(items) == 0 {
 			items, err = feed.SetDefaultItems(ctx, uid, flavour, fr)
 			if err != nil {

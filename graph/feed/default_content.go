@@ -31,10 +31,10 @@ const (
 	defaultOrg        = "default-org-id-please-change"
 	defaultLocation   = "default-location-id-please-change"
 	defaultContentDir = "/graph/feed/static"
-	defaultIconPath   = staticBase + "bewell_logo.png"
 	defaultAuthor     = "Be.Well Team"
 	defaultLabel      = "WELCOME"
-	staticBase        = "https://static.healthcloud.co.ke"
+	staticBase        = "https://assets.healthcloud.co.ke"
+	defaultIconPath   = staticBase + "/bewell_logo.png"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -237,7 +237,7 @@ func defaultSeeDoctorAction(
 	flavour Flavour,
 	repository Repository,
 ) (*Action, error) {
-	return createAction(
+	return createGlobalAction(
 		ctx,
 		uid,
 		flavour,
@@ -254,7 +254,7 @@ func defaultBuyMedicineAction(
 	flavour Flavour,
 	repository Repository,
 ) (*Action, error) {
-	return createAction(
+	return createGlobalAction(
 		ctx,
 		uid,
 		flavour,
@@ -271,7 +271,7 @@ func defaultGetTestAction(
 	flavour Flavour,
 	repository Repository,
 ) (*Action, error) {
-	return createAction(
+	return createGlobalAction(
 		ctx,
 		uid,
 		flavour,
@@ -288,7 +288,7 @@ func defaultGetInsuranceAction(
 	flavour Flavour,
 	repository Repository,
 ) (*Action, error) {
-	return createAction(
+	return createGlobalAction(
 		ctx,
 		uid,
 		flavour,
@@ -305,7 +305,7 @@ func defaultCoachingAction(
 	flavour Flavour,
 	repository Repository,
 ) (*Action, error) {
-	return createAction(
+	return createGlobalAction(
 		ctx,
 		uid,
 		flavour,
@@ -322,7 +322,7 @@ func defaultHelpAction(
 	flavour Flavour,
 	repository Repository,
 ) (*Action, error) {
-	return createAction(
+	return createGlobalAction(
 		ctx,
 		uid,
 		flavour,
@@ -339,7 +339,7 @@ func defaultFindPatientAction(
 	flavour Flavour,
 	repository Repository,
 ) (*Action, error) {
-	return createAction(
+	return createGlobalAction(
 		ctx,
 		uid,
 		flavour,
@@ -358,8 +358,8 @@ func addInsuranceNudge(
 ) (*Nudge, error) {
 	title := "Add Insurance"
 	text := "Link your existing medical cover"
-	pkgerImgPath := staticBase + "nudges/add_insurance.png"
-	addInsuranceAction, err := createAction(
+	imgURL := staticBase + "/nudges/add_insurance.png"
+	addInsuranceAction, err := createLocalAction(
 		ctx,
 		uid,
 		flavour,
@@ -381,7 +381,7 @@ func addInsuranceNudge(
 		flavour,
 		title,
 		text,
-		pkgerImgPath,
+		imgURL,
 		actions,
 		repository,
 	)
@@ -395,8 +395,8 @@ func addNHIFNudge(
 ) (*Nudge, error) {
 	title := "Add NHIF"
 	text := "Link your NHIF cover"
-	pkgerImgPath := staticBase + "nudges/add_insurance.png"
-	addNHIFAction, err := createAction(
+	imgURL := staticBase + "/nudges/add_insurance.png"
+	addNHIFAction, err := createLocalAction(
 		ctx,
 		uid,
 		flavour,
@@ -418,7 +418,7 @@ func addNHIFNudge(
 		flavour,
 		title,
 		text,
-		pkgerImgPath,
+		imgURL,
 		actions,
 		repository,
 	)
@@ -432,8 +432,8 @@ func completeProfileNudge(
 ) (*Nudge, error) {
 	title := "Complete your profile"
 	text := "Fill in your Be.Well profile to unlock more rewards"
-	pkgerImgPath := staticBase + "nudges/complete_profile.png"
-	completeProfileAction, err := createAction(
+	imgURL := staticBase + "/nudges/complete_profile.png"
+	completeProfileAction, err := createLocalAction(
 		ctx,
 		uid,
 		flavour,
@@ -455,7 +455,7 @@ func completeProfileNudge(
 		flavour,
 		title,
 		text,
-		pkgerImgPath,
+		imgURL,
 		actions,
 		repository,
 	)
@@ -469,8 +469,8 @@ func completeKYCNudge(
 ) (*Nudge, error) {
 	title := "Complete your business profile"
 	text := "Fill in your Be.Well usiness profile in order to start transacting"
-	pkgerImgPath := staticBase + "nudges/complete_kyc.png"
-	completeKYCAction, err := createAction(
+	imgURL := staticBase + "/nudges/complete_kyc.png"
+	completeKYCAction, err := createLocalAction(
 		ctx,
 		uid,
 		flavour,
@@ -492,7 +492,7 @@ func completeKYCNudge(
 		flavour,
 		title,
 		text,
-		pkgerImgPath,
+		imgURL,
 		actions,
 		repository,
 	)
@@ -537,7 +537,7 @@ func createNudge(
 	return nudge, nil
 }
 
-func createAction(
+func createGlobalAction(
 	ctx context.Context,
 	uid string,
 	flavour Flavour,
@@ -562,6 +562,32 @@ func createAction(
 	if err != nil {
 		return nil, fmt.Errorf("unable to save action: %w", err)
 	}
+	return action, nil
+}
+
+func createLocalAction(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	name string,
+	actionType ActionType,
+	handling Handling,
+	repository Repository,
+) (*Action, error) {
+	action := &Action{
+		ID:             ksuid.New().String(),
+		SequenceNumber: defaultSequenceNumber,
+		Name:           name,
+		ActionType:     actionType,
+		Handling:       handling,
+	}
+	_, err := action.ValidateAndMarshal()
+	if err != nil {
+		return nil, fmt.Errorf("action validation error: %w", err)
+	}
+	// not saved...intentionally
+	// it will save embedded in a nudge or feed item
+
 	return action, nil
 }
 
@@ -779,7 +805,7 @@ func ultimateComposite(
 		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_47.png"),
 		GetPDFDocumentLink(staticBase + "/items/images/bewell_banner_48.png"),
 	}
-	resolveAction, err := createAction(
+	resolveAction, err := createLocalAction(
 		ctx,
 		uid,
 		flavour,
@@ -792,7 +818,7 @@ func ultimateComposite(
 		return nil, fmt.Errorf("unable to create resolve action: %w", err)
 	}
 
-	pinAction, err := createAction(
+	pinAction, err := createLocalAction(
 		ctx,
 		uid,
 		flavour,
@@ -805,7 +831,7 @@ func ultimateComposite(
 		return nil, fmt.Errorf("unable to create pin action: %w", err)
 	}
 
-	hideAction, err := createAction(
+	hideAction, err := createLocalAction(
 		ctx,
 		uid,
 		flavour,

@@ -2298,10 +2298,11 @@ func TestGetFeed(t *testing.T) {
 		body       io.Reader
 	}
 	tests := []struct {
-		name       string
-		args       args
-		wantStatus int
-		wantErr    bool
+		name                   string
+		args                   args
+		wantStatus             int
+		wantNewFeedInitialized bool
+		wantErr                bool
 	}{
 		{
 			name: "successful fetch of a consumer feed",
@@ -2315,8 +2316,9 @@ func TestGetFeed(t *testing.T) {
 				httpMethod: http.MethodGet,
 				body:       nil,
 			},
-			wantStatus: http.StatusOK,
-			wantErr:    false,
+			wantNewFeedInitialized: true,
+			wantStatus:             http.StatusOK,
+			wantErr:                false,
 		},
 		{
 			name: "fetch with a status filter",
@@ -2437,6 +2439,27 @@ func TestGetFeed(t *testing.T) {
 			if !tt.wantErr && resp == nil {
 				t.Errorf("unexpected nil response (did not expect an error)")
 				return
+			}
+
+			if tt.wantNewFeedInitialized {
+				returnedFeed := &feed.Feed{}
+				err = json.Unmarshal(data, returnedFeed)
+				if err != nil {
+					t.Errorf("can't unmarshal feed from response JSON: %w", err)
+					return
+				}
+
+				if len(returnedFeed.Actions) < 1 {
+					t.Error("the returned feed has no actions")
+				}
+
+				if len(returnedFeed.Nudges) < 1 {
+					t.Errorf("the returned feed has no nudges")
+				}
+
+				if len(returnedFeed.Items) < 1 {
+					t.Errorf("the returned feed has no items")
+				}
 			}
 		})
 	}
