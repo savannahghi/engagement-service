@@ -170,7 +170,7 @@ input MsgInput {
 type Link {
   id: String!
   url: String!
-  linkType: String!
+  linkType: LinkType!
 }
 
 type FilterParams {

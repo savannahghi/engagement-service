@@ -39,7 +39,6 @@ type Config struct {
 
 type ResolverRoot interface {
 	Entity() EntityResolver
-	Link() LinkResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -172,9 +171,6 @@ type ComplexityRoot struct {
 
 type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
-}
-type LinkResolver interface {
-	LinkType(ctx context.Context, obj *feed.Link) (string, error)
 }
 type MutationResolver interface {
 	ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
@@ -1067,7 +1063,7 @@ input MsgInput {
 type Link {
   id: String!
   url: String!
-  linkType: String!
+  linkType: LinkType!
 }
 
 type FilterParams {
@@ -3064,14 +3060,14 @@ func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.Co
 		Object:     "Link",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Link().LinkType(rctx, obj)
+		return obj.LinkType, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3083,9 +3079,9 @@ func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(feed.LinkType)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLinkType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
@@ -6109,27 +6105,18 @@ func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._Link_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "url":
 			out.Values[i] = ec._Link_url(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "linkType":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Link_linkType(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._Link_linkType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6896,6 +6883,16 @@ func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋfe
 
 func (ec *executionContext) marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx context.Context, sel ast.SelectionSet, v feed.Link) graphql.Marshaler {
 	return ec._Link(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLinkType(ctx context.Context, v interface{}) (feed.LinkType, error) {
+	var res feed.LinkType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLinkType(ctx context.Context, sel ast.SelectionSet, v feed.LinkType) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNMap2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
