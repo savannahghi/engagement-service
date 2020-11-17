@@ -3,10 +3,13 @@ package feed
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/markbates/pkger"
 	"github.com/segmentio/ksuid"
+	"gitlab.slade360emr.com/go/feed/graph/library"
 )
 
 const (
@@ -138,6 +141,10 @@ func SetDefaultItems(
 		}
 		items = proItems
 	}
+
+	// fetch CMS items from the CMS feed tag
+	cmsItems := feedItemsFromCMSFeedTag(ctx)
+	items = append(items, cmsItems...)
 
 	return items, nil
 }
@@ -622,6 +629,7 @@ func createFeedItem(
 		Timestamp:            time.Now(),
 		Summary:              summary,
 		Text:                 text,
+		TextType:             TextTypeMarkdown,
 		Links:                links,
 		Actions:              actions,
 		Conversations:        conversations,
@@ -1049,4 +1057,91 @@ func getFeedWelcomeVideos() []Link {
 		GetYoutubeVideoLink("https://www.youtube.com/watch?v=IbtVBXNvpSA"),
 		GetYoutubeVideoLink("https://www.youtube.com/watch?v=mKnlXcS3_Z0"),
 	}
+}
+
+func feedItemsFromCMSFeedTag(ctx context.Context) []Item {
+	libraryService := library.NewService()
+	items := []Item{}
+	feedPosts, err := libraryService.GetFeedContent(ctx)
+	if err != nil {
+		//  non-fatal, intentionally
+		log.Printf("ERROR: unable to fetch welcome feed posts from CMS: %s", err)
+	}
+	for _, post := range feedPosts {
+		if post == nil {
+			// non fatal, intentionally
+			log.Printf("ERROR: nil CMS post when adding welcome posts to feed")
+			continue
+		}
+		items = append(items, feedItemFromCMSPost(*post))
+	}
+	return items
+}
+
+func feedItemFromCMSPost(post library.GhostCMSPost) Item {
+	future := time.Now().Add(time.Hour * futureHours)
+	return Item{
+		ID:                   post.UUID,
+		SequenceNumber:       int(post.UpdatedAt.Unix()),
+		Expiry:               future,
+		Persistent:           false,
+		Status:               StatusPending,
+		Visibility:           VisibilityShow,
+		Icon:                 GetPNGImageLink(defaultIconPath),
+		Author:               defaultAuthor,
+		Tagline:              post.Slug,
+		Label:                defaultLabel,
+		Summary:              TruncateStringWithEllipses(post.Excerpt, 140),
+		Timestamp:            post.UpdatedAt,
+		Text:                 post.HTML,
+		TextType:             TextTypeHTML,
+		Links:                getLinks(post),
+		Actions:              []Action{},
+		Conversations:        []Message{},
+		Users:                []string{},
+		Groups:               []string{},
+		NotificationChannels: []Channel{},
+	}
+}
+
+func getLinks(post library.GhostCMSPost) []Link {
+	featureImageLink := post.FeatureImage
+	if strings.HasSuffix(featureImageLink, ".png") {
+		return []Link{
+			{
+				ID:       ksuid.New().String(),
+				URL:      featureImageLink,
+				LinkType: LinkTypePngImage,
+			},
+		}
+	}
+	return []Link{}
+}
+
+// TruncateStringWithEllipses truncates a string at the indicated length and adds trailing ellipses
+func TruncateStringWithEllipses(str string, length int) string {
+	if length <= 0 {
+		return ""
+	}
+
+	targetLength := length
+	addEllipses := false
+	if length >= 140 {
+		targetLength = length - 4 // room for ellipses for longer strings
+		addEllipses = true
+	}
+
+	truncated := ""
+	count := 0
+	for _, char := range str {
+		truncated += string(char)
+		count++
+		if count >= targetLength {
+			break
+		}
+	}
+	if addEllipses {
+		return truncated + "..."
+	}
+	return truncated
 }

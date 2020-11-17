@@ -174,3 +174,47 @@ func TestSetDefaultItems(t *testing.T) {
 		})
 	}
 }
+
+func TestTruncateStringWithEllipses(t *testing.T) {
+	type args struct {
+		str    string
+		length int
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "short string",
+			args: args{
+				str:    "drink",
+				length: 3,
+			},
+			want: "dri",
+		},
+		{
+			name: "empty string",
+			args: args{
+				str:    "something",
+				length: 0,
+			},
+			want: "",
+		},
+		{
+			name: "long string",
+			args: args{
+				str:    "This is an epic tale that is intended to exceed 140 characters. At that point, it will be truncated to the indicated target length, including getting some ellipses added at the end.",
+				length: 140,
+			},
+			want: "This is an epic tale that is intended to exceed 140 characters. At that point, it will be truncated to the indicated target length, incl...",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := feed.TruncateStringWithEllipses(tt.args.str, tt.args.length); got != tt.want {
+				t.Errorf("TruncateStringWithEllipses() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

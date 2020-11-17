@@ -73,6 +73,14 @@
                     "type": "string",
                     "description": "Rich text that can include any unicode e.g emoji"
                 },
+                "textType": {
+                    "type": "string",
+                    "enum": [
+                        "HTML",
+                        "MARKDOWN",
+                        "PLAIN"
+                    ]
+                },
                 "links": {
                     "type": "array",
                     "description": "Links to images, documents etc",
@@ -131,6 +139,7 @@
                 "timestamp",
                 "summary",
                 "text",
+                "textType",
                 "links"
             ],
             "additionalItems": false,

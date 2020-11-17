@@ -1103,6 +1103,7 @@ func getTestItem() feed.Item {
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
+		TextType:       feed.TextTypePlain,
 		Links: []feed.Link{
 			feed.GetYoutubeVideoLink(sampleVideoURL),
 		},

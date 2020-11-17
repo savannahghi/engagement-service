@@ -18,6 +18,8 @@ const (
 	ghostCMSAPIKey          = "GHOST_CMS_API_KEY"
 	apiRoot                 = "/ghost/api/v3/content/posts/?"
 	includeTags             = "&include=tags"
+	includeAuthors          = "&include=authors"
+	formats                 = "&formats=html,plaintext"
 	allowedFeedTagFilter    = "&filter=tag:welcome&filter=tag:how-to&filter=tag:what-is&filter=tag:getting-started"
 	allowedFAQsTagFilter    = "&filter=tag:faqs&filter=tag:how-to"
 	allowedLibraryTagFilter = "&filter=tag:diet&filter=tag:health-tips"
@@ -60,26 +62,44 @@ func (s Service) checkPreconditions() {
 	}
 }
 
-func (s Service) composeRequest(reqType requestType) *string {
+func (s Service) composeRequest(reqType requestType) string {
 	var urlRequest string
 	switch reqType {
 	case feedRequest:
-		urlRequest = fmt.Sprintf("%v%v%v", s.PostsAPIRoot, includeTags, allowedFeedTagFilter)
+		urlRequest = fmt.Sprintf(
+			"%v%v%v%v%v",
+			s.PostsAPIRoot,
+			includeTags,
+			allowedFeedTagFilter,
+			includeAuthors,
+			formats,
+		)
 	case faqsRequest:
-		urlRequest = fmt.Sprintf("%v%v%v", s.PostsAPIRoot, includeTags, allowedFAQsTagFilter)
+		urlRequest = fmt.Sprintf(
+			"%v%v%v%v%v",
+			s.PostsAPIRoot,
+			includeTags,
+			allowedFAQsTagFilter,
+			includeAuthors,
+			formats,
+		)
 	case libraryRequest:
-		urlRequest = fmt.Sprintf("%v%v%v", s.PostsAPIRoot, includeTags, allowedLibraryTagFilter)
+		urlRequest = fmt.Sprintf(
+			"%v%v%v%v%v",
+			s.PostsAPIRoot,
+			includeTags,
+			allowedLibraryTagFilter,
+			includeAuthors,
+			formats,
+		)
 	}
-
-	return &urlRequest
+	return urlRequest
 }
 
-// GetFeedContent fetches posts that populate the feed. Since the feed right now is naive,
-// we just dump what we get. However, posts for the feed will be of specific tags. Check `allowedFeedTagFilter` above
-func (s Service) GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error) {
+func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*GhostCMSPost, error) {
 	s.checkPreconditions()
 	url := s.composeRequest(feedRequest)
-	req, err := http.NewRequest(http.MethodGet, *url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create action request with error; %v", err)
 	}
@@ -89,66 +109,26 @@ func (s Service) GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
 	}
-
 	defer resp.Body.Close()
 
 	var rr GhostCMSServerResponse
-
 	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
 		return nil, fmt.Errorf("failed to decoder response with err %v", err)
 	}
-
 	return rr.Posts, nil
 }
 
-// GetFaqsContent fetech content of frequently asked question
+// GetFeedContent fetches posts that should be added to the feed.
+func (s Service) GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error) {
+	return s.getCMSPosts(ctx, feedRequest)
+}
+
+// GetFaqsContent fetches posts tagged as FAQs.
 func (s Service) GetFaqsContent(ctx context.Context) ([]*GhostCMSPost, error) {
-	s.checkPreconditions()
-	url := s.composeRequest(faqsRequest)
-	req, err := http.NewRequest(http.MethodGet, *url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create action request with error; %v", err)
-	}
-
-	c := &http.Client{Timeout: time.Second * 300}
-	resp, err := c.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
-	}
-
-	defer resp.Body.Close()
-
-	var rr GhostCMSServerResponse
-
-	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
-		return nil, fmt.Errorf("failed to decoder response with err %v", err)
-	}
-
-	return rr.Posts, nil
+	return s.getCMSPosts(ctx, faqsRequest)
 }
 
-// GetLibraryContent gets library content to be show under libary section of the app
+// GetLibraryContent gets library content to be show under libary section of the app.
 func (s Service) GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error) {
-	s.checkPreconditions()
-	url := s.composeRequest(libraryRequest)
-	req, err := http.NewRequest(http.MethodGet, *url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create action request with error; %v", err)
-	}
-
-	c := &http.Client{Timeout: time.Second * 300}
-	resp, err := c.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
-	}
-
-	defer resp.Body.Close()
-
-	var rr GhostCMSServerResponse
-
-	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
-		return nil, fmt.Errorf("failed to decoder response with err %v", err)
-	}
-
-	return rr.Posts, nil
+	return s.getCMSPosts(ctx, libraryRequest)
 }

@@ -42,6 +42,7 @@ func getTestItem() feed.Item {
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
+		TextType:       feed.TextTypePlain,
 		Links: []feed.Link{
 			feed.GetYoutubeVideoLink(sampleVideoURL),
 		},
@@ -165,6 +166,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
+		TextType:       feed.TextTypeMarkdown,
 		Links: []feed.Link{
 			feed.GetPNGImageLink(feed.LogoURL),
 		},
@@ -539,6 +541,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Timestamp: time.Now(),
 				Summary:   "I am a bot...",
 				Text:      "This bot can speak",
+				TextType:  feed.TextTypeMarkdown,
 				Actions: []feed.Action{
 					{
 						ID:             ksuid.New().String(),
@@ -728,6 +731,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Timestamp: time.Now(),
 						Summary:   "I am a bot...",
 						Text:      "This bot can speak",
+						TextType:  feed.TextTypeMarkdown,
 						Actions: []feed.Action{
 							{
 								ID:             ksuid.New().String(),
@@ -966,6 +970,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 		Timestamp            time.Time
 		Summary              string
 		Text                 string
+		TextType             feed.TextType
 		Links                []feed.Link
 		Actions              []feed.Action
 		Conversations        []feed.Message
@@ -994,6 +999,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				Timestamp:      time.Now(),
 				Summary:        "I am a bot...",
 				Text:           "This bot can speak",
+				TextType:       feed.TextTypeMarkdown,
 				Links: []feed.Link{
 					feed.GetPNGImageLink(feed.LogoURL),
 				},
@@ -1062,6 +1068,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				Timestamp:            tt.fields.Timestamp,
 				Summary:              tt.fields.Summary,
 				Text:                 tt.fields.Text,
+				TextType:             tt.fields.TextType,
 				Links:                tt.fields.Links,
 				Actions:              tt.fields.Actions,
 				Conversations:        tt.fields.Conversations,
@@ -2719,6 +2726,7 @@ func testItem() *feed.Item {
 		Timestamp:      time.Now(),
 		Summary:        ksuid.New().String(),
 		Text:           ksuid.New().String(),
+		TextType:       feed.TextTypeMarkdown,
 		Links: []feed.Link{
 			feed.GetPNGImageLink(feed.LogoURL),
 		},

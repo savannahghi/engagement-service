@@ -447,3 +447,52 @@ func (e *LinkType) UnmarshalGQL(v interface{}) error {
 func (e LinkType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
+
+// TextType determines how clients render the text
+type TextType string
+
+// known text types
+const (
+	TextTypeHTML     TextType = "HTML"
+	TextTypeMarkdown TextType = "MARKDOWN"
+	TextTypePlain    TextType = "PLAIN"
+)
+
+// AllTextType is the set of all known text types
+var AllTextType = []TextType{
+	TextTypeHTML,
+	TextTypeMarkdown,
+	TextTypePlain,
+}
+
+// IsValid returns true only for valid text types
+func (e TextType) IsValid() bool {
+	switch e {
+	case TextTypeHTML, TextTypeMarkdown, TextTypePlain:
+		return true
+	}
+	return false
+}
+
+func (e TextType) String() string {
+	return string(e)
+}
+
+// UnmarshalGQL translates the supplied interface into a text type
+func (e *TextType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TextType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TextType", str)
+	}
+	return nil
+}
+
+// MarshalGQL writes the text type to the supplied writer
+func (e TextType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}

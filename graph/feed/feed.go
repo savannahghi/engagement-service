@@ -1202,7 +1202,10 @@ type Item struct {
 	// Rich text that can include any unicode e.g emoji
 	Text string `json:"text" firestore:"text"`
 
-	// an illustrative image for the nudge
+	// TextType determines how the frontend will render the text
+	TextType TextType `json:"textType" firestore:"textType"`
+
+	// an illustrative image for the item
 	Links []Link `json:"links" firestore:"links"`
 
 	// Actions are the primary, secondary and overflow actions associated

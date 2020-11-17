@@ -56,6 +56,12 @@ enum LinkType {
   PDF_DOCUMENT
 }
 
+enum TextType {
+  HTML
+  MARKDOWN
+  PLAIN
+}
+
 # Feed is the top level access point for a user's feed.
 type Feed @key(fields: "id") {
   id: String!
@@ -95,6 +101,7 @@ type Item {
   timestamp: Time!
   summary: String!
   text: String!
+  textType: TextType!
   links: [Link]
   actions: [Action]
   conversations: [Msg]
