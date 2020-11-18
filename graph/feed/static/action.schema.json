@@ -34,6 +34,10 @@
                 "name": {
                     "type": "string",
                     "description": "A friendly name for the action; rich text with Unicode, can include emoji"
+                },
+                "icon": {
+                    "$ref": "https://schema.healthcloud.co.ke/link.schema.json#/definitions/link",
+                    "description": "A link to a PNG image"
                 }
             },
             "required": [
@@ -41,7 +45,8 @@
                 "sequenceNumber",
                 "name",
                 "actionType",
-                "handling"
+                "handling",
+                "icon"
             ],
             "additionalProperties": false
         }

@@ -3,6 +3,7 @@ package feed
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 // NewCollection initializes a user feed that is backed by an in-memory map
@@ -75,6 +76,7 @@ func (agg Collection) GetFeed(
 	// inject the repository and notification service into the returned feed
 	feed.repository = agg.repository
 	feed.notificationService = agg.notificationService
+	feed.SequenceNumber = int(time.Now().Unix())
 
 	if err := feed.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
@@ -117,6 +119,7 @@ func (agg Collection) GetThinFeed(
 	// inject the repository and notification service into the returned feed
 	feed.repository = agg.repository
 	feed.notificationService = agg.notificationService
+	feed.SequenceNumber = int(time.Now().Unix())
 
 	if err := feed.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(

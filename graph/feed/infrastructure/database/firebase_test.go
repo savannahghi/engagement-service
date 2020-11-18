@@ -52,6 +52,7 @@ func getTestAction() feed.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
+		Icon:           feed.GetPNGImageLink(feed.LogoURL),
 		ActionType:     feed.ActionTypePrimary,
 		Handling:       feed.HandlingFullPage,
 	}
@@ -1167,6 +1168,7 @@ func getTestItem() feed.Item {
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
 			},
@@ -1174,6 +1176,7 @@ func getTestItem() feed.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},

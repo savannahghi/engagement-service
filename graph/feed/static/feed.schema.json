@@ -9,6 +9,10 @@
       "type": "string",
       "$comment": "Not required - intentionally, for backwards compat"
     },
+    "sequenceNumber": {
+      "$ref": "https://schema.healthcloud.co.ke/sequencenumber.schema.json#/definitions/sequenceNumber",
+      "$comment": "Optional, intentionally"
+    },
     "uid": {
       "type": "string"
     },

@@ -51,6 +51,7 @@ func getTestItem() feed.Item {
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
 			},
@@ -58,6 +59,7 @@ func getTestItem() feed.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -175,6 +177,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
 			},
@@ -182,6 +185,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -313,6 +317,7 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -406,6 +411,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Name:           "ACTION_NAME",
+		Icon:           feed.GetPNGImageLink(feed.LogoURL),
 		ActionType:     feed.ActionTypeSecondary,
 		Handling:       feed.HandlingFullPage,
 	}
@@ -418,6 +424,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		ID             string
 		SequenceNumber int
 		Name           string
+		Icon           feed.Link
 		ActionType     feed.ActionType
 		Handling       feed.Handling
 	}
@@ -447,13 +454,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ac := &feed.Action{
-				ID:             tt.fields.ID,
-				SequenceNumber: tt.fields.SequenceNumber,
-				Name:           tt.fields.Name,
-				ActionType:     tt.fields.ActionType,
-				Handling:       tt.fields.Handling,
-			}
+			ac := &feed.Action{}
 			if err := ac.ValidateAndUnmarshal(
 				tt.args.b); (err != nil) != tt.wantErr {
 				t.Errorf(
@@ -469,13 +470,15 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 	validElement := feed.Feed{
-		UID:     "a-uid",
-		Flavour: feed.FlavourConsumer,
+		UID:            "a-uid",
+		SequenceNumber: int(time.Now().Unix()),
+		Flavour:        feed.FlavourConsumer,
 		Actions: []feed.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
 			},
@@ -483,6 +486,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -503,6 +507,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
 					},
@@ -547,6 +552,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypeSecondary,
 						Handling:       feed.HandlingFullPage,
 					},
@@ -554,6 +560,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
 					},
@@ -645,11 +652,12 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 
 func TestFeed_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
-		UID     string
-		Flavour feed.Flavour
-		Actions []feed.Action
-		Items   []feed.Item
-		Nudges  []feed.Nudge
+		UID            string
+		SequenceNumber int
+		Flavour        feed.Flavour
+		Actions        []feed.Action
+		Items          []feed.Item
+		Nudges         []feed.Nudge
 	}
 	tests := []struct {
 		name    string
@@ -659,13 +667,15 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 		{
 			name: "valid feed",
 			fields: fields{
-				UID:     "a-uid",
-				Flavour: feed.FlavourPro,
+				UID:            "a-uid",
+				SequenceNumber: int(time.Now().Unix()),
+				Flavour:        feed.FlavourPro,
 				Actions: []feed.Action{
 					{
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypeSecondary,
 						Handling:       feed.HandlingFullPage,
 					},
@@ -673,6 +683,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
 					},
@@ -693,6 +704,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								ID:             "action-1",
 								SequenceNumber: 1,
 								Name:           "First action",
+								Icon:           feed.GetPNGImageLink(feed.LogoURL),
 								ActionType:     feed.ActionTypePrimary,
 								Handling:       feed.HandlingInline,
 							},
@@ -737,6 +749,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           "ACTION_NAME",
+								Icon:           feed.GetPNGImageLink(feed.LogoURL),
 								ActionType:     feed.ActionTypeSecondary,
 								Handling:       feed.HandlingFullPage,
 							},
@@ -744,6 +757,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								ID:             "action-1",
 								SequenceNumber: 1,
 								Name:           "First action",
+								Icon:           feed.GetPNGImageLink(feed.LogoURL),
 								ActionType:     feed.ActionTypePrimary,
 								Handling:       feed.HandlingInline,
 							},
@@ -786,11 +800,12 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fe := &feed.Feed{
-				UID:     tt.fields.UID,
-				Flavour: tt.fields.Flavour,
-				Actions: tt.fields.Actions,
-				Items:   tt.fields.Items,
-				Nudges:  tt.fields.Nudges,
+				UID:            tt.fields.UID,
+				SequenceNumber: tt.fields.SequenceNumber,
+				Flavour:        tt.fields.Flavour,
+				Actions:        tt.fields.Actions,
+				Items:          tt.fields.Items,
+				Nudges:         tt.fields.Nudges,
 			}
 			got, err := fe.ValidateAndMarshal()
 			if (err != nil) != tt.wantErr {
@@ -813,6 +828,7 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 		ID             string
 		SequenceNumber int
 		Name           string
+		Icon           feed.Link
 		ActionType     feed.ActionType
 		Handling       feed.Handling
 	}
@@ -827,6 +843,7 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
+				Icon:           feed.GetPNGImageLink(feed.LogoURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -843,6 +860,7 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 				ID:             tt.fields.ID,
 				SequenceNumber: tt.fields.SequenceNumber,
 				Name:           tt.fields.Name,
+				Icon:           tt.fields.Icon,
 				ActionType:     tt.fields.ActionType,
 				Handling:       tt.fields.Handling,
 			}
@@ -898,6 +916,7 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
 					},
@@ -1008,6 +1027,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypeSecondary,
 						Handling:       feed.HandlingFullPage,
 					},
@@ -1015,6 +1035,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
+						Icon:           feed.GetPNGImageLink(feed.LogoURL),
 						ActionType:     feed.ActionTypePrimary,
 						Handling:       feed.HandlingInline,
 					},
@@ -2774,6 +2795,7 @@ func getTestAction() feed.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
+		Icon:           feed.GetPNGImageLink(feed.LogoURL),
 		ActionType:     feed.ActionTypePrimary,
 		Handling:       feed.HandlingFullPage,
 	}

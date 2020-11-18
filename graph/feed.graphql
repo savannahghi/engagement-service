@@ -65,6 +65,7 @@ enum TextType {
 # Feed is the top level access point for a user's feed.
 type Feed @key(fields: "id") {
   id: String!
+  sequenceNumber: Int!
   uid: String!
   flavour: Flavour!
   actions: [Action!]!
@@ -114,6 +115,7 @@ type Action {
   id: String!
   sequenceNumber: Int!
   name: String!
+  icon: Link!
   actionType: ActionType!
   handling: Handling!
 }

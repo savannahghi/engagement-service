@@ -90,6 +90,9 @@ type Feed struct {
 	// a string composed by concatenating the UID, a "|" and a flavour
 	ID string `json:"id" firestore:"-"`
 
+	// A higher sequence number means that it came later
+	SequenceNumber int `json:"sequenceNumber" firestore:"sequenceNumber"`
+
 	// user identifier - who does this feed belong to?
 	// this is also the unique identifier for a feed
 	UID string `json:"uid" firestore:"uid"`
@@ -130,6 +133,10 @@ func (fe Feed) checkPreconditions() error {
 
 	if fe.ID == "" {
 		fe.ID = fe.getID()
+	}
+
+	if fe.SequenceNumber == 0 {
+		fe.SequenceNumber = int(time.Now().Unix())
 	}
 
 	return nil
@@ -983,6 +990,9 @@ type Action struct {
 
 	// A friendly name for the action; rich text with Unicode, can have emoji
 	Name string `json:"name" firestore:"name"`
+
+	// A link to a PNG image that would serve as an avatar
+	Icon Link `json:"icon" firestore:"icon"`
 
 	// Action types are: primary, secondary, overflow and floating
 	// Primary actions get dominant visual treatment;

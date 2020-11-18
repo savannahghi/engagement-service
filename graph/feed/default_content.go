@@ -251,6 +251,7 @@ func defaultSeeDoctorAction(
 		getConsultationActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
+		staticBase+"/actions/see_doctor.png",
 		repository,
 	)
 }
@@ -268,6 +269,7 @@ func defaultBuyMedicineAction(
 		getMedicineActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
+		staticBase+"/actions/medicine.png",
 		repository,
 	)
 }
@@ -285,6 +287,7 @@ func defaultGetTestAction(
 		getMedicineActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
+		staticBase+"/actions/get_tested.png",
 		repository,
 	)
 }
@@ -302,6 +305,7 @@ func defaultGetInsuranceAction(
 		getInsuranceActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
+		staticBase+"/actions/buy_cover.png",
 		repository,
 	)
 }
@@ -319,6 +323,7 @@ func defaultCoachingAction(
 		getCoachingActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
+		staticBase+"/actions/fitness.png",
 		repository,
 	)
 }
@@ -336,6 +341,7 @@ func defaultHelpAction(
 		getCoachingActionName,
 		ActionTypeFloating,
 		HandlingFullPage,
+		staticBase+"/actions/help.png",
 		repository,
 	)
 }
@@ -353,6 +359,7 @@ func defaultFindPatientAction(
 		findPatientActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
+		staticBase+"/actions/add_user.png",
 		repository,
 	)
 }
@@ -551,12 +558,14 @@ func createGlobalAction(
 	name string,
 	actionType ActionType,
 	handling Handling,
+	iconLink string,
 	repository Repository,
 ) (*Action, error) {
 	action := &Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Name:           name,
+		Icon:           GetPNGImageLink(iconLink),
 		ActionType:     actionType,
 		Handling:       handling,
 	}
@@ -585,6 +594,7 @@ func createLocalAction(
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Name:           name,
+		Icon:           GetPNGImageLink(staticBase + "/1px.png"),
 		ActionType:     actionType,
 		Handling:       handling,
 	}

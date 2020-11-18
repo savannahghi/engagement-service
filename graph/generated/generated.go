@@ -53,6 +53,7 @@ type ComplexityRoot struct {
 		ActionType     func(childComplexity int) int
 		Handling       func(childComplexity int) int
 		ID             func(childComplexity int) int
+		Icon           func(childComplexity int) int
 		Name           func(childComplexity int) int
 		SequenceNumber func(childComplexity int) int
 	}
@@ -77,12 +78,13 @@ type ComplexityRoot struct {
 	}
 
 	Feed struct {
-		Actions func(childComplexity int) int
-		Flavour func(childComplexity int) int
-		ID      func(childComplexity int) int
-		Items   func(childComplexity int) int
-		Nudges  func(childComplexity int) int
-		UID     func(childComplexity int) int
+		Actions        func(childComplexity int) int
+		Flavour        func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Items          func(childComplexity int) int
+		Nudges         func(childComplexity int) int
+		SequenceNumber func(childComplexity int) int
+		UID            func(childComplexity int) int
 	}
 
 	FilterParams struct {
@@ -300,6 +302,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Action.ID(childComplexity), true
 
+	case "Action.icon":
+		if e.complexity.Action.Icon == nil {
+			break
+		}
+
+		return e.complexity.Action.Icon(childComplexity), true
+
 	case "Action.name":
 		if e.complexity.Action.Name == nil {
 			break
@@ -423,6 +432,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Feed.Nudges(childComplexity), true
+
+	case "Feed.sequenceNumber":
+		if e.complexity.Feed.SequenceNumber == nil {
+			break
+		}
+
+		return e.complexity.Feed.SequenceNumber(childComplexity), true
 
 	case "Feed.uid":
 		if e.complexity.Feed.UID == nil {
@@ -1390,6 +1406,7 @@ enum TextType {
 # Feed is the top level access point for a user's feed.
 type Feed @key(fields: "id") {
   id: String!
+  sequenceNumber: Int!
   uid: String!
   flavour: Flavour!
   actions: [Action!]!
@@ -1439,6 +1456,7 @@ type Action {
   id: String!
   sequenceNumber: Int!
   name: String!
+  icon: Link!
   actionType: ActionType!
   handling: Handling!
 }
@@ -2185,6 +2203,41 @@ func (ec *executionContext) _Action_name(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Action_icon(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Action",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Icon, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(feed.Link)
+	fc.Result = res
+	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Action_actionType(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2639,6 +2692,41 @@ func (ec *executionContext) _Feed_id(ctx context.Context, field graphql.Collecte
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Feed_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Feed",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SequenceNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_uid(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
@@ -8043,6 +8131,11 @@ func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "icon":
+			out.Values[i] = ec._Action_icon(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "actionType":
 			out.Values[i] = ec._Action_actionType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -8200,6 +8293,11 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = graphql.MarshalString("Feed")
 		case "id":
 			out.Values[i] = ec._Feed_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sequenceNumber":
+			out.Values[i] = ec._Feed_sequenceNumber(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
