@@ -29,7 +29,7 @@
                 "tagline": {
                     "type": "string",
                     "description": "An OPTIONAL second title line. Rich text.",
-                    "maxLength": 128
+                    "maxLength": 80
                 },
                 "timestamp": {
                     "type": "string",

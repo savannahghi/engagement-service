@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/segmentio/ksuid"
-	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
 )
@@ -59,7 +58,25 @@ func TestSetDefaultActions(t *testing.T) {
 					t.Errorf("expected non nil result")
 					return
 				}
-				assert.GreaterOrEqual(t, len(got), 1)
+				if len(got) < 1 {
+					t.Errorf("got <1 action after defaults initialization")
+					return
+				}
+
+				// refetch actions
+				actions, err := fr.GetActions(
+					ctx,
+					tt.args.uid,
+					tt.args.flavour,
+				)
+				if err != nil {
+					t.Errorf("unable to re-fetch actions: %s", err)
+					return
+				}
+				if len(actions) < 1 {
+					t.Errorf("nil actions after re-fetching newly initialized actions")
+					return
+				}
 			}
 		})
 	}
@@ -114,7 +131,29 @@ func TestSetDefaultNudges(t *testing.T) {
 					t.Errorf("expected non nil result")
 					return
 				}
-				assert.GreaterOrEqual(t, len(got), 1)
+				if len(got) < 1 {
+					t.Errorf("less than 1 nudge initialized")
+					return
+				}
+
+				// refetch nudges
+				pending := feed.StatusPending
+				show := feed.VisibilityShow
+				nudges, err := fr.GetNudges(
+					ctx,
+					tt.args.uid,
+					tt.args.flavour,
+					&pending,
+					&show,
+				)
+				if err != nil {
+					t.Errorf("unable to fetch nudges after default initialiation: %s", err)
+					return
+				}
+				if len(nudges) < 1 {
+					t.Errorf("zero nudges after re-fetching newly initialized nudges")
+					return
+				}
 			}
 		})
 	}
@@ -169,7 +208,31 @@ func TestSetDefaultItems(t *testing.T) {
 					t.Errorf("expected non nil result")
 					return
 				}
-				assert.GreaterOrEqual(t, len(got), 1)
+
+				if len(got) < 1 {
+					t.Errorf("got < 1 item after defaults initialization")
+					return
+				}
+
+				// refetch items
+				items, err := fr.GetItems(
+					ctx,
+					tt.args.uid,
+					tt.args.flavour,
+					feed.BooleanFilterBoth,
+					nil,
+					nil,
+					nil,
+					nil,
+				)
+				if err != nil {
+					t.Errorf("unable to re-fetch items: %s", err)
+					return
+				}
+				if len(items) < 1 {
+					t.Errorf("nil items after re-fetching newly initialized items")
+					return
+				}
 			}
 		})
 	}

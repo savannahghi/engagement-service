@@ -151,4 +151,29 @@ type Repository interface {
 		ctx context.Context,
 		event *Event,
 	) error
+
+	GetNudges(
+		ctx context.Context,
+		uid string,
+		flavour Flavour,
+		status *Status,
+		visibility *Visibility,
+	) ([]Nudge, error)
+
+	GetActions(
+		ctx context.Context,
+		uid string,
+		flavour Flavour,
+	) ([]Action, error)
+
+	GetItems(
+		ctx context.Context,
+		uid string,
+		flavour Flavour,
+		persistent BooleanFilter,
+		status *Status,
+		visibility *Visibility,
+		expired *BooleanFilter,
+		filterParams *FilterParams,
+	) ([]Item, error)
 }

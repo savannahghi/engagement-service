@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -40,6 +41,7 @@ func NewFirebaseRepository(ctx context.Context) (feed.Repository, error) {
 
 	ff := &Repository{
 		firestoreClient: fsc,
+		mu:              &sync.Mutex{},
 	}
 	err = ff.checkPreconditions()
 	if err != nil {
@@ -51,11 +53,16 @@ func NewFirebaseRepository(ctx context.Context) (feed.Repository, error) {
 // Repository accesses and updates a feed that is stored on Firebase
 type Repository struct {
 	firestoreClient *firestore.Client
+	mu              *sync.Mutex
 }
 
 func (fr Repository) checkPreconditions() error {
 	if fr.firestoreClient == nil {
 		return fmt.Errorf("nil firestore client in feed firebase repository")
+	}
+
+	if fr.mu == nil {
+		return fmt.Errorf("nil feed repository mutex")
 	}
 
 	return nil
@@ -97,17 +104,17 @@ func (fr Repository) GetFeed(
 			"repository precondition check failed: %w", err)
 	}
 
-	actions, err := fr.getActions(ctx, uid, flavour)
+	actions, err := fr.GetActions(ctx, uid, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 
-	nudges, err := fr.getNudges(ctx, uid, flavour, status, visibility)
+	nudges, err := fr.GetNudges(ctx, uid, flavour, status, visibility)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 
-	items, err := fr.getItems(
+	items, err := fr.GetItems(
 		ctx,
 		uid,
 		flavour,
@@ -124,28 +131,20 @@ func (fr Repository) GetFeed(
 	// only add default content if...
 	// - the `persistent` filter is set to "BOTH"
 	// - all other filters are nil
-	if persistent == feed.BooleanFilterBoth && status == nil && visibility == nil && expired == nil && filterParams == nil {
-		// there are no filters operating on the feed so if it is blank it means there is NO content
-		if len(actions) == 0 {
-			actions, err = feed.SetDefaultActions(ctx, uid, flavour, fr)
-			if err != nil {
-				return nil, fmt.Errorf("unable to set default actions: %w", err)
-			}
+	noFilters := persistent == feed.BooleanFilterBoth && status == nil && visibility == nil && expired == nil && filterParams == nil
+	noActions := len(actions) == 0
+	noNudges := len(nudges) == 0
+	noItems := len(items) == 0
+	if noFilters && noActions && noNudges && noItems {
+		err = fr.initializeDefaultFeed(ctx, uid, flavour)
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize default feed: %w", err)
 		}
 
-		if len(nudges) == 0 {
-			nudges, err = feed.SetDefaultNudges(ctx, uid, flavour, fr)
-			if err != nil {
-				return nil, fmt.Errorf("unable to set default nudges: %w", err)
-			}
-		}
-
-		if len(items) == 0 {
-			items, err = feed.SetDefaultItems(ctx, uid, flavour, fr)
-			if err != nil {
-				return nil, fmt.Errorf("unable to set default items: %w", err)
-			}
-		}
+		// this recursion is potentially dangerous but there's an integration test
+		// that exercises this and reduces the risk of infinite recursion
+		// we need to do this in order to have confidence that the initializion succeeded
+		return fr.GetFeed(ctx, uid, flavour, persistent, status, visibility, expired, filterParams)
 	}
 
 	feed := &feed.Feed{
@@ -156,6 +155,32 @@ func (fr Repository) GetFeed(
 		Items:   items,
 	}
 	return feed, nil
+}
+
+func (fr Repository) initializeDefaultFeed(
+	ctx context.Context,
+	uid string,
+	flavour feed.Flavour,
+) error {
+	fr.mu.Lock() // create default data once
+
+	_, err := feed.SetDefaultActions(ctx, uid, flavour, fr)
+	if err != nil {
+		return fmt.Errorf("unable to set default actions: %w", err)
+	}
+
+	_, err = feed.SetDefaultNudges(ctx, uid, flavour, fr)
+	if err != nil {
+		return fmt.Errorf("unable to set default nudges: %w", err)
+	}
+
+	_, err = feed.SetDefaultItems(ctx, uid, flavour, fr)
+	if err != nil {
+		return fmt.Errorf("unable to set default items: %w", err)
+	}
+
+	fr.mu.Unlock() // release lock on default data
+	return nil
 }
 
 // GetFeedItem retrieves and returns a single feed item
@@ -183,7 +208,7 @@ func (fr Repository) GetFeedItem(
 		return nil, fmt.Errorf("expected an Item, got %T", el)
 	}
 
-	messages, err := fr.getMessages(ctx, uid, flavour, itemID)
+	messages, err := fr.GetMessages(ctx, uid, flavour, itemID)
 	if err != nil || messages == nil {
 		// the thread may not have been initiated yet
 		item.Conversations = []feed.Message{}
@@ -230,7 +255,7 @@ func (fr Repository) SaveFeedItem(
 		return nil, fmt.Errorf("unable to save item: %w", err)
 	}
 
-	messages, err := fr.getMessages(ctx, uid, flavour, item.ID)
+	messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 	if err != nil || messages == nil {
 		// the thread may not have been initiated yet
 		item.Conversations = []feed.Message{}
@@ -274,7 +299,7 @@ func (fr Repository) UpdateFeedItem(
 		return nil, fmt.Errorf("unable to save item: %w", err)
 	}
 
-	messages, err := fr.getMessages(ctx, uid, flavour, item.ID)
+	messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 	if err != nil || messages == nil {
 		// the thread may not have been initiated yet
 		item.Conversations = []feed.Message{}
@@ -355,7 +380,7 @@ func (fr Repository) SaveNudge(
 		nudge.ID,
 		nudge.SequenceNumber,
 		coll,
-		true,
+		true, // a new nudge
 	); err != nil {
 		return nil, fmt.Errorf("unable to save nudge: %w", err)
 	}
@@ -569,7 +594,6 @@ func (fr Repository) GetMessages(
 		}
 	}
 	return messages, nil
-
 }
 
 // GetMessage retrieves a message
@@ -795,7 +819,8 @@ func (fr Repository) getItemsQuery(
 	return &itemsQuery, nil
 }
 
-func (fr Repository) getItems(
+// GetItems fetches feed items
+func (fr Repository) GetItems(
 	ctx context.Context,
 	uid string,
 	flavour feed.Flavour,
@@ -832,7 +857,7 @@ func (fr Repository) getItems(
 				"unable to unmarshal item from firebase doc: %w", err)
 		}
 		if !base.StringSliceContains(seenItemIDs, item.ID) {
-			messages, err := fr.getMessages(ctx, uid, flavour, item.ID)
+			messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 			if err != nil {
 				return nil, fmt.Errorf("can't get feed item messages: %w", err)
 			}
@@ -844,17 +869,8 @@ func (fr Repository) getItems(
 	return items, nil
 }
 
-func (fr Repository) getActionsQuery(
-	uid string,
-	flavour feed.Flavour,
-) *firestore.Query {
-	query := fr.getActionsCollection(uid, flavour).Query.OrderBy(
-		"id", firestore.Desc,
-	).OrderBy("sequenceNumber", firestore.Desc)
-	return &query
-}
-
-func (fr Repository) getActions(
+// GetActions retrieves the actions that a single feed has
+func (fr Repository) GetActions(
 	ctx context.Context,
 	uid string,
 	flavour feed.Flavour,
@@ -892,9 +908,7 @@ func (fr Repository) getNudgesQuery(
 		uid, flavour,
 	).Query.OrderBy("expiry", firestore.Desc).OrderBy(
 		"id", firestore.Desc,
-	).OrderBy("sequenceNumber", firestore.Desc).Where(
-		"expiry", "<", time.Now(),
-	)
+	).OrderBy("sequenceNumber", firestore.Desc)
 	if status != nil {
 		nudgesQuery = nudgesQuery.Where("status", "==", status)
 	}
@@ -914,7 +928,8 @@ func (fr Repository) getMessagesQuery(
 	return &messagesQuery
 }
 
-func (fr Repository) getNudges(
+// GetNudges fetches nudges from the database
+func (fr Repository) GetNudges(
 	ctx context.Context,
 	uid string,
 	flavour feed.Flavour,
@@ -949,40 +964,14 @@ func (fr Repository) getNudges(
 	return nudges, nil
 }
 
-func (fr Repository) getMessages(
-	ctx context.Context,
+func (fr Repository) getActionsQuery(
 	uid string,
 	flavour feed.Flavour,
-	itemID string,
-) ([]feed.Message, error) {
-	messages := []feed.Message{}
-	seenMessageIDs := []string{}
-
-	query := fr.getMessagesQuery(
-		uid,
-		flavour,
-		itemID,
-	)
-	messageDocs, err := query.Documents(ctx).GetAll()
-	if err != nil {
-		return nil, fmt.Errorf("unable to get messages: %w", err)
-	}
-	for _, msgDoc := range messageDocs {
-		message := &feed.Message{}
-		err := msgDoc.DataTo(message)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"unable to unmarshal message from firebase doc: %w", err)
-		}
-		if !base.StringSliceContains(seenMessageIDs, message.ID) {
-			if message.Timestamp.IsZero() {
-				message.Timestamp = time.Now() // backfill after schema change
-			}
-			messages = append(messages, *message)
-			seenMessageIDs = append(seenMessageIDs, message.ID)
-		}
-	}
-	return messages, nil
+) *firestore.Query {
+	query := fr.getActionsCollection(uid, flavour).Query.OrderBy(
+		"id", firestore.Desc,
+	).OrderBy("sequenceNumber", firestore.Desc)
+	return &query
 }
 
 func (fr Repository) getSingleElement(

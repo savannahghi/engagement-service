@@ -88,8 +88,6 @@
                 "title",
                 "text",
                 "actions",
-                "groups",
-                "users",
                 "links"
             ],
             "additionalProperties": false

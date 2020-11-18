@@ -1130,14 +1130,14 @@ type Nudge struct {
 	// actions to include on the nudge
 	Actions []Action `json:"actions" firestore:"actions"`
 
-	// Identifiers of all the groups that got this message
-	Groups []string `json:"groups" firestore:"groups"`
-
 	// Identifiers of all the users that got this message
-	Users []string `json:"users" firestore:"users"`
+	Users []string `json:"users,omitempty" firestore:"users,omitempty"`
+
+	// Identifiers of all the groups that got this message
+	Groups []string `json:"groups,omitempty" firestore:"groups,omitempty"`
 
 	// How the user should be notified of this new item, if at all
-	NotificationChannels []Channel `json:"notificationChannels" firestore:"notificationChannels"`
+	NotificationChannels []Channel `json:"notificationChannels,omitempty" firestore:"notificationChannels,omitempty"`
 }
 
 // ValidateAndUnmarshal checks that the input data is valid as per the

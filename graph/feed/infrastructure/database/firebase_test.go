@@ -122,6 +122,7 @@ func TestNewFirebaseRepository(t *testing.T) {
 		})
 	}
 }
+
 func TestFirebaseRepository_GetFeed(t *testing.T) {
 	ctx := context.Background()
 	fr, err := db.NewFirebaseRepository(ctx)
@@ -130,7 +131,6 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
-	persistent := feed.BooleanFilterBoth
 	status := feed.StatusPending
 	visibility := feed.VisibilityHide
 	expired := feed.BooleanFilterFalse
@@ -139,38 +139,36 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 		uid          string
 		flavour      feed.Flavour
 		persistent   feed.BooleanFilter
-		status       feed.Status
-		visibility   feed.Visibility
-		expired      feed.BooleanFilter
+		status       *feed.Status
+		visibility   *feed.Visibility
+		expired      *feed.BooleanFilter
 		filterParams *feed.FilterParams
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name               string
+		args               args
+		wantErr            bool
+		wantInitialization bool
 	}{
 		{
 			name: "no filter params",
 			args: args{
-				uid:          uid,
-				flavour:      flavour,
-				persistent:   persistent,
-				status:       status,
-				visibility:   visibility,
-				expired:      expired,
-				filterParams: nil,
+				uid:        uid,
+				flavour:    flavour,
+				persistent: feed.BooleanFilterBoth,
 			},
-			wantErr: false,
+			wantErr:            false,
+			wantInitialization: true,
 		},
 		{
 			name: "with filter params",
 			args: args{
 				uid:        uid,
 				flavour:    flavour,
-				persistent: persistent,
-				status:     status,
-				visibility: visibility,
-				expired:    expired,
+				persistent: feed.BooleanFilterFalse,
+				status:     &status,
+				visibility: &visibility,
+				expired:    &expired,
 				filterParams: &feed.FilterParams{
 					Labels: []string{ksuid.New().String()},
 				},
@@ -180,14 +178,14 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			feed, err := fr.GetFeed(
+			initialFeed, err := fr.GetFeed(
 				ctx,
 				tt.args.uid,
 				tt.args.flavour,
 				tt.args.persistent,
-				&tt.args.status,
-				&tt.args.visibility,
-				&tt.args.expired,
+				tt.args.status,
+				tt.args.visibility,
+				tt.args.expired,
 				tt.args.filterParams,
 			)
 			if (err != nil) != tt.wantErr {
@@ -198,8 +196,65 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 				)
 				return
 			}
-			if !tt.wantErr {
-				assert.NotNil(t, feed)
+			if !tt.wantErr && initialFeed == nil {
+				t.Errorf("nil feed")
+				return
+			}
+
+			if tt.wantInitialization {
+				// re-fetch, ensure it does not change in counts
+				initialNudges := len(initialFeed.Nudges)
+				initialItems := len(initialFeed.Items)
+				initialActions := len(initialFeed.Actions)
+
+				if initialActions < 1 {
+					t.Errorf("zero initial actions")
+				}
+
+				if initialItems < 1 {
+					t.Errorf("zero initial items")
+				}
+
+				if initialNudges < 1 {
+					t.Errorf("zero initial nudges")
+				}
+
+				for range []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10} {
+					refetchedFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						tt.args.persistent,
+						tt.args.status,
+						tt.args.visibility,
+						tt.args.expired,
+						tt.args.filterParams,
+					)
+					if err != nil {
+						t.Errorf("error when refetching feed: %s", err)
+						return
+					}
+					if refetchedFeed == nil {
+						t.Errorf("nil refetched feed")
+						return
+					}
+
+					refetchedNudges := len(refetchedFeed.Nudges)
+					refetchedItems := len(refetchedFeed.Items)
+					refetchedActions := len(refetchedFeed.Actions)
+
+					if refetchedActions != initialActions {
+						t.Errorf("initially got %d actions, refetched and got %d", initialActions, refetchedActions)
+					}
+
+					if refetchedNudges != initialNudges {
+						t.Errorf("initially got %d nudges, refetched and got %d", initialActions, refetchedActions)
+					}
+
+					if refetchedItems != initialItems {
+						t.Errorf("initially got %d items, refetched and got %d", initialItems, refetchedItems)
+					}
+				}
 			}
 		})
 	}
