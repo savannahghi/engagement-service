@@ -54,6 +54,7 @@ enum LinkType {
   YOUTUBE_VIDEO
   PNG_IMAGE
   PDF_DOCUMENT
+  SVG_IMAGE
 }
 
 enum TextType {
@@ -180,6 +181,9 @@ type Link {
   id: String!
   url: String!
   linkType: LinkType!
+  title: String!
+  description: String!
+  thumbnail: String!
 }
 
 type FilterParams {

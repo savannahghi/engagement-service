@@ -5382,7 +5382,7 @@ func getTestItem() feed.Item {
 		Persistent:     true,
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Icon:           feed.GetPNGImageLink(feed.LogoURL),
+		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
@@ -5391,15 +5391,15 @@ func getTestItem() feed.Item {
 		Text:           "This bot can speak",
 		TextType:       feed.TextTypePlain,
 		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL),
-			feed.GetYoutubeVideoLink(feed.SampleVideoURL),
+			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
+			feed.GetYoutubeVideoLink(feed.SampleVideoURL, "title", "description", feed.LogoURL),
 		},
 		Actions: []feed.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
 			},
@@ -5407,7 +5407,7 @@ func getTestItem() feed.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -5449,7 +5449,7 @@ func testNudge() *feed.Nudge {
 		Visibility:     feed.VisibilityShow,
 		Title:          ksuid.New().String(),
 		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL),
+			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
 		},
 		Text: ksuid.New().String(),
 		Actions: []feed.Action{
@@ -5493,7 +5493,7 @@ func getTestAction() feed.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           feed.GetPNGImageLink(feed.LogoURL),
+		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
 		ActionType:     feed.ActionTypePrimary,
 		Handling:       feed.HandlingFullPage,
 	}

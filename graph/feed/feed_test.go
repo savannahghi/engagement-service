@@ -35,7 +35,7 @@ func getTestItem() feed.Item {
 		Persistent:     true,
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Icon:           feed.GetPNGImageLink(feed.LogoURL),
+		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
@@ -44,14 +44,14 @@ func getTestItem() feed.Item {
 		Text:           "This bot can speak",
 		TextType:       feed.TextTypePlain,
 		Links: []feed.Link{
-			feed.GetYoutubeVideoLink(sampleVideoURL),
+			feed.GetYoutubeVideoLink(sampleVideoURL, "title", "description", feed.BlankImageURL),
 		},
 		Actions: []feed.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
 			},
@@ -59,7 +59,7 @@ func getTestItem() feed.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -161,7 +161,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		Persistent:     true,
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Icon:           feed.GetPNGImageLink(feed.LogoURL),
+		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
@@ -170,14 +170,14 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		Text:           "This bot can speak",
 		TextType:       feed.TextTypeMarkdown,
 		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL),
+			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 		},
 		Actions: []feed.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
 			},
@@ -185,7 +185,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -309,7 +309,7 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 		Status:         feed.StatusPending,
 		Title:          "Update your profile!",
 		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL),
+			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 		},
 		Text: "An up to date profile will help us serve you better!",
 		Actions: []feed.Action{
@@ -317,7 +317,7 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
 			},
@@ -411,7 +411,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Name:           "ACTION_NAME",
-		Icon:           feed.GetPNGImageLink(feed.LogoURL),
+		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 		ActionType:     feed.ActionTypeSecondary,
 		Handling:       feed.HandlingFullPage,
 	}
@@ -478,17 +478,19 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
-				ActionType:     feed.ActionTypeSecondary,
-				Handling:       feed.HandlingFullPage,
+				Icon: feed.GetPNGImageLink(
+					feed.LogoURL, "title", "description", feed.BlankImageURL),
+				ActionType: feed.ActionTypeSecondary,
+				Handling:   feed.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
-				ActionType:     feed.ActionTypePrimary,
-				Handling:       feed.HandlingInline,
+				Icon: feed.GetPNGImageLink(
+					feed.LogoURL, "title", "description", feed.BlankImageURL),
+				ActionType: feed.ActionTypePrimary,
+				Handling:   feed.HandlingInline,
 			},
 		},
 		Nudges: []feed.Nudge{
@@ -499,7 +501,8 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Status:         feed.StatusPending,
 				Title:          "Update your profile!",
 				Links: []feed.Link{
-					feed.GetPNGImageLink(feed.LogoURL),
+					feed.GetPNGImageLink(
+						feed.LogoURL, "title", "description", feed.BlankImageURL),
 				},
 				Text: "An up to date profile will help us serve you better!",
 				Actions: []feed.Action{
@@ -507,9 +510,10 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypePrimary,
+						Handling:   feed.HandlingInline,
 					},
 				},
 				Groups: []string{
@@ -536,9 +540,11 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Persistent:     true,
 				Status:         feed.StatusPending,
 				Visibility:     feed.VisibilityShow,
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
+				Icon: feed.GetPNGImageLink(
+					feed.LogoURL, "title", "description", feed.BlankImageURL),
 				Links: []feed.Link{
-					feed.GetPNGImageLink(feed.LogoURL),
+					feed.GetPNGImageLink(
+						feed.LogoURL, "title", "description", feed.BlankImageURL),
 				},
 				Author:    "Bot 1",
 				Tagline:   "Bot speaks...",
@@ -552,17 +558,19 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypeSecondary,
-						Handling:       feed.HandlingFullPage,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypeSecondary,
+						Handling:   feed.HandlingFullPage,
 					},
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypePrimary,
+						Handling:   feed.HandlingInline,
 					},
 				},
 				Conversations: []feed.Message{
@@ -675,17 +683,19 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypeSecondary,
-						Handling:       feed.HandlingFullPage,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypeSecondary,
+						Handling:   feed.HandlingFullPage,
 					},
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypePrimary,
+						Handling:   feed.HandlingInline,
 					},
 				},
 				Nudges: []feed.Nudge{
@@ -696,7 +706,8 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Status:         feed.StatusPending,
 						Title:          "Update your profile!",
 						Links: []feed.Link{
-							feed.GetPNGImageLink(feed.LogoURL),
+							feed.GetPNGImageLink(
+								feed.LogoURL, "title", "description", feed.BlankImageURL),
 						},
 						Text: "Help us serve you better!",
 						Actions: []feed.Action{
@@ -704,9 +715,10 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								ID:             "action-1",
 								SequenceNumber: 1,
 								Name:           "First action",
-								Icon:           feed.GetPNGImageLink(feed.LogoURL),
-								ActionType:     feed.ActionTypePrimary,
-								Handling:       feed.HandlingInline,
+								Icon: feed.GetPNGImageLink(
+									feed.LogoURL, "title", "description", feed.BlankImageURL),
+								ActionType: feed.ActionTypePrimary,
+								Handling:   feed.HandlingInline,
 							},
 						},
 						Groups: []string{
@@ -733,9 +745,11 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Persistent:     true,
 						Status:         feed.StatusPending,
 						Visibility:     feed.VisibilityShow,
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
 						Links: []feed.Link{
-							feed.GetPNGImageLink(feed.LogoURL),
+							feed.GetPNGImageLink(
+								feed.LogoURL, "title", "description", feed.BlankImageURL),
 						},
 						Author:    "Bot 1",
 						Tagline:   "Bot speaks...",
@@ -749,17 +763,19 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           "ACTION_NAME",
-								Icon:           feed.GetPNGImageLink(feed.LogoURL),
-								ActionType:     feed.ActionTypeSecondary,
-								Handling:       feed.HandlingFullPage,
+								Icon: feed.GetPNGImageLink(
+									feed.LogoURL, "title", "description", feed.BlankImageURL),
+								ActionType: feed.ActionTypeSecondary,
+								Handling:   feed.HandlingFullPage,
 							},
 							{
 								ID:             "action-1",
 								SequenceNumber: 1,
 								Name:           "First action",
-								Icon:           feed.GetPNGImageLink(feed.LogoURL),
-								ActionType:     feed.ActionTypePrimary,
-								Handling:       feed.HandlingInline,
+								Icon: feed.GetPNGImageLink(
+									feed.LogoURL, "title", "description", feed.BlankImageURL),
+								ActionType: feed.ActionTypePrimary,
+								Handling:   feed.HandlingInline,
 							},
 						},
 						Conversations: []feed.Message{
@@ -843,9 +859,10 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
-				ActionType:     feed.ActionTypePrimary,
-				Handling:       feed.HandlingInline,
+				Icon: feed.GetPNGImageLink(
+					feed.LogoURL, "title", "description", feed.BlankImageURL),
+				ActionType: feed.ActionTypePrimary,
+				Handling:   feed.HandlingInline,
 			},
 			wantErr: false,
 		},
@@ -908,7 +925,8 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 				Status:         feed.StatusPending,
 				Title:          "Update your profile!",
 				Links: []feed.Link{
-					feed.GetPNGImageLink(feed.LogoURL),
+					feed.GetPNGImageLink(
+						feed.LogoURL, "title", "description", feed.BlankImageURL),
 				},
 				Text: "An up to date profile will help us serve you better!",
 				Actions: []feed.Action{
@@ -916,9 +934,10 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypePrimary,
+						Handling:   feed.HandlingInline,
 					},
 				},
 				Groups: []string{
@@ -1011,33 +1030,37 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				Persistent:     true,
 				Status:         feed.StatusPending,
 				Visibility:     feed.VisibilityShow,
-				Icon:           feed.GetPNGImageLink(feed.LogoURL),
-				Author:         "Bot 1",
-				Tagline:        "Bot speaks...",
-				Label:          "DRUGS",
-				Timestamp:      time.Now(),
-				Summary:        "I am a bot...",
-				Text:           "This bot can speak",
-				TextType:       feed.TextTypeMarkdown,
+				Icon: feed.GetPNGImageLink(
+					feed.LogoURL, "title", "description", feed.BlankImageURL),
+				Author:    "Bot 1",
+				Tagline:   "Bot speaks...",
+				Label:     "DRUGS",
+				Timestamp: time.Now(),
+				Summary:   "I am a bot...",
+				Text:      "This bot can speak",
+				TextType:  feed.TextTypeMarkdown,
 				Links: []feed.Link{
-					feed.GetPNGImageLink(feed.LogoURL),
+					feed.GetPNGImageLink(
+						feed.LogoURL, "title", "description", feed.BlankImageURL),
 				},
 				Actions: []feed.Action{
 					{
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypeSecondary,
-						Handling:       feed.HandlingFullPage,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypeSecondary,
+						Handling:   feed.HandlingFullPage,
 					},
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon:           feed.GetPNGImageLink(feed.LogoURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: feed.GetPNGImageLink(
+							feed.LogoURL, "title", "description", feed.BlankImageURL),
+						ActionType: feed.ActionTypePrimary,
+						Handling:   feed.HandlingInline,
 					},
 				},
 				Conversations: []feed.Message{
@@ -2740,16 +2763,18 @@ func testItem() *feed.Item {
 		Persistent:     true,
 		Status:         feed.StatusPending,
 		Visibility:     feed.VisibilityShow,
-		Icon:           feed.GetPNGImageLink(feed.LogoURL),
-		Author:         ksuid.New().String(),
-		Tagline:        ksuid.New().String(),
-		Label:          ksuid.New().String(),
-		Timestamp:      time.Now(),
-		Summary:        ksuid.New().String(),
-		Text:           ksuid.New().String(),
-		TextType:       feed.TextTypeMarkdown,
+		Icon: feed.GetPNGImageLink(
+			feed.LogoURL, "title", "description", feed.BlankImageURL),
+		Author:    ksuid.New().String(),
+		Tagline:   ksuid.New().String(),
+		Label:     ksuid.New().String(),
+		Timestamp: time.Now(),
+		Summary:   ksuid.New().String(),
+		Text:      ksuid.New().String(),
+		TextType:  feed.TextTypeMarkdown,
 		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL),
+			feed.GetPNGImageLink(
+				feed.LogoURL, "title", "description", feed.BlankImageURL),
 		},
 		Actions: []feed.Action{
 			getTestAction(),
@@ -2795,9 +2820,10 @@ func getTestAction() feed.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           feed.GetPNGImageLink(feed.LogoURL),
-		ActionType:     feed.ActionTypePrimary,
-		Handling:       feed.HandlingFullPage,
+		Icon: feed.GetPNGImageLink(
+			feed.LogoURL, "title", "description", feed.BlankImageURL),
+		ActionType: feed.ActionTypePrimary,
+		Handling:   feed.HandlingFullPage,
 	}
 }
 
@@ -2809,7 +2835,7 @@ func testNudge() *feed.Nudge {
 		Visibility:     feed.VisibilityShow,
 		Title:          ksuid.New().String(),
 		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL),
+			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 		},
 		Text: ksuid.New().String(),
 		Actions: []feed.Action{
@@ -2833,9 +2859,12 @@ func testNudge() *feed.Nudge {
 func TestLink_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 	validLink := feed.Link{
-		ID:       ksuid.New().String(),
-		URL:      sampleVideoURL,
-		LinkType: feed.LinkTypeYoutubeVideo,
+		ID:          ksuid.New().String(),
+		URL:         sampleVideoURL,
+		LinkType:    feed.LinkTypeYoutubeVideo,
+		Title:       "title",
+		Description: "description",
+		Thumbnail:   feed.BlankImageURL,
 	}
 	validLinkJSONBytes, err := json.Marshal(validLink)
 	assert.Nil(t, err)
@@ -2843,9 +2872,12 @@ func TestLink_ValidateAndUnmarshal(t *testing.T) {
 	assert.Greater(t, len(validLinkJSONBytes), 3)
 
 	invalidVideoLink := feed.Link{
-		ID:       ksuid.New().String(),
-		URL:      "www.example.com/not_a_youtube_video",
-		LinkType: feed.LinkTypeYoutubeVideo,
+		ID:          ksuid.New().String(),
+		URL:         "www.example.com/not_a_youtube_video",
+		LinkType:    feed.LinkTypeYoutubeVideo,
+		Title:       "title",
+		Description: "description",
+		Thumbnail:   feed.BlankImageURL,
 	}
 	invalidLinkJSONBytes, err := json.Marshal(invalidVideoLink)
 	assert.Nil(t, err)
@@ -2894,9 +2926,12 @@ func TestLink_ValidateAndUnmarshal(t *testing.T) {
 
 func TestLink_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
-		ID   string
-		URL  string
-		Type feed.LinkType
+		ID          string
+		URL         string
+		Type        feed.LinkType
+		Title       string
+		Description string
+		Thumbnail   string
 	}
 	tests := []struct {
 		name    string
@@ -2906,45 +2941,60 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 		{
 			name: "valid link",
 			fields: fields{
-				ID:   ksuid.New().String(),
-				URL:  sampleVideoURL,
-				Type: feed.LinkTypeYoutubeVideo,
+				ID:          ksuid.New().String(),
+				URL:         sampleVideoURL,
+				Type:        feed.LinkTypeYoutubeVideo,
+				Title:       "title",
+				Description: "description",
+				Thumbnail:   feed.BlankImageURL,
 			},
 			wantErr: false,
 		},
 		{
 			name: "invalid URL",
 			fields: fields{
-				ID:   ksuid.New().String(),
-				URL:  "not a valid URL",
-				Type: feed.LinkTypeYoutubeVideo,
+				ID:          ksuid.New().String(),
+				URL:         "not a valid URL",
+				Type:        feed.LinkTypeYoutubeVideo,
+				Title:       "title",
+				Description: "description",
+				Thumbnail:   feed.BlankImageURL,
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid YouTube URL",
 			fields: fields{
-				ID:   ksuid.New().String(),
-				URL:  "www.example.com/not_a_video",
-				Type: feed.LinkTypeYoutubeVideo,
+				ID:          ksuid.New().String(),
+				URL:         "www.example.com/not_a_video",
+				Type:        feed.LinkTypeYoutubeVideo,
+				Title:       "title",
+				Description: "description",
+				Thumbnail:   feed.BlankImageURL,
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid PNG URL",
 			fields: fields{
-				ID:   ksuid.New().String(),
-				URL:  "www.example.com/not_a_png",
-				Type: feed.LinkTypePngImage,
+				ID:          ksuid.New().String(),
+				URL:         "www.example.com/not_a_png",
+				Type:        feed.LinkTypePngImage,
+				Title:       "title",
+				Description: "description",
+				Thumbnail:   feed.BlankImageURL,
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid PDF URL",
 			fields: fields{
-				ID:   ksuid.New().String(),
-				URL:  "www.example.com/not_a_pdf",
-				Type: feed.LinkTypePdfDocument,
+				ID:          ksuid.New().String(),
+				URL:         "www.example.com/not_a_pdf",
+				Type:        feed.LinkTypePdfDocument,
+				Title:       "title",
+				Description: "description",
+				Thumbnail:   feed.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -2952,9 +3002,12 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			l := &feed.Link{
-				ID:       tt.fields.ID,
-				URL:      tt.fields.URL,
-				LinkType: tt.fields.Type,
+				ID:          tt.fields.ID,
+				URL:         tt.fields.URL,
+				LinkType:    tt.fields.Type,
+				Title:       tt.fields.Title,
+				Description: tt.fields.Description,
+				Thumbnail:   tt.fields.Thumbnail,
 			}
 			got, err := l.ValidateAndMarshal()
 			if (err != nil) != tt.wantErr {

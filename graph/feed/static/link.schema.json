@@ -19,15 +19,29 @@
                     "enum":[
                         "YOUTUBE_VIDEO",
                         "PNG_IMAGE",
-                        "PDF_DOCUMENT"
+                        "PDF_DOCUMENT",
+                        "SVG_IMAGE"
                     ]
+                },
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "thumbnail": {
+                    "type": "string",
+                    "format": "uri"
                 }
             },
             "additionalProperties": false,
             "required": [
                 "id",
                 "url",
-                "linkType"
+                "linkType",
+                "title",
+                "description",
+                "thumbnail"
             ]
         }
     },

@@ -44,6 +44,7 @@ const (
 	IncomingEventTopic     = "incoming.event"
 
 	LogoURL        = "https://assets.healthcloud.co.ke/bewell_logo.png"
+	BlankImageURL  = "https://assets.healthcloud.co.ke/1px.png"
 	SampleVideoURL = "https://www.youtube.com/watch?v=bPiofmZGb8o"
 
 	linkSchemaFile       = "link.schema.json"
@@ -1314,6 +1315,15 @@ type Link struct {
 
 	// LinkType of link
 	LinkType LinkType `json:"linkType" firestore:"linkType"`
+
+	// name or title of the linked item
+	Title string `json:"title" firestore:"title"`
+
+	// details about the linked item
+	Description string `json:"description" firestore:"description"`
+
+	// A URL to a PNG image that represents a thumbnail for the item
+	Thumbnail string `json:"thumbnail" firestore:"thumbnail"`
 }
 
 func (l *Link) validateLinkType() error {
@@ -1471,32 +1481,55 @@ func getSchemaURL() string {
 // GetPNGImageLink returns an initialized PNG image link.
 //
 // It is used in testing and default data generation.
-func GetPNGImageLink(url string) Link {
+func GetPNGImageLink(url string, title string, description string, thumbnailURL string) Link {
 	return Link{
-		ID:       ksuid.New().String(),
-		URL:      url,
-		LinkType: LinkTypePngImage,
+		ID:          ksuid.New().String(),
+		URL:         url,
+		LinkType:    LinkTypePngImage,
+		Title:       title,
+		Description: description,
+		Thumbnail:   thumbnailURL,
+	}
+}
+
+// GetSVGImageLink returns an initialized PNG image link.
+//
+// It is used in testing and default data generation.
+func GetSVGImageLink(url string, title string, description string, thumbnailURL string) Link {
+	return Link{
+		ID:          ksuid.New().String(),
+		URL:         url,
+		LinkType:    LinkTypeSvgImage,
+		Title:       title,
+		Description: description,
+		Thumbnail:   thumbnailURL,
 	}
 }
 
 // GetYoutubeVideoLink returns an initialized YouTube video link.
 //
 // It is used in testing and default data generation.
-func GetYoutubeVideoLink(url string) Link {
+func GetYoutubeVideoLink(url string, title string, description string, thumbnailURL string) Link {
 	return Link{
-		ID:       ksuid.New().String(),
-		URL:      url,
-		LinkType: LinkTypeYoutubeVideo,
+		ID:          ksuid.New().String(),
+		URL:         url,
+		LinkType:    LinkTypeYoutubeVideo,
+		Title:       title,
+		Description: description,
+		Thumbnail:   thumbnailURL,
 	}
 }
 
 // GetPDFDocumentLink returns an initialized PDF document link.
 //
 // It is used in testing and default data generation.
-func GetPDFDocumentLink(url string) Link {
+func GetPDFDocumentLink(url string, title string, description string, thumbnailURL string) Link {
 	return Link{
-		ID:       ksuid.New().String(),
-		URL:      url,
-		LinkType: LinkTypePdfDocument,
+		ID:          ksuid.New().String(),
+		URL:         url,
+		LinkType:    LinkTypePdfDocument,
+		Title:       title,
+		Description: description,
+		Thumbnail:   thumbnailURL,
 	}
 }

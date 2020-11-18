@@ -153,9 +153,12 @@ type ComplexityRoot struct {
 	}
 
 	Link struct {
-		ID       func(childComplexity int) int
-		LinkType func(childComplexity int) int
-		URL      func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		LinkType    func(childComplexity int) int
+		Thumbnail   func(childComplexity int) int
+		Title       func(childComplexity int) int
+		URL         func(childComplexity int) int
 	}
 
 	Message struct {
@@ -797,6 +800,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Item.Visibility(childComplexity), true
 
+	case "Link.description":
+		if e.complexity.Link.Description == nil {
+			break
+		}
+
+		return e.complexity.Link.Description(childComplexity), true
+
 	case "Link.id":
 		if e.complexity.Link.ID == nil {
 			break
@@ -810,6 +820,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Link.LinkType(childComplexity), true
+
+	case "Link.thumbnail":
+		if e.complexity.Link.Thumbnail == nil {
+			break
+		}
+
+		return e.complexity.Link.Thumbnail(childComplexity), true
+
+	case "Link.title":
+		if e.complexity.Link.Title == nil {
+			break
+		}
+
+		return e.complexity.Link.Title(childComplexity), true
 
 	case "Link.url":
 		if e.complexity.Link.URL == nil {
@@ -1395,6 +1419,7 @@ enum LinkType {
   YOUTUBE_VIDEO
   PNG_IMAGE
   PDF_DOCUMENT
+  SVG_IMAGE
 }
 
 enum TextType {
@@ -1521,6 +1546,9 @@ type Link {
   id: String!
   url: String!
   linkType: LinkType!
+  title: String!
+  description: String!
+  thumbnail: String!
 }
 
 type FilterParams {
@@ -4718,6 +4746,111 @@ func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.Co
 	res := resTmp.(feed.LinkType)
 	fc.Result = res
 	return ec.marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋfeedᚐLinkType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Link_title(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Link",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Link_description(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Link",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Link_thumbnail(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Link",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Thumbnail, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Message_id(ctx context.Context, field graphql.CollectedField, obj *inbox.Message) (ret graphql.Marshaler) {
@@ -8681,6 +8814,21 @@ func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "linkType":
 			out.Values[i] = ec._Link_linkType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "title":
+			out.Values[i] = ec._Link_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Link_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "thumbnail":
+			out.Values[i] = ec._Link_thumbnail(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

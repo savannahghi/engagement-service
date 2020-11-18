@@ -407,6 +407,7 @@ const (
 	LinkTypeYoutubeVideo LinkType = "YOUTUBE_VIDEO"
 	LinkTypePngImage     LinkType = "PNG_IMAGE"
 	LinkTypePdfDocument  LinkType = "PDF_DOCUMENT"
+	LinkTypeSvgImage     LinkType = "SVG_IMAGE"
 )
 
 // AllLinkType is the set of all known link types
@@ -414,12 +415,13 @@ var AllLinkType = []LinkType{
 	LinkTypeYoutubeVideo,
 	LinkTypePngImage,
 	LinkTypePdfDocument,
+	LinkTypeSvgImage,
 }
 
 // IsValid is true only when a link type is avalid
 func (e LinkType) IsValid() bool {
 	switch e {
-	case LinkTypeYoutubeVideo, LinkTypePngImage, LinkTypePdfDocument:
+	case LinkTypeYoutubeVideo, LinkTypePngImage, LinkTypePdfDocument, LinkTypeSvgImage:
 		return true
 	}
 	return false
