@@ -2,6 +2,7 @@ package messaging_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -15,6 +16,27 @@ import (
 func TestNewPubSubNotificationService(t *testing.T) {
 	ctx := context.Background()
 	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		t.Errorf("project number not found in env var: %s", err)
+		return
+	}
+
+	if projectNumber == "" {
+		t.Errorf("nil project number")
+		return
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		t.Errorf("non int project number: %s", err)
+		return
+	}
+
+	if projectNumberInt == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
 	tests := []struct {
 		name    string
 		wantErr bool
@@ -25,7 +47,7 @@ func TestNewPubSubNotificationService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := messaging.NewPubSubNotificationService(ctx, projectID)
+			got, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
 			if (err != nil) != tt.wantErr {
 				t.Errorf(
 					"NewPubSubNotificationService() error = %v, wantErr %v",
@@ -44,9 +66,39 @@ func TestNewPubSubNotificationService(t *testing.T) {
 func TestPubSubNotificationService_Notify(t *testing.T) {
 	ctx := context.Background()
 	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	srv, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotNil(t, srv)
+
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		t.Errorf("project number not found in env var: %s", err)
+		return
+	}
+
+	if projectNumber == "" {
+		t.Errorf("nil project number")
+		return
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		t.Errorf("non int project number: %s", err)
+		return
+	}
+
+	if projectNumberInt == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
+
+	srv, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	if err != nil {
+		t.Errorf("can't initialize pubsub notification service: %s", err)
+		return
+	}
+
+	if srv == nil {
+		t.Errorf("nil pubsub notification service")
+		return
+	}
 
 	type args struct {
 		channel string

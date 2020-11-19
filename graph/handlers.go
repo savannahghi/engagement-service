@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
 	"net/http"
@@ -66,8 +67,29 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		return nil, fmt.Errorf(
 			"can't get projectID from env var `%s`: %w", base.GoogleCloudProjectIDEnvVarName, err)
 	}
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't get project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+	}
 
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
+	if projectNumber == "" {
+		return nil, fmt.Errorf(
+			"got blank project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"got non integer project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+	}
+
+	if projectNumberInt == 0 {
+		return nil, fmt.Errorf(
+			"got integer 0 as the project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+	}
+
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
 	}
@@ -84,6 +106,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
+	r.Path(messaging.PubSubHandlerPath).HandlerFunc(GoogleCloudPubSubHandler)
 
 	// static files
 	schemaFileHandler, err := schemaHandler()
@@ -286,6 +309,26 @@ func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
+func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
+	var m messaging.PubSubPayload
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("unable to read pubsub push payload: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	if err := json.Unmarshal(body, &m); err != nil {
+		log.Printf("can't unmarshal pubsub push payload: %v", err)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	// the message data is base64 that needs to be decoded before processing
+	log.Printf("Pubsub message: %#v!", m)
 }
 
 // GQLHandler sets up a GraphQL resolver

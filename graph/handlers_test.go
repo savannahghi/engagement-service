@@ -3,22 +3,24 @@ package graph_test
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/imroc/req"
 	"github.com/rs/xid"
 	"github.com/segmentio/ksuid"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/feed/graph"
@@ -119,17 +121,60 @@ func TestHealthStatusCheck(t *testing.T) {
 
 func TestGQLHandler(t *testing.T) {
 	ctx := context.Background()
+
 	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
+	if err != nil {
+		t.Errorf("can't initialize firebase repository: %s", err)
+		return
+	}
+
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
 
 	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.NotZero(t, projectID)
-	assert.Nil(t, err)
+	if err != nil {
+		t.Errorf("project ID not found in env var: %s", err)
+		return
+	}
 
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotNil(t, ns)
+	if projectID == "" {
+		t.Errorf("nil project ID")
+		return
+	}
+
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		t.Errorf("project number not found in env var: %s", err)
+		return
+	}
+
+	if projectNumber == "" {
+		t.Errorf("nil project number")
+		return
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		t.Errorf("non int project number: %s", err)
+		return
+	}
+
+	if projectNumberInt == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
+
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	if err != nil {
+		t.Errorf("can't initialize notification service: %s", err)
+		return
+	}
+	if ns == nil {
+		t.Errorf("nil notification service")
+		return
+	}
 
 	req := httptest.NewRequest(http.MethodPost, "/graphql", nil)
 	wr := httptest.NewRecorder()
@@ -5519,4 +5564,51 @@ func mapToJSONReader(m map[string]interface{}) (io.Reader, error) {
 
 	buf := bytes.NewBuffer(bs)
 	return buf, nil
+}
+
+func TestGoogleCloudPubSubHandler(t *testing.T) {
+	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
+	testPush := messaging.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: messaging.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      []byte(b64),
+			Attributes: map[string]string{
+				ksuid.New().String(): ksuid.New().String(),
+			},
+		},
+	}
+	testPushJSON, err := json.Marshal(testPush)
+	if err != nil {
+		t.Errorf("can't marshal JSON: %s", err)
+	}
+	req := httptest.NewRequest(http.MethodGet, messaging.PubSubHandlerPath, bytes.NewBuffer(testPushJSON))
+
+	type args struct {
+		w *httptest.ResponseRecorder
+		r *http.Request
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "valid pubsub format payload",
+			args: args{
+				w: httptest.NewRecorder(),
+				r: req,
+			},
+			wantStatus: http.StatusOK,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			graph.GoogleCloudPubSubHandler(tt.args.w, tt.args.r)
+
+			if tt.args.w.Code != tt.wantStatus {
+				t.Errorf("wanted status %d, got $%d", tt.args.w.Code, tt.wantStatus)
+			}
+		})
+	}
 }

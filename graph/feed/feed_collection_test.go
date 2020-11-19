@@ -2,6 +2,7 @@ package feed_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/segmentio/ksuid"
@@ -12,20 +13,73 @@ import (
 	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
 )
 
+func getNotificationService(ctx context.Context, t *testing.T) feed.NotificationService {
+	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	if err != nil {
+		t.Errorf("project ID not found in env var: %s", err)
+		return nil
+	}
+
+	if projectID == "" {
+		t.Errorf("nil project ID")
+		return nil
+	}
+
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		t.Errorf("project number not found in env var: %s", err)
+		return nil
+	}
+
+	if projectNumber == "" {
+		t.Errorf("nil project number")
+		return nil
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		t.Errorf("non int project number: %s", err)
+		return nil
+	}
+
+	if projectNumberInt == 0 {
+		t.Errorf("the project number cannot be zero")
+		return nil
+	}
+
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	if err != nil {
+		t.Errorf("can't instantiate notification service: %s", err)
+		return nil
+	}
+
+	if ns == nil {
+		t.Errorf("nil notification service")
+		return nil
+	}
+
+	return ns
+}
+
 func getFeedAggregate(t *testing.T) *feed.Collection {
 	ctx := context.Background()
 
 	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
+	if err != nil {
+		t.Errorf("project ID not found in env var: %s", err)
+		return nil
+	}
 
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return nil
+	}
 
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
+	ns := getNotificationService(ctx, t)
+	if ns == nil {
+		t.Errorf("nil notification service")
+		return nil
+	}
 
 	agg, err := feed.NewCollection(fr, ns)
 	assert.Nil(t, err)
@@ -56,17 +110,60 @@ func getTestFeedAggregate(t *testing.T) *feed.Collection {
 
 func TestNewAggregate(t *testing.T) {
 	ctx := context.Background()
+
 	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
+	if err != nil {
+		t.Errorf("can't initialize firebase repository: %s", err)
+		return
+	}
+
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
 
 	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
+	if err != nil {
+		t.Errorf("project ID not found in env var: %s", err)
+		return
+	}
 
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
+	if projectID == "" {
+		t.Errorf("nil project ID")
+		return
+	}
+
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		t.Errorf("project number not found in env var: %s", err)
+		return
+	}
+
+	if projectNumber == "" {
+		t.Errorf("nil project number")
+		return
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		t.Errorf("non int project number: %s", err)
+		return
+	}
+
+	if projectNumberInt == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
+
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	if err != nil {
+		t.Errorf("can't initialize notification service: %s", err)
+		return
+	}
+	if ns == nil {
+		t.Errorf("nil notification service")
+		return
+	}
 
 	type args struct {
 		repository          feed.Repository
@@ -104,21 +201,71 @@ func TestNewAggregate(t *testing.T) {
 
 func TestAggregate_GetThinFeed(t *testing.T) {
 	ctx := context.Background()
+
 	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
+	if err != nil {
+		t.Errorf("can't initialize firebase repository: %s", err)
+		return
+	}
+
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
 
 	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
+	if err != nil {
+		t.Errorf("project ID not found in env var: %s", err)
+		return
+	}
 
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
+	if projectID == "" {
+		t.Errorf("nil project ID")
+		return
+	}
+
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		t.Errorf("project number not found in env var: %s", err)
+		return
+	}
+
+	if projectNumber == "" {
+		t.Errorf("nil project number")
+		return
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		t.Errorf("non int project number: %s", err)
+		return
+	}
+
+	if projectNumberInt == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
+
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	if err != nil {
+		t.Errorf("can't initialize notification service: %s", err)
+		return
+	}
+	if ns == nil {
+		t.Errorf("nil notification service")
+		return
+	}
 
 	agg, err := feed.NewCollection(fr, ns)
-	assert.Nil(t, err)
-	assert.NotZero(t, agg)
+	if err != nil {
+		t.Errorf("can't initialize aggregate: %s", err)
+		return
+	}
+
+	if agg == nil {
+		t.Errorf("nil feed collection/aggregate")
+		return
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -165,20 +312,69 @@ func TestAggregate_GetThinFeed(t *testing.T) {
 func TestAggregate_GetFeed(t *testing.T) {
 	ctx := context.Background()
 	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
+	if err != nil {
+		t.Errorf("can't initialize firebase repository: %s", err)
+		return
+	}
+
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
 
 	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	assert.Nil(t, err)
-	assert.NotZero(t, projectID)
+	if err != nil {
+		t.Errorf("project ID not found in env var: %s", err)
+		return
+	}
 
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
-	assert.Nil(t, err)
-	assert.NotZero(t, ns)
+	if projectID == "" {
+		t.Errorf("nil project ID")
+		return
+	}
+
+	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+	if err != nil {
+		t.Errorf("project number not found in env var: %s", err)
+		return
+	}
+
+	if projectNumber == "" {
+		t.Errorf("nil project number")
+		return
+	}
+
+	projectNumberInt, err := strconv.Atoi(projectNumber)
+	if err != nil {
+		t.Errorf("non int project number: %s", err)
+		return
+	}
+
+	if projectNumberInt == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
+
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	if err != nil {
+		t.Errorf("can't initialize notification service: %s", err)
+		return
+	}
+	if ns == nil {
+		t.Errorf("nil notification service")
+		return
+	}
 
 	agg, err := feed.NewCollection(fr, ns)
-	assert.Nil(t, err)
-	assert.NotZero(t, agg)
+	if err != nil {
+		t.Errorf("can't initialize aggregate: %s", err)
+		return
+	}
+
+	if agg == nil {
+		t.Errorf("nil feed collection/aggregate")
+		return
+	}
 
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
