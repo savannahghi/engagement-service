@@ -248,7 +248,7 @@ func (ps PubSubNotificationService) getSubscriptionConfig(
 // A search engine index job can be one of the listeners on this channel.
 func (ps PubSubNotificationService) Notify(
 	ctx context.Context,
-	topicID string,
+	topicName string,
 	el feed.Element,
 ) error {
 	if err := ps.checkPreconditions(); err != nil {
@@ -265,17 +265,24 @@ func (ps PubSubNotificationService) Notify(
 		return fmt.Errorf("validation of element failed: %w", err)
 	}
 
+	topicID := ps.addNamespaceToID(topicName)
 	t := ps.client.Topic(topicID)
 	result := t.Publish(ctx, &pubsub.Message{
 		Data: payload,
+		Attributes: map[string]string{
+			"topicID": topicName,
+		},
 	})
 
 	// Block until the result is returned and a server-generated
 	// ID is returned for the published message.
-	_, err = result.Get(ctx) // message id ignored for now
+	msgID, err := result.Get(ctx) // message id ignored for now
 	if err != nil {
 		return fmt.Errorf("unable to publish message: %w", err)
 	}
+	t.Stop() // clear the queue and stop the publishing goroutines
+	log.Printf(
+		"published element to %s (%s), got back message ID %s", topicID, topicName, msgID)
 
 	return nil
 }
