@@ -49,49 +49,63 @@ var allowedHeaders = []string{
 }
 var errNotFound = fmt.Errorf("not found")
 
+// these are expensive initializations that should be done only once
+var ns feed.NotificationService
+var fr feed.Repository
+var firebaseApp base.IFirebaseApp
+var err error
+
 // Router sets up the ginContext router
 func Router(ctx context.Context) (*mux.Router, error) {
-	fc := &base.FirebaseClient{}
-	firebaseApp, err := fc.InitFirebase()
-	if err != nil {
-		return nil, err
+
+	if fr == nil {
+		fr, err = db.NewFirebaseRepository(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
+		}
 	}
 
-	fr, err := db.NewFirebaseRepository(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
+	if ns == nil {
+		projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"can't get project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+		}
+
+		if projectNumber == "" {
+			return nil, fmt.Errorf(
+				"got blank project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+		}
+
+		projectNumberInt, err := strconv.Atoi(projectNumber)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"got non integer project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+		}
+
+		if projectNumberInt == 0 {
+			return nil, fmt.Errorf(
+				"got integer 0 as the project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
+		}
+
+		projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"can't get projectID from env var `%s`: %w", base.GoogleCloudProjectIDEnvVarName, err)
+		}
+
+		ns, err = messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+		if err != nil {
+			return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
+		}
 	}
 
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't get projectID from env var `%s`: %w", base.GoogleCloudProjectIDEnvVarName, err)
-	}
-	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't get project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-	}
-
-	if projectNumber == "" {
-		return nil, fmt.Errorf(
-			"got blank project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-	}
-
-	projectNumberInt, err := strconv.Atoi(projectNumber)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"got non integer project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-	}
-
-	if projectNumberInt == 0 {
-		return nil, fmt.Errorf(
-			"got integer 0 as the project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-	}
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
+	if firebaseApp == nil {
+		fc := &base.FirebaseClient{}
+		firebaseApp, err = fc.InitFirebase()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	r := mux.NewRouter() // gorilla mux

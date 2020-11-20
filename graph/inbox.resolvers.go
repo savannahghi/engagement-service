@@ -12,7 +12,3 @@ import (
 func (r *queryResolver) GetUserMessages(ctx context.Context) ([]*inbox.Message, error) {
 	return r.inboxService.GetUserMessages(ctx)
 }
-
-func (r *queryResolver) SendWelcomeMessage(ctx context.Context) (*bool, error) {
-	return r.inboxService.SendWelcomeMessageToUser(ctx)
-}

@@ -235,7 +235,6 @@ type ComplexityRoot struct {
 		GetFeed            func(childComplexity int, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
 		GetLibraryContent  func(childComplexity int) int
 		GetUserMessages    func(childComplexity int) int
-		SendWelcomeMessage func(childComplexity int) int
 		__resolve__service func(childComplexity int) int
 		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
 	}
@@ -266,7 +265,6 @@ type QueryResolver interface {
 	GetFaqsContent(ctx context.Context) ([]*library.GhostCMSPost, error)
 	GetFeed(ctx context.Context, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error)
 	GetUserMessages(ctx context.Context) ([]*inbox.Message, error)
-	SendWelcomeMessage(ctx context.Context) (*bool, error)
 }
 
 type executableSchema struct {
@@ -1266,13 +1264,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetUserMessages(childComplexity), true
 
-	case "Query.sendWelcomeMessage":
-		if e.complexity.Query.SendWelcomeMessage == nil {
-			break
-		}
-
-		return e.complexity.Query.SendWelcomeMessage(childComplexity), true
-
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
 			break
@@ -1617,7 +1608,6 @@ type MessageTag {
 
 extend type Query {
   getUserMessages: [Message!]
-  sendWelcomeMessage: Boolean
 }
 `, BuiltIn: false},
 	{Name: "graph/library.graphql", Input: `scalar Date
@@ -6727,38 +6717,6 @@ func (ec *executionContext) _Query_getUserMessages(ctx context.Context, field gr
 	return ec.marshalOMessage2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋfeedᚋgraphᚋinboxᚐMessageᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_sendWelcomeMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().SendWelcomeMessage(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*bool)
-	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -9280,17 +9238,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getUserMessages(ctx, field)
-				return res
-			})
-		case "sendWelcomeMessage":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_sendWelcomeMessage(ctx, field)
 				return res
 			})
 		case "_entities":

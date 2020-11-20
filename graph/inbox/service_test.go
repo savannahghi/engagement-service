@@ -61,50 +61,6 @@ func TestCheckIfUserIsLoggedIn(t *testing.T) {
 	assert.NotNil(t, uid)
 }
 
-func TestSendWelcomeMessage(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
-	s := NewService()
-
-	uid, _ := s.getLoggedInUserUID(ctx)
-
-	_, err := s.SendWelcomeMessageToUser(ctx)
-	if err != nil {
-		t.Fatalf("unable send welcome message: %v", err)
-	}
-
-	// retrieve the message
-	msgs, err := s.GetUserMessages(ctx)
-	if err != nil {
-		t.Fatalf("unable to get user message: %v", err)
-	}
-
-	thisUserMsgs := []bool{}
-	for _, msg := range msgs {
-		if msg.RecipientUID == *uid {
-			thisUserMsgs = append(thisUserMsgs, true)
-		}
-	}
-
-	assert.Equal(t, len(msgs), len(thisUserMsgs))
-
-	wlMsg := []*Message{}
-
-	for _, msg := range msgs {
-	INNER:
-		for _, tag := range msg.Tags {
-			if tag.Slug == welcomeMessageTagSlug {
-				wlMsg = append(wlMsg, msg)
-				break INNER
-			}
-		}
-	}
-
-	assert.Equal(t, len(wlMsg), 1)
-
-	assert.Equal(t, wlMsg[0].Body, welcomeMessageBody)
-
-}
-
 func TestFetchmessage(t *testing.T) {
 	ctx := base.GetAuthenticatedContext(t)
 	s := NewService()
@@ -146,25 +102,4 @@ func TestFetchmessage(t *testing.T) {
 	}
 
 	assert.GreaterOrEqual(t, len(msgs), 1)
-
-}
-
-func TestEncryptDecrypt(t *testing.T) {
-
-	message1 := "test message 1"
-
-	enc, err := base.EncryptMessage(message1)
-	if err != nil {
-		t.Fatalf("unable to encrypt message: %v", err)
-	}
-
-	assert.NotEqual(t, message1, *enc)
-
-	dec, err := base.DecrypMessage(*enc)
-	if err != nil {
-		t.Fatalf("unable to decrypt message: %v", err)
-	}
-
-	assert.NotEqual(t, *enc, *dec)
-	assert.Equal(t, message1, *dec)
 }

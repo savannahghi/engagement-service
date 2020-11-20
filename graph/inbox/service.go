@@ -7,7 +7,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"firebase.google.com/go/auth"
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 )
@@ -85,7 +85,7 @@ func (s Service) getLoggedInUserUID(ctx context.Context) (*string, error) {
 	return &authToken.UID, nil
 }
 
-// GetUserMessages ...
+// GetUserMessages fetches the logged in user's messages
 func (s Service) GetUserMessages(ctx context.Context) ([]*Message, error) {
 	s.checkPreconditions()
 
@@ -98,117 +98,81 @@ func (s Service) GetUserMessages(ctx context.Context) ([]*Message, error) {
 	query := collection.Where("recipientUID", "==", *uid)
 	docs, err := query.Documents(ctx).GetAll()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to get inbox documents: %w", err)
 	}
 
 	var messages []*Message
-
 	for _, dsnap := range docs {
 		m := &Message{}
 		err = dsnap.DataTo(m)
 		if err != nil {
-			log.Errorf("unable to read user messges: %v", err)
-			break
+			return nil, fmt.Errorf("unable to read user messages: %w", err)
 		}
-
-		d, err := base.DecrypMessage(m.Body)
-		if err != nil {
-			log.Errorf("unable to read user messges: %v", err)
-			break
-		}
-
-		m.Body = *d
-
 		messages = append(messages, m)
 	}
 
-	log.Println(messages)
-
-	return messages, nil
-}
-
-// SendWelcomeMessageToUser adds a welcome message to the users inbox.
-// if a similar exists a success is returned
-func (s Service) SendWelcomeMessageToUser(ctx context.Context) (*bool, error) {
-	s.checkPreconditions()
-
-	resp := true
-
-	userMessages, err := s.GetUserMessages(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	hasWelcomeMessage := false
-
-	for _, msg := range userMessages {
-		for _, tag := range msg.Tags {
-			if tag.Slug == welcomeMessageTagSlug {
-				hasWelcomeMessage = true
-				break
-			}
-		}
-	}
-
-	if !hasWelcomeMessage {
-		// create welcome message
-		UUID := uuid.New()
-		_uuid := UUID.String()
-		return s.createLoggedInUserMessage(ctx, systemSenderName, systemUID,
+	if len(messages) == 0 {
+		success, err := s.createLoggedInUserMessage(ctx, systemSenderName, systemUID,
 			welcomeMessageBody,
 			MessageChannel{
-				ID:   _uuid,
+				ID:   ksuid.New().String(),
 				Name: defaultChannelName,
 				Slug: defaultChannelSlug,
 			},
 			[]MessageTag{
 				{
-					ID:   _uuid,
+					ID:   ksuid.New().String(),
 					Name: welcomeMessageTagName,
 					Slug: welcomeMessageTagSlug,
 				},
 			},
 		)
+		if err != nil {
+			return nil, fmt.Errorf("can't set up welcome messages: %w", err)
+		}
+
+		if !success {
+			return nil, fmt.Errorf("not successful in setting up welcome messages: %w", err)
+		}
+
+		// potentially dangerous recursion
+		return s.GetUserMessages(ctx)
 	}
 
-	return &resp, nil
+	return messages, nil
 }
 
-func (s Service) createLoggedInUserMessage(ctx context.Context, senderName string, senderUID string,
-	body string, channel MessageChannel, tags []MessageTag) (*bool, error) {
-
-	resp := false
+func (s Service) createLoggedInUserMessage(
+	ctx context.Context,
+	senderName string,
+	senderUID string,
+	body string,
+	channel MessageChannel,
+	tags []MessageTag,
+) (bool, error) {
 	s.checkPreconditions()
 
 	uid, err := s.getLoggedInUserUID(ctx)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	en, err := base.EncryptMessage(body)
-	if err != nil {
-		return nil, err
-	}
-
-	UUID := uuid.New()
-	_uuid := UUID.String()
 	newMessage := &Message{
-		ID:            _uuid,
+		ID:            ksuid.New().String(),
 		SenderName:    senderName,
 		SenderUID:     senderUID,
 		CreatedAt:     time.Now(),
-		RecipientName: "Me", // once IPc comes, replace this
+		RecipientName: "Me", // once IPC comes, replace this
 		RecipientUID:  *uid,
-		Body:          *en,
+		Body:          body,
 		Channel:       channel,
 		Tags:          tags,
 	}
 
-	_, errS := base.SaveDataToFirestore(s.firestoreClient, s.collectionName, newMessage)
-	if errS != nil {
-		return &resp, fmt.Errorf("unable to save user welcome message: %v", err)
+	_, err = base.SaveDataToFirestore(s.firestoreClient, s.collectionName, newMessage)
+	if err != nil {
+		return false, fmt.Errorf("unable to save user welcome message: %v", err)
 	}
 
-	resp = true
-	return &resp, nil
+	return true, nil
 }

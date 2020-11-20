@@ -30,6 +30,7 @@ const (
 	hideItemActionName        = "HIDE_ITEM"
 	pinItemActionName         = "PIN_ITEM"
 	resolveItemActionName     = "RESOLVE_ITEM"
+	helpActionName            = "GET_HELP"
 
 	defaultOrg        = "default-org-id-please-change"
 	defaultLocation   = "default-location-id-please-change"
@@ -200,12 +201,12 @@ func defaultConsumerActions(
 ) ([]Action, error) {
 	var actions []Action
 	fns := []actionGenerator{
-		defaultSeeDoctorAction,
-		defaultBuyMedicineAction,
-		defaultGetTestAction,
-		defaultGetInsuranceAction,
-		defaultCoachingAction,
 		defaultHelpAction,
+		defaultCoachingAction,
+		defaultGetInsuranceAction,
+		defaultGetTestAction,
+		defaultBuyMedicineAction,
+		defaultSeeDoctorAction,
 	}
 	for _, fn := range fns {
 		action, err := fn(ctx, uid, flavour, repository)
@@ -348,7 +349,7 @@ func defaultHelpAction(
 		ctx,
 		uid,
 		flavour,
-		getCoachingActionName,
+		helpActionName,
 		ActionTypeFloating,
 		HandlingFullPage,
 		staticBase+"/actions/svg/help.svg",

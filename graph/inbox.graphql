@@ -27,5 +27,4 @@ type MessageTag {
 
 extend type Query {
   getUserMessages: [Message!]
-  sendWelcomeMessage: Boolean
 }
