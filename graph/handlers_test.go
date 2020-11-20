@@ -5572,7 +5572,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		Subscription: ksuid.New().String(),
 		Message: messaging.PubSubMessage{
 			MessageID: ksuid.New().String(),
-			Data:      []byte(b64),
+			Data:      b64,
 			Attributes: map[string]string{
 				ksuid.New().String(): ksuid.New().String(),
 			},

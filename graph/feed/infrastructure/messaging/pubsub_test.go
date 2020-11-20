@@ -2,7 +2,6 @@ package messaging_test
 
 import (
 	"context"
-	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -160,64 +159,6 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 					err,
 					tt.wantErr,
 				)
-			}
-		})
-	}
-}
-
-func TestPubSubNotificationService_TopicIDs(t *testing.T) {
-	ctx := context.Background()
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
-	projectNumber := getProjectNumber(t)
-	if projectNumber == 0 {
-		t.Errorf("the project number cannot be zero")
-		return
-	}
-	ps, err := messaging.NewPubSubNotificationService(
-		ctx, projectID, projectNumber)
-	if err != nil {
-		t.Errorf("can't initialize pubsub notification service")
-		return
-	}
-
-	tests := []struct {
-		name string
-		want []string
-	}{
-		{
-			name: "default case",
-			want: []string{
-				feed.FeedRetrievalTopic,
-				feed.ThinFeedRetrievalTopic,
-				feed.ItemRetrievalTopic,
-				feed.ItemPublishTopic,
-				feed.ItemDeleteTopic,
-				feed.ItemResolveTopic,
-				feed.ItemUnresolveTopic,
-				feed.ItemHideTopic,
-				feed.ItemShowTopic,
-				feed.ItemPinTopic,
-				feed.ItemUnpinTopic,
-				feed.NudgeRetrievalTopic,
-				feed.NudgePublishTopic,
-				feed.NudgeDeleteTopic,
-				feed.NudgeResolveTopic,
-				feed.NudgeUnresolveTopic,
-				feed.NudgeHideTopic,
-				feed.NudgeShowTopic,
-				feed.ActionRetrievalTopic,
-				feed.ActionPublishTopic,
-				feed.ActionDeleteTopic,
-				feed.MessagePostTopic,
-				feed.MessageDeleteTopic,
-				feed.IncomingEventTopic,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := ps.TopicIDs(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PubSubNotificationService.TopicIDs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

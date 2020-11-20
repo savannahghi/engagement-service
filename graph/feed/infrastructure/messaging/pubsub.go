@@ -24,13 +24,24 @@ const (
 	defaultPubsubTokenAudience = "bewell.co.ke"
 	hostNameEnvVarName         = "SERVICE_HOST" // host at which this service is deployed
 	serviceName                = "feed"
-	subscriptionVersion        = "v6"
+	subscriptionVersion        = "v1"
 )
 
 // PubSubMessage is a pub-sub message payload
+//
+// {
+//     "message": {
+//         "attributes": {
+//             "key": "value"
+//         },
+//         "data": "SGVsbG8gQ2xvdWQgUHViL1N1YiEgSGVyZSBpcyBteSBtZXNzYWdlIQ==",
+//         "messageId": "136969346945"
+//     },
+//    "subscription": "projects/myproject/subscriptions/mysubscription"
+// }
 type PubSubMessage struct {
 	MessageID  string            `json:"messageId"`
-	Data       []byte            `json:"data"`
+	Data       string            `json:"data"`
 	Attributes map[string]string `json:"attributes"`
 }
 
@@ -178,12 +189,12 @@ func (ps PubSubNotificationService) ensureSubscriptionsExist(
 			return fmt.Errorf("error when checking if a subscription exists: %w", err)
 		}
 		if !subscriptionExists {
-			_, err = ps.client.CreateSubscription(ctx, subscriptionID, *subscriptionConfig)
+			sub, err := ps.client.CreateSubscription(ctx, subscriptionID, *subscriptionConfig)
 			if err != nil {
 				log.Printf("Detailed error:\n%#v\n", err)
-
 				return fmt.Errorf("can't create subscription %s: %w", topicID, err)
 			}
+			log.Printf("created subscription %#v with config %#v", sub, *subscriptionConfig)
 		}
 	}
 
@@ -272,30 +283,30 @@ func (ps PubSubNotificationService) Notify(
 // TopicIDs returns the known (registered) topic IDs
 func (ps PubSubNotificationService) TopicIDs() []string {
 	return []string{
-		feed.FeedRetrievalTopic,
-		feed.ThinFeedRetrievalTopic,
-		feed.ItemRetrievalTopic,
-		feed.ItemPublishTopic,
-		feed.ItemDeleteTopic,
-		feed.ItemResolveTopic,
-		feed.ItemUnresolveTopic,
-		feed.ItemHideTopic,
-		feed.ItemShowTopic,
-		feed.ItemPinTopic,
-		feed.ItemUnpinTopic,
-		feed.NudgeRetrievalTopic,
-		feed.NudgePublishTopic,
-		feed.NudgeDeleteTopic,
-		feed.NudgeResolveTopic,
-		feed.NudgeUnresolveTopic,
-		feed.NudgeHideTopic,
-		feed.NudgeShowTopic,
-		feed.ActionRetrievalTopic,
-		feed.ActionPublishTopic,
-		feed.ActionDeleteTopic,
-		feed.MessagePostTopic,
-		feed.MessageDeleteTopic,
-		feed.IncomingEventTopic,
+		ps.addNamespaceToID(feed.FeedRetrievalTopic),
+		ps.addNamespaceToID(feed.ThinFeedRetrievalTopic),
+		ps.addNamespaceToID(feed.ItemRetrievalTopic),
+		ps.addNamespaceToID(feed.ItemPublishTopic),
+		ps.addNamespaceToID(feed.ItemDeleteTopic),
+		ps.addNamespaceToID(feed.ItemResolveTopic),
+		ps.addNamespaceToID(feed.ItemUnresolveTopic),
+		ps.addNamespaceToID(feed.ItemHideTopic),
+		ps.addNamespaceToID(feed.ItemShowTopic),
+		ps.addNamespaceToID(feed.ItemPinTopic),
+		ps.addNamespaceToID(feed.ItemUnpinTopic),
+		ps.addNamespaceToID(feed.NudgeRetrievalTopic),
+		ps.addNamespaceToID(feed.NudgePublishTopic),
+		ps.addNamespaceToID(feed.NudgeDeleteTopic),
+		ps.addNamespaceToID(feed.NudgeResolveTopic),
+		ps.addNamespaceToID(feed.NudgeUnresolveTopic),
+		ps.addNamespaceToID(feed.NudgeHideTopic),
+		ps.addNamespaceToID(feed.NudgeShowTopic),
+		ps.addNamespaceToID(feed.ActionRetrievalTopic),
+		ps.addNamespaceToID(feed.ActionPublishTopic),
+		ps.addNamespaceToID(feed.ActionDeleteTopic),
+		ps.addNamespaceToID(feed.MessagePostTopic),
+		ps.addNamespaceToID(feed.MessageDeleteTopic),
+		ps.addNamespaceToID(feed.IncomingEventTopic),
 	}
 }
 
@@ -303,13 +314,7 @@ func (ps PubSubNotificationService) TopicIDs() []string {
 func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
 	output := map[string]string{}
 	for _, topicID := range ps.TopicIDs() {
-		subscriptionID := fmt.Sprintf(
-			"%s-%s-%s-%s",
-			serviceName,
-			topicID,
-			ps.environment,
-			subscriptionVersion,
-		)
+		subscriptionID := ps.addNamespaceToID(topicID)
 		output[topicID] = subscriptionID
 	}
 	return output
@@ -319,14 +324,18 @@ func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
 func (ps PubSubNotificationService) ReverseSubscriptionIDs() map[string]string {
 	output := map[string]string{}
 	for _, topicID := range ps.TopicIDs() {
-		subscriptionID := fmt.Sprintf(
-			"%s-%s-%s-%s",
-			serviceName,
-			topicID,
-			ps.environment,
-			subscriptionVersion,
-		)
+		subscriptionID := ps.addNamespaceToID(topicID)
 		output[subscriptionID] = topicID
 	}
 	return output
+}
+
+func (ps PubSubNotificationService) addNamespaceToID(id string) string {
+	return fmt.Sprintf(
+		"%s-%s-%s-%s",
+		serviceName,
+		id,
+		ps.environment,
+		subscriptionVersion,
+	)
 }
