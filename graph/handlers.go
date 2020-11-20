@@ -10,12 +10,14 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"net/http"
 
 	"github.com/markbates/pkger"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/api/idtoken"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -120,7 +122,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path(messaging.PubSubHandlerPath).HandlerFunc(GoogleCloudPubSubHandler)
+	r.Path(messaging.PubSubHandlerPath).Methods(
+		http.MethodPost).HandlerFunc(GoogleCloudPubSubHandler)
 
 	// static files
 	schemaFileHandler, err := schemaHandler()
@@ -327,6 +330,24 @@ func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 
 // GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
 func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
+	// verify auth
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" || len(strings.Split(authHeader, " ")) != 2 {
+		http.Error(w, "Missing Authorization header", http.StatusBadRequest)
+		return
+	}
+	token := strings.Split(authHeader, " ")[1]
+	payload, err := idtoken.Validate(r.Context(), token, messaging.DefaultPubsubTokenAudience)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Invalid Token: %v", err), http.StatusBadRequest)
+		return
+	}
+	if payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com" {
+		http.Error(
+			w, fmt.Sprintf("%s is not a valid issuer", payload.Issuer), http.StatusBadRequest)
+	}
+
+	// decode the message
 	var m messaging.PubSubPayload
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -351,8 +372,15 @@ func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// the message data is base64 that needs to be decoded before processing
+	// the message data is base64 that is decoded before processing
 	log.Printf("Pubsub message: %#v!", m)
+	resp := map[string]string{"status": "success"}
+	marshalledSuccessMsg, err := json.Marshal(resp)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err)
+		return
+	}
+	_, _ = w.Write(marshalledSuccessMsg)
 }
 
 // GQLHandler sets up a GraphQL resolver

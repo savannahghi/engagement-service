@@ -14,17 +14,17 @@ import (
 
 // messaging related constants
 const (
-	PubSubHandlerPath = "/pubsub"
+	PubSubHandlerPath          = "/pubsub"
+	DefaultPubsubTokenAudience = "bewell.co.ke"
 
 	ackDeadlineSeconds  = 60
 	maxBackoffSeconds   = 600
 	maxDeliveryAttempts = 100 // go to the dead letter topic after this
 	hoursInAWeek        = 24 * 7
 
-	defaultPubsubTokenAudience = "bewell.co.ke"
-	hostNameEnvVarName         = "SERVICE_HOST" // host at which this service is deployed
-	serviceName                = "feed"
-	subscriptionVersion        = "v1"
+	hostNameEnvVarName  = "SERVICE_HOST" // host at which this service is deployed
+	serviceName         = "feed"
+	subscriptionVersion = "v1"
 )
 
 // PubSubMessage is a pub-sub message payload
@@ -41,7 +41,7 @@ const (
 // }
 type PubSubMessage struct {
 	MessageID  string            `json:"messageId"`
-	Data       string            `json:"data"`
+	Data       []byte            `json:"data"`
 	Attributes map[string]string `json:"attributes"`
 }
 
@@ -72,7 +72,7 @@ func NewPubSubNotificationService(
 		return nil, fmt.Errorf("unable to get the %s environment variable: %w", hostNameEnvVarName, err)
 	}
 
-	callbackURL := fmt.Sprintf("%s/%s", hostName, PubSubHandlerPath)
+	callbackURL := fmt.Sprintf("%s%s", hostName, PubSubHandlerPath)
 	ns := &PubSubNotificationService{
 		client:        client,
 		environment:   environment,
@@ -228,7 +228,7 @@ func (ps PubSubNotificationService) getSubscriptionConfig(
 		PushConfig: pubsub.PushConfig{
 			Endpoint: ps.callbackURL,
 			AuthenticationMethod: &pubsub.OIDCToken{
-				Audience: defaultPubsubTokenAudience,
+				Audience: DefaultPubsubTokenAudience,
 				ServiceAccountEmail: fmt.Sprintf(
 					"%d-compute@developer.gserviceaccount.com", ps.projectNumber),
 			},
@@ -321,7 +321,7 @@ func (ps PubSubNotificationService) TopicIDs() []string {
 func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
 	output := map[string]string{}
 	for _, topicID := range ps.TopicIDs() {
-		subscriptionID := ps.addNamespaceToID(topicID)
+		subscriptionID := topicID + "-default-subscription"
 		output[topicID] = subscriptionID
 	}
 	return output

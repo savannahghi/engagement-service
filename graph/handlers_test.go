@@ -27,6 +27,7 @@ import (
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
 	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
+	"google.golang.org/api/idtoken"
 )
 
 const (
@@ -5567,12 +5568,13 @@ func mapToJSONReader(m map[string]interface{}) (io.Reader, error) {
 }
 
 func TestGoogleCloudPubSubHandler(t *testing.T) {
+	ctx := context.Background()
 	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
 	testPush := messaging.PubSubPayload{
 		Subscription: ksuid.New().String(),
 		Message: messaging.PubSubMessage{
 			MessageID: ksuid.New().String(),
-			Data:      b64,
+			Data:      []byte(b64),
 			Attributes: map[string]string{
 				ksuid.New().String(): ksuid.New().String(),
 			},
@@ -5581,33 +5583,95 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 	testPushJSON, err := json.Marshal(testPush)
 	if err != nil {
 		t.Errorf("can't marshal JSON: %s", err)
+		return
 	}
-	req := httptest.NewRequest(http.MethodGet, messaging.PubSubHandlerPath, bytes.NewBuffer(testPushJSON))
+
+	idTokenHTTPClient, err := idtoken.NewClient(
+		ctx,
+		messaging.DefaultPubsubTokenAudience,
+	)
+	if err != nil {
+		t.Errorf("can't initialize idToken HTTP client: %s", err)
+		return
+	}
+
+	pubsubURL := fmt.Sprintf("%s%s", baseURL, messaging.PubSubHandlerPath)
+	req, err := http.NewRequest(
+		http.MethodPost,
+		pubsubURL,
+		bytes.NewBuffer(testPushJSON),
+	)
+	if err != nil {
+		t.Errorf("can't initialize request: %s", err)
+		return
+	}
+	req.Header.Add("Content-Type", "application/json")
 
 	type args struct {
-		w *httptest.ResponseRecorder
-		r *http.Request
+		r      *http.Request
+		client *http.Client
 	}
 	tests := []struct {
 		name       string
 		args       args
 		wantStatus int
+		wantErr    bool
 	}{
 		{
-			name: "valid pubsub format payload",
+			name: "valid pubsub format payload with valid auth",
 			args: args{
-				w: httptest.NewRecorder(),
-				r: req,
+				r:      req,
+				client: idTokenHTTPClient,
 			},
 			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "no auth header",
+			args: args{
+				r:      req,
+				client: http.DefaultClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			graph.GoogleCloudPubSubHandler(tt.args.w, tt.args.r)
+			resp, err := tt.args.client.Do(tt.args.r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
 
-			if tt.args.w.Code != tt.wantStatus {
-				t.Errorf("wanted status %d, got $%d", tt.args.w.Code, tt.wantStatus)
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			respBs, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("unable to read response body: %s", err)
+				return
+			}
+
+			if resp.StatusCode != tt.wantStatus {
+				t.Errorf("wanted status %d, got %d and resp %s",
+					tt.wantStatus, resp.StatusCode, string(respBs))
+				return
+			}
+
+			if !tt.wantErr {
+				decoded := map[string]string{}
+				err = json.Unmarshal(respBs, &decoded)
+				if err != nil {
+					t.Errorf("can't decode response to map: %s", err)
+					return
+				}
+				if decoded["status"] != "success" {
+					t.Errorf("did not get success status")
+					return
+				}
 			}
 		})
 	}
