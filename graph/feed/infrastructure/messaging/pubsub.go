@@ -314,3 +314,19 @@ func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
 	}
 	return output
 }
+
+// ReverseSubscriptionIDs returns a (reversed) map of subscription IDs to topicIDs
+func (ps PubSubNotificationService) ReverseSubscriptionIDs() map[string]string {
+	output := map[string]string{}
+	for _, topicID := range ps.TopicIDs() {
+		subscriptionID := fmt.Sprintf(
+			"%s-%s-%s-%s",
+			serviceName,
+			topicID,
+			ps.environment,
+			subscriptionVersion,
+		)
+		output[subscriptionID] = topicID
+	}
+	return output
+}

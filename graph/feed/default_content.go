@@ -640,6 +640,7 @@ func createFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour Flavour,
+	itemID string,
 	author string,
 	tagline string,
 	label string,
@@ -656,7 +657,7 @@ func createFeedItem(
 ) (*Item, error) {
 	future := time.Now().Add(time.Hour * futureHours)
 	item := &Item{
-		ID:                   ksuid.New().String(),
+		ID:                   itemID,
 		SequenceNumber:       defaultSequenceNumber,
 		Expiry:               future,
 		Persistent:           persistent,
@@ -742,11 +743,18 @@ func simpleConsumerWelcome(
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
 	links := getFeedWelcomeVideos()
 	actions := []Action{}
-	conversations := getConsumerWelcomeThread()
+
+	itemID := ksuid.New().String()
+	conversations, err := getConsumerWelcomeThread(ctx, uid, flavour, itemID, repository)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize welcome message thread: %w", err)
+	}
+
 	return createFeedItem(
 		ctx,
 		uid,
 		flavour,
+		itemID,
 		defaultAuthor,
 		tagline,
 		defaultLabel,
@@ -775,11 +783,18 @@ func simpleProWelcome(
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to provide affordable high-quality healthcare - whether online or in person."
 	links := getFeedWelcomeVideos()
 	actions := []Action{}
-	conversations := getProWelcomeThread()
+
+	itemID := ksuid.New().String()
+	conversations, err := getProWelcomeThread(ctx, uid, flavour, itemID, repository)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize welcome message thread: %w", err)
+	}
+
 	return createFeedItem(
 		ctx,
 		uid,
 		flavour,
+		itemID,
 		defaultAuthor,
 		tagline,
 		defaultLabel,
@@ -1143,10 +1158,12 @@ func ultimateComposite(
 		*hideAction,
 	}
 	conversations := []Message{}
+	itemID := ksuid.New().String()
 	return createFeedItem(
 		ctx,
 		uid,
 		flavour,
+		itemID,
 		defaultAuthor,
 		tagline,
 		defaultLabel,
@@ -1164,11 +1181,16 @@ func ultimateComposite(
 }
 
 func getMessage(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	itemID string,
 	text string,
 	replyTo *Message,
 	postedByName string,
-) Message {
-	msg := Message{
+	repository Repository,
+) (*Message, error) {
+	msg := &Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Text:           text,
@@ -1179,161 +1201,353 @@ func getMessage(
 	if replyTo != nil {
 		msg.ReplyTo = replyTo.ID
 	}
-	return msg
+
+	savedMsg, err := repository.PostMessage(ctx, uid, flavour, itemID, msg)
+	if err != nil {
+		return nil, fmt.Errorf("can't save message for default welcome thread(s): %w", err)
+	}
+
+	if savedMsg == nil {
+		return nil, fmt.Errorf("nil saved message")
+	}
+
+	return savedMsg, nil
 }
 
-func getConsumerWelcomeThread() []Message {
-	welcome := getMessage(
+func getConsumerWelcomeThread(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	itemID string,
+	repository Repository,
+) ([]Message, error) {
+	welcome, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"Welcome to Be.Well. We are glad to meet you!",
 		nil,
 		"Be.Well",
+		repository,
 	)
-	pharmacyReply := getMessage(
+	if err != nil {
+		return nil, err
+	}
+
+	pharmacyReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the medications service. I'll ensure that you get quality and affordable medications, on time. 👋!",
-		&welcome,
+		welcome,
 		"Medications Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	deliveryAssistant := getMessage(
+	deliveryAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the delivery assistant. I help the medications service get medicines to you on time. 👋!",
-		&pharmacyReply,
+		pharmacyReply,
 		"Delivery Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	dispensingAssistant := getMessage(
+	dispensingAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the dispensing assistant. I help your preferred pharmacy prepare your order before you go for it. 👋!",
-		&pharmacyReply,
+		pharmacyReply,
 		"Dispensing Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	testsReply := getMessage(
+	testsReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the tests service. I'll ensure that you get quality and affordable diagnostic tests. 👋!",
-		&welcome,
+		welcome,
 		"Tests Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	consultationsReply := getMessage(
+	consultationsReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the consultations service. I'll ensure that you can get in-person or remote(tele) advice from qualified medical professionals. 👋!",
-		&welcome,
+		welcome,
 		"Consultations Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	teleconsultAssistant := getMessage(
+	teleconsultAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the teleconsultations assistant. I'll ensure that you can reach a qualified medical professional via video or audio conference, whenever you need to. If you have an emergency, I'll help you find the nearest hospital for emergencies. 👋!",
-		&consultationsReply,
+		consultationsReply,
 		"Teleconsultations Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	bookingAssistant := getMessage(
+	bookingAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the booking assistant. I'll help you book appointments for your care and remind you when it's time. 👋!",
-		&consultationsReply,
+		consultationsReply,
 		"Booking Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	coachingReply := getMessage(
+	coachingReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the coaching service. I'll link you up to *awesome* wellness and fitness coaches. 👋!",
-		&welcome,
+		welcome,
 		"Coaching Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	insuranceReply := getMessage(
+	insuranceReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the insurance service. I'll get you great quotes for medical cover and assist you when you need to use your insurance. 👋!",
-		&welcome,
+		welcome,
 		"Coaching Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	remindersReply := getMessage(
+	remindersReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the reminders service. I'll help you remember things related to your health. It could be an appointment or when you need to take some medication etc. Try me 👋!",
-		&welcome,
+		welcome,
 		"Reminders Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return []Message{
-		welcome,
-		pharmacyReply,
-		deliveryAssistant,
-		dispensingAssistant,
-		testsReply,
-		consultationsReply,
-		teleconsultAssistant,
-		bookingAssistant,
-		coachingReply,
-		insuranceReply,
-		remindersReply,
-	}
+		*welcome,
+		*pharmacyReply,
+		*deliveryAssistant,
+		*dispensingAssistant,
+		*testsReply,
+		*consultationsReply,
+		*teleconsultAssistant,
+		*bookingAssistant,
+		*coachingReply,
+		*insuranceReply,
+		*remindersReply,
+	}, nil
 }
-func getProWelcomeThread() []Message {
-	welcome := getMessage(
+func getProWelcomeThread(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	itemID string,
+	repository Repository,
+) ([]Message, error) {
+	welcome, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"Welcome to Be.Well. We are glad to meet you!",
 		nil,
 		"Be.Well",
+		repository,
 	)
-	pharmacyReply := getMessage(
+	if err != nil {
+		return nil, err
+	}
+
+	pharmacyReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the medications service. I'll help you deliver quality and affordable medications, on time. 👋!",
-		&welcome,
+		welcome,
 		"Medications Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	deliveryAssistant := getMessage(
+	deliveryAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the delivery assistant. I help the medications service deliver medicines on time. 👋!",
-		&pharmacyReply,
+		pharmacyReply,
 		"Delivery Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	dispensingAssistant := getMessage(
+	dispensingAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the dispensing assistant. I help you prepare your orders. 👋!",
-		&pharmacyReply,
+		pharmacyReply,
 		"Dispensing Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	testsReply := getMessage(
+	testsReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the tests service. I'll help you deliver quality and affordable diagnostic tests. 👋!",
-		&welcome,
+		welcome,
 		"Tests Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	consultationsReply := getMessage(
+	consultationsReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the consultations service. I'll set up in-person and remote consultations for you. 👋!",
-		&welcome,
+		welcome,
 		"Consultations Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	teleconsultAssistant := getMessage(
+	teleconsultAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the teleconsultations assistant. I'll ensure that you can conduct consultations via video or audio conference, whenever you need to. If you have an emergency, I'll help you find the nearest hospital for emergencies. 👋!",
-		&consultationsReply,
+		consultationsReply,
 		"Teleconsultations Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	bookingAssistant := getMessage(
+	bookingAssistant, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the booking assistant. I'll help you book appointments and remind you when it's time. 👋!",
-		&consultationsReply,
+		consultationsReply,
 		"Booking Assistant",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	coachingReply := getMessage(
+	coachingReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the coaching service. I'll help you deliver your *awesome* coaching services to clients. 👋!",
-		&welcome,
+		welcome,
 		"Coaching Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	remindersReply := getMessage(
+	remindersReply, err := getMessage(
+		ctx,
+		uid,
+		flavour,
+		itemID,
 		"I'm the reminders service. I'll help you remember things that you need to do. 👋!",
-		&welcome,
+		welcome,
 		"Reminders Service",
+		repository,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return []Message{
-		welcome,
-		pharmacyReply,
-		deliveryAssistant,
-		dispensingAssistant,
-		testsReply,
-		consultationsReply,
-		teleconsultAssistant,
-		bookingAssistant,
-		coachingReply,
-		remindersReply,
-	}
+		*welcome,
+		*pharmacyReply,
+		*deliveryAssistant,
+		*dispensingAssistant,
+		*testsReply,
+		*consultationsReply,
+		*teleconsultAssistant,
+		*bookingAssistant,
+		*coachingReply,
+		*remindersReply,
+	}, nil
 }
 
 func getFeedWelcomeVideos() []Link {

@@ -184,7 +184,35 @@ func TestPubSubNotificationService_TopicIDs(t *testing.T) {
 		name string
 		want []string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "default case",
+			want: []string{
+				feed.FeedRetrievalTopic,
+				feed.ThinFeedRetrievalTopic,
+				feed.ItemRetrievalTopic,
+				feed.ItemPublishTopic,
+				feed.ItemDeleteTopic,
+				feed.ItemResolveTopic,
+				feed.ItemUnresolveTopic,
+				feed.ItemHideTopic,
+				feed.ItemShowTopic,
+				feed.ItemPinTopic,
+				feed.ItemUnpinTopic,
+				feed.NudgeRetrievalTopic,
+				feed.NudgePublishTopic,
+				feed.NudgeDeleteTopic,
+				feed.NudgeResolveTopic,
+				feed.NudgeUnresolveTopic,
+				feed.NudgeHideTopic,
+				feed.NudgeShowTopic,
+				feed.ActionRetrievalTopic,
+				feed.ActionPublishTopic,
+				feed.ActionDeleteTopic,
+				feed.MessagePostTopic,
+				feed.MessageDeleteTopic,
+				feed.IncomingEventTopic,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -211,15 +239,18 @@ func TestPubSubNotificationService_SubscriptionIDs(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		want map[string]string
+		name        string
+		wantNonZero bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:        "default case",
+			wantNonZero: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ps.SubscriptionIDs(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PubSubNotificationService.SubscriptionIDs() = %v, want %v", got, tt.want)
+			if got := ps.SubscriptionIDs(); tt.wantNonZero && len(got) < 1 {
+				t.Errorf("PubSubNotificationService.SubscriptionIDs() = %v, wantNonZero %v", got, tt.wantNonZero)
 			}
 		})
 	}

@@ -69,5 +69,22 @@ func (mn MockNotificationService) SubscriptionIDs() map[string]string {
 		panic("mock pubsub service precondition check failed")
 	}
 
-	return mn.SubscriptionIDs()
+	return mn.subscriptions
+}
+
+// ReverseSubscriptionIDs returns a map of subscription IDs to topic IDs for
+// the subscriptions known to this mock service
+func (mn MockNotificationService) ReverseSubscriptionIDs() map[string]string {
+	if err := mn.checkPreconditions(); err != nil {
+		panic("mock pubsub service precondition check failed")
+	}
+	return reverseMap(mn.subscriptions)
+}
+
+func reverseMap(m map[string]string) map[string]string {
+	n := make(map[string]string)
+	for k, v := range m {
+		n[v] = k
+	}
+	return n
 }
