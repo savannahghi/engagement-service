@@ -336,6 +336,10 @@ func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if base.IsDebug() {
+		log.Printf("Raw Pubsub body: \n%s\n", string(body))
+	}
+
 	if err := json.Unmarshal(body, &m); err != nil {
 		errMsg := fmt.Sprintf(
 			"pub sub handler error:can't unmarshal pubsub push payload `\n%s\n`: %v",

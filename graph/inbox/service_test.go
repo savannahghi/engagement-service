@@ -6,8 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/firestore"
-	"firebase.google.com/go/auth"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -16,32 +14,6 @@ import (
 func TestMain(m *testing.M) {
 	os.Setenv("ROOT_COLLECTION_SUFFIX", fmt.Sprintf("%v_%v", "testing", time.Now().UnixNano()))
 	os.Exit(m.Run())
-}
-
-func GetFirestoreClient(t *testing.T) *firestore.Client {
-	fc := &base.FirebaseClient{}
-	firebaseApp, err := fc.InitFirebase()
-	assert.Nil(t, err)
-
-	ctx := base.GetAuthenticatedContext(t)
-	firestoreClient, err := firebaseApp.Firestore(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, firestoreClient)
-	return firestoreClient
-}
-
-func GetFirebaseAuthClient(t *testing.T) (*auth.Client, error) {
-	fc := &base.FirebaseClient{}
-	firebaseApp, err := fc.InitFirebase()
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize Firebase app: %w", err)
-	}
-	ctx := base.GetAuthenticatedContext(t)
-	client, err := firebaseApp.Auth(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize Firebase auth client: %w", err)
-	}
-	return client, nil
 }
 
 func TestNewService(t *testing.T) {

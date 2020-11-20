@@ -37,11 +37,13 @@ const (
 func NewService() *Service {
 	e := base.MustGetEnvVar(ghostCMSAPIEndpoint)
 	a := base.MustGetEnvVar(ghostCMSAPIKey)
-	return &Service{
+	srv := &Service{
 		APIEndpoint:  e,
 		APIKey:       a,
 		PostsAPIRoot: fmt.Sprintf("%v%vkey=%v", e, apiRoot, a),
 	}
+	srv.checkPreconditions()
+	return srv
 }
 
 // Service organizes library functionality
@@ -54,11 +56,15 @@ type Service struct {
 
 func (s Service) checkPreconditions() {
 	if s.APIEndpoint == "" {
-		log.Panicf("Ghost API endpoint must be present")
+		log.Panicf("Ghost API endpoint must be set")
 	}
 
 	if s.APIKey == "" {
-		log.Panicf("Ghost API key must be present")
+		log.Panicf("Ghost API key must be set")
+	}
+
+	if s.PostsAPIRoot == "" {
+		log.Panicf("Ghost Post API root must be set")
 	}
 }
 
