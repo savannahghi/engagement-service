@@ -34,7 +34,7 @@ const (
 
 	defaultOrg        = "default-org-id-please-change"
 	defaultLocation   = "default-location-id-please-change"
-	defaultContentDir = "/graph/feed/static"
+	defaultContentDir = "/static/"
 	defaultAuthor     = "Be.Well Team"
 	defaultLabel      = "WELCOME"
 	staticBase        = "https://assets.healthcloud.co.ke"
@@ -289,7 +289,7 @@ func defaultGetTestAction(
 		ctx,
 		uid,
 		flavour,
-		getMedicineActionName,
+		getTestActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
 		staticBase+"/actions/svg/get_tested.svg",

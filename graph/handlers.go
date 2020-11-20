@@ -31,7 +31,7 @@ import (
 const (
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
-	schemaDir            = "gitlab.slade360emr.com/go/feed:/graph/feed/static/"
+	schemaDir            = "gitlab.slade360emr.com/go/feed:/static/"
 )
 
 var allowedOrigins = []string{
@@ -330,14 +330,20 @@ func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
 	var m messaging.PubSubPayload
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("unable to read pubsub push payload: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		errMsg := fmt.Sprintf("pub sub handler error: unable to read pubsub push payload: %v", err)
+		log.Print(errMsg)
+		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
 	if err := json.Unmarshal(body, &m); err != nil {
-		log.Printf("can't unmarshal pubsub push payload: %v", err)
-		http.Error(w, "Bad Request", http.StatusBadRequest)
+		errMsg := fmt.Sprintf(
+			"pub sub handler error:can't unmarshal pubsub push payload `\n%s\n`: %v",
+			string(body),
+			err,
+		)
+		log.Print(errMsg)
+		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 

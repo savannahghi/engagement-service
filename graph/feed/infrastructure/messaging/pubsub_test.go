@@ -2,6 +2,7 @@ package messaging_test
 
 import (
 	"context"
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -13,30 +14,36 @@ import (
 	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
 )
 
-func TestNewPubSubNotificationService(t *testing.T) {
-	ctx := context.Background()
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+func getProjectNumber(t *testing.T) int {
 	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
 	if err != nil {
 		t.Errorf("project number not found in env var: %s", err)
-		return
+		return 0
 	}
 
 	if projectNumber == "" {
 		t.Errorf("nil project number")
-		return
+		return 0
 	}
 
 	projectNumberInt, err := strconv.Atoi(projectNumber)
 	if err != nil {
 		t.Errorf("non int project number: %s", err)
-		return
+		return 0
 	}
 
-	if projectNumberInt == 0 {
+	return projectNumberInt
+}
+
+func TestNewPubSubNotificationService(t *testing.T) {
+	ctx := context.Background()
+	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectNumber := getProjectNumber(t)
+	if projectNumber == 0 {
 		t.Errorf("the project number cannot be zero")
 		return
 	}
+
 	tests := []struct {
 		name    string
 		wantErr bool
@@ -47,7 +54,7 @@ func TestNewPubSubNotificationService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+			got, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumber)
 			if (err != nil) != tt.wantErr {
 				t.Errorf(
 					"NewPubSubNotificationService() error = %v, wantErr %v",
@@ -153,6 +160,66 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 					err,
 					tt.wantErr,
 				)
+			}
+		})
+	}
+}
+
+func TestPubSubNotificationService_TopicIDs(t *testing.T) {
+	ctx := context.Background()
+	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectNumber := getProjectNumber(t)
+	if projectNumber == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
+	ps, err := messaging.NewPubSubNotificationService(
+		ctx, projectID, projectNumber)
+	if err != nil {
+		t.Errorf("can't initialize pubsub notification service")
+		return
+	}
+
+	tests := []struct {
+		name string
+		want []string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ps.TopicIDs(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PubSubNotificationService.TopicIDs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPubSubNotificationService_SubscriptionIDs(t *testing.T) {
+	ctx := context.Background()
+	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectNumber := getProjectNumber(t)
+	if projectNumber == 0 {
+		t.Errorf("the project number cannot be zero")
+		return
+	}
+	ps, err := messaging.NewPubSubNotificationService(
+		ctx, projectID, projectNumber)
+	if err != nil {
+		t.Errorf("can't initialize pubsub notification service")
+		return
+	}
+
+	tests := []struct {
+		name string
+		want map[string]string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ps.SubscriptionIDs(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PubSubNotificationService.SubscriptionIDs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -24,7 +24,7 @@ const (
 	defaultPubsubTokenAudience = "bewell.co.ke"
 	hostNameEnvVarName         = "SERVICE_HOST" // host at which this service is deployed
 	serviceName                = "feed"
-	subscriptionVersion        = "v5"
+	subscriptionVersion        = "v6"
 )
 
 // PubSubMessage is a pub-sub message payload
@@ -38,35 +38,6 @@ type PubSubMessage struct {
 type PubSubPayload struct {
 	Message      PubSubMessage `json:"message"`
 	Subscription string        `json:"subscription"`
-}
-
-func topicIDs() []string {
-	return []string{
-		feed.FeedRetrievalTopic,
-		feed.ThinFeedRetrievalTopic,
-		feed.ItemRetrievalTopic,
-		feed.ItemPublishTopic,
-		feed.ItemDeleteTopic,
-		feed.ItemResolveTopic,
-		feed.ItemUnresolveTopic,
-		feed.ItemHideTopic,
-		feed.ItemShowTopic,
-		feed.ItemPinTopic,
-		feed.ItemUnpinTopic,
-		feed.NudgeRetrievalTopic,
-		feed.NudgePublishTopic,
-		feed.NudgeDeleteTopic,
-		feed.NudgeResolveTopic,
-		feed.NudgeUnresolveTopic,
-		feed.NudgeHideTopic,
-		feed.NudgeShowTopic,
-		feed.ActionRetrievalTopic,
-		feed.ActionPublishTopic,
-		feed.ActionDeleteTopic,
-		feed.MessagePostTopic,
-		feed.MessageDeleteTopic,
-		feed.IncomingEventTopic,
-	}
 }
 
 // NewPubSubNotificationService initializes a live notification service
@@ -159,7 +130,7 @@ func (ps PubSubNotificationService) ensureTopicsExist(
 	}
 
 	// ensure that all our desired topics are all created
-	for _, topicID := range topicIDs() {
+	for _, topicID := range ps.TopicIDs() {
 		if !base.StringSliceContains(configuredTopics, topicID) {
 			_, err := ps.client.CreateTopic(ctx, topicID)
 			if err != nil {
@@ -174,7 +145,8 @@ func (ps PubSubNotificationService) ensureTopicsExist(
 func (ps PubSubNotificationService) ensureSubscriptionsExist(
 	ctx context.Context,
 ) error {
-	for _, topicID := range topicIDs() {
+	subscriptionIDs := ps.SubscriptionIDs()
+	for _, topicID := range ps.TopicIDs() {
 		topic := ps.client.Topic(topicID)
 		topicExists, err := topic.Exists(ctx)
 		if err != nil {
@@ -195,8 +167,11 @@ func (ps PubSubNotificationService) ensureSubscriptionsExist(
 			return fmt.Errorf("nil subscription config")
 		}
 
-		subscriptionID := fmt.Sprintf(
-			"%s-%s-%s-%s", serviceName, topicID, ps.environment, subscriptionVersion)
+		subscriptionID, prs := subscriptionIDs[topicID]
+		if !prs {
+			return fmt.Errorf("no subscriptionID found in map for topic %s", topicID)
+		}
+
 		existingSubscription := ps.client.Subscription(subscriptionID)
 		subscriptionExists, err := existingSubscription.Exists(ctx)
 		if err != nil {
@@ -292,4 +267,50 @@ func (ps PubSubNotificationService) Notify(
 	}
 
 	return nil
+}
+
+// TopicIDs returns the known (registered) topic IDs
+func (ps PubSubNotificationService) TopicIDs() []string {
+	return []string{
+		feed.FeedRetrievalTopic,
+		feed.ThinFeedRetrievalTopic,
+		feed.ItemRetrievalTopic,
+		feed.ItemPublishTopic,
+		feed.ItemDeleteTopic,
+		feed.ItemResolveTopic,
+		feed.ItemUnresolveTopic,
+		feed.ItemHideTopic,
+		feed.ItemShowTopic,
+		feed.ItemPinTopic,
+		feed.ItemUnpinTopic,
+		feed.NudgeRetrievalTopic,
+		feed.NudgePublishTopic,
+		feed.NudgeDeleteTopic,
+		feed.NudgeResolveTopic,
+		feed.NudgeUnresolveTopic,
+		feed.NudgeHideTopic,
+		feed.NudgeShowTopic,
+		feed.ActionRetrievalTopic,
+		feed.ActionPublishTopic,
+		feed.ActionDeleteTopic,
+		feed.MessagePostTopic,
+		feed.MessageDeleteTopic,
+		feed.IncomingEventTopic,
+	}
+}
+
+// SubscriptionIDs returns a map of topic IDs to subscription IDs
+func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
+	output := map[string]string{}
+	for _, topicID := range ps.TopicIDs() {
+		subscriptionID := fmt.Sprintf(
+			"%s-%s-%s-%s",
+			serviceName,
+			topicID,
+			ps.environment,
+			subscriptionVersion,
+		)
+		output[topicID] = subscriptionID
+	}
+	return output
 }

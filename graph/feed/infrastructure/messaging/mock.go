@@ -20,11 +20,21 @@ func NewMockNotificationService() (*MockNotificationService, error) {
 // MockNotificationService is used to mock notifications in-memory for tests
 type MockNotificationService struct {
 	notifications map[string][]feed.Element
+	topicIDs      []string
+	subscriptions map[string]string
 }
 
 func (mn MockNotificationService) checkPreconditions() error {
 	if mn.notifications == nil {
 		mn.notifications = make(map[string][]feed.Element)
+	}
+
+	if mn.topicIDs == nil {
+		mn.topicIDs = make([]string, 1)
+	}
+
+	if mn.subscriptions == nil {
+		mn.subscriptions = make(map[string]string)
 	}
 
 	return nil
@@ -41,4 +51,23 @@ func (mn MockNotificationService) Notify(
 	}
 
 	return nil
+}
+
+// TopicIDs returns topic IDs known to this mock notification service
+func (mn MockNotificationService) TopicIDs() []string {
+	if err := mn.checkPreconditions(); err != nil {
+		panic("mock pubsub service precondition check failed")
+	}
+
+	return mn.topicIDs
+}
+
+// SubscriptionIDs returns a map of topic IDs to subscription IDs for the topics
+// and subscriptions known to this mock notification service
+func (mn MockNotificationService) SubscriptionIDs() map[string]string {
+	if err := mn.checkPreconditions(); err != nil {
+		panic("mock pubsub service precondition check failed")
+	}
+
+	return mn.SubscriptionIDs()
 }
