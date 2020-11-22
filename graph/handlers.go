@@ -27,6 +27,7 @@ import (
 	"gitlab.slade360emr.com/go/feed/graph/feed"
 	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
 	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
+	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging/pubsubhandlers"
 	"gitlab.slade360emr.com/go/feed/graph/generated"
 )
 
@@ -330,50 +331,174 @@ func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 
 // GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
 func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
-	// verify auth
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" || len(strings.Split(authHeader, " ")) != 2 {
-		http.Error(w, "Missing Authorization header", http.StatusBadRequest)
-		return
-	}
-	token := strings.Split(authHeader, " ")[1]
-	payload, err := idtoken.Validate(r.Context(), token, messaging.DefaultPubsubTokenAudience)
+	m, err := VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Invalid Token: %v", err), http.StatusBadRequest)
+		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
-	if payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com" {
-		http.Error(
-			w, fmt.Sprintf("%s is not a valid issuer", payload.Issuer), http.StatusBadRequest)
-	}
 
-	// decode the message
-	var m messaging.PubSubPayload
-	body, err := ioutil.ReadAll(r.Body)
+	topicID, err := GetPubSubTopic(m)
 	if err != nil {
-		errMsg := fmt.Sprintf("pub sub handler error: unable to read pubsub push payload: %v", err)
-		log.Print(errMsg)
-		http.Error(w, errMsg, http.StatusBadRequest)
+		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 
-	if base.IsDebug() {
-		log.Printf("Raw Pubsub body: \n%s\n", string(body))
-	}
-
-	if err := json.Unmarshal(body, &m); err != nil {
+	switch topicID {
+	case feed.FeedRetrievalTopic:
+		err = pubsubhandlers.HandleFeedRetrieval(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ThinFeedRetrievalTopic:
+		err = pubsubhandlers.HandleThinFeedRetrieval(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemRetrievalTopic:
+		err = pubsubhandlers.HandleItemRetrieval(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemPublishTopic:
+		err = pubsubhandlers.HandleItemPublish(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemDeleteTopic:
+		err = pubsubhandlers.HandleItemDelete(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemResolveTopic:
+		err = pubsubhandlers.HandleItemResolve(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemUnresolveTopic:
+		err = pubsubhandlers.HandleItemUnresolve(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemHideTopic:
+		err = pubsubhandlers.HandleItemHide(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemShowTopic:
+		err = pubsubhandlers.HandleItemShow(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemPinTopic:
+		err = pubsubhandlers.HandleItemPin(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ItemUnpinTopic:
+		err = pubsubhandlers.HandleItemUnpin(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.NudgeRetrievalTopic:
+		err = pubsubhandlers.HandleNudgeRetrieval(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.NudgePublishTopic:
+		err = pubsubhandlers.HandleNudgePublish(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.NudgeDeleteTopic:
+		err = pubsubhandlers.HandleNudgeDelete(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.NudgeResolveTopic:
+		err = pubsubhandlers.HandleNudgeResolve(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.NudgeUnresolveTopic:
+		err = pubsubhandlers.HandleNudgeUnresolve(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.NudgeHideTopic:
+		err = pubsubhandlers.HandleNudgeHide(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.NudgeShowTopic:
+		err = pubsubhandlers.HandleNudgeShow(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ActionRetrievalTopic:
+		err = pubsubhandlers.HandleActionRetrieval(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ActionPublishTopic:
+		err = pubsubhandlers.HandleActionPublish(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.ActionDeleteTopic:
+		err = pubsubhandlers.HandleActionDelete(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.MessagePostTopic:
+		err = pubsubhandlers.HandleMessagePost(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.MessageDeleteTopic:
+		err = pubsubhandlers.HandleMessageDelete(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	case feed.IncomingEventTopic:
+		err = pubsubhandlers.HandleIncomingEvent(m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
+	default:
+		// the topic should be anticipated/handled here
 		errMsg := fmt.Sprintf(
-			"pub sub handler error:can't unmarshal pubsub push payload `\n%s\n`: %v",
-			string(body),
-			err,
+			"pub sub handler error: unknown topic `%s`",
+			topicID,
 		)
 		log.Print(errMsg)
 		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
-	// the message data is base64 that is decoded before processing
-	log.Printf("Pubsub message: %#v!", m)
 	resp := map[string]string{"status": "success"}
 	marshalledSuccessMsg, err := json.Marshal(resp)
 	if err != nil {
@@ -1382,4 +1507,52 @@ func schemaHandler() (http.Handler, error) {
 	defer f.Close()
 
 	return http.StripPrefix("/schema", http.FileServer(f)), nil
+}
+
+// VerifyPubSubJWTAndDecodePayload confirms that there is a valid Google signed
+// JWT and decodes the pubsub message payload into a struct
+func VerifyPubSubJWTAndDecodePayload(w http.ResponseWriter, r *http.Request) (*messaging.PubSubPayload, error) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" || len(strings.Split(authHeader, " ")) != 2 {
+		return nil, fmt.Errorf("missing Authorization Header")
+	}
+
+	token := strings.Split(authHeader, " ")[1]
+	payload, err := idtoken.Validate(r.Context(), token, messaging.DefaultPubsubTokenAudience)
+	if err != nil {
+		return nil, fmt.Errorf("invalid token: %w", err)
+	}
+
+	if payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com" {
+		return nil, fmt.Errorf("%s is not a valid issuer", payload.Issuer)
+	}
+
+	// decode the message
+	var m messaging.PubSubPayload
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("can't read request body: %w", err)
+	}
+
+	if err := json.Unmarshal(body, &m); err != nil {
+		return nil, fmt.Errorf("can't unmarshal payload body into JSON struct: %w", err)
+	}
+
+	// return the decoded message if there is no error
+	return &m, nil
+}
+
+// GetPubSubTopic retrieves a pubsub topic from a pubsub payload
+func GetPubSubTopic(m *messaging.PubSubPayload) (string, error) {
+	if m == nil {
+		return "", fmt.Errorf("nil pub sub payload")
+	}
+	k := "topicID"
+	attrs := m.Message.Attributes
+	topicID, prs := m.Message.Attributes[k]
+	if !prs {
+		return "", fmt.Errorf(
+			"no `%s` key in message attributes %#v", k, attrs)
+	}
+	return topicID, nil
 }

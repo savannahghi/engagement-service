@@ -5576,7 +5576,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      []byte(b64),
 			Attributes: map[string]string{
-				ksuid.New().String(): ksuid.New().String(),
+				"topicID": feed.FeedRetrievalTopic,
 			},
 		},
 	}
