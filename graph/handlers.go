@@ -10,14 +10,12 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"net/http"
 
 	"github.com/markbates/pkger"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/api/idtoken"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -123,7 +121,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path(messaging.PubSubHandlerPath).Methods(
+	r.Path(base.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(GoogleCloudPubSubHandler)
 
 	// static files
@@ -331,13 +329,13 @@ func HealthStatusCheck(w http.ResponseWriter, r *http.Request) {
 
 // GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
 func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
-	m, err := VerifyPubSubJWTAndDecodePayload(w, r)
+	m, err := base.VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
 		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 
-	topicID, err := GetPubSubTopic(m)
+	topicID, err := base.GetPubSubTopic(m)
 	if err != nil {
 		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
@@ -1507,52 +1505,4 @@ func schemaHandler() (http.Handler, error) {
 	defer f.Close()
 
 	return http.StripPrefix("/schema", http.FileServer(f)), nil
-}
-
-// VerifyPubSubJWTAndDecodePayload confirms that there is a valid Google signed
-// JWT and decodes the pubsub message payload into a struct
-func VerifyPubSubJWTAndDecodePayload(w http.ResponseWriter, r *http.Request) (*messaging.PubSubPayload, error) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" || len(strings.Split(authHeader, " ")) != 2 {
-		return nil, fmt.Errorf("missing Authorization Header")
-	}
-
-	token := strings.Split(authHeader, " ")[1]
-	payload, err := idtoken.Validate(r.Context(), token, messaging.DefaultPubsubTokenAudience)
-	if err != nil {
-		return nil, fmt.Errorf("invalid token: %w", err)
-	}
-
-	if payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com" {
-		return nil, fmt.Errorf("%s is not a valid issuer", payload.Issuer)
-	}
-
-	// decode the message
-	var m messaging.PubSubPayload
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return nil, fmt.Errorf("can't read request body: %w", err)
-	}
-
-	if err := json.Unmarshal(body, &m); err != nil {
-		return nil, fmt.Errorf("can't unmarshal payload body into JSON struct: %w", err)
-	}
-
-	// return the decoded message if there is no error
-	return &m, nil
-}
-
-// GetPubSubTopic retrieves a pubsub topic from a pubsub payload
-func GetPubSubTopic(m *messaging.PubSubPayload) (string, error) {
-	if m == nil {
-		return "", fmt.Errorf("nil pub sub payload")
-	}
-	k := "topicID"
-	attrs := m.Message.Attributes
-	topicID, prs := m.Message.Attributes[k]
-	if !prs {
-		return "", fmt.Errorf(
-			"no `%s` key in message attributes %#v", k, attrs)
-	}
-	return topicID, nil
 }

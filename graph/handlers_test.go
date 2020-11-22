@@ -5570,9 +5570,9 @@ func mapToJSONReader(m map[string]interface{}) (io.Reader, error) {
 func TestGoogleCloudPubSubHandler(t *testing.T) {
 	ctx := context.Background()
 	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
-	testPush := messaging.PubSubPayload{
+	testPush := base.PubSubPayload{
 		Subscription: ksuid.New().String(),
-		Message: messaging.PubSubMessage{
+		Message: base.PubSubMessage{
 			MessageID: ksuid.New().String(),
 			Data:      []byte(b64),
 			Attributes: map[string]string{
@@ -5586,16 +5586,13 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		return
 	}
 
-	idTokenHTTPClient, err := idtoken.NewClient(
-		ctx,
-		messaging.DefaultPubsubTokenAudience,
-	)
+	idTokenHTTPClient, err := idtoken.NewClient(ctx, base.Aud)
 	if err != nil {
 		t.Errorf("can't initialize idToken HTTP client: %s", err)
 		return
 	}
 
-	pubsubURL := fmt.Sprintf("%s%s", baseURL, messaging.PubSubHandlerPath)
+	pubsubURL := fmt.Sprintf("%s%s", baseURL, base.PubSubHandlerPath)
 	req, err := http.NewRequest(
 		http.MethodPost,
 		pubsubURL,

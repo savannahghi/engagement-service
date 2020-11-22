@@ -14,9 +14,6 @@ import (
 
 // messaging related constants
 const (
-	PubSubHandlerPath          = "/pubsub"
-	DefaultPubsubTokenAudience = "bewell.co.ke"
-
 	ackDeadlineSeconds  = 60
 	maxBackoffSeconds   = 600
 	maxDeliveryAttempts = 100 // go to the dead letter topic after this
@@ -26,30 +23,6 @@ const (
 	serviceName         = "feed"
 	subscriptionVersion = "v1"
 )
-
-// PubSubMessage is a pub-sub message payload
-//
-// {
-//     "message": {
-//         "attributes": {
-//             "key": "value"
-//         },
-//         "data": "SGVsbG8gQ2xvdWQgUHViL1N1YiEgSGVyZSBpcyBteSBtZXNzYWdlIQ==",
-//         "messageId": "136969346945"
-//     },
-//    "subscription": "projects/myproject/subscriptions/mysubscription"
-// }
-type PubSubMessage struct {
-	MessageID  string            `json:"messageId"`
-	Data       []byte            `json:"data"`
-	Attributes map[string]string `json:"attributes"`
-}
-
-// PubSubPayload is the payload of a Pub/Sub event.
-type PubSubPayload struct {
-	Message      PubSubMessage `json:"message"`
-	Subscription string        `json:"subscription"`
-}
 
 // NewPubSubNotificationService initializes a live notification service
 func NewPubSubNotificationService(
@@ -72,7 +45,7 @@ func NewPubSubNotificationService(
 		return nil, fmt.Errorf("unable to get the %s environment variable: %w", hostNameEnvVarName, err)
 	}
 
-	callbackURL := fmt.Sprintf("%s%s", hostName, PubSubHandlerPath)
+	callbackURL := fmt.Sprintf("%s%s", hostName, base.PubSubHandlerPath)
 	ns := &PubSubNotificationService{
 		client:        client,
 		environment:   environment,
@@ -228,7 +201,7 @@ func (ps PubSubNotificationService) getSubscriptionConfig(
 		PushConfig: pubsub.PushConfig{
 			Endpoint: ps.callbackURL,
 			AuthenticationMethod: &pubsub.OIDCToken{
-				Audience: DefaultPubsubTokenAudience,
+				Audience: base.Aud,
 				ServiceAccountEmail: fmt.Sprintf(
 					"%d-compute@developer.gserviceaccount.com", ps.projectNumber),
 			},

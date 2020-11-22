@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"log"
 
-	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging"
+	"gitlab.slade360emr.com/go/base"
 )
 
 // HandlePubsubPayload defines the signature of a function that handles
 // payloads received from Google Cloud Pubsub
-type HandlePubsubPayload func(m *messaging.PubSubPayload) error
+type HandlePubsubPayload func(m *base.PubSubPayload) error
 
 // HandleFeedRetrieval responds to feed retrieval messages
-func HandleFeedRetrieval(m *messaging.PubSubPayload) error {
+func HandleFeedRetrieval(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -24,7 +24,7 @@ func HandleFeedRetrieval(m *messaging.PubSubPayload) error {
 }
 
 // HandleThinFeedRetrieval responds to thin feed retrieval messages
-func HandleThinFeedRetrieval(m *messaging.PubSubPayload) error {
+func HandleThinFeedRetrieval(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -36,7 +36,7 @@ func HandleThinFeedRetrieval(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemRetrieval responds to item retrieval messages
-func HandleItemRetrieval(m *messaging.PubSubPayload) error {
+func HandleItemRetrieval(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -48,7 +48,7 @@ func HandleItemRetrieval(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemPublish responds to item publish messages
-func HandleItemPublish(m *messaging.PubSubPayload) error {
+func HandleItemPublish(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -60,7 +60,7 @@ func HandleItemPublish(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemDelete responds to item delete messages
-func HandleItemDelete(m *messaging.PubSubPayload) error {
+func HandleItemDelete(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -72,7 +72,7 @@ func HandleItemDelete(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemResolve responds to item resolve messages
-func HandleItemResolve(m *messaging.PubSubPayload) error {
+func HandleItemResolve(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -84,7 +84,7 @@ func HandleItemResolve(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemUnresolve responds to item unresolve messages
-func HandleItemUnresolve(m *messaging.PubSubPayload) error {
+func HandleItemUnresolve(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -96,7 +96,7 @@ func HandleItemUnresolve(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemHide responds to item hide messages
-func HandleItemHide(m *messaging.PubSubPayload) error {
+func HandleItemHide(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -108,7 +108,7 @@ func HandleItemHide(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemShow responds to item show messages
-func HandleItemShow(m *messaging.PubSubPayload) error {
+func HandleItemShow(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -120,7 +120,7 @@ func HandleItemShow(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemPin responds to item pin messages
-func HandleItemPin(m *messaging.PubSubPayload) error {
+func HandleItemPin(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -132,7 +132,7 @@ func HandleItemPin(m *messaging.PubSubPayload) error {
 }
 
 // HandleItemUnpin responds to item unpin messages
-func HandleItemUnpin(m *messaging.PubSubPayload) error {
+func HandleItemUnpin(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -144,7 +144,7 @@ func HandleItemUnpin(m *messaging.PubSubPayload) error {
 }
 
 // HandleNudgeRetrieval responds to nudge retrieval messages
-func HandleNudgeRetrieval(m *messaging.PubSubPayload) error {
+func HandleNudgeRetrieval(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -156,7 +156,7 @@ func HandleNudgeRetrieval(m *messaging.PubSubPayload) error {
 }
 
 // HandleNudgePublish responds to nudge publish messages
-func HandleNudgePublish(m *messaging.PubSubPayload) error {
+func HandleNudgePublish(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -168,7 +168,7 @@ func HandleNudgePublish(m *messaging.PubSubPayload) error {
 }
 
 // HandleNudgeDelete responds to nudge delete messages
-func HandleNudgeDelete(m *messaging.PubSubPayload) error {
+func HandleNudgeDelete(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -180,7 +180,7 @@ func HandleNudgeDelete(m *messaging.PubSubPayload) error {
 }
 
 // HandleNudgeResolve responds to nudge resolve messages
-func HandleNudgeResolve(m *messaging.PubSubPayload) error {
+func HandleNudgeResolve(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -192,7 +192,7 @@ func HandleNudgeResolve(m *messaging.PubSubPayload) error {
 }
 
 // HandleNudgeUnresolve responds to nudge unresolve messages
-func HandleNudgeUnresolve(m *messaging.PubSubPayload) error {
+func HandleNudgeUnresolve(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -204,7 +204,7 @@ func HandleNudgeUnresolve(m *messaging.PubSubPayload) error {
 }
 
 // HandleNudgeHide responds to nudge hide messages
-func HandleNudgeHide(m *messaging.PubSubPayload) error {
+func HandleNudgeHide(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -216,7 +216,7 @@ func HandleNudgeHide(m *messaging.PubSubPayload) error {
 }
 
 // HandleNudgeShow responds to nudge hide messages
-func HandleNudgeShow(m *messaging.PubSubPayload) error {
+func HandleNudgeShow(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -228,7 +228,7 @@ func HandleNudgeShow(m *messaging.PubSubPayload) error {
 }
 
 // HandleActionRetrieval responds to action retrieval messages
-func HandleActionRetrieval(m *messaging.PubSubPayload) error {
+func HandleActionRetrieval(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -240,7 +240,7 @@ func HandleActionRetrieval(m *messaging.PubSubPayload) error {
 }
 
 // HandleActionPublish responds to action publish messages
-func HandleActionPublish(m *messaging.PubSubPayload) error {
+func HandleActionPublish(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -252,7 +252,7 @@ func HandleActionPublish(m *messaging.PubSubPayload) error {
 }
 
 // HandleActionDelete responds to action publish messages
-func HandleActionDelete(m *messaging.PubSubPayload) error {
+func HandleActionDelete(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -264,7 +264,7 @@ func HandleActionDelete(m *messaging.PubSubPayload) error {
 }
 
 // HandleMessagePost responds to message post pubsub messages
-func HandleMessagePost(m *messaging.PubSubPayload) error {
+func HandleMessagePost(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -276,7 +276,7 @@ func HandleMessagePost(m *messaging.PubSubPayload) error {
 }
 
 // HandleMessageDelete responds to message delete pubsub messages
-func HandleMessageDelete(m *messaging.PubSubPayload) error {
+func HandleMessageDelete(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -288,7 +288,7 @@ func HandleMessageDelete(m *messaging.PubSubPayload) error {
 }
 
 // HandleIncomingEvent responds to message delete pubsub messages
-func HandleIncomingEvent(m *messaging.PubSubPayload) error {
+func HandleIncomingEvent(m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
