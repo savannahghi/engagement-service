@@ -10,7 +10,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph/feed"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
 )
 
 const (

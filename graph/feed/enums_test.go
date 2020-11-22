@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"gitlab.slade360emr.com/go/feed/graph/feed"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
 )
 
 func getBlankActionType() *feed.ActionType {

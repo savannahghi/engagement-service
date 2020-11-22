@@ -8,7 +8,7 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph/feed"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	"google.golang.org/api/iterator"
 )
 

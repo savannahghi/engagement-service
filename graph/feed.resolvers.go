@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.slade360emr.com/go/feed/graph/feed"
-	"gitlab.slade360emr.com/go/feed/graph/generated"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
+	"gitlab.slade360emr.com/go/engagement/graph/generated"
 )
 
 func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {

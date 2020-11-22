@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.slade360emr.com/go/feed/graph/feed"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
 )
 
 // NewMockNotificationService initializes a mock notification service

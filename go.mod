@@ -1,4 +1,4 @@
-module gitlab.slade360emr.com/go/feed
+module gitlab.slade360emr.com/go/engagement
 
 go 1.15
 

@@ -8,8 +8,8 @@ import (
 
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/feed/graph/feed"
-	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
+	db "gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/database"
 )
 
 const (

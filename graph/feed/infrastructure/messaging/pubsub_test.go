@@ -9,8 +9,8 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph/feed"
-	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
+	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging"
 )
 
 func getProjectNumber(t *testing.T) int {

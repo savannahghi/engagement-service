@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph"
+	"gitlab.slade360emr.com/go/engagement/graph"
 )
 
 const waitSeconds = 30

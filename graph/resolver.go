@@ -8,9 +8,9 @@ import (
 	"log"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph/feed"
-	"gitlab.slade360emr.com/go/feed/graph/inbox"
-	"gitlab.slade360emr.com/go/feed/graph/library"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
+	"gitlab.slade360emr.com/go/engagement/graph/inbox"
+	"gitlab.slade360emr.com/go/engagement/graph/library"
 )
 
 // NewResolver sets up the dependencies needed for WhatsApp query and mutation resolvers to work

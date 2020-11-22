@@ -24,17 +24,17 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph/feed"
-	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
-	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
-	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging/pubsubhandlers"
-	"gitlab.slade360emr.com/go/feed/graph/generated"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
+	db "gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging"
+	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging/pubsubhandlers"
+	"gitlab.slade360emr.com/go/engagement/graph/generated"
 )
 
 const (
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
-	schemaDir            = "gitlab.slade360emr.com/go/feed:/static/"
+	schemaDir            = "gitlab.slade360emr.com/go/engagement:/static/"
 )
 
 var allowedOrigins = []string{

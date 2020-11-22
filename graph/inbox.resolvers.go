@@ -6,7 +6,7 @@ package graph
 import (
 	"context"
 
-	"gitlab.slade360emr.com/go/feed/graph/inbox"
+	"gitlab.slade360emr.com/go/engagement/graph/inbox"
 )
 
 func (r *queryResolver) GetUserMessages(ctx context.Context) ([]*inbox.Message, error) {

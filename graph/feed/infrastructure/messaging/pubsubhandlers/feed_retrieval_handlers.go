@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
+	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging"
 )
 
 // HandlePubsubPayload defines the signature of a function that handles

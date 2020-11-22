@@ -1,7 +1,7 @@
 # Feed service
 
-[![pipeline status](https://gitlab.slade360emr.com/go/feed/badges/develop/pipeline.svg)](https://gitlab.slade360emr.com/go/feed/-/commits/develop)
-[![coverage report](https://gitlab.slade360emr.com/go/feed/badges/develop/coverage.svg)](https://gitlab.slade360emr.com/go/feed/-/commits/develop)
+[![pipeline status](https://gitlab.slade360emr.com/go/engagement/badges/develop/pipeline.svg)](https://gitlab.slade360emr.com/go/engagement/-/commits/develop)
+[![coverage report](https://gitlab.slade360emr.com/go/engagement/badges/develop/coverage.svg)](https://gitlab.slade360emr.com/go/engagement/-/commits/develop)
 
 A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app.
 

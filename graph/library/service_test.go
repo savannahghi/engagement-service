@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"gitlab.slade360emr.com/go/feed/graph/library"
+	"gitlab.slade360emr.com/go/engagement/graph/library"
 )
 
 func TestNewService(t *testing.T) {

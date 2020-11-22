@@ -9,7 +9,7 @@ import (
 
 	"github.com/markbates/pkger"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/feed/graph/library"
+	"gitlab.slade360emr.com/go/engagement/graph/library"
 )
 
 const (

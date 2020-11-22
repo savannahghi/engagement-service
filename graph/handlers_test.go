@@ -23,10 +23,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/feed/graph"
-	"gitlab.slade360emr.com/go/feed/graph/feed"
-	db "gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/database"
-	"gitlab.slade360emr.com/go/feed/graph/feed/infrastructure/messaging"
+	"gitlab.slade360emr.com/go/engagement/graph"
+	"gitlab.slade360emr.com/go/engagement/graph/feed"
+	db "gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging"
 	"google.golang.org/api/idtoken"
 )
 

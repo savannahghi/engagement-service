@@ -6,8 +6,8 @@ package graph
 import (
 	"context"
 
-	"gitlab.slade360emr.com/go/feed/graph/generated"
-	"gitlab.slade360emr.com/go/feed/graph/library"
+	"gitlab.slade360emr.com/go/engagement/graph/generated"
+	"gitlab.slade360emr.com/go/engagement/graph/library"
 )
 
 func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error) {
