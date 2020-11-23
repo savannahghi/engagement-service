@@ -241,7 +241,7 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					}
 
 					refetchedNudges := len(refetchedFeed.Nudges)
-					refetchedItems := len(refetchedFeed.Items)
+					persistentItemCount := len(refetchedFeed.Items)
 					refetchedActions := len(refetchedFeed.Actions)
 
 					if refetchedActions != initialActions {
@@ -252,8 +252,332 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 						t.Errorf("initially got %d nudges, refetched and got %d", initialActions, refetchedActions)
 					}
 
-					if refetchedItems != initialItems {
-						t.Errorf("initially got %d items, refetched and got %d", initialItems, refetchedItems)
+					if persistentItemCount != initialItems {
+						t.Errorf("initially got %d items, refetched and got %d", initialItems, persistentItemCount)
+					}
+
+					// filter by 'persistent=TRUE'
+					persistentFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterTrue,
+						nil,
+						nil,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the persistent=TRUE filter: %s", err)
+						return
+					}
+					if persistentFeed == nil {
+						t.Errorf("nil feed when fetching with the persistent=TRUE filter")
+						return
+					}
+					if len(persistentFeed.Items) < 1 {
+						t.Errorf("expected at least one persistent feed item, got none")
+						return
+					}
+
+					// filter by persistent=FALSE
+					nonPersistentFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterFalse,
+						nil,
+						nil,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the persistent=FALSE filter: %s", err)
+						return
+					}
+					if nonPersistentFeed == nil {
+						t.Errorf("nil feed when fetching with the persistent=FALSE filter")
+						return
+					}
+					if len(nonPersistentFeed.Items) < 1 {
+						t.Errorf("expected at least one non-persistent feed item, got none")
+						return
+					}
+
+					// filter by persistent=BOTH
+					bothPersistentFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						nil,
+						nil,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the persistent=BOTH filter: %s", err)
+						return
+					}
+					if bothPersistentFeed == nil {
+						t.Errorf("nil feed when fetching with the persistent=BOTH filter")
+						return
+					}
+					if len(bothPersistentFeed.Items) < 1 {
+						t.Errorf("expected at least one persistent=BOTH feed item, got none")
+						return
+					}
+
+					// filter by visibility=SHOW
+					show := feed.VisibilityShow
+					hiddenFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						nil,
+						&show,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the visibility=SHOW filter: %s", err)
+						return
+					}
+					if hiddenFeed == nil {
+						t.Errorf("nil feed when fetching with the visibility=SHOW filter")
+						return
+					}
+					if len(hiddenFeed.Items) < 1 {
+						t.Errorf("expected at least one visibiity=SHOW feed item, got none")
+						return
+					}
+
+					// filter by visibility=HIDE
+					hide := feed.VisibilityHide
+					visibilityHideFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						nil,
+						&hide,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the visibility=HIDE filter: %s", err)
+						return
+					}
+					if visibilityHideFeed == nil {
+						t.Errorf("nil feed when fetching with the visibility=HIDE filter")
+						return
+					}
+					if len(visibilityHideFeed.Items) > 0 {
+						t.Errorf("unexpectedly found > 0 visibiity=HIDE feed items")
+						return
+					}
+
+					// filter by status pending
+					pending := feed.StatusPending
+					pendingFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&pending,
+						&show,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the status=PENDING filter: %s", err)
+						return
+					}
+					if pendingFeed == nil {
+						t.Errorf("nil feed when fetching with the status=PENDING filter")
+						return
+					}
+					if len(pendingFeed.Items) < 1 {
+						t.Errorf("expected at least one status=PENDING feed item, got none")
+						return
+					}
+
+					// filter by status done
+					done := feed.StatusDone
+					doneFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&done,
+						&show,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the status=DONE filter: %s", err)
+						return
+					}
+					if doneFeed == nil {
+						t.Errorf("nil feed when fetching with the status=DONE filter")
+						return
+					}
+					if len(doneFeed.Items) > 0 {
+						t.Errorf("expected no status=DONE feed item")
+						return
+					}
+
+					// filter for in progress feed items
+					inProgress := feed.StatusInProgress
+					inProgressFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&inProgress,
+						&show,
+						nil,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the status=IN_PROGRESS filter: %s", err)
+						return
+					}
+					if inProgressFeed == nil {
+						t.Errorf("nil feed when fetching with the status=IN_PROGRESS filter")
+						return
+					}
+					if len(inProgressFeed.Items) > 0 {
+						t.Errorf("expected no status=IN PROGRESS feed item")
+						return
+					}
+
+					// filter by expired=BOTH
+					both := feed.BooleanFilterBoth
+					expiredBothFeed, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&pending,
+						&show,
+						&both,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the expired=BOTH filter: %s", err)
+						return
+					}
+					if expiredBothFeed == nil {
+						t.Errorf("nil feed when fetching with the expired=BOTH filter")
+						return
+					}
+					if len(expiredBothFeed.Items) < 1 {
+						t.Errorf("expected at least one expired=BOTH feed item, got none")
+						return
+					}
+
+					// filter by expired=FALSE
+					falseVal := feed.BooleanFilterFalse
+					unexpiredFilter, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&pending,
+						&show,
+						&falseVal,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the expired=FALSE filter: %s", err)
+						return
+					}
+					if unexpiredFilter == nil {
+						t.Errorf("nil feed when fetching with the expired=FALSE filter")
+						return
+					}
+					if len(unexpiredFilter.Items) < 1 {
+						t.Errorf("expected at least one expired=FALSE feed item, got none")
+						return
+					}
+
+					// filter by expired=TRUE
+					trueVal := feed.BooleanFilterTrue
+					expiredFilter, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&pending,
+						&show,
+						&trueVal,
+						nil,
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the expired=TRUE filter: %s", err)
+						return
+					}
+					if expiredFilter == nil {
+						t.Errorf("nil feed when fetching with the expired=TRUE filter")
+						return
+					}
+					if len(expiredFilter.Items) > 0 {
+						t.Errorf("did not expect any expired=TRUE feed item")
+						return
+					}
+
+					// filter by welcome label
+					welcomeLabelFilter, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&pending,
+						&show,
+						&falseVal,
+						&feed.FilterParams{
+							Labels: []string{feed.DefaultLabel},
+						},
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed with the welcome label filter: %s", err)
+						return
+					}
+					if welcomeLabelFilter == nil {
+						t.Errorf("nil feed when fetching with the welcome label filter")
+						return
+					}
+					if len(welcomeLabelFilter.Items) < 1 {
+						t.Errorf("expected at least one feed item with the welcome label, got none")
+						return
+					}
+
+					// filter by non existent welcome label
+					nonExistentLabelFilter, err := fr.GetFeed(
+						ctx,
+						tt.args.uid,
+						tt.args.flavour,
+						feed.BooleanFilterBoth,
+						&pending,
+						&show,
+						&falseVal,
+						&feed.FilterParams{
+							Labels: []string{ksuid.New().String()},
+						},
+					)
+					if err != nil {
+						t.Errorf("error when fetching feed a non-existent label filter: %s", err)
+						return
+					}
+					if nonExistentLabelFilter == nil {
+						t.Errorf("nil feed when fetching with a non existent label filter")
+						return
+					}
+					if len(nonExistentLabelFilter.Items) > 0 {
+						t.Errorf("expected to find no items with a non existent label")
+						return
 					}
 				}
 			}

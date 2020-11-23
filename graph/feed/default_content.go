@@ -13,6 +13,9 @@ import (
 )
 
 const (
+	// DefaultLabel is the label used for welcome content
+	DefaultLabel = "WELCOME"
+
 	defaultSequenceNumber = 1
 	defaultPostedByUID    = "hOcaUv8dqqgmWYf9HEhjdudgf0b2"
 	futureHours           = 878400 // hours in a century of leap years...
@@ -36,7 +39,6 @@ const (
 	defaultLocation   = "default-location-id-please-change"
 	defaultContentDir = "/static/"
 	defaultAuthor     = "Be.Well Team"
-	defaultLabel      = "WELCOME"
 	staticBase        = "https://assets.healthcloud.co.ke"
 	defaultIconPath   = staticBase + "/bewell_logo.png"
 )
@@ -737,12 +739,15 @@ func simpleConsumerWelcome(
 	flavour Flavour,
 	repository Repository,
 ) (*Item, error) {
-	persistent := false
+	persistent := true // at least one persistent message in welcome data
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
 	links := getFeedWelcomeVideos()
-	actions := []Action{}
+	actions, err := defaultActions(ctx, uid, flavour, repository)
+	if err != nil {
+		return nil, fmt.Errorf("can't initialize default actions: %w", err)
+	}
 
 	itemID := ksuid.New().String()
 	conversations, err := getConsumerWelcomeThread(ctx, uid, flavour, itemID, repository)
@@ -757,7 +762,7 @@ func simpleConsumerWelcome(
 		itemID,
 		defaultAuthor,
 		tagline,
-		defaultLabel,
+		DefaultLabel,
 		defaultIconPath,
 		"Feed Item Icon",
 		"Feed Item Icon",
@@ -777,12 +782,15 @@ func simpleProWelcome(
 	flavour Flavour,
 	repository Repository,
 ) (*Item, error) {
-	persistent := false
+	persistent := true // at least one persistent message in welcome data
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to provide affordable high-quality healthcare - whether online or in person."
 	links := getFeedWelcomeVideos()
-	actions := []Action{}
+	actions, err := defaultActions(ctx, uid, flavour, repository)
+	if err != nil {
+		return nil, fmt.Errorf("can't initialize default actions: %w", err)
+	}
 
 	itemID := ksuid.New().String()
 	conversations, err := getProWelcomeThread(ctx, uid, flavour, itemID, repository)
@@ -797,7 +805,7 @@ func simpleProWelcome(
 		itemID,
 		defaultAuthor,
 		tagline,
-		defaultLabel,
+		DefaultLabel,
 		defaultIconPath,
 		"Feed Item Icon",
 		"Feed Item Icon",
@@ -1113,50 +1121,11 @@ func ultimateComposite(
 			staticBase+"/items/documents/thumbs/bewell_banner_48.pdf",
 		),
 	}
-	resolveAction, err := createLocalAction(
-		ctx,
-		uid,
-		flavour,
-		resolveItemActionName,
-		ActionTypePrimary,
-		HandlingInline,
-		repository,
-	)
+	actions, err := defaultActions(ctx, uid, flavour, repository)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create resolve action: %w", err)
+		return nil, fmt.Errorf("can't initialize default actions: %w", err)
 	}
 
-	pinAction, err := createLocalAction(
-		ctx,
-		uid,
-		flavour,
-		pinItemActionName,
-		ActionTypePrimary,
-		HandlingInline,
-		repository,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create pin action: %w", err)
-	}
-
-	hideAction, err := createLocalAction(
-		ctx,
-		uid,
-		flavour,
-		hideItemActionName,
-		ActionTypePrimary,
-		HandlingInline,
-		repository,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create hide action: %w", err)
-	}
-
-	actions := []Action{
-		*resolveAction,
-		*pinAction,
-		*hideAction,
-	}
 	conversations := []Message{}
 	itemID := ksuid.New().String()
 	return createFeedItem(
@@ -1166,7 +1135,7 @@ func ultimateComposite(
 		itemID,
 		defaultAuthor,
 		tagline,
-		defaultLabel,
+		DefaultLabel,
 		defaultIconPath,
 		"Feed Item Icon",
 		"Feed Item Icon",
@@ -1616,7 +1585,7 @@ func feedItemFromCMSPost(post library.GhostCMSPost) Item {
 		Icon:                 GetPNGImageLink(defaultIconPath, "Icon", "Feed Item Icon", defaultIconPath),
 		Author:               defaultAuthor,
 		Tagline:              post.Slug,
-		Label:                defaultLabel,
+		Label:                DefaultLabel,
 		Summary:              TruncateStringWithEllipses(post.Excerpt, 140),
 		Timestamp:            post.UpdatedAt,
 		Text:                 post.HTML,
@@ -1670,4 +1639,57 @@ func TruncateStringWithEllipses(str string, length int) string {
 		return truncated + "..."
 	}
 	return truncated
+}
+
+func defaultActions(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) ([]Action, error) {
+	resolveAction, err := createLocalAction(
+		ctx,
+		uid,
+		flavour,
+		resolveItemActionName,
+		ActionTypePrimary,
+		HandlingInline,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create resolve action: %w", err)
+	}
+
+	pinAction, err := createLocalAction(
+		ctx,
+		uid,
+		flavour,
+		pinItemActionName,
+		ActionTypePrimary,
+		HandlingInline,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create pin action: %w", err)
+	}
+
+	hideAction, err := createLocalAction(
+		ctx,
+		uid,
+		flavour,
+		hideItemActionName,
+		ActionTypePrimary,
+		HandlingInline,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create hide action: %w", err)
+	}
+	actions := []Action{
+		*resolveAction,
+		*pinAction,
+		*hideAction,
+	}
+
+	return actions, nil
 }
