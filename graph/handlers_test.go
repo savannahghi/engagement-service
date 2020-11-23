@@ -1913,6 +1913,17 @@ query GetFeed(
 		},
 	}
 
+	// {
+	// 	"flavour":    "PRO",
+	// 	"persistent": "BOTH",
+	// 	"status":"DONE",
+	// 	"visibility":"SHOW",
+	// 	"expired":"FALSE",
+	// 	"filterParams": {
+	// 		"labels": ["WELCOME"]
+	// 	}
+	// }
+
 	validQueryReader, err := mapToJSONReader(gql)
 	if err != nil {
 		t.Errorf("unable to get GQL JSON io Reader: %s", err)
@@ -1923,10 +1934,13 @@ query GetFeed(
 		body io.Reader
 	}
 	tests := []struct {
-		name       string
-		args       args
-		wantStatus int
-		wantErr    bool
+		name               string
+		args               args
+		wantStatus         int
+		wantErr            bool
+		wantNonZeroItems   bool
+		wantNonZeroNudges  bool
+		wantNonZeroActions bool
 	}{
 		{
 			name: "valid query",
