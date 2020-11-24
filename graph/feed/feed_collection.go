@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"gitlab.slade360emr.com/go/base"
 )
 
 // NewCollection initializes a user feed that is backed by an in-memory map
@@ -11,11 +13,24 @@ func NewCollection(
 	repository Repository,
 	notificationService NotificationService,
 ) (*Collection, error) {
+	deps, err := base.LoadDepsFromYAML()
+	if err != nil {
+		return nil, fmt.Errorf("can't load inter-service config from YAML: %w", err)
+	}
+
+	profileClient, err := base.SetupISCclient(*deps, "profile")
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't set up profile interservice client: %w", err)
+	}
+
 	feedCollection := &Collection{
 		repository:          repository,
 		notificationService: notificationService,
+		profileClient:       profileClient,
 	}
-	err := feedCollection.checkPreconditions()
+
+	err = feedCollection.checkPreconditions()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize feeds: %w", err)
 	}
@@ -26,6 +41,7 @@ func NewCollection(
 type Collection struct {
 	repository          Repository
 	notificationService NotificationService
+	profileClient       *base.InterServiceClient
 }
 
 func (agg Collection) checkPreconditions() error {
@@ -37,6 +53,11 @@ func (agg Collection) checkPreconditions() error {
 	if agg.notificationService == nil {
 		return fmt.Errorf(
 			"incorrectly initialized feed aggregate: nil notification service")
+	}
+
+	if agg.profileClient == nil {
+		return fmt.Errorf(
+			"incorrectly initialized feed aggregate: nil profile client")
 	}
 
 	return nil
@@ -84,7 +105,13 @@ func (agg Collection) GetFeed(
 	}
 
 	if err := agg.notificationService.Notify(
-		ctx, FeedRetrievalTopic, feed); err != nil {
+		ctx,
+		FeedRetrievalTopic,
+		uid,
+		flavour,
+		feed,
+		map[string]interface{}{},
+	); err != nil {
 		return nil, fmt.Errorf(
 			"unable to notify feed to channel: %w", err)
 	}
@@ -127,7 +154,13 @@ func (agg Collection) GetThinFeed(
 	}
 
 	if err := agg.notificationService.Notify(
-		ctx, ThinFeedRetrievalTopic, feed); err != nil {
+		ctx,
+		ThinFeedRetrievalTopic,
+		uid,
+		flavour,
+		feed,
+		map[string]interface{}{},
+	); err != nil {
 		return nil, fmt.Errorf(
 			"unable to notify feed to channel: %w", err)
 	}

@@ -176,4 +176,29 @@ type Repository interface {
 		expired *BooleanFilter,
 		filterParams *FilterParams,
 	) ([]Item, error)
+
+	Labels(
+		ctx context.Context,
+		uid string,
+		flavour Flavour,
+	) ([]string, error)
+
+	SaveLabel(
+		ctx context.Context,
+		uid string,
+		flavour Flavour,
+		label string,
+	) error
+
+	UnreadPersistentItems(
+		ctx context.Context,
+		uid string,
+		flavour Flavour,
+	) (int, error)
+
+	UpdateUnreadPersistentItemsCount(
+		ctx context.Context,
+		uid string,
+		flavour Flavour,
+	) error
 }

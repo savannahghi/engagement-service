@@ -2,23 +2,16 @@ package messaging
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"log"
-	"time"
 
 	"cloud.google.com/go/pubsub"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
-	"google.golang.org/api/iterator"
 )
 
 // messaging related constants
 const (
-	ackDeadlineSeconds  = 60
-	maxBackoffSeconds   = 600
-	maxDeliveryAttempts = 100 // go to the dead letter topic after this
-	hoursInAWeek        = 24 * 7
-
 	hostNameEnvVarName  = "SERVICE_HOST" // host at which this service is deployed
 	serviceName         = "feed"
 	subscriptionVersion = "v1"
@@ -28,7 +21,6 @@ const (
 func NewPubSubNotificationService(
 	ctx context.Context,
 	projectID string,
-	projectNumber int,
 ) (feed.NotificationService, error) {
 	client, err := pubsub.NewClient(ctx, projectID)
 	if err != nil {
@@ -47,20 +39,28 @@ func NewPubSubNotificationService(
 
 	callbackURL := fmt.Sprintf("%s%s", hostName, base.PubSubHandlerPath)
 	ns := &PubSubNotificationService{
-		client:        client,
-		environment:   environment,
-		projectNumber: projectNumber,
-		callbackURL:   callbackURL,
+		client:      client,
+		environment: environment,
+		callbackURL: callbackURL,
 	}
 	if err := ns.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"pubsub notification service failed preconditions: %w", err)
 	}
-	if err := ns.ensureTopicsExist(ctx); err != nil {
+
+	topicIDs := ns.TopicIDs()
+	if err := base.EnsureTopicsExist(ctx, client, topicIDs); err != nil {
 		return nil, fmt.Errorf(
 			"error when ensuring that pubsub topics exist: %w", err)
 	}
-	if err := ns.ensureSubscriptionsExist(ctx); err != nil {
+
+	subscriptionIDs := base.SubscriptionIDs(topicIDs)
+	if err := base.EnsureSubscriptionsExist(
+		ctx,
+		client,
+		subscriptionIDs,
+		ns.callbackURL,
+	); err != nil {
 		return nil, fmt.Errorf(
 			"error when ensuring that pubsub subscriptions exist: %w", err)
 	}
@@ -69,10 +69,9 @@ func NewPubSubNotificationService(
 
 // PubSubNotificationService sends "real" (production) notifications
 type PubSubNotificationService struct {
-	client        *pubsub.Client
-	environment   string
-	callbackURL   string
-	projectNumber int
+	client      *pubsub.Client
+	environment string
+	callbackURL string
 }
 
 func (ps PubSubNotificationService) checkPreconditions() error {
@@ -88,141 +87,18 @@ func (ps PubSubNotificationService) checkPreconditions() error {
 		return fmt.Errorf("blank callback URL in notification service")
 	}
 
-	if ps.projectNumber == 0 {
-		return fmt.Errorf("project number is 0 in the notification service (invalid)")
-	}
-
 	return nil
-}
-
-func (ps PubSubNotificationService) ensureTopicsExist(
-	ctx context.Context,
-) error {
-	// get a list of configured topic IDs from the project so that we don't recreate
-	configuredTopics := []string{}
-	it := ps.client.Topics(ctx)
-	for {
-		topic, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return fmt.Errorf(
-				"error while iterating through pubsub topics: %w", err)
-		}
-		configuredTopics = append(configuredTopics, topic.ID())
-	}
-
-	// ensure that all our desired topics are all created
-	for _, topicID := range ps.TopicIDs() {
-		if !base.StringSliceContains(configuredTopics, topicID) {
-			_, err := ps.client.CreateTopic(ctx, topicID)
-			if err != nil {
-				return fmt.Errorf("can't create topic %s: %w", topicID, err)
-			}
-		}
-	}
-
-	return nil
-}
-
-func (ps PubSubNotificationService) ensureSubscriptionsExist(
-	ctx context.Context,
-) error {
-	subscriptionIDs := ps.SubscriptionIDs()
-	for _, topicID := range ps.TopicIDs() {
-		topic := ps.client.Topic(topicID)
-		topicExists, err := topic.Exists(ctx)
-		if err != nil {
-			return fmt.Errorf("error when checking if topic %s exists: %w", topicID, err)
-		}
-
-		if !topicExists {
-			return fmt.Errorf("no topic with ID %s exists", topicID)
-		}
-
-		subscriptionConfig, err := ps.getSubscriptionConfig(ctx, topicID)
-		if err != nil {
-			return fmt.Errorf(
-				"can't initialize subscription config for topic %s: %w", topicID, err)
-		}
-
-		if subscriptionConfig == nil {
-			return fmt.Errorf("nil subscription config")
-		}
-
-		subscriptionID, prs := subscriptionIDs[topicID]
-		if !prs {
-			return fmt.Errorf("no subscriptionID found in map for topic %s", topicID)
-		}
-
-		existingSubscription := ps.client.Subscription(subscriptionID)
-		subscriptionExists, err := existingSubscription.Exists(ctx)
-		if err != nil {
-			return fmt.Errorf("error when checking if a subscription exists: %w", err)
-		}
-		if !subscriptionExists {
-			sub, err := ps.client.CreateSubscription(ctx, subscriptionID, *subscriptionConfig)
-			if err != nil {
-				log.Printf("Detailed error:\n%#v\n", err)
-				return fmt.Errorf("can't create subscription %s: %w", topicID, err)
-			}
-			log.Printf("created subscription %#v with config %#v", sub, *subscriptionConfig)
-		}
-	}
-
-	return nil
-}
-
-func (ps PubSubNotificationService) getSubscriptionConfig(
-	ctx context.Context, topicID string,
-) (*pubsub.SubscriptionConfig, error) {
-	topic := ps.client.Topic(topicID)
-	topicExists, err := topic.Exists(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error when checking if topic %s exists: %w", topicID, err)
-	}
-
-	if !topicExists {
-		return nil, fmt.Errorf("no topic with ID %s exists", topicID)
-	}
-
-	// This is a PUSH type subscription, because Cloud Run is a *serverless*
-	// platform and we cannot keep long lived pull subscriptions there. In a
-	// future where this service is no longer run on a serverless platform, we
-	// should switch to the higher throughput pull subscriptions.
-	//
-	// Authentication is via Google signed OpenID Connect tokens. For the Cloud
-	// Run deployment, this authentication is automatic (done by Google). If we
-	// move this deployment to another environment, we have to do our own
-	// verification in the HTTP handler.
-	return &pubsub.SubscriptionConfig{
-		Topic: topic,
-		PushConfig: pubsub.PushConfig{
-			Endpoint: ps.callbackURL,
-			AuthenticationMethod: &pubsub.OIDCToken{
-				Audience: base.Aud,
-				ServiceAccountEmail: fmt.Sprintf(
-					"%d-compute@developer.gserviceaccount.com", ps.projectNumber),
-			},
-		},
-		AckDeadline:         ackDeadlineSeconds * time.Second,
-		RetainAckedMessages: true,
-		RetentionDuration:   time.Hour * hoursInAWeek,
-		ExpirationPolicy:    time.Duration(0), // never expire
-		RetryPolicy: &pubsub.RetryPolicy{
-			MinimumBackoff: time.Second,
-			MaximumBackoff: time.Second * maxBackoffSeconds,
-		},
-	}, nil
 }
 
 // Notify sends a notification to the specified topic.
 // A search engine index job can be one of the listeners on this channel.
 func (ps PubSubNotificationService) Notify(
 	ctx context.Context,
-	topicName string,
+	topicID string,
+	uid string,
+	flavour feed.Flavour,
 	el feed.Element,
+	metadata map[string]interface{},
 ) error {
 	if err := ps.checkPreconditions(); err != nil {
 		return fmt.Errorf(
@@ -238,83 +114,63 @@ func (ps PubSubNotificationService) Notify(
 		return fmt.Errorf("validation of element failed: %w", err)
 	}
 
-	topicID := ps.addNamespaceToID(topicName)
-	t := ps.client.Topic(topicID)
-	result := t.Publish(ctx, &pubsub.Message{
-		Data: payload,
-		Attributes: map[string]string{
-			"topicID": topicName,
-		},
-	})
-
-	// Block until the result is returned and a server-generated
-	// ID is returned for the published message.
-	msgID, err := result.Get(ctx) // message id ignored for now
-	if err != nil {
-		return fmt.Errorf("unable to publish message: %w", err)
+	envelope := feed.NotificationEnvelope{
+		UID:      uid,
+		Flavour:  flavour,
+		Payload:  payload,
+		Metadata: metadata,
 	}
-	t.Stop() // clear the queue and stop the publishing goroutines
-	log.Printf(
-		"published element to %s (%s), got back message ID %s", topicID, topicName, msgID)
+	envelopePayload, err := json.Marshal(envelope)
+	if err != nil {
+		return fmt.Errorf(
+			"can't marshal notification envelope to JSON: %w", err)
+	}
 
-	return nil
+	return base.PublishToPubsub(
+		ctx,
+		ps.client,
+		topicID,
+		ps.environment,
+		serviceName,
+		subscriptionVersion,
+		envelopePayload,
+	)
 }
 
 // TopicIDs returns the known (registered) topic IDs
 func (ps PubSubNotificationService) TopicIDs() []string {
 	return []string{
-		ps.addNamespaceToID(feed.FeedRetrievalTopic),
-		ps.addNamespaceToID(feed.ThinFeedRetrievalTopic),
-		ps.addNamespaceToID(feed.ItemRetrievalTopic),
-		ps.addNamespaceToID(feed.ItemPublishTopic),
-		ps.addNamespaceToID(feed.ItemDeleteTopic),
-		ps.addNamespaceToID(feed.ItemResolveTopic),
-		ps.addNamespaceToID(feed.ItemUnresolveTopic),
-		ps.addNamespaceToID(feed.ItemHideTopic),
-		ps.addNamespaceToID(feed.ItemShowTopic),
-		ps.addNamespaceToID(feed.ItemPinTopic),
-		ps.addNamespaceToID(feed.ItemUnpinTopic),
-		ps.addNamespaceToID(feed.NudgeRetrievalTopic),
-		ps.addNamespaceToID(feed.NudgePublishTopic),
-		ps.addNamespaceToID(feed.NudgeDeleteTopic),
-		ps.addNamespaceToID(feed.NudgeResolveTopic),
-		ps.addNamespaceToID(feed.NudgeUnresolveTopic),
-		ps.addNamespaceToID(feed.NudgeHideTopic),
-		ps.addNamespaceToID(feed.NudgeShowTopic),
-		ps.addNamespaceToID(feed.ActionRetrievalTopic),
-		ps.addNamespaceToID(feed.ActionPublishTopic),
-		ps.addNamespaceToID(feed.ActionDeleteTopic),
-		ps.addNamespaceToID(feed.MessagePostTopic),
-		ps.addNamespaceToID(feed.MessageDeleteTopic),
-		ps.addNamespaceToID(feed.IncomingEventTopic),
+		ps.addNamespace(feed.FeedRetrievalTopic),
+		ps.addNamespace(feed.ThinFeedRetrievalTopic),
+		ps.addNamespace(feed.ItemRetrievalTopic),
+		ps.addNamespace(feed.ItemPublishTopic),
+		ps.addNamespace(ps.environment),
+		ps.addNamespace(feed.ItemResolveTopic),
+		ps.addNamespace(feed.ItemUnresolveTopic),
+		ps.addNamespace(feed.ItemHideTopic),
+		ps.addNamespace(feed.ItemShowTopic),
+		ps.addNamespace(feed.ItemPinTopic),
+		ps.addNamespace(feed.ItemUnpinTopic),
+		ps.addNamespace(feed.NudgeRetrievalTopic),
+		ps.addNamespace(feed.NudgePublishTopic),
+		ps.addNamespace(feed.NudgeDeleteTopic),
+		ps.addNamespace(feed.NudgeResolveTopic),
+		ps.addNamespace(feed.NudgeUnresolveTopic),
+		ps.addNamespace(feed.NudgeHideTopic),
+		ps.addNamespace(feed.NudgeShowTopic),
+		ps.addNamespace(feed.ActionRetrievalTopic),
+		ps.addNamespace(feed.ActionPublishTopic),
+		ps.addNamespace(feed.ActionDeleteTopic),
+		ps.addNamespace(feed.MessagePostTopic),
+		ps.addNamespace(feed.MessageDeleteTopic),
+		ps.addNamespace(feed.IncomingEventTopic),
 	}
 }
 
-// SubscriptionIDs returns a map of topic IDs to subscription IDs
-func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
-	output := map[string]string{}
-	for _, topicID := range ps.TopicIDs() {
-		subscriptionID := topicID + "-default-subscription"
-		output[topicID] = subscriptionID
-	}
-	return output
-}
-
-// ReverseSubscriptionIDs returns a (reversed) map of subscription IDs to topicIDs
-func (ps PubSubNotificationService) ReverseSubscriptionIDs() map[string]string {
-	output := map[string]string{}
-	for _, topicID := range ps.TopicIDs() {
-		subscriptionID := ps.addNamespaceToID(topicID)
-		output[subscriptionID] = topicID
-	}
-	return output
-}
-
-func (ps PubSubNotificationService) addNamespaceToID(id string) string {
-	return fmt.Sprintf(
-		"%s-%s-%s-%s",
+func (ps PubSubNotificationService) addNamespace(topicName string) string {
+	return base.NamespacePubsubIdentifier(
 		serviceName,
-		id,
+		topicName,
 		ps.environment,
 		subscriptionVersion,
 	)

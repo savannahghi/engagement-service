@@ -43,8 +43,11 @@ func (mn MockNotificationService) checkPreconditions() error {
 // Notify MOCKS sending of a feed element to the message bus
 func (mn MockNotificationService) Notify(
 	ctx context.Context,
-	channel string,
-	el feed.Element,
+	topicID string,
+	uid string,
+	flavour feed.Flavour,
+	payload feed.Element,
+	metadata map[string]interface{},
 ) error {
 	if err := mn.checkPreconditions(); err != nil {
 		return fmt.Errorf("pubsub service precondition check failed: %w", err)

@@ -16,6 +16,9 @@ const (
 	// DefaultLabel is the label used for welcome content
 	DefaultLabel = "WELCOME"
 
+	// DefaultIconPath is the path to the default Be.Well logo
+	DefaultIconPath = staticBase + "/bewell_logo.png"
+
 	defaultSequenceNumber = 1
 	defaultPostedByUID    = "hOcaUv8dqqgmWYf9HEhjdudgf0b2"
 	futureHours           = 878400 // hours in a century of leap years...
@@ -40,7 +43,6 @@ const (
 	defaultContentDir = "/static/"
 	defaultAuthor     = "Be.Well Team"
 	staticBase        = "https://assets.healthcloud.co.ke"
-	defaultIconPath   = staticBase + "/bewell_logo.png"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -763,7 +765,7 @@ func simpleConsumerWelcome(
 		defaultAuthor,
 		tagline,
 		DefaultLabel,
-		defaultIconPath,
+		DefaultIconPath,
 		"Feed Item Icon",
 		"Feed Item Icon",
 		summary,
@@ -806,7 +808,7 @@ func simpleProWelcome(
 		defaultAuthor,
 		tagline,
 		DefaultLabel,
-		defaultIconPath,
+		DefaultIconPath,
 		"Feed Item Icon",
 		"Feed Item Icon",
 		summary,
@@ -1136,7 +1138,7 @@ func ultimateComposite(
 		defaultAuthor,
 		tagline,
 		DefaultLabel,
-		defaultIconPath,
+		DefaultIconPath,
 		"Feed Item Icon",
 		"Feed Item Icon",
 		summary,
@@ -1582,7 +1584,7 @@ func feedItemFromCMSPost(post library.GhostCMSPost) Item {
 		Persistent:           false,
 		Status:               StatusPending,
 		Visibility:           VisibilityShow,
-		Icon:                 GetPNGImageLink(defaultIconPath, "Icon", "Feed Item Icon", defaultIconPath),
+		Icon:                 GetPNGImageLink(DefaultIconPath, "Icon", "Feed Item Icon", DefaultIconPath),
 		Author:               defaultAuthor,
 		Tagline:              post.Slug,
 		Label:                DefaultLabel,

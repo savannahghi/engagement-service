@@ -172,6 +172,28 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour feed.Flavour, persi
 	return feed, nil
 }
 
+func (r *queryResolver) Labels(ctx context.Context, flavour feed.Flavour) ([]string, error) {
+	r.checkPreconditions()
+
+	thinFeed, err := r.getThinFeed(ctx, flavour)
+	if err != nil {
+		return nil, fmt.Errorf("can't instantiate new thin feed: %w", err)
+	}
+
+	return thinFeed.Labels(ctx)
+}
+
+func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour feed.Flavour) (int, error) {
+	r.checkPreconditions()
+
+	thinFeed, err := r.getThinFeed(ctx, flavour)
+	if err != nil {
+		return -1, fmt.Errorf("can't instantiate new thin feed: %w", err)
+	}
+
+	return thinFeed.UnreadPersistentItems(ctx)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

@@ -3,6 +3,7 @@ package db_test
 import (
 	"context"
 	"math/rand"
+	"reflect"
 	"testing"
 	"time"
 
@@ -127,8 +128,14 @@ func TestNewFirebaseRepository(t *testing.T) {
 func TestFirebaseRepository_GetFeed(t *testing.T) {
 	ctx := context.Background()
 	fr, err := db.NewFirebaseRepository(ctx)
-	assert.Nil(t, err)
-	assert.NotNil(t, fr)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
 
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
@@ -1534,5 +1541,185 @@ func getTestItem() feed.Item {
 			feed.ChannelSms,
 			feed.ChannelWhatsapp,
 		},
+	}
+}
+
+func TestRepository_Labels(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
+
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour feed.Flavour
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			name: "default labels",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: feed.FlavourConsumer,
+			},
+			want:    []string{feed.DefaultLabel},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := fr.Labels(tt.args.ctx, tt.args.uid, tt.args.flavour)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.Labels() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Repository.Labels() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRepository_SaveLabel(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
+
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour feed.Flavour
+		label   string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "save label successfully",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: feed.FlavourConsumer,
+				label:   ksuid.New().String(),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := fr.SaveLabel(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.label); (err != nil) != tt.wantErr {
+				t.Errorf("Repository.SaveLabel() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRepository_UnreadPersistentItems(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
+
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour feed.Flavour
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "default - user with no persistent count",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: feed.FlavourConsumer,
+			},
+			want:    0,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := fr.UnreadPersistentItems(tt.args.ctx, tt.args.uid, tt.args.flavour)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.UnreadPersistentItems() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Repository.UnreadPersistentItems() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRepository_UpdateUnreadPersistentItemsCount(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
+
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour feed.Flavour
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "default - user with no persistent count",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: feed.FlavourConsumer,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := fr.UpdateUnreadPersistentItemsCount(tt.args.ctx, tt.args.uid, tt.args.flavour); (err != nil) != tt.wantErr {
+				t.Errorf("Repository.UpdateUnreadPersistentItemsCount() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }

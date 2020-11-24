@@ -24,6 +24,8 @@ lint_and_test:
     - golint -set_exit_status $(go list ./... | grep -v /vendor/)
     - errcheck -ignore 'os:.*,' $(go list ./... | grep -v /vendor/)
     - gosec -exclude=G101 ./...
+    - ineffassign ./*  # identify ineffective assignments
+    - "gocyclo -over 5 . || :" # display the most complex functions but do not fail the build because of this
     - go-acc -o coverage.txt --ignore generated,main,model ./...
     - grep -v "generated.go" coverage.txt | grep -v "_gen.go" | grep -v "federation.go" | grep -v "generated.go" | grep -v "resolvers.go" | grep -v "resolver.go" | grep -v "server.go" > coverage.out
     - go tool cover -html=coverage.out -o coverage.html

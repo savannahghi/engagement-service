@@ -1,0 +1,9 @@
+staging:
+  - depName: profile
+    depRootDomain: https://profile-staging.healthcloud.co.ke
+testing:
+  - depName: profile
+    depRootDomain: https://profile-testing.healthcloud.co.ke
+production:
+  - depName: profile
+    depRootDomain: https://profile-prod.healthcloud.co.ke

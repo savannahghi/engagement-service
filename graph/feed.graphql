@@ -203,6 +203,9 @@ extend type Query {
     expired: BooleanFilter
     filterParams: FilterParamsInput
   ): Feed!
+
+  labels(flavour: Flavour!): [String!]!
+  unreadPersistentItems(flavour:Flavour!): Int!
 }
 
 extend type Mutation {

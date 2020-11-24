@@ -3020,3 +3020,159 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 		})
 	}
 }
+
+func TestFeed_Labels(t *testing.T) {
+	ctx := context.Background()
+	agg := getFeedAggregate(t)
+	fl := feed.FlavourConsumer
+	uid := ksuid.New().String()
+
+	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	assert.Nil(t, err)
+	assert.NotNil(t, fe)
+
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{
+			name: "valid case",
+			args: args{
+				ctx: ctx,
+			},
+			want:    []string{feed.DefaultLabel},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := fe.Labels(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Feed.Labels() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Feed.Labels() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFeed_SaveLabel(t *testing.T) {
+	ctx := context.Background()
+	agg := getFeedAggregate(t)
+	fl := feed.FlavourConsumer
+	uid := ksuid.New().String()
+
+	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	assert.Nil(t, err)
+	assert.NotNil(t, fe)
+
+	type args struct {
+		ctx   context.Context
+		label string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid case",
+			args: args{
+				ctx:   ctx,
+				label: ksuid.New().String(),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := fe.SaveLabel(tt.args.ctx, tt.args.label); (err != nil) != tt.wantErr {
+				t.Errorf("Feed.SaveLabel() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestFeed_UnreadPersistentItems(t *testing.T) {
+	ctx := context.Background()
+	agg := getFeedAggregate(t)
+	fl := feed.FlavourConsumer
+	uid := ksuid.New().String()
+
+	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	assert.Nil(t, err)
+	assert.NotNil(t, fe)
+
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{
+			name: "valid case",
+			args: args{
+				ctx: ctx,
+			},
+			want:    0,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := fe.UnreadPersistentItems(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Feed.UnreadPersistentItems() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Feed.UnreadPersistentItems() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFeed_UpdateUnreadPersistentItemsCount(t *testing.T) {
+	ctx := context.Background()
+	agg := getFeedAggregate(t)
+	fl := feed.FlavourConsumer
+	uid := ksuid.New().String()
+
+	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	assert.Nil(t, err)
+	assert.NotNil(t, fe)
+
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid case",
+			args: args{
+				ctx: ctx,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := fe.UpdateUnreadPersistentItemsCount(tt.args.ctx); (err != nil) != tt.wantErr {
+				t.Errorf("Feed.UpdateUnreadPersistentItemsCount() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

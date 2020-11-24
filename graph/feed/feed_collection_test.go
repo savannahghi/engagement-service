@@ -2,7 +2,6 @@ package feed_test
 
 import (
 	"context"
-	"strconv"
 	"testing"
 
 	"github.com/segmentio/ksuid"
@@ -25,29 +24,7 @@ func getNotificationService(ctx context.Context, t *testing.T) feed.Notification
 		return nil
 	}
 
-	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
-	if err != nil {
-		t.Errorf("project number not found in env var: %s", err)
-		return nil
-	}
-
-	if projectNumber == "" {
-		t.Errorf("nil project number")
-		return nil
-	}
-
-	projectNumberInt, err := strconv.Atoi(projectNumber)
-	if err != nil {
-		t.Errorf("non int project number: %s", err)
-		return nil
-	}
-
-	if projectNumberInt == 0 {
-		t.Errorf("the project number cannot be zero")
-		return nil
-	}
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		t.Errorf("can't instantiate notification service: %s", err)
 		return nil
@@ -133,29 +110,7 @@ func TestNewAggregate(t *testing.T) {
 		return
 	}
 
-	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
-	if err != nil {
-		t.Errorf("project number not found in env var: %s", err)
-		return
-	}
-
-	if projectNumber == "" {
-		t.Errorf("nil project number")
-		return
-	}
-
-	projectNumberInt, err := strconv.Atoi(projectNumber)
-	if err != nil {
-		t.Errorf("non int project number: %s", err)
-		return
-	}
-
-	if projectNumberInt == 0 {
-		t.Errorf("the project number cannot be zero")
-		return
-	}
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		t.Errorf("can't initialize notification service: %s", err)
 		return
@@ -224,29 +179,7 @@ func TestAggregate_GetThinFeed(t *testing.T) {
 		return
 	}
 
-	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
-	if err != nil {
-		t.Errorf("project number not found in env var: %s", err)
-		return
-	}
-
-	if projectNumber == "" {
-		t.Errorf("nil project number")
-		return
-	}
-
-	projectNumberInt, err := strconv.Atoi(projectNumber)
-	if err != nil {
-		t.Errorf("non int project number: %s", err)
-		return
-	}
-
-	if projectNumberInt == 0 {
-		t.Errorf("the project number cannot be zero")
-		return
-	}
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		t.Errorf("can't initialize notification service: %s", err)
 		return
@@ -333,29 +266,7 @@ func TestAggregate_GetFeed(t *testing.T) {
 		return
 	}
 
-	projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
-	if err != nil {
-		t.Errorf("project number not found in env var: %s", err)
-		return
-	}
-
-	if projectNumber == "" {
-		t.Errorf("nil project number")
-		return
-	}
-
-	projectNumberInt, err := strconv.Atoi(projectNumber)
-	if err != nil {
-		t.Errorf("non int project number: %s", err)
-		return
-	}
-
-	if projectNumberInt == 0 {
-		t.Errorf("the project number cannot be zero")
-		return
-	}
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		t.Errorf("can't initialize notification service: %s", err)
 		return

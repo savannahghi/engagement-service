@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -156,18 +155,7 @@ func TestGQLHandler(t *testing.T) {
 		return
 	}
 
-	projectNumberInt, err := strconv.Atoi(projectNumber)
-	if err != nil {
-		t.Errorf("non int project number: %s", err)
-		return
-	}
-
-	if projectNumberInt == 0 {
-		t.Errorf("the project number cannot be zero")
-		return
-	}
-
-	ns, err := messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		t.Errorf("can't initialize notification service: %s", err)
 		return
@@ -1912,17 +1900,6 @@ query GetFeed(
 			"labels": []string{"a_label", "another_label"},
 		},
 	}
-
-	// {
-	// 	"flavour":    "PRO",
-	// 	"persistent": "BOTH",
-	// 	"status":"DONE",
-	// 	"visibility":"SHOW",
-	// 	"expired":"FALSE",
-	// 	"filterParams": {
-	// 		"labels": ["WELCOME"]
-	// 	}
-	// }
 
 	validQueryReader, err := mapToJSONReader(gql)
 	if err != nil {

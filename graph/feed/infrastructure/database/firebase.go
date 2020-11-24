@@ -11,6 +11,9 @@ import (
 	"cloud.google.com/go/firestore"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
+	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -22,6 +25,9 @@ const (
 	messagesSubcollectionName    = "messages"
 	incomingEventsCollectionName = "incoming_events"
 	outgoingEventsCollectionName = "outgoing_events"
+
+	labelsDocID            = "item_labels"
+	unreadInboxCountsDocID = "unread_inbox_counts"
 
 	itemsLimit = 1000
 )
@@ -47,6 +53,7 @@ func NewFirebaseRepository(ctx context.Context) (feed.Repository, error) {
 	if err != nil {
 		log.Fatalf("firebase repository precondition check failed: %s", err)
 	}
+
 	return ff, nil
 }
 
@@ -154,6 +161,7 @@ func (fr Repository) GetFeed(
 		Nudges:  nudges,
 		Items:   items,
 	}
+
 	return feed, nil
 }
 
@@ -639,6 +647,7 @@ func (fr Repository) DeleteMessage(
 	if err != nil {
 		return fmt.Errorf("can't delete message: %w", err)
 	}
+
 	return nil
 }
 
@@ -712,7 +721,9 @@ func (fr Repository) getElementCollection(
 	subCollectionName string,
 ) *firestore.CollectionRef {
 	return fr.getUserCollection(
-		uid, flavour).Doc(elementsGroupName).Collection(subCollectionName)
+		uid,
+		flavour,
+	).Doc(elementsGroupName).Collection(subCollectionName)
 }
 
 func (fr Repository) getActionsCollection(
@@ -896,6 +907,155 @@ func (fr Repository) GetActions(
 		}
 	}
 	return actions, nil
+}
+
+// Labels retrieves the labels
+func (fr Repository) Labels(
+	ctx context.Context,
+	uid string,
+	flavour feed.Flavour,
+) ([]string, error) {
+	labelDoc := fr.getUserCollection(uid, flavour).Doc(labelsDocID)
+	lDoc, err := labelDoc.Get(ctx)
+	if err != nil {
+		if status.Code(err) != codes.NotFound {
+			return nil, fmt.Errorf("error fetching labels collection: %w", err)
+		}
+		// create it if not found
+		defaultLabel := map[string][]string{
+			"labels": {feed.DefaultLabel},
+		}
+		_, err := labelDoc.Set(ctx, defaultLabel)
+		if err != nil {
+			return nil, fmt.Errorf("can't set default label: %w", err)
+		}
+
+		// recurse after saving initial label
+		return fr.Labels(ctx, uid, flavour)
+	}
+
+	var labels map[string][]string
+	err = lDoc.DataTo(&labels)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't unmarshal labels from Firestore doc to list: %w", err)
+	}
+
+	lls, prs := labels["labels"]
+	if !prs {
+		return nil, fmt.Errorf("no `labels` key in labels doc")
+	}
+
+	return lls, nil
+}
+
+// SaveLabel saves the indicated label, if it does not already exist
+func (fr Repository) SaveLabel(
+	ctx context.Context,
+	uid string,
+	flavour feed.Flavour,
+	label string,
+) error {
+	labels, err := fr.Labels(ctx, uid, flavour)
+	if err != nil {
+		return fmt.Errorf("unable to retrieve labels: %w", err)
+	}
+
+	if !base.StringSliceContains(labels, label) {
+		labelDoc := fr.getUserCollection(uid, flavour).Doc(labelsDocID)
+		l := map[string][]string{
+			"labels": {label},
+		}
+		_, err := labelDoc.Set(ctx, l)
+		if err != nil {
+			return fmt.Errorf("can't save label: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// UnreadPersistentItems fetches unread persistent items
+func (fr Repository) UnreadPersistentItems(
+	ctx context.Context,
+	uid string,
+	flavour feed.Flavour,
+) (int, error) {
+	// unreadInboxCountsDocID
+	unreadDoc := fr.getUserCollection(uid, flavour).Doc(unreadInboxCountsDocID)
+	uDoc, err := unreadDoc.Get(ctx)
+	if err != nil {
+		if status.Code(err) != codes.NotFound {
+			return -1, fmt.Errorf("error fetching unread docs collection: %w", err)
+		}
+		// create it if not found
+		defaultCount := map[string]int{
+			"count": 0,
+		}
+		_, err := unreadDoc.Set(ctx, defaultCount)
+		if err != nil {
+			return -1, fmt.Errorf("can't set default unread count: %w", err)
+		}
+
+		// recurse after saving initial unread count
+		return fr.UnreadPersistentItems(ctx, uid, flavour)
+	}
+
+	var counts map[string]int
+	err = uDoc.DataTo(&counts)
+	if err != nil {
+		return -1, fmt.Errorf(
+			"can't unmarshal unread counts from Firestore doc to list: %w", err)
+	}
+
+	count, present := counts["count"]
+	if !present {
+		return -1, fmt.Errorf("`count` key not present in unread counts doc")
+	}
+
+	return count, nil
+}
+
+// UpdateUnreadPersistentItemsCount updates the unread inbox count
+func (fr Repository) UpdateUnreadPersistentItemsCount(
+	ctx context.Context,
+	uid string,
+	flavour feed.Flavour,
+) error {
+	unreadDoc := fr.getUserCollection(uid, flavour).Doc(unreadInboxCountsDocID)
+
+	persistentItemsQ, err := fr.getItemsQuery(
+		uid, flavour, feed.BooleanFilterTrue, nil, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("can't compose persistent items query: %w", err)
+	}
+
+	// (todo) nn
+	// getting a count via iteration is VERY expensive because each firestore
+	// doc iterated over is charged as a read.
+	// this logic MUST be replaced soon (Dec 2020)
+	persistentCount := 0
+	it := persistentItemsQ.Documents(ctx)
+	for {
+		_, err = it.Next()
+		if err != nil && err != iterator.Done {
+			return fmt.Errorf("error iterating over persistent items: %w", err)
+		}
+		persistentCount++
+		if err == iterator.Done {
+			break
+		}
+	}
+
+	count := map[string]int{
+		"count": persistentCount,
+	}
+	_, err = unreadDoc.Set(ctx, count)
+	if err != nil {
+		return fmt.Errorf("can't set unread count: %w", err)
+	}
+
+	return nil
 }
 
 func (fr Repository) getNudgesQuery(

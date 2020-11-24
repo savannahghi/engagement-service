@@ -192,7 +192,15 @@ func (fe Feed) GetFeedItem(ctx context.Context, itemID string) (*Item, error) {
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ItemRetrievalTopic, item); err != nil {
+		ctx,
+		ItemRetrievalTopic,
+		fe.UID,
+		fe.Flavour,
+		item,
+		map[string]interface{}{
+			"itemID": itemID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify item to channel: %w", err)
 	}
 
@@ -215,7 +223,15 @@ func (fe Feed) GetNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, NudgeRetrievalTopic, nudge); err != nil {
+		ctx,
+		NudgeRetrievalTopic,
+		fe.UID,
+		fe.Flavour,
+		nudge,
+		map[string]interface{}{
+			"nudgeID": nudgeID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -242,7 +258,15 @@ func (fe Feed) GetAction(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ActionRetrievalTopic, action); err != nil {
+		ctx,
+		ActionRetrievalTopic,
+		fe.UID,
+		fe.Flavour,
+		action,
+		map[string]interface{}{
+			"actionID": actionID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -284,7 +308,15 @@ func (fe Feed) PublishFeedItem(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ItemPublishTopic, item); err != nil {
+		ctx,
+		ItemPublishTopic,
+		fe.UID,
+		fe.Flavour,
+		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify item to channel: %w", err)
 	}
 
@@ -312,7 +344,15 @@ func (fe Feed) DeleteFeedItem(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ItemDeleteTopic, item); err != nil {
+		ctx,
+		ItemDeleteTopic,
+		fe.UID,
+		fe.Flavour,
+		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
+	); err != nil {
 		return fmt.Errorf("unable to notify item to channel: %w", err)
 	}
 
@@ -346,7 +386,15 @@ func (fe Feed) ResolveFeedItem(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ItemResolveTopic, item); err != nil {
+		ctx,
+		ItemResolveTopic,
+		fe.UID,
+		fe.Flavour,
+		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf(
 			"unable to notify resolved item to channel: %w", err)
 	}
@@ -381,7 +429,15 @@ func (fe Feed) PinFeedItem(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ItemResolveTopic, item); err != nil {
+		ctx,
+		ItemResolveTopic,
+		fe.UID,
+		fe.Flavour,
+		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf(
 			"unable to notify resolved item to channel: %w", err)
 	}
@@ -412,13 +468,21 @@ func (fe Feed) UnpinFeedItem(
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
-		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
+		return nil, fmt.Errorf("unable to pin feed item: %w", err)
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ItemResolveTopic, item); err != nil {
+		ctx,
+		ItemPinTopic,
+		fe.UID,
+		fe.Flavour,
+		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf(
-			"unable to notify resolved item to channel: %w", err)
+			"unable to notify pinned item to channel: %w", err)
 	}
 
 	return item, nil
@@ -447,16 +511,21 @@ func (fe Feed) UnresolveFeedItem(
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
-		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
+		return nil, fmt.Errorf("unable to unresolve feed item: %w", err)
 	}
 
 	if err := fe.notificationService.Notify(
 		ctx,
 		ItemUnresolveTopic,
+		fe.UID,
+		fe.Flavour,
 		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
 	); err != nil {
 		return nil, fmt.Errorf(
-			"unable to notify resolved item to channel: %w", err)
+			"unable to notify unresolved item to channel: %w", err)
 	}
 
 	return item, nil
@@ -485,13 +554,21 @@ func (fe Feed) HideFeedItem(
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
-		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
+		return nil, fmt.Errorf("unable to hide feed item: %w", err)
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ItemHideTopic, item); err != nil {
+		ctx,
+		ItemHideTopic,
+		fe.UID,
+		fe.Flavour,
+		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf(
-			"unable to notify resolved item to channel: %w", err)
+			"unable to notify hidden item to channel: %w", err)
 	}
 
 	return item, nil
@@ -520,19 +597,60 @@ func (fe Feed) ShowFeedItem(
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
 	if err != nil {
-		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
+		return nil, fmt.Errorf("unable to show feed item: %w", err)
 	}
 
 	if err := fe.notificationService.Notify(
 		ctx,
 		ItemShowTopic,
+		fe.UID,
+		fe.Flavour,
 		item,
+		map[string]interface{}{
+			"itemID": item.ID,
+		},
 	); err != nil {
 		return nil, fmt.Errorf(
-			"unable to notify resolved item to channel: %w", err)
+			"unable to notify revealed/shown item to channel: %w", err)
 	}
 
 	return item, nil
+}
+
+// Labels returns the valid labels / filters for this feed
+func (fe Feed) Labels(ctx context.Context) ([]string, error) {
+	if err := fe.checkPreconditions(); err != nil {
+		return nil, fmt.Errorf("feed precondition check failed: %w", err)
+	}
+
+	return fe.repository.Labels(ctx, fe.UID, fe.Flavour)
+}
+
+// SaveLabel saves the indicated label, if it does not already exist
+func (fe Feed) SaveLabel(ctx context.Context, label string) error {
+	if err := fe.checkPreconditions(); err != nil {
+		return fmt.Errorf("feed precondition check failed: %w", err)
+	}
+
+	return fe.repository.SaveLabel(ctx, fe.UID, fe.Flavour, label)
+}
+
+// UnreadPersistentItems returns the number of unread inbox items for this feed
+func (fe Feed) UnreadPersistentItems(ctx context.Context) (int, error) {
+	if err := fe.checkPreconditions(); err != nil {
+		return -1, fmt.Errorf("feed precondition check failed: %w", err)
+	}
+
+	return fe.repository.UnreadPersistentItems(ctx, fe.UID, fe.Flavour)
+}
+
+// UpdateUnreadPersistentItemsCount updates the number of unread inbox items
+func (fe Feed) UpdateUnreadPersistentItemsCount(ctx context.Context) error {
+	if err := fe.checkPreconditions(); err != nil {
+		return fmt.Errorf("feed precondition check failed: %w", err)
+	}
+
+	return fe.repository.UpdateUnreadPersistentItemsCount(ctx, fe.UID, fe.Flavour)
 }
 
 // PublishNudge idempotently creates or updates a nudge
@@ -582,7 +700,15 @@ func (fe Feed) PublishNudge(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, NudgePublishTopic, nudge); err != nil {
+		ctx,
+		NudgePublishTopic,
+		fe.UID,
+		fe.Flavour,
+		nudge,
+		map[string]interface{}{
+			"nudgeID": nudge.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -616,7 +742,15 @@ func (fe Feed) ResolveNudge(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, NudgeResolveTopic, nudge); err != nil {
+		ctx,
+		NudgeResolveTopic,
+		fe.UID,
+		fe.Flavour,
+		nudge,
+		map[string]interface{}{
+			"nudgeID": nudge.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -650,7 +784,15 @@ func (fe Feed) UnresolveNudge(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, NudgeUnresolveTopic, nudge); err != nil {
+		ctx,
+		NudgeUnresolveTopic,
+		fe.UID,
+		fe.Flavour,
+		nudge,
+		map[string]interface{}{
+			"nudgeID": nudge.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -684,7 +826,15 @@ func (fe Feed) HideNudge(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, NudgeHideTopic, nudge); err != nil {
+		ctx,
+		NudgeHideTopic,
+		fe.UID,
+		fe.Flavour,
+		nudge,
+		map[string]interface{}{
+			"nudgeID": nudge.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 	return nudge, nil
@@ -714,7 +864,15 @@ func (fe Feed) ShowNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, NudgeShowTopic, nudge); err != nil {
+		ctx,
+		NudgeShowTopic,
+		fe.UID,
+		fe.Flavour,
+		nudge,
+		map[string]interface{}{
+			"nudgeID": nudge.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -740,7 +898,12 @@ func (fe Feed) DeleteNudge(ctx context.Context, nudgeID string) error {
 	if err := fe.notificationService.Notify(
 		ctx,
 		NudgeDeleteTopic,
+		fe.UID,
+		fe.Flavour,
 		nudge,
+		map[string]interface{}{
+			"nudgeID": nudge.ID,
+		},
 	); err != nil {
 		return fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
@@ -790,7 +953,15 @@ func (fe Feed) PublishAction(
 	}
 
 	if err := fe.notificationService.Notify(
-		ctx, ActionPublishTopic, action); err != nil {
+		ctx,
+		ActionPublishTopic,
+		fe.UID,
+		fe.Flavour,
+		action,
+		map[string]interface{}{
+			"actionID": action.ID,
+		},
+	); err != nil {
 		return nil, fmt.Errorf(
 			"unable to notify action to channel: %w", err)
 	}
@@ -817,7 +988,12 @@ func (fe Feed) DeleteAction(ctx context.Context, actionID string) error {
 	if err := fe.notificationService.Notify(
 		ctx,
 		ActionDeleteTopic,
+		fe.UID,
+		fe.Flavour,
 		action,
+		map[string]interface{}{
+			"actionID": action.ID,
+		},
 	); err != nil {
 		return fmt.Errorf("unable to notify action to channel: %w", err)
 	}
@@ -866,7 +1042,13 @@ func (fe Feed) PostMessage(
 	if err := fe.notificationService.Notify(
 		ctx,
 		MessagePostTopic,
+		fe.UID,
+		fe.Flavour,
 		message,
+		map[string]interface{}{
+			"itemID":    itemID,
+			"messageID": message.ID,
+		},
 	); err != nil {
 		return nil, fmt.Errorf("unable to notify message to channel: %w", err)
 	}
@@ -909,7 +1091,13 @@ func (fe Feed) DeleteMessage(
 	if err := fe.notificationService.Notify(
 		ctx,
 		MessageDeleteTopic,
+		fe.UID,
+		fe.Flavour,
 		message,
+		map[string]interface{}{
+			"itemID":    itemID,
+			"messageID": message.ID,
+		},
 	); err != nil {
 		return fmt.Errorf("unable to notify message delete to channel: %w", err)
 	}
@@ -972,7 +1160,12 @@ func (fe Feed) ProcessEvent(
 	if err := fe.notificationService.Notify(
 		ctx,
 		IncomingEventTopic,
+		fe.UID,
+		fe.Flavour,
 		event,
+		map[string]interface{}{
+			"eventID": event.ID,
+		},
 	); err != nil {
 		return fmt.Errorf(
 			"unable to publish incoming event to channel: %w", err)

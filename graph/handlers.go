@@ -9,7 +9,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"time"
 
 	"net/http"
@@ -67,35 +66,13 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	}
 
 	if ns == nil {
-		projectNumber, err := base.GetEnvVar(base.GoogleProjectNumberEnvVarName)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"can't get project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-		}
-
-		if projectNumber == "" {
-			return nil, fmt.Errorf(
-				"got blank project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-		}
-
-		projectNumberInt, err := strconv.Atoi(projectNumber)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"got non integer project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-		}
-
-		if projectNumberInt == 0 {
-			return nil, fmt.Errorf(
-				"got integer 0 as the project number from env var `%s`: %w", base.GoogleProjectNumberEnvVarName, err)
-		}
-
 		projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
 		if err != nil {
 			return nil, fmt.Errorf(
 				"can't get projectID from env var `%s`: %w", base.GoogleCloudProjectIDEnvVarName, err)
 		}
 
-		ns, err = messaging.NewPubSubNotificationService(ctx, projectID, projectNumberInt)
+		ns, err = messaging.NewPubSubNotificationService(ctx, projectID)
 		if err != nil {
 			return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
 		}
@@ -140,6 +117,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).HandlerFunc(GQLHandler(ctx, fr, ns))
 
 	// REST routes
+
+	// Bulk routes
+	bulk := r.PathPrefix("/bulk/").Subrouter()
+	bulk.Use(base.InterServiceAuthenticationMiddleware())
+
 	// Interservice Authenticated routes
 	isc := r.PathPrefix("/feed/{uid}/{flavour}/").Subrouter()
 	isc.Use(base.InterServiceAuthenticationMiddleware())
@@ -340,148 +322,149 @@ func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
 		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
+	ctx := r.Context()
 
 	switch topicID {
 	case feed.FeedRetrievalTopic:
-		err = pubsubhandlers.HandleFeedRetrieval(m)
+		err = pubsubhandlers.HandleFeedRetrieval(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ThinFeedRetrievalTopic:
-		err = pubsubhandlers.HandleThinFeedRetrieval(m)
+		err = pubsubhandlers.HandleThinFeedRetrieval(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemRetrievalTopic:
-		err = pubsubhandlers.HandleItemRetrieval(m)
+		err = pubsubhandlers.HandleItemRetrieval(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemPublishTopic:
-		err = pubsubhandlers.HandleItemPublish(m)
+		err = pubsubhandlers.HandleItemPublish(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemDeleteTopic:
-		err = pubsubhandlers.HandleItemDelete(m)
+		err = pubsubhandlers.HandleItemDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemResolveTopic:
-		err = pubsubhandlers.HandleItemResolve(m)
+		err = pubsubhandlers.HandleItemResolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemUnresolveTopic:
-		err = pubsubhandlers.HandleItemUnresolve(m)
+		err = pubsubhandlers.HandleItemUnresolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemHideTopic:
-		err = pubsubhandlers.HandleItemHide(m)
+		err = pubsubhandlers.HandleItemHide(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemShowTopic:
-		err = pubsubhandlers.HandleItemShow(m)
+		err = pubsubhandlers.HandleItemShow(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemPinTopic:
-		err = pubsubhandlers.HandleItemPin(m)
+		err = pubsubhandlers.HandleItemPin(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ItemUnpinTopic:
-		err = pubsubhandlers.HandleItemUnpin(m)
+		err = pubsubhandlers.HandleItemUnpin(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.NudgeRetrievalTopic:
-		err = pubsubhandlers.HandleNudgeRetrieval(m)
+		err = pubsubhandlers.HandleNudgeRetrieval(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.NudgePublishTopic:
-		err = pubsubhandlers.HandleNudgePublish(m)
+		err = pubsubhandlers.HandleNudgePublish(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.NudgeDeleteTopic:
-		err = pubsubhandlers.HandleNudgeDelete(m)
+		err = pubsubhandlers.HandleNudgeDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.NudgeResolveTopic:
-		err = pubsubhandlers.HandleNudgeResolve(m)
+		err = pubsubhandlers.HandleNudgeResolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.NudgeUnresolveTopic:
-		err = pubsubhandlers.HandleNudgeUnresolve(m)
+		err = pubsubhandlers.HandleNudgeUnresolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.NudgeHideTopic:
-		err = pubsubhandlers.HandleNudgeHide(m)
+		err = pubsubhandlers.HandleNudgeHide(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.NudgeShowTopic:
-		err = pubsubhandlers.HandleNudgeShow(m)
+		err = pubsubhandlers.HandleNudgeShow(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ActionRetrievalTopic:
-		err = pubsubhandlers.HandleActionRetrieval(m)
+		err = pubsubhandlers.HandleActionRetrieval(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ActionPublishTopic:
-		err = pubsubhandlers.HandleActionPublish(m)
+		err = pubsubhandlers.HandleActionPublish(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.ActionDeleteTopic:
-		err = pubsubhandlers.HandleActionDelete(m)
+		err = pubsubhandlers.HandleActionDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.MessagePostTopic:
-		err = pubsubhandlers.HandleMessagePost(m)
+		err = pubsubhandlers.HandleMessagePost(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.MessageDeleteTopic:
-		err = pubsubhandlers.HandleMessageDelete(m)
+		err = pubsubhandlers.HandleMessageDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
 	case feed.IncomingEventTopic:
-		err = pubsubhandlers.HandleIncomingEvent(m)
+		err = pubsubhandlers.HandleIncomingEvent(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return

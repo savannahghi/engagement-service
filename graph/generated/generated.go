@@ -204,11 +204,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetFaqsContent     func(childComplexity int) int
-		GetFeed            func(childComplexity int, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
-		GetLibraryContent  func(childComplexity int) int
-		__resolve__service func(childComplexity int) int
-		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
+		GetFaqsContent        func(childComplexity int) int
+		GetFeed               func(childComplexity int, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
+		GetLibraryContent     func(childComplexity int) int
+		Labels                func(childComplexity int, flavour feed.Flavour) int
+		UnreadPersistentItems func(childComplexity int, flavour feed.Flavour) int
+		__resolve__service    func(childComplexity int) int
+		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
 
 	Service struct {
@@ -236,6 +238,8 @@ type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context) ([]*library.GhostCMSPost, error)
 	GetFeed(ctx context.Context, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error)
+	Labels(ctx context.Context, flavour feed.Flavour) ([]string, error)
+	UnreadPersistentItems(ctx context.Context, flavour feed.Flavour) (int, error)
 }
 
 type executableSchema struct {
@@ -1109,6 +1113,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetLibraryContent(childComplexity), true
 
+	case "Query.labels":
+		if e.complexity.Query.Labels == nil {
+			break
+		}
+
+		args, err := ec.field_Query_labels_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Labels(childComplexity, args["flavour"].(feed.Flavour)), true
+
+	case "Query.unreadPersistentItems":
+		if e.complexity.Query.UnreadPersistentItems == nil {
+			break
+		}
+
+		args, err := ec.field_Query_unreadPersistentItems_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UnreadPersistentItems(childComplexity, args["flavour"].(feed.Flavour)), true
+
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
 			break
@@ -1404,6 +1432,9 @@ extend type Query {
     expired: BooleanFilter
     filterParams: FilterParamsInput
   ): Feed!
+
+  labels(flavour: Flavour!): [String!]!
+  unreadPersistentItems(flavour:Flavour!): Int!
 }
 
 extend type Mutation {
@@ -1889,6 +1920,36 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 		}
 	}
 	args["filterParams"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_labels_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 feed.Flavour
+	if tmp, ok := rawArgs["flavour"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["flavour"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_unreadPersistentItems_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 feed.Flavour
+	if tmp, ok := rawArgs["flavour"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["flavour"] = arg0
 	return args, nil
 }
 
@@ -5910,6 +5971,90 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 	return ec.marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFeed(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_labels(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_labels_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Labels(rctx, args["flavour"].(feed.Flavour))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_unreadPersistentItems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_unreadPersistentItems_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().UnreadPersistentItems(rctx, args["flavour"].(feed.Flavour))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8277,6 +8422,34 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "labels":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_labels(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "unreadPersistentItems":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_unreadPersistentItems(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "_entities":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -9011,6 +9184,36 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐTextType(ctx context.Context, v interface{}) (feed.TextType, error) {
