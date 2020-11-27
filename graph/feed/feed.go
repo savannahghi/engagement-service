@@ -46,6 +46,8 @@ const (
 	LogoURL        = "https://assets.healthcloud.co.ke/bewell_logo.png"
 	BlankImageURL  = "https://assets.healthcloud.co.ke/1px.png"
 	SampleVideoURL = "https://www.youtube.com/watch?v=bPiofmZGb8o"
+	ServiceName    = "feed"
+	TopicVersion   = "v1"
 
 	linkSchemaFile       = "link.schema.json"
 	messageSchemaFile    = "message.schema.json"
@@ -193,7 +195,7 @@ func (fe Feed) GetFeedItem(ctx context.Context, itemID string) (*Item, error) {
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemRetrievalTopic,
+		AddPubSubNamespace(ItemRetrievalTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -224,7 +226,7 @@ func (fe Feed) GetNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		NudgeRetrievalTopic,
+		AddPubSubNamespace(NudgeRetrievalTopic),
 		fe.UID,
 		fe.Flavour,
 		nudge,
@@ -259,7 +261,7 @@ func (fe Feed) GetAction(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ActionRetrievalTopic,
+		AddPubSubNamespace(ActionRetrievalTopic),
 		fe.UID,
 		fe.Flavour,
 		action,
@@ -309,7 +311,7 @@ func (fe Feed) PublishFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemPublishTopic,
+		AddPubSubNamespace(ItemPublishTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -345,7 +347,7 @@ func (fe Feed) DeleteFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemDeleteTopic,
+		AddPubSubNamespace(ItemDeleteTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -387,7 +389,7 @@ func (fe Feed) ResolveFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemResolveTopic,
+		AddPubSubNamespace(ItemResolveTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -430,7 +432,7 @@ func (fe Feed) PinFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemResolveTopic,
+		AddPubSubNamespace(ItemResolveTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -473,7 +475,7 @@ func (fe Feed) UnpinFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemPinTopic,
+		AddPubSubNamespace(ItemPinTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -516,7 +518,7 @@ func (fe Feed) UnresolveFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemUnresolveTopic,
+		AddPubSubNamespace(ItemUnresolveTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -559,7 +561,7 @@ func (fe Feed) HideFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemHideTopic,
+		AddPubSubNamespace(ItemHideTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -602,7 +604,7 @@ func (fe Feed) ShowFeedItem(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ItemShowTopic,
+		AddPubSubNamespace(ItemShowTopic),
 		fe.UID,
 		fe.Flavour,
 		item,
@@ -701,7 +703,7 @@ func (fe Feed) PublishNudge(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		NudgePublishTopic,
+		AddPubSubNamespace(NudgePublishTopic),
 		fe.UID,
 		fe.Flavour,
 		nudge,
@@ -743,7 +745,7 @@ func (fe Feed) ResolveNudge(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		NudgeResolveTopic,
+		AddPubSubNamespace(NudgeResolveTopic),
 		fe.UID,
 		fe.Flavour,
 		nudge,
@@ -785,7 +787,7 @@ func (fe Feed) UnresolveNudge(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		NudgeUnresolveTopic,
+		AddPubSubNamespace(NudgeUnresolveTopic),
 		fe.UID,
 		fe.Flavour,
 		nudge,
@@ -827,7 +829,7 @@ func (fe Feed) HideNudge(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		NudgeHideTopic,
+		AddPubSubNamespace(NudgeHideTopic),
 		fe.UID,
 		fe.Flavour,
 		nudge,
@@ -865,7 +867,7 @@ func (fe Feed) ShowNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		NudgeShowTopic,
+		AddPubSubNamespace(NudgeShowTopic),
 		fe.UID,
 		fe.Flavour,
 		nudge,
@@ -897,7 +899,7 @@ func (fe Feed) DeleteNudge(ctx context.Context, nudgeID string) error {
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		NudgeDeleteTopic,
+		AddPubSubNamespace(NudgeDeleteTopic),
 		fe.UID,
 		fe.Flavour,
 		nudge,
@@ -954,7 +956,7 @@ func (fe Feed) PublishAction(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ActionPublishTopic,
+		AddPubSubNamespace(ActionPublishTopic),
 		fe.UID,
 		fe.Flavour,
 		action,
@@ -987,7 +989,7 @@ func (fe Feed) DeleteAction(ctx context.Context, actionID string) error {
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		ActionDeleteTopic,
+		AddPubSubNamespace(ActionDeleteTopic),
 		fe.UID,
 		fe.Flavour,
 		action,
@@ -1041,7 +1043,7 @@ func (fe Feed) PostMessage(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		MessagePostTopic,
+		AddPubSubNamespace(MessagePostTopic),
 		fe.UID,
 		fe.Flavour,
 		message,
@@ -1090,7 +1092,7 @@ func (fe Feed) DeleteMessage(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		MessageDeleteTopic,
+		AddPubSubNamespace(MessageDeleteTopic),
 		fe.UID,
 		fe.Flavour,
 		message,
@@ -1159,7 +1161,7 @@ func (fe Feed) ProcessEvent(
 
 	if err := fe.notificationService.Notify(
 		ctx,
-		IncomingEventTopic,
+		AddPubSubNamespace(IncomingEventTopic),
 		fe.UID,
 		fe.Flavour,
 		event,
@@ -1725,4 +1727,15 @@ func GetPDFDocumentLink(url string, title string, description string, thumbnailU
 		Description: description,
 		Thumbnail:   thumbnailURL,
 	}
+}
+
+// AddPubSubNamespace creates a namespaced topic name
+func AddPubSubNamespace(topicName string) string {
+	environment := base.GetRunningEnvironment()
+	return base.NamespacePubsubIdentifier(
+		ServiceName,
+		topicName,
+		environment,
+		TopicVersion,
+	)
 }

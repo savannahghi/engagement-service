@@ -106,7 +106,7 @@ func (agg Collection) GetFeed(
 
 	if err := agg.notificationService.Notify(
 		ctx,
-		FeedRetrievalTopic,
+		AddPubSubNamespace(FeedRetrievalTopic),
 		uid,
 		flavour,
 		feed,
@@ -155,7 +155,7 @@ func (agg Collection) GetThinFeed(
 
 	if err := agg.notificationService.Notify(
 		ctx,
-		ThinFeedRetrievalTopic,
+		AddPubSubNamespace(ThinFeedRetrievalTopic),
 		uid,
 		flavour,
 		feed,

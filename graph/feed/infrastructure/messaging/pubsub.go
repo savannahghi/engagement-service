@@ -12,9 +12,7 @@ import (
 
 // messaging related constants
 const (
-	hostNameEnvVarName  = "SERVICE_HOST" // host at which this service is deployed
-	serviceName         = "feed"
-	subscriptionVersion = "v1"
+	hostNameEnvVarName = "SERVICE_HOST" // host at which this service is deployed
 )
 
 // NewPubSubNotificationService initializes a live notification service
@@ -131,8 +129,8 @@ func (ps PubSubNotificationService) Notify(
 		ps.client,
 		topicID,
 		ps.environment,
-		serviceName,
-		subscriptionVersion,
+		feed.ServiceName,
+		feed.TopicVersion,
 		envelopePayload,
 	)
 }
@@ -140,38 +138,29 @@ func (ps PubSubNotificationService) Notify(
 // TopicIDs returns the known (registered) topic IDs
 func (ps PubSubNotificationService) TopicIDs() []string {
 	return []string{
-		ps.addNamespace(feed.FeedRetrievalTopic),
-		ps.addNamespace(feed.ThinFeedRetrievalTopic),
-		ps.addNamespace(feed.ItemRetrievalTopic),
-		ps.addNamespace(feed.ItemPublishTopic),
-		ps.addNamespace(ps.environment),
-		ps.addNamespace(feed.ItemResolveTopic),
-		ps.addNamespace(feed.ItemUnresolveTopic),
-		ps.addNamespace(feed.ItemHideTopic),
-		ps.addNamespace(feed.ItemShowTopic),
-		ps.addNamespace(feed.ItemPinTopic),
-		ps.addNamespace(feed.ItemUnpinTopic),
-		ps.addNamespace(feed.NudgeRetrievalTopic),
-		ps.addNamespace(feed.NudgePublishTopic),
-		ps.addNamespace(feed.NudgeDeleteTopic),
-		ps.addNamespace(feed.NudgeResolveTopic),
-		ps.addNamespace(feed.NudgeUnresolveTopic),
-		ps.addNamespace(feed.NudgeHideTopic),
-		ps.addNamespace(feed.NudgeShowTopic),
-		ps.addNamespace(feed.ActionRetrievalTopic),
-		ps.addNamespace(feed.ActionPublishTopic),
-		ps.addNamespace(feed.ActionDeleteTopic),
-		ps.addNamespace(feed.MessagePostTopic),
-		ps.addNamespace(feed.MessageDeleteTopic),
-		ps.addNamespace(feed.IncomingEventTopic),
+		feed.AddPubSubNamespace(feed.FeedRetrievalTopic),
+		feed.AddPubSubNamespace(feed.ThinFeedRetrievalTopic),
+		feed.AddPubSubNamespace(feed.ItemRetrievalTopic),
+		feed.AddPubSubNamespace(feed.ItemPublishTopic),
+		feed.AddPubSubNamespace(ps.environment),
+		feed.AddPubSubNamespace(feed.ItemResolveTopic),
+		feed.AddPubSubNamespace(feed.ItemUnresolveTopic),
+		feed.AddPubSubNamespace(feed.ItemHideTopic),
+		feed.AddPubSubNamespace(feed.ItemShowTopic),
+		feed.AddPubSubNamespace(feed.ItemPinTopic),
+		feed.AddPubSubNamespace(feed.ItemUnpinTopic),
+		feed.AddPubSubNamespace(feed.NudgeRetrievalTopic),
+		feed.AddPubSubNamespace(feed.NudgePublishTopic),
+		feed.AddPubSubNamespace(feed.NudgeDeleteTopic),
+		feed.AddPubSubNamespace(feed.NudgeResolveTopic),
+		feed.AddPubSubNamespace(feed.NudgeUnresolveTopic),
+		feed.AddPubSubNamespace(feed.NudgeHideTopic),
+		feed.AddPubSubNamespace(feed.NudgeShowTopic),
+		feed.AddPubSubNamespace(feed.ActionRetrievalTopic),
+		feed.AddPubSubNamespace(feed.ActionPublishTopic),
+		feed.AddPubSubNamespace(feed.ActionDeleteTopic),
+		feed.AddPubSubNamespace(feed.MessagePostTopic),
+		feed.AddPubSubNamespace(feed.MessageDeleteTopic),
+		feed.AddPubSubNamespace(feed.IncomingEventTopic),
 	}
-}
-
-func (ps PubSubNotificationService) addNamespace(topicName string) string {
-	return base.NamespacePubsubIdentifier(
-		serviceName,
-		topicName,
-		ps.environment,
-		subscriptionVersion,
-	)
 }

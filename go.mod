@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imroc/req v0.3.0
 	github.com/markbates/pkger v0.17.1
-	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/rs/xid v1.2.1
 	github.com/segmentio/ksuid v1.0.3
 	github.com/sirupsen/logrus v1.7.0
@@ -23,6 +23,7 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gitlab.slade360emr.com/go/base v0.0.69
+	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/tools v0.0.0-20201125231158-b5590deeca9b // indirect
 	google.golang.org/api v0.35.0
 	google.golang.org/grpc v1.33.2
