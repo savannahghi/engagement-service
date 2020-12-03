@@ -28,7 +28,8 @@ const (
 	getTestActionName         = "GET_TEST"
 	getInsuranceActionName    = "GET_INSURANCE"
 	getCoachingActionName     = "GET_COACHING"
-	findPatientActionName     = "FIND_PATIENT"
+	addPatientActionName      = "ADD_PATIENT"
+	searchPatientActionName   = "SEARCH_PATIENT"
 	addInsuranceActionName    = "ADD_INSURANCE"
 	addNHIFActionName         = "ADD_NHIF"
 	completeProfileActionName = "COMPLETE_PROFILE"
@@ -230,8 +231,9 @@ func defaultProActions(
 ) ([]Action, error) {
 	var actions []Action
 	fns := []actionGenerator{
-		defaultFindPatientAction,
+		defaultAddPatientAction,
 		defaultHelpAction,
+		defaultSearchPatientAction,
 	}
 	for _, fn := range fns {
 		action, err := fn(ctx, uid, flavour, repository)
@@ -363,7 +365,7 @@ func defaultHelpAction(
 	)
 }
 
-func defaultFindPatientAction(
+func defaultSearchPatientAction(
 	ctx context.Context,
 	uid string,
 	flavour Flavour,
@@ -373,12 +375,32 @@ func defaultFindPatientAction(
 		ctx,
 		uid,
 		flavour,
-		findPatientActionName,
+		searchPatientActionName,
+		ActionTypeSecondary,
+		HandlingFullPage,
+		staticBase+"/actions/svg/search_user.svg",
+		"Search a patient",
+		"Search for a patient",
+		repository,
+	)
+}
+
+func defaultAddPatientAction(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Action, error) {
+	return createGlobalAction(
+		ctx,
+		uid,
+		flavour,
+		addPatientActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
 		staticBase+"/actions/svg/add_user.svg",
-		"Find or register patient",
-		"Find or register patient",
+		"Register patient",
+		"Register a patient",
 		repository,
 	)
 }
@@ -507,7 +529,7 @@ func completeKYCNudge(
 	repository Repository,
 ) (*Nudge, error) {
 	title := "Complete your business profile"
-	text := "Fill in your Be.Well usiness profile in order to start transacting"
+	text := "Fill in your Be.Well business profile in order to start transacting"
 	imgURL := staticBase + "/nudges/complete_kyc.png"
 	completeKYCAction, err := createLocalAction(
 		ctx,
