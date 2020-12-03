@@ -56,7 +56,7 @@ deploy_master_to_prod:
     - google-cloud-sdk/bin/gcloud config set project bewell-app
     - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
     - export CLOUDSDK_CORE_PROJECT=bewell-app
-  image: docker:dind
+  image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   stage: deploy
   only:
     - master
@@ -89,7 +89,7 @@ deploy_develop_to_staging:
     - google-cloud-sdk/bin/gcloud config set project bewell-app-testing
     - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_STAGING_SERVICE_ACCOUNT
     - export CLOUDSDK_CORE_PROJECT=bewell-app-testing
-  image: docker:dind
+  image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   stage: deploy
   only:
     - develop
@@ -121,7 +121,7 @@ deploy_develop_to_testing:
     - google-cloud-sdk/bin/gcloud config set project bewell-app
     - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
     - export CLOUDSDK_CORE_PROJECT=bewell-app
-  image: docker:dind
+  image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   stage: deploy
   only:
     - develop
