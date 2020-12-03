@@ -30,6 +30,9 @@ RUN cd /app/ && CGO_ENABLED=0 GOOS=linux go build -v -o server gitlab.slade360em
 FROM alpine:3
 RUN apk add --no-cache ca-certificates
 
+# Installing bash into our image
+RUN apk add --no-cache --upgrade bash
+
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/server /server
 COPY --from=builder /app/deps.yaml /deps.yaml
