@@ -54,6 +54,7 @@ func getTestItem() feed.Item {
 				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 				ActionType:     feed.ActionTypeSecondary,
 				Handling:       feed.HandlingFullPage,
+				AllowAnonymous: false,
 			},
 			{
 				ID:             "action-1",
@@ -62,6 +63,7 @@ func getTestItem() feed.Item {
 				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 				ActionType:     feed.ActionTypePrimary,
 				Handling:       feed.HandlingInline,
+				AllowAnonymous: true,
 			},
 		},
 		Conversations: []feed.Message{
@@ -414,6 +416,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
 		ActionType:     feed.ActionTypeSecondary,
 		Handling:       feed.HandlingFullPage,
+		AllowAnonymous: false,
 	}
 	validBytes, err := json.Marshal(validElement)
 	assert.Nil(t, err)
@@ -427,6 +430,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		Icon           feed.Link
 		ActionType     feed.ActionType
 		Handling       feed.Handling
+		AllowAnonymous bool
 	}
 	type args struct {
 		b []byte
@@ -482,8 +486,9 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Name:           "ACTION_NAME",
 				Icon: feed.GetPNGImageLink(
 					feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType: feed.ActionTypeSecondary,
-				Handling:   feed.HandlingFullPage,
+				ActionType:     feed.ActionTypeSecondary,
+				Handling:       feed.HandlingFullPage,
+				AllowAnonymous: false,
 			},
 			{
 				ID:             "action-1",
@@ -491,8 +496,9 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Name:           "First action",
 				Icon: feed.GetPNGImageLink(
 					feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType: feed.ActionTypePrimary,
-				Handling:   feed.HandlingInline,
+				ActionType:     feed.ActionTypePrimary,
+				Handling:       feed.HandlingInline,
+				AllowAnonymous: false,
 			},
 		},
 		Nudges: []feed.Nudge{
@@ -514,8 +520,9 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						Name:           "First action",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypePrimary,
-						Handling:   feed.HandlingInline,
+						ActionType:     feed.ActionTypePrimary,
+						Handling:       feed.HandlingInline,
+						AllowAnonymous: false,
 					},
 				},
 				Groups: []string{
@@ -562,8 +569,9 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						Name:           "ACTION_NAME",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypeSecondary,
-						Handling:   feed.HandlingFullPage,
+						ActionType:     feed.ActionTypeSecondary,
+						Handling:       feed.HandlingFullPage,
+						AllowAnonymous: false,
 					},
 					{
 						ID:             "action-1",
@@ -571,8 +579,9 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						Name:           "First action",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypePrimary,
-						Handling:   feed.HandlingInline,
+						ActionType:     feed.ActionTypePrimary,
+						Handling:       feed.HandlingInline,
+						AllowAnonymous: false,
 					},
 				},
 				Conversations: []feed.Message{
@@ -692,8 +701,9 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Name:           "ACTION_NAME",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypeSecondary,
-						Handling:   feed.HandlingFullPage,
+						ActionType:     feed.ActionTypeSecondary,
+						Handling:       feed.HandlingFullPage,
+						AllowAnonymous: false,
 					},
 					{
 						ID:             "action-1",
@@ -701,8 +711,9 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Name:           "First action",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypePrimary,
-						Handling:   feed.HandlingInline,
+						ActionType:     feed.ActionTypePrimary,
+						Handling:       feed.HandlingInline,
+						AllowAnonymous: false,
 					},
 				},
 				Nudges: []feed.Nudge{
@@ -724,8 +735,9 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								Name:           "First action",
 								Icon: feed.GetPNGImageLink(
 									feed.LogoURL, "title", "description", feed.BlankImageURL),
-								ActionType: feed.ActionTypePrimary,
-								Handling:   feed.HandlingInline,
+								ActionType:     feed.ActionTypePrimary,
+								Handling:       feed.HandlingInline,
+								AllowAnonymous: false,
 							},
 						},
 						Groups: []string{
@@ -772,8 +784,9 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								Name:           "ACTION_NAME",
 								Icon: feed.GetPNGImageLink(
 									feed.LogoURL, "title", "description", feed.BlankImageURL),
-								ActionType: feed.ActionTypeSecondary,
-								Handling:   feed.HandlingFullPage,
+								ActionType:     feed.ActionTypeSecondary,
+								Handling:       feed.HandlingFullPage,
+								AllowAnonymous: false,
 							},
 							{
 								ID:             "action-1",
@@ -781,8 +794,9 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								Name:           "First action",
 								Icon: feed.GetPNGImageLink(
 									feed.LogoURL, "title", "description", feed.BlankImageURL),
-								ActionType: feed.ActionTypePrimary,
-								Handling:   feed.HandlingInline,
+								ActionType:     feed.ActionTypePrimary,
+								Handling:       feed.HandlingInline,
+								AllowAnonymous: false,
 							},
 						},
 						Conversations: []feed.Message{
@@ -944,8 +958,9 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 						Name:           "First action",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypePrimary,
-						Handling:   feed.HandlingInline,
+						ActionType:     feed.ActionTypePrimary,
+						Handling:       feed.HandlingInline,
+						AllowAnonymous: false,
 					},
 				},
 				Groups: []string{
@@ -1058,8 +1073,9 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						Name:           "ACTION_NAME",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypeSecondary,
-						Handling:   feed.HandlingFullPage,
+						ActionType:     feed.ActionTypeSecondary,
+						Handling:       feed.HandlingFullPage,
+						AllowAnonymous: false,
 					},
 					{
 						ID:             "action-1",
@@ -1067,8 +1083,9 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						Name:           "First action",
 						Icon: feed.GetPNGImageLink(
 							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType: feed.ActionTypePrimary,
-						Handling:   feed.HandlingInline,
+						ActionType:     feed.ActionTypePrimary,
+						Handling:       feed.HandlingInline,
+						AllowAnonymous: false,
 					},
 				},
 				Conversations: []feed.Message{

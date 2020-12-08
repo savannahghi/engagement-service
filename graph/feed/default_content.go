@@ -257,6 +257,7 @@ func defaultSeeDoctorAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		getConsultationActionName,
 		ActionTypePrimary,
@@ -277,6 +278,7 @@ func defaultBuyMedicineAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		getMedicineActionName,
 		ActionTypePrimary,
@@ -297,6 +299,7 @@ func defaultGetTestAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		getTestActionName,
 		ActionTypePrimary,
@@ -317,6 +320,7 @@ func defaultGetInsuranceAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		getInsuranceActionName,
 		ActionTypePrimary,
@@ -337,6 +341,7 @@ func defaultCoachingAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		getCoachingActionName,
 		ActionTypePrimary,
@@ -357,6 +362,7 @@ func defaultHelpAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		true,
 		flavour,
 		helpActionName,
 		ActionTypeFloating,
@@ -377,6 +383,7 @@ func defaultSearchPatientAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		searchPatientActionName,
 		ActionTypeSecondary,
@@ -397,6 +404,7 @@ func defaultAddPatientAction(
 	return createGlobalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		addPatientActionName,
 		ActionTypePrimary,
@@ -420,6 +428,7 @@ func addInsuranceNudge(
 	addInsuranceAction, err := createLocalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		addInsuranceActionName,
 		ActionTypePrimary,
@@ -459,6 +468,7 @@ func addNHIFNudge(
 	addNHIFAction, err := createLocalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		addNHIFActionName,
 		ActionTypePrimary,
@@ -498,6 +508,7 @@ func completeProfileNudge(
 	completeProfileAction, err := createLocalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		completeProfileActionName,
 		ActionTypePrimary,
@@ -537,6 +548,7 @@ func completeKYCNudge(
 	completeKYCAction, err := createLocalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		completeKYCActionName,
 		ActionTypePrimary,
@@ -576,6 +588,7 @@ func verifyEmailNudge(
 	verifyEmailAction, err := createLocalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		verifyEmailActionName,
 		ActionTypePrimary,
@@ -647,6 +660,7 @@ func createNudge(
 func createGlobalAction(
 	ctx context.Context,
 	uid string,
+	allowAnonymous bool,
 	flavour Flavour,
 	name string,
 	actionType ActionType,
@@ -663,6 +677,7 @@ func createGlobalAction(
 		Icon:           GetSVGImageLink(iconLink, iconTitle, iconDescription, iconLink),
 		ActionType:     actionType,
 		Handling:       handling,
+		AllowAnonymous: allowAnonymous,
 	}
 	_, err := action.ValidateAndMarshal()
 	if err != nil {
@@ -679,6 +694,7 @@ func createGlobalAction(
 func createLocalAction(
 	ctx context.Context,
 	uid string,
+	allowAnonymous bool,
 	flavour Flavour,
 	name string,
 	actionType ActionType,
@@ -691,8 +707,9 @@ func createLocalAction(
 		Name:           name,
 		Icon: GetPNGImageLink(
 			staticBase+"/1px.png", "Blank Image", "Default Blank Image", staticBase+"/1px.png"),
-		ActionType: actionType,
-		Handling:   handling,
+		ActionType:     actionType,
+		Handling:       handling,
+		AllowAnonymous: allowAnonymous,
 	}
 	_, err := action.ValidateAndMarshal()
 	if err != nil {
@@ -1716,6 +1733,7 @@ func defaultActions(
 	resolveAction, err := createLocalAction(
 		ctx,
 		uid,
+		false,
 		flavour,
 		resolveItemActionName,
 		ActionTypePrimary,
@@ -1729,6 +1747,7 @@ func defaultActions(
 	pinAction, err := createLocalAction(
 		ctx,
 		uid,
+		true,
 		flavour,
 		pinItemActionName,
 		ActionTypePrimary,
@@ -1742,6 +1761,7 @@ func defaultActions(
 	hideAction, err := createLocalAction(
 		ctx,
 		uid,
+		true,
 		flavour,
 		hideItemActionName,
 		ActionTypePrimary,
