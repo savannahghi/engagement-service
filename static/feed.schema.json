@@ -16,6 +16,9 @@
     "uid": {
       "type": "string"
     },
+    "isAnonymous": {
+      "type": "boolean"
+    },
     "flavour": {
       "type": "string",
       "$ref": "https://schema.healthcloud.co.ke/flavour.schema.json#/definitions/flavour"
@@ -48,6 +51,7 @@
   },
   "required": [
     "uid",
+    "isAnonymous",
     "flavour",
     "actions",
     "nudges",

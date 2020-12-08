@@ -468,9 +468,11 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 }
 
 func TestFeed_ValidateAndUnmarshal(t *testing.T) {
+	anonymous := false
 	emptyJSONBytes := getEmptyJson(t)
 	validElement := feed.Feed{
 		UID:            "a-uid",
+		IsAnonymous:    &anonymous,
 		SequenceNumber: int(time.Now().Unix()),
 		Flavour:        feed.FlavourConsumer,
 		Actions: []feed.Action{
@@ -607,11 +609,12 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 	assert.Greater(t, len(validBytes), 3)
 
 	type fields struct {
-		UID     string
-		Flavour feed.Flavour
-		Actions []feed.Action
-		Items   []feed.Item
-		Nudges  []feed.Nudge
+		UID         string
+		IsAnonymous *bool
+		Flavour     feed.Flavour
+		Actions     []feed.Action
+		Items       []feed.Item
+		Nudges      []feed.Nudge
 	}
 	type args struct {
 		b []byte
@@ -640,11 +643,12 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fe := &feed.Feed{
-				UID:     tt.fields.UID,
-				Flavour: tt.fields.Flavour,
-				Actions: tt.fields.Actions,
-				Items:   tt.fields.Items,
-				Nudges:  tt.fields.Nudges,
+				UID:         tt.fields.UID,
+				IsAnonymous: tt.fields.IsAnonymous,
+				Flavour:     tt.fields.Flavour,
+				Actions:     tt.fields.Actions,
+				Items:       tt.fields.Items,
+				Nudges:      tt.fields.Nudges,
 			}
 			if err := fe.ValidateAndUnmarshal(
 				tt.args.b); (err != nil) != tt.wantErr {
@@ -661,12 +665,14 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 func TestFeed_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
 		UID            string
+		IsAnonymous    *bool
 		SequenceNumber int
 		Flavour        feed.Flavour
 		Actions        []feed.Action
 		Items          []feed.Item
 		Nudges         []feed.Nudge
 	}
+	anonymous := false
 	tests := []struct {
 		name    string
 		fields  fields
@@ -676,6 +682,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 			name: "valid feed",
 			fields: fields{
 				UID:            "a-uid",
+				IsAnonymous:    &anonymous,
 				SequenceNumber: int(time.Now().Unix()),
 				Flavour:        feed.FlavourPro,
 				Actions: []feed.Action{
@@ -817,6 +824,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fe := &feed.Feed{
 				UID:            tt.fields.UID,
+				IsAnonymous:    tt.fields.IsAnonymous,
 				SequenceNumber: tt.fields.SequenceNumber,
 				Flavour:        tt.fields.Flavour,
 				Actions:        tt.fields.Actions,
@@ -1542,7 +1550,8 @@ func TestFeed_GetItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -1603,7 +1612,9 @@ func TestFeed_GetNudge(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -1665,7 +1676,9 @@ func TestFeed_GetAction(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -1728,7 +1741,8 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 
 	uid := ksuid.New().String()
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -1786,7 +1800,8 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -1843,7 +1858,8 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -1899,7 +1915,8 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -1955,7 +1972,8 @@ func TestFeed_PinFeedItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2011,7 +2029,8 @@ func TestFeed_UnpinFeedItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2067,7 +2086,8 @@ func TestFeed_HideFeedItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2123,7 +2143,8 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 	uid := ksuid.New().String()
 	flavour := feed.FlavourConsumer
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2177,7 +2198,8 @@ func TestFeed_PublishNudge(t *testing.T) {
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2228,7 +2250,9 @@ func TestFeed_DeleteNudge(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2277,7 +2301,9 @@ func TestFeed_ResolveNudge(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2325,7 +2351,9 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2373,7 +2401,9 @@ func TestFeed_HideNudge(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2421,7 +2451,9 @@ func TestFeed_ShowNudge(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2469,7 +2501,9 @@ func TestFeed_PublishAction(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2520,7 +2554,8 @@ func TestFeed_DeleteAction(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2569,7 +2604,8 @@ func TestFeed_PostMessage(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2639,7 +2675,8 @@ func TestFeed_DeleteMessage(t *testing.T) {
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -2698,7 +2735,8 @@ func TestFeed_ProcessEvent(t *testing.T) {
 	agg := getFeedAggregate(t)
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -3027,7 +3065,8 @@ func TestFeed_Labels(t *testing.T) {
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -3069,7 +3108,8 @@ func TestFeed_SaveLabel(t *testing.T) {
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -3106,7 +3146,8 @@ func TestFeed_UnreadPersistentItems(t *testing.T) {
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 
@@ -3148,7 +3189,8 @@ func TestFeed_UpdateUnreadPersistentItemsCount(t *testing.T) {
 	fl := feed.FlavourConsumer
 	uid := ksuid.New().String()
 
-	fe, err := agg.GetThinFeed(ctx, uid, fl)
+	anonymous := false
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
 	assert.Nil(t, err)
 	assert.NotNil(t, fe)
 

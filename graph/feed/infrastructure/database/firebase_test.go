@@ -145,6 +145,7 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 
 	type args struct {
 		uid          string
+		isAnonymous  bool
 		flavour      feed.Flavour
 		persistent   feed.BooleanFilter
 		status       *feed.Status
@@ -161,9 +162,10 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 		{
 			name: "no filter params",
 			args: args{
-				uid:        uid,
-				flavour:    flavour,
-				persistent: feed.BooleanFilterBoth,
+				uid:         uid,
+				isAnonymous: false,
+				flavour:     flavour,
+				persistent:  feed.BooleanFilterBoth,
 			},
 			wantErr:            false,
 			wantInitialization: true,
@@ -171,12 +173,13 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 		{
 			name: "with filter params",
 			args: args{
-				uid:        uid,
-				flavour:    flavour,
-				persistent: feed.BooleanFilterFalse,
-				status:     &status,
-				visibility: &visibility,
-				expired:    &expired,
+				uid:         uid,
+				isAnonymous: false,
+				flavour:     flavour,
+				persistent:  feed.BooleanFilterFalse,
+				status:      &status,
+				visibility:  &visibility,
+				expired:     &expired,
 				filterParams: &feed.FilterParams{
 					Labels: []string{ksuid.New().String()},
 				},
@@ -188,7 +191,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			initialFeed, err := fr.GetFeed(
 				ctx,
-				tt.args.uid,
+				&tt.args.uid,
+				&tt.args.isAnonymous,
 				tt.args.flavour,
 				tt.args.persistent,
 				tt.args.status,
@@ -230,7 +234,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 				for range []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10} {
 					refetchedFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						tt.args.persistent,
 						tt.args.status,
@@ -266,7 +271,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					// filter by 'persistent=TRUE'
 					persistentFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterTrue,
 						nil,
@@ -290,7 +296,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					// filter by persistent=FALSE
 					nonPersistentFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterFalse,
 						nil,
@@ -314,7 +321,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					// filter by persistent=BOTH
 					bothPersistentFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						nil,
@@ -339,7 +347,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					show := feed.VisibilityShow
 					hiddenFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						nil,
@@ -364,7 +373,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					hide := feed.VisibilityHide
 					visibilityHideFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						nil,
@@ -389,7 +399,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					pending := feed.StatusPending
 					pendingFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&pending,
@@ -414,7 +425,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					done := feed.StatusDone
 					doneFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&done,
@@ -439,7 +451,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					inProgress := feed.StatusInProgress
 					inProgressFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&inProgress,
@@ -464,7 +477,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					both := feed.BooleanFilterBoth
 					expiredBothFeed, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&pending,
@@ -489,7 +503,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					falseVal := feed.BooleanFilterFalse
 					unexpiredFilter, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&pending,
@@ -514,7 +529,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					trueVal := feed.BooleanFilterTrue
 					expiredFilter, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&pending,
@@ -538,7 +554,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					// filter by welcome label
 					welcomeLabelFilter, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&pending,
@@ -564,7 +581,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 					// filter by non existent welcome label
 					nonExistentLabelFilter, err := fr.GetFeed(
 						ctx,
-						tt.args.uid,
+						&tt.args.uid,
+						&tt.args.isAnonymous,
 						tt.args.flavour,
 						feed.BooleanFilterBoth,
 						&pending,

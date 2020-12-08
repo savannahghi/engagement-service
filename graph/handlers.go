@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
 	"net/http"
@@ -123,7 +124,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	bulk.Use(base.InterServiceAuthenticationMiddleware())
 
 	// Interservice Authenticated routes
-	isc := r.PathPrefix("/feed/{uid}/{flavour}/").Subrouter()
+	isc := r.PathPrefix("/feed/{uid}/{flavour}/{isAnonymous}/").Subrouter()
 	isc.Use(base.InterServiceAuthenticationMiddleware())
 
 	// retrieval
@@ -517,7 +518,7 @@ func GetFeed(
 	ns feed.NotificationService,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		uid, flavour, err := getUIDAndFlavour(r)
+		uid, flavour, anonymous, err := getUIDFlavourAndIsAnonymous(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -562,7 +563,8 @@ func GetFeed(
 		feed, err := agg.GetFeed(
 			ctx,
 			uid,
-			flavour,
+			anonymous,
+			*flavour,
 			persistent,
 			status,
 			visibility,
@@ -1273,7 +1275,7 @@ func getThinFeed(
 	ns feed.NotificationService,
 	r *http.Request,
 ) (*feed.Feed, error) {
-	uid, flavour, err := getUIDAndFlavour(r)
+	uid, flavour, anonymous, err := getUIDFlavourAndIsAnonymous(r)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate thin feed: %w", err)
 	}
@@ -1283,7 +1285,7 @@ func getThinFeed(
 		return nil, fmt.Errorf("can't instantiate thin feed: %w", err)
 	}
 
-	thinFeed, err := agg.GetThinFeed(ctx, uid, flavour)
+	thinFeed, err := agg.GetThinFeed(ctx, uid, anonymous, *flavour)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate thin feed: %w", err)
 	}
@@ -1291,27 +1293,38 @@ func getThinFeed(
 	return thinFeed, nil
 }
 
-func getUIDAndFlavour(r *http.Request) (string, feed.Flavour, error) {
+func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *feed.Flavour, *bool, error) {
 	if r == nil {
-		return "", "", fmt.Errorf("nil request")
+		return nil, nil, nil, fmt.Errorf("nil request")
 	}
 
 	uid, err := getStringVar(r, "uid")
 	if err != nil {
-		return "", "", fmt.Errorf("can't get `uid` path var")
+		return nil, nil, nil, fmt.Errorf("can't get `uid` path var")
 	}
 
 	flavourStr, err := getStringVar(r, "flavour")
 	if err != nil {
-		return "", "", fmt.Errorf("can't get `flavour` path var: %w", err)
+		return nil, nil, nil, fmt.Errorf("can't get `flavour` path var: %w", err)
 	}
 
 	flavour := feed.Flavour(flavourStr)
 	if !flavour.IsValid() {
-		return "", "", fmt.Errorf("`%s` is not a valid feed flavour", err)
+		return nil, nil, nil, fmt.Errorf("`%s` is not a valid feed flavour", err)
 	}
 
-	return uid, flavour, nil
+	isAnonymous, err := getStringVar(r, "isAnonymous")
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("can't get `isAnonymous path var")
+	}
+
+	a, err := strconv.ParseBool(isAnonymous)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to parse to `isAnonymous` : %v ", err)
+	}
+
+	return &uid, &flavour, &a, nil
+
 }
 
 type patchItemFunc func(ctx context.Context, itemID string) (*feed.Item, error)

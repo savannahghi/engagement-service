@@ -27,7 +27,7 @@ e.g https://schema.healthcloud.co.ke//event.schema.json .
 
 This is in the `bewell-app` project. You need to 
 `npm install -g firebase-tools` and `firebase login` first. After that,
-any time the schema files change, run `firebase deploy` to host the
+any time the schema files change, run from the root `cd static && firebase deploy && cd ..` to host the
 updated files.
 
 ## Environment variables
@@ -42,6 +42,9 @@ export FIREBASE_WEB_API_KEY="<an API key from the Firebase console for the proje
 
 # Go private modules
 export GOPRIVATE="gitlab.slade360emr.com/go/*,gitlab.slade360emr.com/optimalhealth/*"
+
+export SCHEMA_HOST=https://schema.healthcloud.co.ke
+export SERVICE_HOST=https://feed-testing.healthcloud.co.ke
 ```
 
 The server deploys to Google Cloud Run. For Cloud Run, the necessary environment

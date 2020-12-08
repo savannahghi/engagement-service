@@ -111,6 +111,9 @@ type Feed struct {
 
 	// what prompts or nudges should this user see?
 	Nudges []Nudge `json:"nudges" firestore:"nudges"`
+
+	// indicates whether the user is Anonymous or not
+	IsAnonymous *bool `json:"isAnonymous" firestore:"isAnonymous"`
 }
 
 func (fe Feed) getID() string {
@@ -1200,6 +1203,9 @@ type Action struct {
 	// How the action should be handled e.g inline or full page.
 	// This is a hint for frontend logic.
 	Handling Handling `json:"handling" firestore:"handling"`
+
+	// indicated whether this action should or can be triggered by na anoymous user
+	AllowAnonymous bool `json:"allowAnonymous" firestore:"allowAnonymous"`
 }
 
 // ValidateAndUnmarshal checks that the input data is valid as per the

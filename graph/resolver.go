@@ -67,7 +67,9 @@ func (r Resolver) getThinFeed(ctx context.Context, flavour feed.Flavour) (*feed.
 		return nil, fmt.Errorf("can't initialize feed aggregate")
 	}
 
-	thinFeed, err := agg.GetThinFeed(ctx, uid, flavour)
+	anonymous := false
+
+	thinFeed, err := agg.GetThinFeed(ctx, &uid, &anonymous, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate new feed: %w", err)
 	}

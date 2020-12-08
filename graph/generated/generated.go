@@ -50,6 +50,7 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Action struct {
 		ActionType     func(childComplexity int) int
+		AllowAnonymous func(childComplexity int) int
 		Handling       func(childComplexity int) int
 		ID             func(childComplexity int) int
 		Icon           func(childComplexity int) int
@@ -80,6 +81,7 @@ type ComplexityRoot struct {
 		Actions        func(childComplexity int) int
 		Flavour        func(childComplexity int) int
 		ID             func(childComplexity int) int
+		IsAnonymous    func(childComplexity int) int
 		Items          func(childComplexity int) int
 		Nudges         func(childComplexity int) int
 		SequenceNumber func(childComplexity int) int
@@ -205,7 +207,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetFaqsContent        func(childComplexity int) int
-		GetFeed               func(childComplexity int, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
+		GetFeed               func(childComplexity int, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
 		Labels                func(childComplexity int, flavour feed.Flavour) int
 		UnreadPersistentItems func(childComplexity int, flavour feed.Flavour) int
@@ -237,7 +239,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context) ([]*library.GhostCMSPost, error)
-	GetFeed(ctx context.Context, flavour feed.Flavour, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error)
+	GetFeed(ctx context.Context, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error)
 	Labels(ctx context.Context, flavour feed.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour feed.Flavour) (int, error)
 }
@@ -263,6 +265,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Action.ActionType(childComplexity), true
+
+	case "Action.allowAnonymous":
+		if e.complexity.Action.AllowAnonymous == nil {
+			break
+		}
+
+		return e.complexity.Action.AllowAnonymous(childComplexity), true
 
 	case "Action.handling":
 		if e.complexity.Action.Handling == nil {
@@ -394,6 +403,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Feed.ID(childComplexity), true
+
+	case "Feed.isAnonymous":
+		if e.complexity.Feed.IsAnonymous == nil {
+			break
+		}
+
+		return e.complexity.Feed.IsAnonymous(childComplexity), true
 
 	case "Feed.items":
 		if e.complexity.Feed.Items == nil {
@@ -1104,7 +1120,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feed.Flavour), args["persistent"].(feed.BooleanFilter), args["status"].(*feed.Status), args["visibility"].(*feed.Visibility), args["expired"].(*feed.BooleanFilter), args["filterParams"].(*feed.FilterParams)), true
+		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feed.Flavour), args["isAnonymous"].(bool), args["persistent"].(feed.BooleanFilter), args["status"].(*feed.Status), args["visibility"].(*feed.Visibility), args["expired"].(*feed.BooleanFilter), args["filterParams"].(*feed.FilterParams)), true
 
 	case "Query.getLibraryContent":
 		if e.complexity.Query.GetLibraryContent == nil {
@@ -1301,6 +1317,7 @@ type Feed @key(fields: "id") {
   actions: [Action!]!
   nudges: [Nudge!]!
   items: [Item!]!
+  isAnonymous:Boolean!
 }
 
 type Nudge {
@@ -1348,6 +1365,7 @@ type Action {
   icon: Link!
   actionType: ActionType!
   handling: Handling!
+  allowAnonymous: Boolean!
 }
 
 type Event {
@@ -1426,6 +1444,7 @@ input FilterParamsInput {
 extend type Query {
   getFeed(
     flavour: Flavour!
+    isAnonymous:Boolean!
     persistent: BooleanFilter!
     status: Status
     visibility: Visibility
@@ -1875,51 +1894,60 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 		}
 	}
 	args["flavour"] = arg0
-	var arg1 feed.BooleanFilter
+	var arg1 bool
+	if tmp, ok := rawArgs["isAnonymous"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isAnonymous"))
+		arg1, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["isAnonymous"] = arg1
+	var arg2 feed.BooleanFilter
 	if tmp, ok := rawArgs["persistent"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("persistent"))
-		arg1, err = ec.unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx, tmp)
+		arg2, err = ec.unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["persistent"] = arg1
-	var arg2 *feed.Status
+	args["persistent"] = arg2
+	var arg3 *feed.Status
 	if tmp, ok := rawArgs["status"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-		arg2, err = ec.unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx, tmp)
+		arg3, err = ec.unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["status"] = arg2
-	var arg3 *feed.Visibility
+	args["status"] = arg3
+	var arg4 *feed.Visibility
 	if tmp, ok := rawArgs["visibility"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-		arg3, err = ec.unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx, tmp)
+		arg4, err = ec.unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["visibility"] = arg3
-	var arg4 *feed.BooleanFilter
+	args["visibility"] = arg4
+	var arg5 *feed.BooleanFilter
 	if tmp, ok := rawArgs["expired"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expired"))
-		arg4, err = ec.unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx, tmp)
+		arg5, err = ec.unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["expired"] = arg4
-	var arg5 *feed.FilterParams
+	args["expired"] = arg5
+	var arg6 *feed.FilterParams
 	if tmp, ok := rawArgs["filterParams"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filterParams"))
-		arg5, err = ec.unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFilterParams(ctx, tmp)
+		arg6, err = ec.unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFilterParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["filterParams"] = arg5
+	args["filterParams"] = arg6
 	return args, nil
 }
 
@@ -2199,6 +2227,41 @@ func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.
 	res := resTmp.(feed.Handling)
 	fc.Result = res
 	return ec.marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐHandling(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Action_allowAnonymous(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Action",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AllowAnonymous, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
@@ -2795,6 +2858,41 @@ func (ec *executionContext) _Feed_items(ctx context.Context, field graphql.Colle
 	res := resTmp.([]feed.Item)
 	fc.Result = res
 	return ec.marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItemᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Feed",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsAnonymous, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FilterParams_labels(ctx context.Context, field graphql.CollectedField, obj *feed.FilterParams) (ret graphql.Marshaler) {
@@ -5954,7 +6052,7 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feed.Flavour), args["persistent"].(feed.BooleanFilter), args["status"].(*feed.Status), args["visibility"].(*feed.Visibility), args["expired"].(*feed.BooleanFilter), args["filterParams"].(*feed.FilterParams))
+		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feed.Flavour), args["isAnonymous"].(bool), args["persistent"].(feed.BooleanFilter), args["status"].(*feed.Status), args["visibility"].(*feed.Visibility), args["expired"].(*feed.BooleanFilter), args["filterParams"].(*feed.FilterParams))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7575,6 +7673,11 @@ func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "allowAnonymous":
+			out.Values[i] = ec._Action_allowAnonymous(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7752,6 +7855,11 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "items":
 			out.Values[i] = ec._Feed_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isAnonymous":
+			out.Values[i] = ec._Feed_isAnonymous(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -8820,6 +8928,27 @@ func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interf
 
 func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
 	res := graphql.MarshalBoolean(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNBoolean2ᚖbool(ctx context.Context, v interface{}) (*bool, error) {
+	res, err := graphql.UnmarshalBoolean(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBoolean2ᚖbool(ctx context.Context, sel ast.SelectionSet, v *bool) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalBoolean(*v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

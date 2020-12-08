@@ -32,9 +32,12 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*feed.Fee
 		return nil, fmt.Errorf("can't initialize feed aggregate")
 	}
 
+	anonymous := false
+
 	feed, err := agg.GetFeed(
 		ctx,
-		uid,
+		&uid,
+		&anonymous,
 		flavour,
 		feed.BooleanFilterBoth,
 		nil,

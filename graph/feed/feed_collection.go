@@ -66,7 +66,8 @@ func (agg Collection) checkPreconditions() error {
 // GetFeed retrieves a feed
 func (agg Collection) GetFeed(
 	ctx context.Context,
-	uid string,
+	uid *string,
+	isAnonymous *bool,
 	flavour Flavour,
 	persistent BooleanFilter,
 	status *Status,
@@ -80,6 +81,7 @@ func (agg Collection) GetFeed(
 	feed, err := agg.repository.GetFeed(
 		ctx,
 		uid,
+		isAnonymous,
 		flavour,
 		persistent,
 		status,
@@ -107,7 +109,7 @@ func (agg Collection) GetFeed(
 	if err := agg.notificationService.Notify(
 		ctx,
 		AddPubSubNamespace(FeedRetrievalTopic),
-		uid,
+		*uid,
 		flavour,
 		feed,
 		map[string]interface{}{},
@@ -126,18 +128,20 @@ func (agg Collection) GetFeed(
 // the full detail.
 func (agg Collection) GetThinFeed(
 	ctx context.Context,
-	uid string,
+	uid *string,
+	isAnonymous *bool,
 	flavour Flavour,
 ) (*Feed, error) {
 	if err := agg.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("precondition check failed: %w", err)
 	}
 	feed := &Feed{
-		UID:     uid,
-		Flavour: flavour,
-		Actions: []Action{},
-		Items:   []Item{},
-		Nudges:  []Nudge{},
+		UID:         *uid,
+		Flavour:     flavour,
+		Actions:     []Action{},
+		Items:       []Item{},
+		Nudges:      []Nudge{},
+		IsAnonymous: isAnonymous,
 	}
 
 	// set the ID (computed, not stored)
@@ -156,7 +160,7 @@ func (agg Collection) GetThinFeed(
 	if err := agg.notificationService.Notify(
 		ctx,
 		AddPubSubNamespace(ThinFeedRetrievalTopic),
-		uid,
+		*uid,
 		flavour,
 		feed,
 		map[string]interface{}{},

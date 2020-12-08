@@ -201,9 +201,10 @@ func TestAggregate_GetThinFeed(t *testing.T) {
 	}
 
 	type args struct {
-		ctx     context.Context
-		uid     string
-		flavour feed.Flavour
+		ctx         context.Context
+		uid         string
+		isAnonymous bool
+		flavour     feed.Flavour
 	}
 	tests := []struct {
 		name    string
@@ -213,9 +214,10 @@ func TestAggregate_GetThinFeed(t *testing.T) {
 		{
 			name: "default case - success",
 			args: args{
-				ctx:     ctx,
-				uid:     ksuid.New().String(),
-				flavour: feed.FlavourConsumer,
+				ctx:         ctx,
+				uid:         ksuid.New().String(),
+				isAnonymous: false,
+				flavour:     feed.FlavourConsumer,
 			},
 			wantErr: false,
 		},
@@ -224,7 +226,8 @@ func TestAggregate_GetThinFeed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := agg.GetThinFeed(
 				tt.args.ctx,
-				tt.args.uid,
+				&tt.args.uid,
+				&tt.args.isAnonymous,
 				tt.args.flavour,
 			)
 			if (err != nil) != tt.wantErr {
@@ -297,6 +300,7 @@ func TestAggregate_GetFeed(t *testing.T) {
 	type args struct {
 		ctx          context.Context
 		uid          string
+		isAnonymous  bool
 		flavour      feed.Flavour
 		persistent   feed.BooleanFilter
 		status       feed.Status
@@ -314,6 +318,7 @@ func TestAggregate_GetFeed(t *testing.T) {
 			args: args{
 				ctx:          ctx,
 				uid:          uid,
+				isAnonymous:  false,
 				flavour:      flavour,
 				persistent:   persistent,
 				status:       status,
@@ -326,13 +331,14 @@ func TestAggregate_GetFeed(t *testing.T) {
 		{
 			name: "with filter params",
 			args: args{
-				ctx:        ctx,
-				uid:        uid,
-				flavour:    flavour,
-				persistent: persistent,
-				status:     status,
-				visibility: visibility,
-				expired:    expired,
+				ctx:         ctx,
+				uid:         uid,
+				isAnonymous: false,
+				flavour:     flavour,
+				persistent:  persistent,
+				status:      status,
+				visibility:  visibility,
+				expired:     expired,
 				filterParams: &feed.FilterParams{
 					Labels: []string{ksuid.New().String()},
 				},
@@ -344,7 +350,8 @@ func TestAggregate_GetFeed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := agg.GetFeed(
 				tt.args.ctx,
-				tt.args.uid,
+				&tt.args.uid,
+				&tt.args.isAnonymous,
 				tt.args.flavour,
 				tt.args.persistent,
 				&tt.args.status,

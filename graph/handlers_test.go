@@ -1796,106 +1796,103 @@ func TestGraphQLGetFeed(t *testing.T) {
 	headers := getGraphQLHeaders(t)
 	gql := map[string]interface{}{}
 	gql["query"] = `
-query GetFeed(
-	$flavour: Flavour!
-	$persistent: BooleanFilter!
-	$status: Status
-	$visibility: Visibility
-	$expired: BooleanFilter
-	$filterParams: FilterParamsInput
-	) {
-	getFeed(
-		flavour: $flavour
-		persistent: $persistent
-		status: $status
-		visibility: $visibility
-		expired: $expired
-		filterParams: $filterParams
-	) {
+	query getFeed($flavour: Flavour!,$isAnonymous: Boolean!,
+		$persistent: BooleanFilter!,
+		$status: Status,
+		  $visibility: Visibility,
+		  $expired: BooleanFilter){
+	   getFeed(flavour:$flavour,isAnonymous:$isAnonymous,
+		persistent:$persistent, status:$status, 
+		visibility:$visibility, expired:$expired  ){
+		id
 		uid
-		flavour
+		isAnonymous
 		actions {
-			id
-			sequenceNumber
-			name
-			actionType
-			handling
-		}
-		nudges {
-			id
-			sequenceNumber
-			visibility
-			status
-			title
-			text
-			actions {
-				id
-				sequenceNumber
-				name
-				actionType
-				handling
-			}
-			groups
-			users
-			links {
-				id
-				url
-				linkType
-			}
-			notificationChannels
-		}
-		items {
-			id
-			sequenceNumber
-			expiry
-			persistent
-			status
-			visibility
-			icon {
-				id
-				url
-				linkType
-			}
-			author
-			tagline
-			label
-			timestamp
-			summary
-			text
-			links {
-				id
-				url
-				linkType
+				  id
+				  sequenceNumber
+				  name
+				  actionType
+				  handling
+			allowAnonymous
+		  }
+		  nudges {
+				  id
+				  sequenceNumber
+				  visibility
+				  status
+				  title
+				  text
+				  actions {
+					  id
+					  sequenceNumber
+					  name
+					  actionType
+					  handling
+					  allowAnonymous
+				  }
+				  groups
+				  users
+				  links {
+					  id
+					  url
+					  linkType
+				  }
+				  notificationChannels
+		  }
+		  
+		  items {
+				  id
+				  sequenceNumber
+				  expiry
+				  persistent
+				  status
+				  visibility
+				  icon {
+					  id
+					  url
+					  linkType
+				  }
+				  author
+				  tagline
+				  label
+				  timestamp
+				  summary
+				  text
+				  links {
+					  id
+					  url
+					  linkType
+					}
+				  actions {
+					  id
+					  sequenceNumber
+					  name
+					  actionType
+					  handling
+				  }
+				  conversations {
+					  id
+					  sequenceNumber
+					  text
+					  replyTo
+					  postedByUID
+					  postedByName
+				  }
+				  users
+				  groups
+				  notificationChannels
 			  }
-			actions {
-				id
-				sequenceNumber
-				name
-				actionType
-				handling
-			}
-			conversations {
-				id
-				sequenceNumber
-				text
-				replyTo
-				postedByUID
-				postedByName
-			}
-			users
-			groups
-			notificationChannels
-		}
-	}
-}	  
+	   }
+	  }	  
 	 `
 
 	gql["variables"] = map[string]interface{}{
-		"flavour":    "CONSUMER",
-		"persistent": "BOTH",
-		"status":     "PENDING",
-		"visibility": "SHOW",
-		"expired":    "FALSE",
+		"flavour":     "CONSUMER",
+		"isAnonymous": false,
+		"persistent":  "BOTH",
+		"status":      "PENDING",
+		"visibility":  "SHOW",
+		"expired":     "FALSE",
 		"filterParams": map[string]interface{}{
 			"labels": []string{"a_label", "another_label"},
 		},
@@ -2010,10 +2007,11 @@ func TestRoutes(t *testing.T) {
 				routeName: "getFeed",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/", uid, fl.String()),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/", uid, fl.String(), false),
 			wantErr: false,
 		},
 		{
@@ -2022,11 +2020,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "getFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2035,11 +2034,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "getNudge",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"nudgeID", nudgeID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/nudges/%s/", uid, fl.String(), nudgeID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/%s/", uid, fl.String(), false, nudgeID),
 			wantErr: false,
 		},
 		{
@@ -2048,11 +2048,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "getAction",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"actionID", actionID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/actions/%s/", uid, fl.String(), actionID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/actions/%s/", uid, fl.String(), false, actionID),
 			wantErr: false,
 		},
 		{
@@ -2061,10 +2062,11 @@ func TestRoutes(t *testing.T) {
 				routeName: "publishFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/", uid, fl.String()),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/", uid, fl.String(), false),
 			wantErr: false,
 		},
 		{
@@ -2073,10 +2075,11 @@ func TestRoutes(t *testing.T) {
 				routeName: "publishNudge",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/nudges/", uid, fl.String()),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/", uid, fl.String(), false),
 			wantErr: false,
 		},
 		{
@@ -2085,10 +2088,11 @@ func TestRoutes(t *testing.T) {
 				routeName: "publishAction",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/actions/", uid, fl.String()),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/actions/", uid, fl.String(), false),
 			wantErr: false,
 		},
 		{
@@ -2097,11 +2101,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "postMessage",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/%s/messages/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/%s/messages/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2110,10 +2115,11 @@ func TestRoutes(t *testing.T) {
 				routeName: "postEvent",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/events/", uid, fl.String()),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/events/", uid, fl.String(), false),
 			wantErr: false,
 		},
 		{
@@ -2122,11 +2128,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "deleteFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2135,11 +2142,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "deleteNudge",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"nudgeID", nudgeID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/nudges/%s/", uid, fl.String(), nudgeID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/%s/", uid, fl.String(), false, nudgeID),
 			wantErr: false,
 		},
 		{
@@ -2148,11 +2156,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "deleteAction",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"actionID", actionID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/actions/%s/", uid, fl.String(), actionID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/actions/%s/", uid, fl.String(), false, actionID),
 			wantErr: false,
 		},
 		{
@@ -2161,12 +2170,13 @@ func TestRoutes(t *testing.T) {
 				routeName: "deleteMessage",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"messageID", messageID,
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/%s/messages/%s/", uid, fl.String(), itemID, messageID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/%s/messages/%s/", uid, fl.String(), false, itemID, messageID),
 			wantErr: false,
 		},
 		{
@@ -2175,11 +2185,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "resolveFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/resolve/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/resolve/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2188,11 +2199,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "unresolveFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/unresolve/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/unresolve/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2201,11 +2213,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "pinFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/pin/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/pin/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2214,11 +2227,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "unpinFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/unpin/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/unpin/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2227,11 +2241,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "hideFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/hide/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/hide/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2240,11 +2255,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "showFeedItem",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"itemID", itemID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/items/%s/show/", uid, fl.String(), itemID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/items/%s/show/", uid, fl.String(), false, itemID),
 			wantErr: false,
 		},
 		{
@@ -2253,11 +2269,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "resolveNudge",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"nudgeID", nudgeID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/nudges/%s/resolve/", uid, fl.String(), nudgeID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/%s/resolve/", uid, fl.String(), false, nudgeID),
 			wantErr: false,
 		},
 		{
@@ -2266,11 +2283,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "unresolveNudge",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"nudgeID", nudgeID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/nudges/%s/unresolve/", uid, fl.String(), nudgeID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/%s/unresolve/", uid, fl.String(), false, nudgeID),
 			wantErr: false,
 		},
 		{
@@ -2279,11 +2297,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "showNudge",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"nudgeID", nudgeID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/nudges/%s/show/", uid, fl.String(), nudgeID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/%s/show/", uid, fl.String(), false, nudgeID),
 			wantErr: false,
 		},
 		{
@@ -2292,11 +2311,12 @@ func TestRoutes(t *testing.T) {
 				routeName: "hideNudge",
 				params: []string{
 					"uid", uid,
+					"isAnonymous", "false",
 					"flavour", fl.String(),
 					"nudgeID", nudgeID,
 				},
 			},
-			wantURL: fmt.Sprintf("/feed/%s/%s/nudges/%s/hide/", uid, fl.String(), nudgeID),
+			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/%s/hide/", uid, fl.String(), false, nudgeID),
 			wantErr: false,
 		},
 	}
@@ -2318,6 +2338,7 @@ func TestGetFeed(t *testing.T) {
 	uid := xid.New().String()
 	consumer := feed.FlavourConsumer
 	client := http.DefaultClient
+	anonymous := false
 
 	filterParams := feed.FilterParams{
 		Labels: []string{"a", "label", "and", "another"},
@@ -2345,10 +2366,11 @@ func TestGetFeed(t *testing.T) {
 			name: "successful fetch of a consumer feed",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/?persistent=BOTH",
+					"%s/feed/%s/%s/%v/?persistent=BOTH",
 					baseURL,
 					uid,
 					consumer,
+					anonymous,
 				),
 				httpMethod: http.MethodGet,
 				body:       nil,
@@ -2361,10 +2383,11 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with a status filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/?persistent=BOTH&status=PENDING",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING",
 					baseURL,
 					uid,
 					consumer,
+					anonymous,
 				),
 				httpMethod: http.MethodGet,
 				body:       nil,
@@ -2376,10 +2399,11 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with a visibility filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/?persistent=BOTH&status=PENDING&visibility=SHOW",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW",
 					baseURL,
 					uid,
 					consumer,
+					anonymous,
 				),
 				httpMethod: http.MethodGet,
 				body:       nil,
@@ -2391,10 +2415,11 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with an expired filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/?persistent=BOTH&status=PENDING&visibility=SHOW&expired=FALSE",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW&expired=FALSE",
 					baseURL,
 					uid,
 					consumer,
+					anonymous,
 				),
 				httpMethod: http.MethodGet,
 				body:       nil,
@@ -2406,10 +2431,11 @@ func TestGetFeed(t *testing.T) {
 			name: "fetch with an expired filter",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/?persistent=BOTH&status=PENDING&visibility=SHOW&expired=FALSE&filterParams=%s",
+					"%s/feed/%s/%s/%v/?persistent=BOTH&status=PENDING&visibility=SHOW&expired=FALSE&filterParams=%s",
 					baseURL,
 					uid,
 					consumer,
+					anonymous,
 					string(filterParamsJSONBytes),
 				),
 				httpMethod: http.MethodGet,
@@ -2538,10 +2564,11 @@ func TestGetFeedItem(t *testing.T) {
 			name: "valid feed item retrieval",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/",
+					"%s/feed/%s/%s/%v/items/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodGet,
@@ -2555,10 +2582,11 @@ func TestGetFeedItem(t *testing.T) {
 			name: "non existent feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/",
+					"%s/feed/%s/%s/%v/items/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodGet,
@@ -2658,10 +2686,11 @@ func TestGetNudge(t *testing.T) {
 			name: "valid nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/",
+					"%s/feed/%s/%s/%v/nudges/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testNudge.ID,
 				),
 				httpMethod: http.MethodGet,
@@ -2675,10 +2704,11 @@ func TestGetNudge(t *testing.T) {
 			name: "non existent nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/",
+					"%s/feed/%s/%s/%v/nudges/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodGet,
@@ -2778,10 +2808,11 @@ func TestGetAction(t *testing.T) {
 			name: "valid action",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/actions/%s/",
+					"%s/feed/%s/%s/%v/actions/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testAction.ID,
 				),
 				httpMethod: http.MethodGet,
@@ -2795,10 +2826,11 @@ func TestGetAction(t *testing.T) {
 			name: "non existent action",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/action/%s/",
+					"%s/feed/%s/%s/%v/action/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodGet,
@@ -2890,10 +2922,11 @@ func TestPublishFeedItem(t *testing.T) {
 			name: "valid feed item publish",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/",
+					"%s/feed/%s/%s/%v/items/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -2906,10 +2939,11 @@ func TestPublishFeedItem(t *testing.T) {
 			name: "nil feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/",
+					"%s/feed/%s/%s/%v/items/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -3008,10 +3042,11 @@ func TestDeleteFeedItem(t *testing.T) {
 			name: "valid delete",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/",
+					"%s/feed/%s/%s/%v/items/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodDelete,
@@ -3025,10 +3060,11 @@ func TestDeleteFeedItem(t *testing.T) {
 			name: "non existent element delete - safe to repeat over and over",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/",
+					"%s/feed/%s/%s/%v/items/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodDelete,
@@ -3128,10 +3164,11 @@ func TestDeleteNudge(t *testing.T) {
 			name: "valid delete",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/",
+					"%s/feed/%s/%s/%v/nudges/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testNudge.ID,
 				),
 				httpMethod: http.MethodDelete,
@@ -3145,10 +3182,11 @@ func TestDeleteNudge(t *testing.T) {
 			name: "non existent element delete - safe to repeat over and over",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/",
+					"%s/feed/%s/%s/%v/nudges/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodDelete,
@@ -3248,10 +3286,11 @@ func TestDeleteAction(t *testing.T) {
 			name: "valid delete",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/actions/%s/",
+					"%s/feed/%s/%s/%v/actions/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testAction.ID,
 				),
 				httpMethod: http.MethodDelete,
@@ -3265,10 +3304,11 @@ func TestDeleteAction(t *testing.T) {
 			name: "non existent element delete - safe to repeat over and over",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/actions/%s/",
+					"%s/feed/%s/%s/%v/actions/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodDelete,
@@ -3377,10 +3417,11 @@ func TestPostMessage(t *testing.T) {
 			name: "valid message post",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%s/messages/",
+					"%s/feed/%s/%s/%v/%s/messages/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPost,
@@ -3394,10 +3435,11 @@ func TestPostMessage(t *testing.T) {
 			name: "nil message",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%s/messages/",
+					"%s/feed/%s/%s/%v/%s/messages/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPost,
@@ -3513,10 +3555,11 @@ func TestDeleteMessage(t *testing.T) {
 			name: "valid delete",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%s/messages/%s/",
+					"%s/feed/%s/%s/%v/%s/messages/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 					msg.ID,
 				),
@@ -3531,10 +3574,11 @@ func TestDeleteMessage(t *testing.T) {
 			name: "non existent element delete - safe to repeat over and over",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/%s/messages/%s/",
+					"%s/feed/%s/%s/%v/%s/messages/%s/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 					ksuid.New().String(),
 				),
@@ -3627,10 +3671,11 @@ func TestProcessEvent(t *testing.T) {
 			name: "valid event publish",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/events/",
+					"%s/feed/%s/%s/%v/events/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -3643,10 +3688,11 @@ func TestProcessEvent(t *testing.T) {
 			name: "nil event",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/events/",
+					"%s/feed/%s/%s/%v/events/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -3737,10 +3783,11 @@ func TestPublishNudge(t *testing.T) {
 			name: "valid nudge publish",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/",
+					"%s/feed/%s/%s/%v/nudges/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -3753,10 +3800,11 @@ func TestPublishNudge(t *testing.T) {
 			name: "nil nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/",
+					"%s/feed/%s/%s/%v/nudges/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -3855,10 +3903,11 @@ func TestResolveNudge(t *testing.T) {
 			name: "resolve valid nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/resolve/",
+					"%s/feed/%s/%s/%v/nudges/%s/resolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testNudge.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -3872,10 +3921,11 @@ func TestResolveNudge(t *testing.T) {
 			name: "try to resolve non existent nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/resolve/",
+					"%s/feed/%s/%s/%v/nudges/%s/resolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -3975,10 +4025,11 @@ func TestUnresolveNudge(t *testing.T) {
 			name: "resolve valid nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/unresolve/",
+					"%s/feed/%s/%s/%v/nudges/%s/unresolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testNudge.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -3992,10 +4043,11 @@ func TestUnresolveNudge(t *testing.T) {
 			name: "try to resolve non existent nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/unresolve/",
+					"%s/feed/%s/%s/%v/nudges/%s/unresolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -4095,10 +4147,11 @@ func TestShowNudge(t *testing.T) {
 			name: "show valid nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/show/",
+					"%s/feed/%s/%s/%v/nudges/%s/show/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testNudge.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -4112,10 +4165,11 @@ func TestShowNudge(t *testing.T) {
 			name: "try to show non existent nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/show/",
+					"%s/feed/%s/%s/%v/nudges/%s/show/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -4215,10 +4269,11 @@ func TestHideNudge(t *testing.T) {
 			name: "hide valid nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/hide/",
+					"%s/feed/%s/%s/%v/nudges/%s/hide/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testNudge.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -4232,10 +4287,11 @@ func TestHideNudge(t *testing.T) {
 			name: "try to hide non existent nudge",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/nudges/%s/hide/",
+					"%s/feed/%s/%s/%v/nudges/%s/hide/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -4327,10 +4383,11 @@ func TestPublishAction(t *testing.T) {
 			name: "valid action publish",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/actions/",
+					"%s/feed/%s/%s/%v/actions/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -4343,10 +4400,11 @@ func TestPublishAction(t *testing.T) {
 			name: "nil action",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/actions/",
+					"%s/feed/%s/%s/%v/actions/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 				),
 				httpMethod: http.MethodPost,
 				headers:    headers,
@@ -4445,10 +4503,11 @@ func TestResolveFeedItem(t *testing.T) {
 			name: "resolve valid feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/resolve/",
+					"%s/feed/%s/%s/%v/items/%s/resolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -4462,10 +4521,11 @@ func TestResolveFeedItem(t *testing.T) {
 			name: "try to resolve non existent feed uten",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/resolve/",
+					"%s/feed/%s/%s/%v/items/%s/resolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -4565,10 +4625,11 @@ func TestUnresolveFeedItem(t *testing.T) {
 			name: "unresolve valid feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/unresolve/",
+					"%s/feed/%s/%s/%v/items/%s/unresolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -4582,10 +4643,11 @@ func TestUnresolveFeedItem(t *testing.T) {
 			name: "try to unresolve non existent feed uten",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/unresolve/",
+					"%s/feed/%s/%s/%v/items/%s/unresolve/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -4685,10 +4747,11 @@ func TestPinFeedItem(t *testing.T) {
 			name: "pin valid feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/pin/",
+					"%s/feed/%s/%s/%v/items/%s/pin/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -4702,10 +4765,11 @@ func TestPinFeedItem(t *testing.T) {
 			name: "try to pin non existent feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/pin/",
+					"%s/feed/%s/%s/%v/items/%s/pin/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -4805,10 +4869,11 @@ func TestUnpinFeedItem(t *testing.T) {
 			name: "unpin valid feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/unpin/",
+					"%s/feed/%s/%s/%v/items/%s/unpin/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -4822,10 +4887,11 @@ func TestUnpinFeedItem(t *testing.T) {
 			name: "try to unpin non existent feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/unpin/",
+					"%s/feed/%s/%s/%v/items/%s/unpin/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -4925,10 +4991,11 @@ func TestHideFeedItem(t *testing.T) {
 			name: "hide valid feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/hide/",
+					"%s/feed/%s/%s/%v/items/%s/hide/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -4942,10 +5009,11 @@ func TestHideFeedItem(t *testing.T) {
 			name: "try to hide non existent feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/hide/",
+					"%s/feed/%s/%s/%v/items/%s/hide/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -5045,10 +5113,11 @@ func TestShowFeedItem(t *testing.T) {
 			name: "show valid feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/show/",
+					"%s/feed/%s/%s/%v/items/%s/show/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					testItem.ID,
 				),
 				httpMethod: http.MethodPatch,
@@ -5062,10 +5131,11 @@ func TestShowFeedItem(t *testing.T) {
 			name: "try to show non existent feed item",
 			args: args{
 				url: fmt.Sprintf(
-					"%s/feed/%s/%s/items/%s/show/",
+					"%s/feed/%s/%s/%v/items/%s/show/",
 					baseURL,
 					uid,
 					fl.String(),
+					false,
 					ksuid.New().String(),
 				),
 				httpMethod: http.MethodPatch,
@@ -5262,6 +5332,7 @@ func postElement(
 	params := []string{
 		"uid", uid,
 		"flavour", fl.String(),
+		"isAnonymous", "false",
 	}
 
 	route := router.Get(routeName)
@@ -5349,6 +5420,7 @@ func postMessage(
 		"uid", uid,
 		"flavour", fl.String(),
 		"itemID", itemID,
+		"isAnonymous", "false",
 	}
 
 	path, err := router.Get("postMessage").URL(params...)

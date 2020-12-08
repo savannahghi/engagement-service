@@ -10,7 +10,8 @@ type Repository interface {
 	// return: feed, matching count, total count, optional error
 	GetFeed(
 		ctx context.Context,
-		uid string,
+		uid *string,
+		isAnonymous *bool,
 		flavour Flavour,
 		persistent BooleanFilter,
 		status *Status,

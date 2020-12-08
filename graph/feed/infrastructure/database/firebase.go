@@ -98,7 +98,8 @@ func (fr Repository) checkPreconditions() error {
 //  4. An error, if any
 func (fr Repository) GetFeed(
 	ctx context.Context,
-	uid string,
+	uid *string,
+	isAnonymous *bool,
 	flavour feed.Flavour,
 	persistent feed.BooleanFilter,
 	status *feed.Status,
@@ -111,19 +112,19 @@ func (fr Repository) GetFeed(
 			"repository precondition check failed: %w", err)
 	}
 
-	actions, err := fr.GetActions(ctx, uid, flavour)
+	actions, err := fr.GetActions(ctx, *uid, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 
-	nudges, err := fr.GetNudges(ctx, uid, flavour, status, visibility)
+	nudges, err := fr.GetNudges(ctx, *uid, flavour, status, visibility)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 
 	items, err := fr.GetItems(
 		ctx,
-		uid,
+		*uid,
 		flavour,
 		persistent,
 		status,
@@ -143,7 +144,7 @@ func (fr Repository) GetFeed(
 	noNudges := len(nudges) == 0
 	noItems := len(items) == 0
 	if noFilters && noActions && noNudges && noItems {
-		err = fr.initializeDefaultFeed(ctx, uid, flavour)
+		err = fr.initializeDefaultFeed(ctx, *uid, flavour)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize default feed: %w", err)
 		}
@@ -151,15 +152,16 @@ func (fr Repository) GetFeed(
 		// this recursion is potentially dangerous but there's an integration test
 		// that exercises this and reduces the risk of infinite recursion
 		// we need to do this in order to have confidence that the initialization succeeded
-		return fr.GetFeed(ctx, uid, flavour, persistent, status, visibility, expired, filterParams)
+		return fr.GetFeed(ctx, uid, isAnonymous, flavour, persistent, status, visibility, expired, filterParams)
 	}
 
 	feed := &feed.Feed{
-		UID:     uid,
-		Flavour: flavour,
-		Actions: actions,
-		Nudges:  nudges,
-		Items:   items,
+		UID:         *uid,
+		Flavour:     flavour,
+		Actions:     actions,
+		Nudges:      nudges,
+		Items:       items,
+		IsAnonymous: isAnonymous,
 	}
 
 	return feed, nil

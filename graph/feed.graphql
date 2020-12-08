@@ -72,6 +72,7 @@ type Feed @key(fields: "id") {
   actions: [Action!]!
   nudges: [Nudge!]!
   items: [Item!]!
+  isAnonymous:Boolean!
 }
 
 type Nudge {
@@ -119,6 +120,7 @@ type Action {
   icon: Link!
   actionType: ActionType!
   handling: Handling!
+  allowAnonymous: Boolean!
 }
 
 type Event {
@@ -197,6 +199,7 @@ input FilterParamsInput {
 extend type Query {
   getFeed(
     flavour: Flavour!
+    isAnonymous:Boolean!
     persistent: BooleanFilter!
     status: Status
     visibility: Visibility

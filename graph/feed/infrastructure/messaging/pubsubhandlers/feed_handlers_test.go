@@ -924,7 +924,8 @@ func getTestThinFeed(t *testing.T) *feed.Feed {
 		t.Errorf("can't instantiate feed collection: %w", err)
 		return nil
 	}
-	thinFeed, err := agg.GetThinFeed(ctx, uid, flavour)
+	anonymous := false
+	thinFeed, err := agg.GetThinFeed(ctx, &uid, &anonymous, flavour)
 	if err != nil {
 		t.Errorf("can't instantiate thin feed: %w", err)
 		return nil

@@ -603,7 +603,9 @@ func getThinFeed(
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize feed collection: %w", err)
 	}
-	thinFeed, err := agg.GetThinFeed(ctx, uid, flavour)
+
+	anonymous := false
+	thinFeed, err := agg.GetThinFeed(ctx, &uid, &anonymous, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate thin feed: %w", err)
 	}
