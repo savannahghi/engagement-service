@@ -38,6 +38,7 @@ const (
 	pinItemActionName         = "PIN_ITEM"
 	resolveItemActionName     = "RESOLVE_ITEM"
 	helpActionName            = "GET_HELP"
+	verifyEmailActionName     = "VERIFY_EMAIL"
 
 	defaultOrg        = "default-org-id-please-change"
 	defaultLocation   = "default-location-id-please-change"
@@ -166,6 +167,7 @@ func defaultConsumerNudges(
 		addInsuranceNudge,
 		addNHIFNudge,
 		completeProfileNudge,
+		verifyEmailNudge,
 	}
 	for _, fn := range fns {
 		nudge, err := fn(ctx, uid, flavour, repository)
@@ -187,6 +189,7 @@ func defaultProNudges(
 	fns := []nudgeGenerator{
 		completeKYCNudge,
 		completeProfileNudge,
+		verifyEmailNudge,
 	}
 	for _, fn := range fns {
 		nudge, err := fn(ctx, uid, flavour, repository)
@@ -546,6 +549,45 @@ func completeKYCNudge(
 	}
 	actions := []Action{
 		*completeKYCAction,
+	}
+	return createNudge(
+		ctx,
+		uid,
+		flavour,
+		title,
+		text,
+		imgURL,
+		title,
+		text,
+		actions,
+		repository,
+	)
+}
+
+func verifyEmailNudge(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Nudge, error) {
+	title := "Email Verification"
+	text := "Please add and verify your email address"
+	imgURL := staticBase + "/nudges/verify_email.png"
+	verifyEmailAction, err := createLocalAction(
+		ctx,
+		uid,
+		flavour,
+		verifyEmailActionName,
+		ActionTypePrimary,
+		HandlingFullPage,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't create %s action: %w", verifyEmailActionName, err)
+	}
+	actions := []Action{
+		*verifyEmailAction,
 	}
 	return createNudge(
 		ctx,
