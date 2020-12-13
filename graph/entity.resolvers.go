@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/generated"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 )
@@ -51,11 +50,6 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*feed.Fee
 	}
 
 	return feed, nil
-}
-
-func (r *entityResolver) FindUploadByID(ctx context.Context, id string) (*base.Upload, error) {
-	r.checkPreconditions()
-	return r.uploadService.FindUploadByID(ctx, id)
 }
 
 // Entity returns generated.EntityResolver implementation.

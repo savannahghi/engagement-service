@@ -9,7 +9,7 @@ input UploadInput {
 }
 
 # this input is used to SERIALIZE back an already created upload
-type Upload @key(fields: "id") {
+type Upload {
   id: ID!
   url: String!
   size: Int!

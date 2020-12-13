@@ -102,8 +102,7 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindFeedByID   func(childComplexity int, id string) int
-		FindUploadByID func(childComplexity int, id string) int
+		FindFeedByID func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -299,7 +298,6 @@ type ComplexityRoot struct {
 
 type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
-	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
 type MutationResolver interface {
 	ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
@@ -644,18 +642,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Entity.FindFeedByID(childComplexity, args["id"].(string)), true
-
-	case "Entity.findUploadByID":
-		if e.complexity.Entity.FindUploadByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findUploadByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindUploadByID(childComplexity, args["id"].(string)), true
 
 	case "Event.context":
 		if e.complexity.Event.Context == nil {
@@ -2129,7 +2115,7 @@ input UploadInput {
 }
 
 # this input is used to SERIALIZE back an already created upload
-type Upload @key(fields: "id") {
+type Upload {
   id: ID!
   url: String!
   size: Int!
@@ -2162,12 +2148,11 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Feed | Upload
+union _Entity = Feed
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findFeedByID(id: String!,): Feed!
-	findUploadByID(id: ID!,): Upload!
 
 }
 
@@ -2194,21 +2179,6 @@ func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, 
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findUploadByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4191,48 +4161,6 @@ func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field grap
 	res := resTmp.(*feed.Feed)
 	fc.Result = res
 	return ec.marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFeed(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findUploadByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findUploadByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindUploadByID(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*base.Upload)
-	fc.Result = res
-	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
@@ -10458,13 +10386,6 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Feed(ctx, sel, obj)
-	case base.Upload:
-		return ec._Upload(ctx, sel, &obj)
-	case *base.Upload:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Upload(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -10759,20 +10680,6 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 					}
 				}()
 				res = ec._Entity_findFeedByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findUploadByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findUploadByID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11789,7 +11696,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var uploadImplementors = []string{"Upload", "_Entity"}
+var uploadImplementors = []string{"Upload"}
 
 func (ec *executionContext) _Upload(ctx context.Context, sel ast.SelectionSet, obj *base.Upload) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, uploadImplementors)
