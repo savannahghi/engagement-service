@@ -19,7 +19,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	"gitlab.slade360emr.com/go/engagement/graph/library"
-	"gitlab.slade360emr.com/go/engagement/graph/model"
+	"gitlab.slade360emr.com/go/engagement/graph/uploads"
 	calendar "google.golang.org/api/calendar/v3"
 )
 
@@ -41,7 +41,6 @@ type Config struct {
 }
 
 type ResolverRoot interface {
-	CalendarEvent() CalendarEventResolver
 	Entity() EntityResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -103,7 +102,8 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindFeedByID func(childComplexity int, id string) int
+		FindFeedByID   func(childComplexity int, id string) int
+		FindUploadByID func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -114,8 +114,8 @@ type ComplexityRoot struct {
 	}
 
 	EventAttachment struct {
-		FileID   func(childComplexity int) int
-		FileURL  func(childComplexity int) int
+		FileId   func(childComplexity int) int
+		FileUrl  func(childComplexity int) int
 		IconLink func(childComplexity int) int
 		MimeType func(childComplexity int) int
 		Title    func(childComplexity int) int
@@ -126,7 +126,7 @@ type ComplexityRoot struct {
 		Comment          func(childComplexity int) int
 		DisplayName      func(childComplexity int) int
 		Email            func(childComplexity int) int
-		ID               func(childComplexity int) int
+		Id               func(childComplexity int) int
 		Optional         func(childComplexity int) int
 		Organizer        func(childComplexity int) int
 		Resource         func(childComplexity int) int
@@ -247,6 +247,7 @@ type ComplexityRoot struct {
 		ShowNudge         func(childComplexity int, flavour feed.Flavour, nudgeID string) int
 		UnpinFeedItem     func(childComplexity int, flavour feed.Flavour, itemID string) int
 		UnresolveFeedItem func(childComplexity int, flavour feed.Flavour, itemID string) int
+		Upload            func(childComplexity int, input *uploads.UploadInput) int
 	}
 
 	Nudge struct {
@@ -278,22 +279,26 @@ type ComplexityRoot struct {
 		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
 
+	Upload struct {
+		Base64data  func(childComplexity int) int
+		ContentType func(childComplexity int) int
+		Creation    func(childComplexity int) int
+		Hash        func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Language    func(childComplexity int) int
+		Size        func(childComplexity int) int
+		Title       func(childComplexity int) int
+		URL         func(childComplexity int) int
+	}
+
 	Service struct {
 		SDL func(childComplexity int) int
 	}
 }
 
-type CalendarEventResolver interface {
-	Attachments(ctx context.Context, obj *calendar.Event) ([]*model.EventAttachment, error)
-	Attendees(ctx context.Context, obj *calendar.Event) ([]*model.EventAttendee, error)
-
-	OriginalStartTime(ctx context.Context, obj *calendar.Event) (*model.EventDateTime, error)
-
-	Start(ctx context.Context, obj *calendar.Event) (*model.EventDateTime, error)
-	End(ctx context.Context, obj *calendar.Event) (*model.EventDateTime, error)
-}
 type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
+	FindUploadByID(ctx context.Context, id string) (*uploads.Upload, error)
 }
 type MutationResolver interface {
 	ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
@@ -307,6 +312,7 @@ type MutationResolver interface {
 	PostMessage(ctx context.Context, flavour feed.Flavour, itemID string, message feed.Message) (*feed.Message, error)
 	DeleteMessage(ctx context.Context, flavour feed.Flavour, itemID string, messageID string) (bool, error)
 	ProcessEvent(ctx context.Context, flavour feed.Flavour, event feed.Event) (bool, error)
+	Upload(ctx context.Context, input *uploads.UploadInput) (*uploads.Upload, error)
 }
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
@@ -637,6 +643,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindFeedByID(childComplexity, args["id"].(string)), true
 
+	case "Entity.findUploadByID":
+		if e.complexity.Entity.FindUploadByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findUploadByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindUploadByID(childComplexity, args["id"].(string)), true
+
 	case "Event.context":
 		if e.complexity.Event.Context == nil {
 			break
@@ -666,18 +684,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.Event.Payload(childComplexity), true
 
 	case "EventAttachment.fileID":
-		if e.complexity.EventAttachment.FileID == nil {
+		if e.complexity.EventAttachment.FileId == nil {
 			break
 		}
 
-		return e.complexity.EventAttachment.FileID(childComplexity), true
+		return e.complexity.EventAttachment.FileId(childComplexity), true
 
 	case "EventAttachment.fileURL":
-		if e.complexity.EventAttachment.FileURL == nil {
+		if e.complexity.EventAttachment.FileUrl == nil {
 			break
 		}
 
-		return e.complexity.EventAttachment.FileURL(childComplexity), true
+		return e.complexity.EventAttachment.FileUrl(childComplexity), true
 
 	case "EventAttachment.iconLink":
 		if e.complexity.EventAttachment.IconLink == nil {
@@ -729,11 +747,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.EventAttendee.Email(childComplexity), true
 
 	case "EventAttendee.id":
-		if e.complexity.EventAttendee.ID == nil {
+		if e.complexity.EventAttendee.Id == nil {
 			break
 		}
 
-		return e.complexity.EventAttendee.ID(childComplexity), true
+		return e.complexity.EventAttendee.Id(childComplexity), true
 
 	case "EventAttendee.optional":
 		if e.complexity.EventAttendee.Optional == nil {
@@ -1420,6 +1438,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UnresolveFeedItem(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string)), true
 
+	case "Mutation.upload":
+		if e.complexity.Mutation.Upload == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_upload_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Upload(childComplexity, args["input"].(*uploads.UploadInput)), true
+
 	case "Nudge.actions":
 		if e.complexity.Nudge.Actions == nil {
 			break
@@ -1579,6 +1609,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
+
+	case "Upload.base64data":
+		if e.complexity.Upload.Base64data == nil {
+			break
+		}
+
+		return e.complexity.Upload.Base64data(childComplexity), true
+
+	case "Upload.contentType":
+		if e.complexity.Upload.ContentType == nil {
+			break
+		}
+
+		return e.complexity.Upload.ContentType(childComplexity), true
+
+	case "Upload.creation":
+		if e.complexity.Upload.Creation == nil {
+			break
+		}
+
+		return e.complexity.Upload.Creation(childComplexity), true
+
+	case "Upload.hash":
+		if e.complexity.Upload.Hash == nil {
+			break
+		}
+
+		return e.complexity.Upload.Hash(childComplexity), true
+
+	case "Upload.id":
+		if e.complexity.Upload.ID == nil {
+			break
+		}
+
+		return e.complexity.Upload.ID(childComplexity), true
+
+	case "Upload.language":
+		if e.complexity.Upload.Language == nil {
+			break
+		}
+
+		return e.complexity.Upload.Language(childComplexity), true
+
+	case "Upload.size":
+		if e.complexity.Upload.Size == nil {
+			break
+		}
+
+		return e.complexity.Upload.Size(childComplexity), true
+
+	case "Upload.title":
+		if e.complexity.Upload.Title == nil {
+			break
+		}
+
+		return e.complexity.Upload.Title(childComplexity), true
+
+	case "Upload.url":
+		if e.complexity.Upload.URL == nil {
+			break
+		}
+
+		return e.complexity.Upload.URL(childComplexity), true
 
 	case "_Service.sdl":
 		if e.complexity.Service.SDL == nil {
@@ -2011,6 +2104,34 @@ type Query {
   getFaqsContent: [GhostCMSPost!]!
 }
 `, BuiltIn: false},
+	{Name: "graph/uploads.graphql", Input: `
+# this input is used to CREATE a new upload
+input UploadInput {
+  title: String!
+  contentType: String!
+  language: String!
+  base64data: String!
+  filename: String!
+}
+
+# this input is used to SERIALIZE back an already created upload
+type Upload @key(fields: "id") {
+  id: ID!
+  url: String!
+  size: Int!
+  hash: String!
+  creation: Time!
+
+  title: String!
+  contentType: String!
+  language: String!
+  base64data: String!
+}
+
+extend type Mutation {
+  upload(input: UploadInput): Upload!
+}
+`, BuiltIn: false},
 	{Name: "federation/directives.graphql", Input: `
 scalar _Any
 scalar _FieldSet
@@ -2023,11 +2144,12 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Feed
+union _Entity = Feed | Upload
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findFeedByID(id: String!,): Feed!
+	findUploadByID(id: ID!,): Upload!
 
 }
 
@@ -2054,6 +2176,21 @@ func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, 
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findUploadByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2341,6 +2478,21 @@ func (ec *executionContext) field_Mutation_unresolveFeedItem_args(ctx context.Co
 		}
 	}
 	args["itemID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_upload_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *uploads.UploadInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOUploadInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUploadInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -2837,14 +2989,14 @@ func (ec *executionContext) _CalendarEvent_attachments(ctx context.Context, fiel
 		Object:     "CalendarEvent",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CalendarEvent().Attachments(rctx, obj)
+		return obj.Attachments, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2856,9 +3008,9 @@ func (ec *executionContext) _CalendarEvent_attachments(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.EventAttachment)
+	res := resTmp.([]*calendar.EventAttachment)
 	fc.Result = res
-	return ec.marshalNEventAttachment2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachmentᚄ(ctx, field.Selections, res)
+	return ec.marshalNEventAttachment2ᚕᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttachmentᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CalendarEvent_attendees(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
@@ -2872,14 +3024,14 @@ func (ec *executionContext) _CalendarEvent_attendees(ctx context.Context, field 
 		Object:     "CalendarEvent",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CalendarEvent().Attendees(rctx, obj)
+		return obj.Attendees, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2891,9 +3043,9 @@ func (ec *executionContext) _CalendarEvent_attendees(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.EventAttendee)
+	res := resTmp.([]*calendar.EventAttendee)
 	fc.Result = res
-	return ec.marshalNEventAttendee2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendeeᚄ(ctx, field.Selections, res)
+	return ec.marshalNEventAttendee2ᚕᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttendeeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CalendarEvent_attendeesOmitted(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
@@ -3391,14 +3543,14 @@ func (ec *executionContext) _CalendarEvent_originalStartTime(ctx context.Context
 		Object:     "CalendarEvent",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CalendarEvent().OriginalStartTime(rctx, obj)
+		return obj.OriginalStartTime, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3407,9 +3559,9 @@ func (ec *executionContext) _CalendarEvent_originalStartTime(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.EventDateTime)
+	res := resTmp.(*calendar.EventDateTime)
 	fc.Result = res
-	return ec.marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx, field.Selections, res)
+	return ec.marshalOEventDateTime2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventDateTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CalendarEvent_privateCopy(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
@@ -3563,14 +3715,14 @@ func (ec *executionContext) _CalendarEvent_start(ctx context.Context, field grap
 		Object:     "CalendarEvent",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CalendarEvent().Start(rctx, obj)
+		return obj.Start, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3579,9 +3731,9 @@ func (ec *executionContext) _CalendarEvent_start(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.EventDateTime)
+	res := resTmp.(*calendar.EventDateTime)
 	fc.Result = res
-	return ec.marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx, field.Selections, res)
+	return ec.marshalOEventDateTime2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventDateTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CalendarEvent_end(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
@@ -3595,14 +3747,14 @@ func (ec *executionContext) _CalendarEvent_end(ctx context.Context, field graphq
 		Object:     "CalendarEvent",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.CalendarEvent().End(rctx, obj)
+		return obj.End, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3611,9 +3763,9 @@ func (ec *executionContext) _CalendarEvent_end(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.EventDateTime)
+	res := resTmp.(*calendar.EventDateTime)
 	fc.Result = res
-	return ec.marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx, field.Selections, res)
+	return ec.marshalOEventDateTime2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventDateTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _CalendarEvent_status(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
@@ -4008,6 +4160,48 @@ func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field grap
 	return ec.marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFeed(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Entity_findUploadByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Entity_findUploadByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindUploadByID(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*uploads.Upload)
+	fc.Result = res
+	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4142,7 +4336,7 @@ func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.Co
 	return ec.marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐPayload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttachment_fileID(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttachment_fileID(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttachment) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4160,7 +4354,7 @@ func (ec *executionContext) _EventAttachment_fileID(ctx context.Context, field g
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.FileID, nil
+		return obj.FileId, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4177,7 +4371,7 @@ func (ec *executionContext) _EventAttachment_fileID(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttachment_fileURL(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttachment_fileURL(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttachment) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4195,7 +4389,7 @@ func (ec *executionContext) _EventAttachment_fileURL(ctx context.Context, field 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.FileURL, nil
+		return obj.FileUrl, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4212,7 +4406,7 @@ func (ec *executionContext) _EventAttachment_fileURL(ctx context.Context, field 
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttachment_iconLink(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttachment_iconLink(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttachment) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4247,7 +4441,7 @@ func (ec *executionContext) _EventAttachment_iconLink(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttachment_mimeType(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttachment_mimeType(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttachment) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4282,7 +4476,7 @@ func (ec *executionContext) _EventAttachment_mimeType(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttachment_title(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttachment_title(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttachment) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4317,7 +4511,7 @@ func (ec *executionContext) _EventAttachment_title(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_id(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_id(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4335,7 +4529,7 @@ func (ec *executionContext) _EventAttendee_id(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Id, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4352,7 +4546,7 @@ func (ec *executionContext) _EventAttendee_id(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_additionalGuests(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_additionalGuests(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4382,12 +4576,12 @@ func (ec *executionContext) _EventAttendee_additionalGuests(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(int64)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_comment(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_comment(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4422,7 +4616,7 @@ func (ec *executionContext) _EventAttendee_comment(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_displayName(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_displayName(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4457,7 +4651,7 @@ func (ec *executionContext) _EventAttendee_displayName(ctx context.Context, fiel
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_email(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_email(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4492,7 +4686,7 @@ func (ec *executionContext) _EventAttendee_email(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_optional(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_optional(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4527,7 +4721,7 @@ func (ec *executionContext) _EventAttendee_optional(ctx context.Context, field g
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_organizer(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_organizer(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4562,7 +4756,7 @@ func (ec *executionContext) _EventAttendee_organizer(ctx context.Context, field 
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_resource(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_resource(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4597,7 +4791,7 @@ func (ec *executionContext) _EventAttendee_resource(ctx context.Context, field g
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_responseStatus(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_responseStatus(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4632,7 +4826,7 @@ func (ec *executionContext) _EventAttendee_responseStatus(ctx context.Context, f
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventAttendee_self(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventAttendee_self(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttendee) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4667,7 +4861,7 @@ func (ec *executionContext) _EventAttendee_self(ctx context.Context, field graph
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventDateTime_date(ctx context.Context, field graphql.CollectedField, obj *model.EventDateTime) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventDateTime_date(ctx context.Context, field graphql.CollectedField, obj *calendar.EventDateTime) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4702,7 +4896,7 @@ func (ec *executionContext) _EventDateTime_date(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventDateTime_dateTime(ctx context.Context, field graphql.CollectedField, obj *model.EventDateTime) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventDateTime_dateTime(ctx context.Context, field graphql.CollectedField, obj *calendar.EventDateTime) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4737,7 +4931,7 @@ func (ec *executionContext) _EventDateTime_dateTime(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _EventDateTime_timeZone(ctx context.Context, field graphql.CollectedField, obj *model.EventDateTime) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventDateTime_timeZone(ctx context.Context, field graphql.CollectedField, obj *calendar.EventDateTime) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7677,6 +7871,48 @@ func (ec *executionContext) _Mutation_processEvent(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_upload_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Upload(rctx, args["input"].(*uploads.UploadInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*uploads.Upload)
+	fc.Result = res
+	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8456,6 +8692,321 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_url(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_size(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_hash(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Hash, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_creation(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Creation, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_title(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_contentType(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ContentType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_language(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Language, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Upload_base64data(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Upload",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Base64data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) __Service_sdl(ctx context.Context, field graphql.CollectedField, obj *fedruntime.Service) (ret graphql.Marshaler) {
@@ -9765,6 +10316,58 @@ func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUploadInput(ctx context.Context, obj interface{}) (uploads.UploadInput, error) {
+	var it uploads.UploadInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "contentType":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contentType"))
+			it.ContentType, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "language":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("language"))
+			it.Language, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "base64data":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("base64data"))
+			it.Base64data, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "filename":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filename"))
+			it.Filename, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -9780,6 +10383,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Feed(ctx, sel, obj)
+	case uploads.Upload:
+		return ec._Upload(ctx, sel, &obj)
+	case *uploads.Upload:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Upload(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -9860,182 +10470,137 @@ func (ec *executionContext) _CalendarEvent(ctx context.Context, sel ast.Selectio
 		case "id":
 			out.Values[i] = ec._CalendarEvent_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "anyoneCanAddSelf":
 			out.Values[i] = ec._CalendarEvent_anyoneCanAddSelf(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "attachments":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CalendarEvent_attachments(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._CalendarEvent_attachments(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "attendees":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CalendarEvent_attendees(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
+			out.Values[i] = ec._CalendarEvent_attendees(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "attendeesOmitted":
 			out.Values[i] = ec._CalendarEvent_attendeesOmitted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "colorId":
 			out.Values[i] = ec._CalendarEvent_colorId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "description":
 			out.Values[i] = ec._CalendarEvent_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "endTimeUnspecified":
 			out.Values[i] = ec._CalendarEvent_endTimeUnspecified(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "etag":
 			out.Values[i] = ec._CalendarEvent_etag(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "guestsCanInviteOthers":
 			out.Values[i] = ec._CalendarEvent_guestsCanInviteOthers(ctx, field, obj)
 		case "guestsCanModify":
 			out.Values[i] = ec._CalendarEvent_guestsCanModify(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "guestsCanSeeOtherGuests":
 			out.Values[i] = ec._CalendarEvent_guestsCanSeeOtherGuests(ctx, field, obj)
 		case "hangoutLink":
 			out.Values[i] = ec._CalendarEvent_hangoutLink(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "htmlLink":
 			out.Values[i] = ec._CalendarEvent_htmlLink(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "iCalUID":
 			out.Values[i] = ec._CalendarEvent_iCalUID(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "kind":
 			out.Values[i] = ec._CalendarEvent_kind(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "location":
 			out.Values[i] = ec._CalendarEvent_location(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "locked":
 			out.Values[i] = ec._CalendarEvent_locked(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "originalStartTime":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CalendarEvent_originalStartTime(ctx, field, obj)
-				return res
-			})
+			out.Values[i] = ec._CalendarEvent_originalStartTime(ctx, field, obj)
 		case "privateCopy":
 			out.Values[i] = ec._CalendarEvent_privateCopy(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "recurrence":
 			out.Values[i] = ec._CalendarEvent_recurrence(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "recurringEventId":
 			out.Values[i] = ec._CalendarEvent_recurringEventId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "sequence":
 			out.Values[i] = ec._CalendarEvent_sequence(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "start":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CalendarEvent_start(ctx, field, obj)
-				return res
-			})
+			out.Values[i] = ec._CalendarEvent_start(ctx, field, obj)
 		case "end":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._CalendarEvent_end(ctx, field, obj)
-				return res
-			})
+			out.Values[i] = ec._CalendarEvent_end(ctx, field, obj)
 		case "status":
 			out.Values[i] = ec._CalendarEvent_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "summary":
 			out.Values[i] = ec._CalendarEvent_summary(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "transparency":
 			out.Values[i] = ec._CalendarEvent_transparency(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "updated":
 			out.Values[i] = ec._CalendarEvent_updated(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "visibility":
 			out.Values[i] = ec._CalendarEvent_visibility(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -10124,6 +10689,20 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 				}
 				return res
 			})
+		case "findUploadByID":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findUploadByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10173,7 +10752,7 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 
 var eventAttachmentImplementors = []string{"EventAttachment"}
 
-func (ec *executionContext) _EventAttachment(ctx context.Context, sel ast.SelectionSet, obj *model.EventAttachment) graphql.Marshaler {
+func (ec *executionContext) _EventAttachment(ctx context.Context, sel ast.SelectionSet, obj *calendar.EventAttachment) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, eventAttachmentImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -10220,7 +10799,7 @@ func (ec *executionContext) _EventAttachment(ctx context.Context, sel ast.Select
 
 var eventAttendeeImplementors = []string{"EventAttendee"}
 
-func (ec *executionContext) _EventAttendee(ctx context.Context, sel ast.SelectionSet, obj *model.EventAttendee) graphql.Marshaler {
+func (ec *executionContext) _EventAttendee(ctx context.Context, sel ast.SelectionSet, obj *calendar.EventAttendee) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, eventAttendeeImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -10292,7 +10871,7 @@ func (ec *executionContext) _EventAttendee(ctx context.Context, sel ast.Selectio
 
 var eventDateTimeImplementors = []string{"EventDateTime"}
 
-func (ec *executionContext) _EventDateTime(ctx context.Context, sel ast.SelectionSet, obj *model.EventDateTime) graphql.Marshaler {
+func (ec *executionContext) _EventDateTime(ctx context.Context, sel ast.SelectionSet, obj *calendar.EventDateTime) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, eventDateTimeImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -10886,6 +11465,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "upload":
+			out.Values[i] = ec._Mutation_upload(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11105,6 +11689,73 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var uploadImplementors = []string{"Upload", "_Entity"}
+
+func (ec *executionContext) _Upload(ctx context.Context, sel ast.SelectionSet, obj *uploads.Upload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, uploadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Upload")
+		case "id":
+			out.Values[i] = ec._Upload_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "url":
+			out.Values[i] = ec._Upload_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "size":
+			out.Values[i] = ec._Upload_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hash":
+			out.Values[i] = ec._Upload_hash(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "creation":
+			out.Values[i] = ec._Upload_creation(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "title":
+			out.Values[i] = ec._Upload_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "contentType":
+			out.Values[i] = ec._Upload_contentType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "language":
+			out.Values[i] = ec._Upload_language(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "base64data":
+			out.Values[i] = ec._Upload_base64data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11487,7 +12138,7 @@ func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNEventAttachment2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachmentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.EventAttachment) graphql.Marshaler {
+func (ec *executionContext) marshalNEventAttachment2ᚕᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttachmentᚄ(ctx context.Context, sel ast.SelectionSet, v []*calendar.EventAttachment) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11511,7 +12162,7 @@ func (ec *executionContext) marshalNEventAttachment2ᚕᚖgitlabᚗslade360emr�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEventAttachment2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachment(ctx, sel, v[i])
+			ret[i] = ec.marshalNEventAttachment2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttachment(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11524,7 +12175,7 @@ func (ec *executionContext) marshalNEventAttachment2ᚕᚖgitlabᚗslade360emr�
 	return ret
 }
 
-func (ec *executionContext) marshalNEventAttachment2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachment(ctx context.Context, sel ast.SelectionSet, v *model.EventAttachment) graphql.Marshaler {
+func (ec *executionContext) marshalNEventAttachment2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttachment(ctx context.Context, sel ast.SelectionSet, v *calendar.EventAttachment) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -11534,7 +12185,7 @@ func (ec *executionContext) marshalNEventAttachment2ᚖgitlabᚗslade360emrᚗco
 	return ec._EventAttachment(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNEventAttendee2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendeeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.EventAttendee) graphql.Marshaler {
+func (ec *executionContext) marshalNEventAttendee2ᚕᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttendeeᚄ(ctx context.Context, sel ast.SelectionSet, v []*calendar.EventAttendee) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11558,7 +12209,7 @@ func (ec *executionContext) marshalNEventAttendee2ᚕᚖgitlabᚗslade360emrᚗc
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNEventAttendee2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendee(ctx, sel, v[i])
+			ret[i] = ec.marshalNEventAttendee2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttendee(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11571,7 +12222,7 @@ func (ec *executionContext) marshalNEventAttendee2ᚕᚖgitlabᚗslade360emrᚗc
 	return ret
 }
 
-func (ec *executionContext) marshalNEventAttendee2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendee(ctx context.Context, sel ast.SelectionSet, v *model.EventAttendee) graphql.Marshaler {
+func (ec *executionContext) marshalNEventAttendee2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttendee(ctx context.Context, sel ast.SelectionSet, v *calendar.EventAttendee) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -11992,6 +12643,20 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUpload2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx context.Context, sel ast.SelectionSet, v uploads.Upload) graphql.Marshaler {
+	return ec._Upload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx context.Context, sel ast.SelectionSet, v *uploads.Upload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Upload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (feed.Visibility, error) {
@@ -12502,7 +13167,7 @@ func (ec *executionContext) marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋen
 	return ec._Context(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx context.Context, sel ast.SelectionSet, v *model.EventDateTime) graphql.Marshaler {
+func (ec *executionContext) marshalOEventDateTime2ᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventDateTime(ctx context.Context, sel ast.SelectionSet, v *calendar.EventDateTime) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -12707,6 +13372,14 @@ func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v in
 
 func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	return graphql.MarshalTime(v)
+}
+
+func (ec *executionContext) unmarshalOUploadInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUploadInput(ctx context.Context, v interface{}) (*uploads.UploadInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputUploadInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (*feed.Visibility, error) {

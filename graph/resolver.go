@@ -10,6 +10,8 @@ import (
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	"gitlab.slade360emr.com/go/engagement/graph/library"
+	"gitlab.slade360emr.com/go/engagement/graph/scheduling"
+	"gitlab.slade360emr.com/go/engagement/graph/uploads"
 )
 
 // NewResolver sets up the dependencies needed for WhatsApp query and mutation resolvers to work
@@ -22,6 +24,8 @@ func NewResolver(
 		repository:          fr,
 		notificationService: ns,
 		libraryService:      library.NewService(),
+		uploadService:       uploads.NewService(),
+		schedulingService:   scheduling.NewService(),
 	}, nil
 }
 
@@ -30,6 +34,8 @@ type Resolver struct {
 	repository          feed.Repository
 	notificationService feed.NotificationService
 	libraryService      *library.Service
+	uploadService       *uploads.Service
+	schedulingService   *scheduling.Service
 }
 
 func (r Resolver) checkPreconditions() {
@@ -43,6 +49,14 @@ func (r Resolver) checkPreconditions() {
 
 	if r.libraryService == nil {
 		log.Panicf("nil library service in resolver")
+	}
+
+	if r.uploadService == nil {
+		log.Panicf("nil upload service in resolver")
+	}
+
+	if r.schedulingService == nil {
+		log.Panicf("nil scheduling service in resolver")
 	}
 }
 

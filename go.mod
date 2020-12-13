@@ -6,10 +6,12 @@ require (
 	cloud.google.com/go v0.74.0 // indirect
 	cloud.google.com/go/firestore v1.4.0
 	cloud.google.com/go/pubsub v1.9.1
+	cloud.google.com/go/storage v1.12.0
 	github.com/99designs/gqlgen v0.13.0
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
 	github.com/aws/aws-sdk-go v1.36.7 // indirect
+	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/getsentry/sentry-go v0.9.0 // indirect
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/google/pprof v0.0.0-20201211104106-9bd6f8a8ed4b // indirect

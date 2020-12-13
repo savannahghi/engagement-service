@@ -38,6 +38,8 @@ autobind:
   - "gitlab.slade360emr.com/go/engagement/graph/feed"
   - "gitlab.slade360emr.com/go/engagement/graph/library"
   - "gitlab.slade360emr.com/go/engagement/graph/scheduling"
+  - "gitlab.slade360emr.com/go/engagement/graph/uploads"
+  - "google.golang.org/api/calendar/v3"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
