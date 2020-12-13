@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
 func TestMain(m *testing.M) {
@@ -26,12 +27,12 @@ func TestUpload(t *testing.T) {
 
 	service := NewService()
 	tests := map[string]struct {
-		inp                  *UploadInput
+		inp                  base.UploadInput
 		expectError          bool
 		expectedErrorMessage string
 	}{
 		"simple_case": {
-			inp: &UploadInput{
+			inp: base.UploadInput{
 				Title:       "Test file from automated tests",
 				ContentType: "JPG",
 				Language:    "en",

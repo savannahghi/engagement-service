@@ -17,7 +17,10 @@ const (
 	DefaultLabel = "WELCOME"
 
 	// DefaultIconPath is the path to the default Be.Well logo
-	DefaultIconPath = staticBase + "/bewell_logo.png"
+	DefaultIconPath = StaticBase + "/bewell_logo.png"
+
+	// StaticBase is the default path at which static assets are hosted
+	StaticBase = "https://assets.healthcloud.co.ke"
 
 	defaultSequenceNumber = 1
 	defaultPostedByUID    = "hOcaUv8dqqgmWYf9HEhjdudgf0b2"
@@ -44,7 +47,6 @@ const (
 	defaultLocation   = "default-location-id-please-change"
 	defaultContentDir = "/static/"
 	defaultAuthor     = "Be.Well Team"
-	staticBase        = "https://assets.healthcloud.co.ke"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -262,7 +264,7 @@ func defaultSeeDoctorAction(
 		getConsultationActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
-		staticBase+"/actions/svg/see_doctor.svg",
+		StaticBase+"/actions/svg/see_doctor.svg",
 		"See Doctor",
 		"See a doctor",
 		repository,
@@ -283,7 +285,7 @@ func defaultBuyMedicineAction(
 		getMedicineActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
-		staticBase+"/actions/svg/medicine.svg",
+		StaticBase+"/actions/svg/medicine.svg",
 		"Get Medicine",
 		"Get medicines",
 		repository,
@@ -304,7 +306,7 @@ func defaultGetTestAction(
 		getTestActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
-		staticBase+"/actions/svg/get_tested.svg",
+		StaticBase+"/actions/svg/get_tested.svg",
 		"Get tests",
 		"Get diagnostic tests",
 		repository,
@@ -325,7 +327,7 @@ func defaultGetInsuranceAction(
 		getInsuranceActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
-		staticBase+"/actions/svg/buy_cover.svg",
+		StaticBase+"/actions/svg/buy_cover.svg",
 		"Buy Cover",
 		"Buy medical insurance",
 		repository,
@@ -346,7 +348,7 @@ func defaultCoachingAction(
 		getCoachingActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
-		staticBase+"/actions/svg/fitness.svg",
+		StaticBase+"/actions/svg/fitness.svg",
 		"Coaching",
 		"Get Health Coaching",
 		repository,
@@ -367,7 +369,7 @@ func defaultHelpAction(
 		helpActionName,
 		ActionTypeFloating,
 		HandlingFullPage,
-		staticBase+"/actions/svg/help.svg",
+		StaticBase+"/actions/svg/help.svg",
 		"Help",
 		"Get Help",
 		repository,
@@ -388,7 +390,7 @@ func defaultSearchPatientAction(
 		searchPatientActionName,
 		ActionTypeSecondary,
 		HandlingFullPage,
-		staticBase+"/actions/svg/search_user.svg",
+		StaticBase+"/actions/svg/search_user.svg",
 		"Search a patient",
 		"Search for a patient",
 		repository,
@@ -409,7 +411,7 @@ func defaultAddPatientAction(
 		addPatientActionName,
 		ActionTypePrimary,
 		HandlingFullPage,
-		staticBase+"/actions/svg/add_user.svg",
+		StaticBase+"/actions/svg/add_user.svg",
 		"Register patient",
 		"Register a patient",
 		repository,
@@ -424,7 +426,7 @@ func addInsuranceNudge(
 ) (*Nudge, error) {
 	title := "Add Insurance"
 	text := "Link your existing medical cover"
-	imgURL := staticBase + "/nudges/add_insurance.png"
+	imgURL := StaticBase + "/nudges/add_insurance.png"
 	addInsuranceAction, err := createLocalAction(
 		ctx,
 		uid,
@@ -464,7 +466,7 @@ func addNHIFNudge(
 ) (*Nudge, error) {
 	title := "Add NHIF"
 	text := "Link your NHIF cover"
-	imgURL := staticBase + "/nudges/add_insurance.png"
+	imgURL := StaticBase + "/nudges/add_insurance.png"
 	addNHIFAction, err := createLocalAction(
 		ctx,
 		uid,
@@ -504,7 +506,7 @@ func completeProfileNudge(
 ) (*Nudge, error) {
 	title := "Complete your profile"
 	text := "Fill in your Be.Well profile to unlock more rewards"
-	imgURL := staticBase + "/nudges/complete_profile.png"
+	imgURL := StaticBase + "/nudges/complete_profile.png"
 	completeProfileAction, err := createLocalAction(
 		ctx,
 		uid,
@@ -544,7 +546,7 @@ func completeKYCNudge(
 ) (*Nudge, error) {
 	title := "Complete your business profile"
 	text := "Fill in your Be.Well business profile in order to start transacting"
-	imgURL := staticBase + "/nudges/complete_kyc.png"
+	imgURL := StaticBase + "/nudges/complete_kyc.png"
 	completeKYCAction, err := createLocalAction(
 		ctx,
 		uid,
@@ -584,7 +586,7 @@ func verifyEmailNudge(
 ) (*Nudge, error) {
 	title := "Email Verification"
 	text := "Please add and verify your email address"
-	imgURL := staticBase + "/nudges/verify_email.png"
+	imgURL := StaticBase + "/nudges/verify_email.png"
 	verifyEmailAction, err := createLocalAction(
 		ctx,
 		uid,
@@ -706,7 +708,7 @@ func createLocalAction(
 		SequenceNumber: defaultSequenceNumber,
 		Name:           name,
 		Icon: GetPNGImageLink(
-			staticBase+"/1px.png", "Blank Image", "Default Blank Image", staticBase+"/1px.png"),
+			StaticBase+"/1px.png", "Blank Image", "Default Blank Image", StaticBase+"/1px.png"),
 		ActionType:     actionType,
 		Handling:       handling,
 		AllowAnonymous: allowAnonymous,
@@ -915,293 +917,293 @@ func ultimateComposite(
 	text := "This is Be.Well..."
 	links := []Link{
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner01.png",
+			StaticBase+"/items/images/bewell_banner01.png",
 			"As within, so without",
 			"As within, so without. Care begins with the self.",
-			staticBase+"/items/images/thumbs/bewell_banner01.png",
+			StaticBase+"/items/images/thumbs/bewell_banner01.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner02.png",
+			StaticBase+"/items/images/bewell_banner02.png",
 			"Have you made your bed today?",
 			"Have you made your bed today? Your morning routine can get you started on a high note or not.",
-			staticBase+"/items/images/thumbs/bewell_banner02.png",
+			StaticBase+"/items/images/thumbs/bewell_banner02.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner03.png",
+			StaticBase+"/items/images/bewell_banner03.png",
 			"Smiles are contagious",
 			"Smiles are contagious, pass it on and heal a heart",
-			staticBase+"/items/images/thumbs/bewell_banner03.png",
+			StaticBase+"/items/images/thumbs/bewell_banner03.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner04.png",
+			StaticBase+"/items/images/bewell_banner04.png",
 			"Tossing and turning?",
 			"Too much screen time tampers with sleep",
-			staticBase+"/items/images/thumbs/bewell_banner04.png",
+			StaticBase+"/items/images/thumbs/bewell_banner04.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner05.png",
+			StaticBase+"/items/images/bewell_banner05.png",
 			"Wellness review",
 			"You should have a wellness review daily",
-			staticBase+"/items/images/thumbs/bewell_banner05.png",
+			StaticBase+"/items/images/thumbs/bewell_banner05.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner06.png",
+			StaticBase+"/items/images/bewell_banner06.png",
 			"Wellness review",
 			"You should have a wellness review daily",
-			staticBase+"/items/images/thumbs/bewell_banner06.png",
+			StaticBase+"/items/images/thumbs/bewell_banner06.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner07.png",
+			StaticBase+"/items/images/bewell_banner07.png",
 			"Healthcare Simplified",
 			"HealthCare Simplified. Get Be.Well",
-			staticBase+"/items/images/thumbs/bewell_banner07.png",
+			StaticBase+"/items/images/thumbs/bewell_banner07.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner08.png",
+			StaticBase+"/items/images/bewell_banner08.png",
 			"Hot + Hot",
 			"Did you know that Hot + Hot=Cool?",
-			staticBase+"/items/images/thumbs/bewell_banner08.png",
+			StaticBase+"/items/images/thumbs/bewell_banner08.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner09.png",
+			StaticBase+"/items/images/bewell_banner09.png",
 			"Does chewing gum improve focus?",
 			"Does chewing gum improve focus? Yes or No. Tell us in the comments section.",
-			staticBase+"/items/images/thumbs/bewell_banner09.png",
+			StaticBase+"/items/images/thumbs/bewell_banner09.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner10.png",
+			StaticBase+"/items/images/bewell_banner10.png",
 			"Are you well?",
 			"We take care of you with convenient teleconsultation.",
-			staticBase+"/items/images/thumbs/bewell_banner10.png",
+			StaticBase+"/items/images/thumbs/bewell_banner10.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner11.png",
+			StaticBase+"/items/images/bewell_banner11.png",
 			"Hands that heal",
 			"Get Be.Well",
-			staticBase+"/items/images/thumbs/bewell_banner11.png",
+			StaticBase+"/items/images/thumbs/bewell_banner11.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner12.png",
+			StaticBase+"/items/images/bewell_banner12.png",
 			"Mindfulness matters",
 			"Use Be.Well to consult",
-			staticBase+"/items/images/thumbs/bewell_banner12.png",
+			StaticBase+"/items/images/thumbs/bewell_banner12.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner13.png",
+			StaticBase+"/items/images/bewell_banner13.png",
 			"Be confident",
 			"Be confident, you can consult in confidence. Use Be.Well.",
-			staticBase+"/items/images/thumbs/bewell_banner13.png",
+			StaticBase+"/items/images/thumbs/bewell_banner13.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner14.png",
+			StaticBase+"/items/images/bewell_banner14.png",
 			"Wellnes begins in the womb",
 			"Wellness begins in the womb, we are here to walk with you",
-			staticBase+"/items/images/thumbs/bewell_banner14.png",
+			StaticBase+"/items/images/thumbs/bewell_banner14.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner15.png",
+			StaticBase+"/items/images/bewell_banner15.png",
 			"Self healing is...",
 			"Self healing is...what techniques do you use to slow down and rejuvenate",
-			staticBase+"/items/images/thumbs/bewell_banner15.png",
+			StaticBase+"/items/images/thumbs/bewell_banner15.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner16.png",
+			StaticBase+"/items/images/bewell_banner16.png",
 			"Live. Love. Laugh. and Be.Well",
 			"Live. Love. Laugh and Be.Well. Download Be.Well",
-			staticBase+"/items/images/thumbs/bewell_banner16.png",
+			StaticBase+"/items/images/thumbs/bewell_banner16.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner17.png",
+			StaticBase+"/items/images/bewell_banner17.png",
 			"Mindfulness matters",
 			"Mindfulness matters. Use Be.Well to consult",
-			staticBase+"/items/images/thumbs/bewell_banner17.png",
+			StaticBase+"/items/images/thumbs/bewell_banner17.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner18.png",
+			StaticBase+"/items/images/bewell_banner18.png",
 			"Be.Well can transform you",
 			"Be.Well can transform you. Get Be.Well",
-			staticBase+"/items/images/thumbs/bewell_banner18.png",
+			StaticBase+"/items/images/thumbs/bewell_banner18.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner19.png",
+			StaticBase+"/items/images/bewell_banner19.png",
 			"Need to refill your meds?",
 			"Need to refill your meds? We will deliver",
-			staticBase+"/items/images/thumbs/tbewell_banner19.png",
+			StaticBase+"/items/images/thumbs/tbewell_banner19.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner20.png",
+			StaticBase+"/items/images/bewell_banner20.png",
 			"Be optimistic, live longer",
 			"Use Be.Well to help you manage ailments",
-			staticBase+"/items/images/thumbs/bewell_banner20.png",
+			StaticBase+"/items/images/thumbs/bewell_banner20.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner21.png",
+			StaticBase+"/items/images/bewell_banner21.png",
 			"Are you too anxious?",
 			"Are you too anxious? Consult on Be.Well",
-			staticBase+"/items/images/thumbs/bewell_banner21.png",
+			StaticBase+"/items/images/thumbs/bewell_banner21.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner22.png",
+			StaticBase+"/items/images/bewell_banner22.png",
 			"Would you rather be taking tablets or syrup?",
 			"Share your reasons in the comments section",
-			staticBase+"/items/images/thumbs/bewell_banner22.png",
+			StaticBase+"/items/images/thumbs/bewell_banner22.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner23.png",
+			StaticBase+"/items/images/bewell_banner23.png",
 			"Does coffee cure depression in women?",
 			"How does coffee affect you?",
-			staticBase+"/items/images/thumbs/bewell_banner23.png",
+			StaticBase+"/items/images/thumbs/bewell_banner23.png",
 		),
 		GetPNGImageLink(
-			staticBase+"/items/images/bewell_banner24.png",
+			StaticBase+"/items/images/bewell_banner24.png",
 			"Is your allergy triggered by stress?",
 			"Get Be.Well for more insights",
-			staticBase+"/items/images/thumbs/bewell_banner24.png",
+			StaticBase+"/items/images/thumbs/bewell_banner24.png",
 		),
 
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_25.pdf",
+			StaticBase+"/items/documents/bewell_banner_25.pdf",
 			"Does sunlight enable weight loss?",
 			"Get Be.Well for meaningful insights",
-			staticBase+"/items/documents/thumbs/bewell_banner_25.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_25.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_26.pdf",
+			StaticBase+"/items/documents/bewell_banner_26.pdf",
 			"Anti-depressants and your libido.",
 			"Consult your doctor on Be.Well",
-			staticBase+"/items/documents/thumbs/bewell_banner_26.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_26.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_27.pdf",
+			StaticBase+"/items/documents/bewell_banner_27.pdf",
 			"Need to refill your meds?",
 			"We will deliver",
-			staticBase+"/items/documents/thumbs/bewell_banner_27.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_27.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_28.pdf",
+			StaticBase+"/items/documents/bewell_banner_28.pdf",
 			"Sexual wellness tips.",
 			"Get Be.Well for the best tips",
-			staticBase+"/items/documents/thumbs/bewell_banner_28.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_28.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_29.pdf",
+			StaticBase+"/items/documents/bewell_banner_29.pdf",
 			"How do you get your kids to take meds?",
 			"Do you negotiate or introduce Kiboko the motivator?",
-			staticBase+"/items/documents/thumbs/bewell_banner_29.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_29.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_30.pdf",
+			StaticBase+"/items/documents/bewell_banner_30.pdf",
 			"What are some of the meds that were part of you growing up?",
 			"Get Be.Well",
-			staticBase+"/items/documents/thumbs/bewell_banner_30.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_30.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_31.pdf",
+			StaticBase+"/items/documents/bewell_banner_31.pdf",
 			"Mind your Mind",
 			"Use Be.Well",
-			staticBase+"/items/documents/thumbs/bewell_banner_31.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_31.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_32.pdf",
+			StaticBase+"/items/documents/bewell_banner_32.pdf",
 			"Did you know that financial wellness affects your wellbeing as a whole?",
 			"What else? Get Be.Well",
-			staticBase+"/items/documents/thumbs/bewell_banner_32.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_32.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_33.pdf",
+			StaticBase+"/items/documents/bewell_banner_33.pdf",
 			"How does technology preserve your health?",
 			"Get Be.Well for meaningful insights",
-			staticBase+"/items/documents/thumbs/bewell_banner_33.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_33.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_34.pdf",
+			StaticBase+"/items/documents/bewell_banner_34.pdf",
 			"Your life can be transformed by an App",
 			"Get Be.Well",
-			staticBase+"/items/documents/thumbs/bewell_banner_34.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_34.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_35.pdf",
+			StaticBase+"/items/documents/bewell_banner_35.pdf",
 			"It's not enough to just have a life transforming App",
 			"You have to USE the App",
-			staticBase+"/items/documents/thumbs/bewell_banner_35.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_35.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_36.pdf",
+			StaticBase+"/items/documents/bewell_banner_36.pdf",
 			"Create your wellness habits",
 			"Create your wellness habits and add your accountability partners on Be.Well",
-			staticBase+"/items/documents/thumbs/bewell_banner_36.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_36.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_37.pdf",
+			StaticBase+"/items/documents/bewell_banner_37.pdf",
 			"Patients don't need patience",
 			"Dial your doctor, Now!",
-			staticBase+"/items/documents/thumbs/bewell_banner_37.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_37.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_38.pdf",
+			StaticBase+"/items/documents/bewell_banner_38.pdf",
 			"Simplifying and streamlining Healthcare",
 			"Get Be.Well today!",
-			staticBase+"/items/documents/thumbs/bewell_banner_38.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_38.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_39.pdf",
+			StaticBase+"/items/documents/bewell_banner_39.pdf",
 			"Monitor your mental state",
 			"Get Be.Well today!",
-			staticBase+"/items/documents/thumbs/bewell_banner_39.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_39.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_40.pdf",
+			StaticBase+"/items/documents/bewell_banner_40.pdf",
 			"Modern Medicine vs Mystic Medicine",
 			"Modern Medicine vs Mystic Medicine. What works for you?",
-			staticBase+"/items/documents/thumbs/bewell_banner_40.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_40.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_41.pdf",
+			StaticBase+"/items/documents/bewell_banner_41.pdf",
 			"To Be.Well, your finances have to be well",
 			"To Be.Well, your finances have to be well",
-			staticBase+"/items/documents/thumbs/bewell_banner_41.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_41.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_42.pdf",
+			StaticBase+"/items/documents/bewell_banner_42.pdf",
 			"Finance and Romance",
 			"do they go hand in hand?",
-			staticBase+"/items/documents/thumbs/bewell_banner_42.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_42.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_43.pdf",
+			StaticBase+"/items/documents/bewell_banner_43.pdf",
 			"Let's talk about sex",
 			"Let's talk about sex, the Be.Well way",
-			staticBase+"/items/documents/thumbs/bewell_banner_43.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_43.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_44.pdf",
+			StaticBase+"/items/documents/bewell_banner_44.pdf",
 			"Consult about sexual health in confidence",
 			"Consult about sexual health in confidence",
-			staticBase+"/items/documents/thumbs/bewell_banner_44.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_44.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_45.pdf",
+			StaticBase+"/items/documents/bewell_banner_45.pdf",
 			"Is technology replacing your parenting?",
 			"Is technology replacing your parenting?",
-			staticBase+"/items/documents/thumbs/bewell_banner_45.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_45.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_46.pdf",
+			StaticBase+"/items/documents/bewell_banner_46.pdf",
 			"Bottled water cures diseases",
 			"Bottled water cures diseases. True or False?",
-			staticBase+"/items/documents/thumbs/bewell_banner_46.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_46.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_47.pdf",
+			StaticBase+"/items/documents/bewell_banner_47.pdf",
 			"Why fight for these gadgets?",
 			"Why fight for these gadgets? Could it be a symptom or addiction?",
-			staticBase+"/items/documents/thumbs/bewell_banner_47.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_47.png",
 		),
 		GetPDFDocumentLink(
-			staticBase+"/items/documents/bewell_banner_48.pdf",
+			StaticBase+"/items/documents/bewell_banner_48.pdf",
 			"Put your money where your mind is",
 			"Put your money where your mind is",
-			staticBase+"/items/documents/thumbs/bewell_banner_48.png",
+			StaticBase+"/items/documents/thumbs/bewell_banner_48.png",
 		),
 	}
 	actions, err := defaultActions(ctx, uid, flavour, repository)
@@ -1608,31 +1610,31 @@ func getFeedWelcomeVideos() []Link {
 			"https://youtu.be/gcv2Z2AdpjM",
 			"Be.Well lead",
 			"Introducing Be.Well by Slade 360",
-			staticBase+"/items/videos/thumbs/01_lead.png",
+			StaticBase+"/items/videos/thumbs/01_lead.png",
 		),
 		GetYoutubeVideoLink(
 			"https://youtu.be/W_daZjDET9Q",
 			"Prescription delivery",
 			"Get your medications delivered on Be.Well",
-			staticBase+"/items/videos/thumbs/02_prescription.png",
+			StaticBase+"/items/videos/thumbs/02_prescription.png",
 		),
 		GetYoutubeVideoLink(
 			"https://youtu.be/IbtVBXNvpSA",
 			"Teleconsults",
 			"Consult a doctor on Be.Well",
-			staticBase+"/items/videos/thumbs/03_teleconsult.png",
+			StaticBase+"/items/videos/thumbs/03_teleconsult.png",
 		),
 		GetYoutubeVideoLink(
 			"https://youtu.be/mKnlXcS3_Z0",
 			"Slade 360",
 			"Slade 360. HealthCare. Simplified.",
-			staticBase+"/items/videos/thumbs/04_slade.png",
+			StaticBase+"/items/videos/thumbs/04_slade.png",
 		),
 		GetYoutubeVideoLink(
 			"https://youtu.be/XNDLnPfagLQ",
 			"Mental health",
 			"Mental health",
-			staticBase+"/items/videos/thumbs/05_mental_health.png",
+			StaticBase+"/items/videos/thumbs/05_mental_health.png",
 		),
 	}
 }

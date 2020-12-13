@@ -14,9 +14,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/storage"
-	"github.com/gabriel-vasile/mimetype"
-	"github.com/google/uuid"
 	"github.com/rs/xid"
+	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/base"
 )
 
@@ -133,22 +132,14 @@ func (s Service) FirestoreClient() *firestore.Client {
 // Upload uploads the file to cloud storage
 func (s Service) Upload(
 	ctx context.Context,
-	inp *UploadInput,
-) (*Upload, error) {
+	inp base.UploadInput,
+) (*base.Upload, error) {
 	s.enforcePreconditions()
 
 	// data decoding
 	data, err := base64.StdEncoding.DecodeString(inp.Base64data)
 	if err != nil {
 		return nil, fmt.Errorf("upload base64 decode error: %w", err)
-	}
-
-	// mime type validation
-	detectedMime := mimetype.Detect(data)
-	statedMime := s.contentTypeMap[inp.ContentType]
-	if statedMime != detectedMime.String() {
-		return nil, fmt.Errorf(
-			"expected mime type %s, got %s", statedMime, detectedMime.String())
 	}
 
 	// sha hash
@@ -179,12 +170,12 @@ func (s Service) Upload(
 		inp.Filename,
 	)
 
-	id := uuid.New().String()
-	u := &Upload{
+	id := ksuid.New().String()
+	u := &base.Upload{
 		ID:          id,
 		Title:       inp.Title,
 		Creation:    time.Now(),
-		ContentType: statedMime,
+		ContentType: inp.ContentType,
 		Language:    inp.Language,
 		Size:        len(data),
 		Hash:        hash,
@@ -192,12 +183,9 @@ func (s Service) Upload(
 		Base64data:  inp.Base64data,
 	}
 
-	_, err = s.firestoreClient.Collection(
-		base.SuffixCollection(UploadFirestoreCollectionName),
-	).Doc(id).Set(ctx, u)
+	_, _, err = base.CreateNode(ctx, u)
 	if err != nil {
-		return nil, fmt.Errorf(
-			"firestore upload collection update error: %w", err)
+		return nil, fmt.Errorf("can't save upload: %w", err)
 	}
 	return u, nil
 }
@@ -206,12 +194,12 @@ func (s Service) Upload(
 func (s Service) FindUploadByID(
 	ctx context.Context,
 	id string,
-) (*Upload, error) {
-	node, err := base.RetrieveNode(ctx, id, &Upload{})
+) (*base.Upload, error) {
+	node, err := base.RetrieveNode(ctx, id, &base.Upload{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve upload: %w", err)
 	}
-	upload, ok := node.(*Upload)
+	upload, ok := node.(*base.Upload)
 	if !ok {
 		return nil, fmt.Errorf("unable to cast node to upload")
 	}

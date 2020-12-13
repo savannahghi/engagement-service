@@ -6,7 +6,7 @@ package graph
 import (
 	"context"
 
-	"gitlab.slade360emr.com/go/engagement/graph/generated"
+	generated1 "gitlab.slade360emr.com/go/engagement/generated"
 	"gitlab.slade360emr.com/go/engagement/graph/library"
 )
 
@@ -18,7 +18,7 @@ func (r *queryResolver) GetFaqsContent(ctx context.Context) ([]*library.GhostCMS
 	return r.libraryService.GetFaqsContent(ctx)
 }
 
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+// Query returns generated1.QueryResolver implementation.
+func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }

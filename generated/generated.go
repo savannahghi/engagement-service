@@ -17,9 +17,9 @@ import (
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	"gitlab.slade360emr.com/go/engagement/graph/library"
-	"gitlab.slade360emr.com/go/engagement/graph/uploads"
 	calendar "google.golang.org/api/calendar/v3"
 )
 
@@ -247,7 +247,7 @@ type ComplexityRoot struct {
 		ShowNudge         func(childComplexity int, flavour feed.Flavour, nudgeID string) int
 		UnpinFeedItem     func(childComplexity int, flavour feed.Flavour, itemID string) int
 		UnresolveFeedItem func(childComplexity int, flavour feed.Flavour, itemID string) int
-		Upload            func(childComplexity int, input *uploads.UploadInput) int
+		Upload            func(childComplexity int, input base.UploadInput) int
 	}
 
 	Nudge struct {
@@ -270,6 +270,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		FindUploadByID        func(childComplexity int, id string) int
 		GetFaqsContent        func(childComplexity int) int
 		GetFeed               func(childComplexity int, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
@@ -298,7 +299,7 @@ type ComplexityRoot struct {
 
 type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
-	FindUploadByID(ctx context.Context, id string) (*uploads.Upload, error)
+	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
 type MutationResolver interface {
 	ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
@@ -312,7 +313,7 @@ type MutationResolver interface {
 	PostMessage(ctx context.Context, flavour feed.Flavour, itemID string, message feed.Message) (*feed.Message, error)
 	DeleteMessage(ctx context.Context, flavour feed.Flavour, itemID string, messageID string) (bool, error)
 	ProcessEvent(ctx context.Context, flavour feed.Flavour, event feed.Event) (bool, error)
-	Upload(ctx context.Context, input *uploads.UploadInput) (*uploads.Upload, error)
+	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
 }
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
@@ -320,6 +321,7 @@ type QueryResolver interface {
 	GetFeed(ctx context.Context, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error)
 	Labels(ctx context.Context, flavour feed.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour feed.Flavour) (int, error)
+	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
 
 type executableSchema struct {
@@ -1448,7 +1450,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Upload(childComplexity, args["input"].(*uploads.UploadInput)), true
+		return e.complexity.Mutation.Upload(childComplexity, args["input"].(base.UploadInput)), true
 
 	case "Nudge.actions":
 		if e.complexity.Nudge.Actions == nil {
@@ -1540,6 +1542,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Payload.Data(childComplexity), true
+
+	case "Query.findUploadByID":
+		if e.complexity.Query.FindUploadByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_findUploadByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindUploadByID(childComplexity, args["id"].(string)), true
 
 	case "Query.getFaqsContent":
 		if e.complexity.Query.GetFaqsContent == nil {
@@ -2128,8 +2142,12 @@ type Upload @key(fields: "id") {
   base64data: String!
 }
 
+extend type Query {
+  findUploadByID(id: String!): Upload!
+}
+
 extend type Mutation {
-  upload(input: UploadInput): Upload!
+  upload(input: UploadInput!): Upload!
 }
 `, BuiltIn: false},
 	{Name: "federation/directives.graphql", Input: `
@@ -2484,10 +2502,10 @@ func (ec *executionContext) field_Mutation_unresolveFeedItem_args(ctx context.Co
 func (ec *executionContext) field_Mutation_upload_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *uploads.UploadInput
+	var arg0 base.UploadInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOUploadInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUploadInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUploadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUploadInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2523,6 +2541,21 @@ func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawA
 		}
 	}
 	args["representations"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_findUploadByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -4197,9 +4230,9 @@ func (ec *executionContext) _Entity_findUploadByID(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*uploads.Upload)
+	res := resTmp.(*base.Upload)
 	fc.Result = res
-	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx, field.Selections, res)
+	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
@@ -7896,7 +7929,7 @@ func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Upload(rctx, args["input"].(*uploads.UploadInput))
+		return ec.resolvers.Mutation().Upload(rctx, args["input"].(base.UploadInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7908,9 +7941,9 @@ func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*uploads.Upload)
+	res := resTmp.(*base.Upload)
 	fc.Result = res
-	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx, field.Selections, res)
+	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
@@ -8546,6 +8579,48 @@ func (ec *executionContext) _Query_unreadPersistentItems(ctx context.Context, fi
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_findUploadByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_findUploadByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().FindUploadByID(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*base.Upload)
+	fc.Result = res
+	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8694,7 +8769,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8729,7 +8804,7 @@ func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.Collec
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_url(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_url(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8764,7 +8839,7 @@ func (ec *executionContext) _Upload_url(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_size(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_size(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8799,7 +8874,7 @@ func (ec *executionContext) _Upload_size(ctx context.Context, field graphql.Coll
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_hash(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_hash(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8834,7 +8909,7 @@ func (ec *executionContext) _Upload_hash(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_creation(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_creation(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8869,7 +8944,7 @@ func (ec *executionContext) _Upload_creation(ctx context.Context, field graphql.
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_title(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_title(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8904,7 +8979,7 @@ func (ec *executionContext) _Upload_title(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_contentType(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_contentType(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8939,7 +9014,7 @@ func (ec *executionContext) _Upload_contentType(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_language(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_language(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8974,7 +9049,7 @@ func (ec *executionContext) _Upload_language(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_base64data(ctx context.Context, field graphql.CollectedField, obj *uploads.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_base64data(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10316,8 +10391,8 @@ func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUploadInput(ctx context.Context, obj interface{}) (uploads.UploadInput, error) {
-	var it uploads.UploadInput
+func (ec *executionContext) unmarshalInputUploadInput(ctx context.Context, obj interface{}) (base.UploadInput, error) {
+	var it base.UploadInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -10383,9 +10458,9 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Feed(ctx, sel, obj)
-	case uploads.Upload:
+	case base.Upload:
 		return ec._Upload(ctx, sel, &obj)
-	case *uploads.Upload:
+	case *base.Upload:
 		if obj == nil {
 			return graphql.Null
 		}
@@ -11657,6 +11732,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "findUploadByID":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_findUploadByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "_entities":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -11702,7 +11791,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var uploadImplementors = []string{"Upload", "_Entity"}
 
-func (ec *executionContext) _Upload(ctx context.Context, sel ast.SelectionSet, obj *uploads.Upload) graphql.Marshaler {
+func (ec *executionContext) _Upload(ctx context.Context, sel ast.SelectionSet, obj *base.Upload) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, uploadImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -12645,11 +12734,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNUpload2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx context.Context, sel ast.SelectionSet, v uploads.Upload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpload2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx context.Context, sel ast.SelectionSet, v base.Upload) graphql.Marshaler {
 	return ec._Upload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUpload(ctx context.Context, sel ast.SelectionSet, v *uploads.Upload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx context.Context, sel ast.SelectionSet, v *base.Upload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -12657,6 +12746,11 @@ func (ec *executionContext) marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋ
 		return graphql.Null
 	}
 	return ec._Upload(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUploadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUploadInput(ctx context.Context, v interface{}) (base.UploadInput, error) {
+	res, err := ec.unmarshalInputUploadInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (feed.Visibility, error) {
@@ -13372,14 +13466,6 @@ func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v in
 
 func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	return graphql.MarshalTime(v)
-}
-
-func (ec *executionContext) unmarshalOUploadInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋuploadsᚐUploadInput(ctx context.Context, v interface{}) (*uploads.UploadInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputUploadInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (*feed.Visibility, error) {

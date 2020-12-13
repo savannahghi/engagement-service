@@ -4,17 +4,14 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"time"
 
 	"net/http"
 
-	"github.com/markbates/pkger"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -22,17 +19,20 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/generated"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	db "gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging"
 	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging/pubsubhandlers"
-	"gitlab.slade360emr.com/go/engagement/graph/generated"
+	"gitlab.slade360emr.com/go/engagement/graph/uploads"
 )
 
 const (
+	// StaticDir is the directory that contains schemata, default images etc
+	StaticDir = "gitlab.slade360emr.com/go/engagement:/static/"
+
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
-	schemaDir            = "gitlab.slade360emr.com/go/engagement:/static/"
 )
 
 var allowedOrigins = []string{
@@ -124,150 +124,165 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	bulk.Use(base.InterServiceAuthenticationMiddleware())
 
 	// Interservice Authenticated routes
-	isc := r.PathPrefix("/feed/{uid}/{flavour}/{isAnonymous}/").Subrouter()
-	isc.Use(base.InterServiceAuthenticationMiddleware())
+	feedISC := r.PathPrefix("/feed/{uid}/{flavour}/{isAnonymous}/").Subrouter()
+	feedISC.Use(base.InterServiceAuthenticationMiddleware())
 
 	// retrieval
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodGet,
 	).Path("/").HandlerFunc(
 		GetFeed(ctx, fr, ns),
 	).Name("getFeed")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodGet,
 	).Path("/items/{itemID}/").HandlerFunc(
 		GetFeedItem(ctx, fr, ns),
 	).Name("getFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodGet,
 	).Path("/nudges/{nudgeID}/").HandlerFunc(
 		GetNudge(ctx, fr, ns),
 	).Name("getNudge")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodGet,
 	).Path("/actions/{actionID}/").HandlerFunc(
 		GetAction(ctx, fr, ns),
 	).Name("getAction")
 
 	// creation
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPost,
 	).Path("/items/").HandlerFunc(
 		PublishFeedItem(ctx, fr, ns),
 	).Name("publishFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPost,
 	).Path("/nudges/").HandlerFunc(
 		PublishNudge(ctx, fr, ns),
 	).Name("publishNudge")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPost,
 	).Path("/actions/").HandlerFunc(
 		PublishAction(ctx, fr, ns),
 	).Name("publishAction")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPost,
 	).Path("/{itemID}/messages/").HandlerFunc(
 		PostMessage(ctx, fr, ns),
 	).Name("postMessage")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPost,
 	).Path("/events/").HandlerFunc(
 		ProcessEvent(ctx, fr, ns),
 	).Name("postEvent")
 
 	// deleting
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/items/{itemID}/").HandlerFunc(
 		DeleteFeedItem(ctx, fr, ns),
 	).Name("deleteFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/nudges/{nudgeID}/").HandlerFunc(
 		DeleteNudge(ctx, fr, ns),
 	).Name("deleteNudge")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/actions/{actionID}/").HandlerFunc(
 		DeleteAction(ctx, fr, ns),
 	).Name("deleteAction")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/{itemID}/messages/{messageID}/").HandlerFunc(
 		DeleteMessage(ctx, fr, ns),
 	).Name("deleteMessage")
 
 	// modifying (patching)
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/resolve/").HandlerFunc(
 		ResolveFeedItem(ctx, fr, ns),
 	).Name("resolveFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/unresolve/").HandlerFunc(
 		UnresolveFeedItem(ctx, fr, ns),
 	).Name("unresolveFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/pin/").HandlerFunc(
 		PinFeedItem(ctx, fr, ns),
 	).Name("pinFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/unpin/").HandlerFunc(
 		UnpinFeedItem(ctx, fr, ns),
 	).Name("unpinFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/hide/").HandlerFunc(
 		HideFeedItem(ctx, fr, ns),
 	).Name("hideFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/show/").HandlerFunc(
 		ShowFeedItem(ctx, fr, ns),
 	).Name("showFeedItem")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/resolve/").HandlerFunc(
 		ResolveNudge(ctx, fr, ns),
 	).Name("resolveNudge")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/unresolve/").HandlerFunc(
 		UnresolveNudge(ctx, fr, ns),
 	).Name("unresolveNudge")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/show/").HandlerFunc(
 		ShowNudge(ctx, fr, ns),
 	).Name("showNudge")
 
-	isc.Methods(
+	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/hide/").HandlerFunc(
 		HideNudge(ctx, fr, ns),
 	).Name("hideNudge")
+
+	isc := r.PathPrefix("/internal/").Subrouter()
+	isc.Use(base.InterServiceAuthenticationMiddleware())
+
+	isc.Methods(
+		http.MethodGet,
+	).Path("/upload/{uploadID}/").HandlerFunc(
+		FindUpload(ctx),
+	).Name("getUpload")
+
+	isc.Methods(
+		http.MethodPost,
+	).Path("/upload/").HandlerFunc(
+		Upload(ctx),
+	).Name("upload")
 
 	// return the combined router
 	return r, nil
@@ -1247,258 +1262,89 @@ func ProcessEvent(
 	}
 }
 
-func respondWithError(w http.ResponseWriter, code int, err error) {
-	errMap := base.ErrorMap(err)
-	errBytes, err := json.Marshal(errMap)
-	if err != nil {
-		errBytes = []byte(fmt.Sprintf("error: %s", err))
-	}
-	respondWithJSON(w, code, errBytes)
-}
-
-func respondWithJSON(w http.ResponseWriter, code int, payload []byte) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_, err := w.Write(payload)
-	if err != nil {
-		log.Printf(
-			"unable to write payload `%s` to the http.ResponseWriter: %s",
-			string(payload),
-			err,
-		)
-	}
-}
-
-func getThinFeed(
-	ctx context.Context,
-	fr feed.Repository,
-	ns feed.NotificationService,
-	r *http.Request,
-) (*feed.Feed, error) {
-	uid, flavour, anonymous, err := getUIDFlavourAndIsAnonymous(r)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate thin feed: %w", err)
-	}
-
-	agg, err := feed.NewCollection(fr, ns)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate thin feed: %w", err)
-	}
-
-	thinFeed, err := agg.GetThinFeed(ctx, uid, anonymous, *flavour)
-	if err != nil {
-		return nil, fmt.Errorf("can't instantiate thin feed: %w", err)
-	}
-
-	return thinFeed, nil
-}
-
-func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *feed.Flavour, *bool, error) {
-	if r == nil {
-		return nil, nil, nil, fmt.Errorf("nil request")
-	}
-
-	uid, err := getStringVar(r, "uid")
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("can't get `uid` path var")
-	}
-
-	flavourStr, err := getStringVar(r, "flavour")
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("can't get `flavour` path var: %w", err)
-	}
-
-	flavour := feed.Flavour(flavourStr)
-	if !flavour.IsValid() {
-		return nil, nil, nil, fmt.Errorf("`%s` is not a valid feed flavour", err)
-	}
-
-	isAnonymous, err := getStringVar(r, "isAnonymous")
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("can't get `isAnonymous path var")
-	}
-
-	a, err := strconv.ParseBool(isAnonymous)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to parse to `isAnonymous` : %v ", err)
-	}
-
-	return &uid, &flavour, &a, nil
-
-}
-
-type patchItemFunc func(ctx context.Context, itemID string) (*feed.Item, error)
-
-func patchItem(
-	ctx context.Context,
-	fr feed.Repository,
-	ns feed.NotificationService,
-	patchFunc patchItemFunc,
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-	itemID, err := getStringVar(r, "itemID")
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, err)
-		return
-	}
-
-	item, err := patchFunc(ctx, itemID)
-	if err != nil {
-		if errors.Is(err, feed.ErrNilFeedItem) {
-			respondWithError(w, http.StatusNotFound, err)
+// Upload saves an upload in cloud storage
+func Upload(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data, err := readBody(r)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
 
-		respondWithError(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	marshalled, err := json.Marshal(item)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, marshalled)
-}
-
-type patchNudgeFunc func(ctx context.Context, nudgeID string) (*feed.Nudge, error)
-
-func patchNudge(
-	ctx context.Context,
-	fr feed.Repository,
-	ns feed.NotificationService,
-	patchFunc patchNudgeFunc,
-	w http.ResponseWriter,
-	r *http.Request,
-) {
-	nudgeID, err := getStringVar(r, "nudgeID")
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, err)
-		return
-	}
-
-	element, err := patchFunc(ctx, nudgeID)
-	if err != nil {
-		if errors.Is(err, feed.ErrNilNudge) {
-			respondWithError(w, http.StatusNotFound, err)
+		uploadInput := base.UploadInput{}
+		err = json.Unmarshal(data, &uploadInput)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
 
-		respondWithError(w, http.StatusInternalServerError, err)
-		return
-	}
+		if uploadInput.Base64data == "" {
+			err := fmt.Errorf("blank upload base64 data")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
 
-	marshalled, err := json.Marshal(element)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err)
-		return
-	}
+		if uploadInput.Filename == "" {
+			err := fmt.Errorf("blank upload filename")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
 
-	respondWithJSON(w, http.StatusOK, marshalled)
+		if uploadInput.Title == "" {
+			err := fmt.Errorf("blank upload title")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		uploadService := uploads.NewService()
+		upload, err := uploadService.Upload(ctx, uploadInput)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		if upload == nil {
+			err := fmt.Errorf("nil upload in response from upload service")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		marshalled, err := json.Marshal(upload)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		respondWithJSON(w, http.StatusOK, marshalled)
+	}
 }
 
-func getOptionalBooleanFilterQueryParam(r *http.Request, paramName string) (*feed.BooleanFilter, error) {
-	val := r.FormValue(paramName)
-	if val == "" {
-		return nil, nil // optional
+// FindUpload retrieves an upload by it's ID
+func FindUpload(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		uploadID, err := getStringVar(r, "uploadID")
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		uploadService := uploads.NewService()
+		upload, err := uploadService.FindUploadByID(ctx, uploadID)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		if upload == nil {
+			err := fmt.Errorf("nil upload in response from upload service")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		marshalled, err := json.Marshal(upload)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		respondWithJSON(w, http.StatusOK, marshalled)
 	}
-
-	boolFilter := feed.BooleanFilter(val)
-	if !boolFilter.IsValid() {
-		return nil, fmt.Errorf("optional bool: `%s` is not a valid boolean filter value", val)
-	}
-
-	return &boolFilter, nil
-}
-
-func getRequiredBooleanFilterQueryParam(r *http.Request, paramName string) (feed.BooleanFilter, error) {
-	val := r.FormValue(paramName)
-	if val == "" {
-		return "", fmt.Errorf("required BooleanFilter `%s` not set", paramName)
-	}
-
-	boolFilter := feed.BooleanFilter(val)
-	if !boolFilter.IsValid() {
-		return "", fmt.Errorf("required bool: `%s` is not a valid boolean filter value", val)
-	}
-
-	return boolFilter, nil
-}
-
-func getOptionalStatusQueryParam(
-	r *http.Request,
-	paramName string,
-) (*feed.Status, error) {
-	val, err := getStringVar(r, paramName)
-	if err != nil {
-		return nil, nil // this is an optional param
-	}
-
-	status := feed.Status(val)
-	if !status.IsValid() {
-		return nil, fmt.Errorf("`%s` is not a valid status", val)
-	}
-
-	return &status, nil
-}
-
-func getOptionalVisibilityQueryParam(
-	r *http.Request,
-	paramName string,
-) (*feed.Visibility, error) {
-	val, err := getStringVar(r, paramName)
-	if err != nil {
-		return nil, nil // this is an optional param
-	}
-
-	visibility := feed.Visibility(val)
-	if !visibility.IsValid() {
-		return nil, fmt.Errorf("`%s` is not a valid visibility value", val)
-	}
-
-	return &visibility, nil
-}
-
-func getOptionalFilterParamsQueryParam(
-	r *http.Request,
-	paramName string,
-) (*feed.FilterParams, error) {
-	// expect the filter params value to be JSON encoded
-	val, err := getStringVar(r, paramName)
-	if err != nil {
-		return nil, nil // this is an optional param
-	}
-
-	filterParams := &feed.FilterParams{}
-	err = json.Unmarshal([]byte(val), filterParams)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"filter params should be a valid JSON representation of `feed.FilterParams`. `%s` is not", val)
-	}
-
-	return filterParams, nil
-}
-
-func getStringVar(r *http.Request, varName string) (string, error) {
-	if r == nil {
-		return "", fmt.Errorf("can't get string var from a nil request")
-	}
-	pathVars := mux.Vars(r)
-	pathVar, found := pathVars[varName]
-	if !found {
-		return "", fmt.Errorf("the request does not have a path var named `%s`", varName)
-	}
-	return pathVar, nil
-}
-
-func schemaHandler() (http.Handler, error) {
-	f, err := pkger.Open(schemaDir)
-	if err != nil {
-		return nil, fmt.Errorf("can't open pkger schema dir: %w", err)
-	}
-	defer f.Close()
-
-	return http.StripPrefix("/schema", http.FileServer(f)), nil
 }

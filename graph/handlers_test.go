@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/imroc/req"
+	"github.com/markbates/pkger"
 	"github.com/rs/xid"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -5735,6 +5736,197 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 				}
 				if decoded["status"] != "success" {
 					t.Errorf("did not get success status")
+					return
+				}
+			}
+		})
+	}
+}
+
+func TestPostUpload(t *testing.T) {
+	headers := getDefaultHeaders(t, baseURL)
+	itemID := ksuid.New().String()
+
+	imgPath := graph.StaticDir + "/1px.png"
+	f, err := pkger.Open(imgPath)
+	if err != nil {
+		t.Errorf("can't open test image path with pkger: %v", err)
+		return
+	}
+	defer f.Close()
+
+	imgData, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Errorf("can't read test image: %v", err)
+		return
+	}
+
+	b64 := base64.StdEncoding.EncodeToString(imgData)
+	uploadInput := base.UploadInput{
+		Title:       itemID,
+		ContentType: "image/png",
+		Language:    "en",
+		Filename:    fmt.Sprintf("%s.png", itemID),
+		Base64data:  b64,
+	}
+
+	bs, err := json.Marshal(uploadInput)
+	if err != nil {
+		t.Errorf("unable to marshal upload input to JSON: %s", err)
+	}
+	payload := bytes.NewBuffer(bs)
+
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "valid upload",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/upload/", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "nil upload",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/upload/", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       nil,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
+
+			for k, v := range tt.args.headers {
+				r.Header.Add(k, v)
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if resp.StatusCode != tt.wantStatus {
+				log.Printf("raw response data: \n%s\n", string(data))
+				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
+				return
+			}
+
+			if resp.StatusCode == tt.wantStatus && tt.wantStatus == http.StatusOK {
+				// find the upload again
+				upload := &base.Upload{}
+				err = json.Unmarshal(data, &upload)
+				if err != nil {
+					t.Errorf("can't unmarshal returned upload to JSON: %v", err)
+					return
+				}
+
+				uploadURL := fmt.Sprintf(
+					"%s/internal/upload/%s/",
+					baseURL,
+					upload.ID,
+				)
+				uploadReq, err := http.NewRequest(
+					http.MethodGet,
+					uploadURL,
+					nil,
+				)
+				if err != nil {
+					t.Errorf("unable to compose find upload request: %s", err)
+					return
+				}
+				for k, v := range tt.args.headers {
+					uploadReq.Header.Add(k, v)
+				}
+				uploadResp, err := client.Do(uploadReq)
+				if err != nil {
+					t.Errorf("request error: %s", err)
+					return
+				}
+				if err != nil {
+					t.Errorf("error fetching upload again: %v", err)
+					return
+				}
+				uploadData, err := ioutil.ReadAll(uploadResp.Body)
+				if err != nil {
+					t.Errorf("can't read request body: %s", err)
+					return
+				}
+				fetchedUpload := base.Upload{}
+				err = json.Unmarshal(uploadData, &fetchedUpload)
+				if err != nil {
+					t.Errorf("can't unmarshal returned upload to JSON: %v", err)
+					return
+				}
+
+				if fetchedUpload.Base64data != upload.Base64data {
+					t.Errorf("did not get back the same upload, differnet data")
+					return
+				}
+
+				if fetchedUpload.Hash != upload.Hash {
+					t.Errorf("did not get back the same upload, different hashes")
+					return
+				}
+
+				if fetchedUpload.ID != upload.ID {
+					t.Errorf(
+						"did not get back the same upload, different IDs; %s vs %s",
+						fetchedUpload.ID,
+						upload.ID,
+					)
 					return
 				}
 			}

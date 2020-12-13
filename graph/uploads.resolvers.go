@@ -6,10 +6,15 @@ package graph
 import (
 	"context"
 
-	"gitlab.slade360emr.com/go/engagement/graph/uploads"
+	"gitlab.slade360emr.com/go/base"
 )
 
-func (r *mutationResolver) Upload(ctx context.Context, input *uploads.UploadInput) (*uploads.Upload, error) {
+func (r *mutationResolver) Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error) {
 	r.checkPreconditions()
 	return r.uploadService.Upload(ctx, input)
+}
+
+func (r *queryResolver) FindUploadByID(ctx context.Context, id string) (*base.Upload, error) {
+	r.checkPreconditions()
+	return r.uploadService.FindUploadByID(ctx, id)
 }

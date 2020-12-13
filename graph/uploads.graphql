@@ -22,6 +22,10 @@ type Upload @key(fields: "id") {
   base64data: String!
 }
 
+extend type Query {
+  findUploadByID(id: String!): Upload!
+}
+
 extend type Mutation {
-  upload(input: UploadInput): Upload!
+  upload(input: UploadInput!): Upload!
 }

@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
+	generated1 "gitlab.slade360emr.com/go/engagement/generated"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
-	"gitlab.slade360emr.com/go/engagement/graph/generated"
 )
 
 func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
@@ -195,7 +195,7 @@ func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour feed.
 	return thinFeed.UnreadPersistentItems(ctx)
 }
 
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated1.MutationResolver implementation.
+func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
