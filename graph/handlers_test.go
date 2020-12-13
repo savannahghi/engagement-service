@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net"
 	"net/http"
@@ -19,7 +20,6 @@ import (
 	"github.com/imroc/req"
 	"github.com/rs/xid"
 	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph"
@@ -2335,6 +2335,11 @@ func TestRoutes(t *testing.T) {
 }
 
 func TestGetFeed(t *testing.T) {
+	if srv == nil {
+		t.Errorf("nil server")
+		return
+	}
+
 	uid := xid.New().String()
 	consumer := feed.FlavourConsumer
 	client := http.DefaultClient

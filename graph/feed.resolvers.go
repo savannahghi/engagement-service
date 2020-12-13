@@ -142,9 +142,7 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feed.Flavou
 	return true, nil
 }
 
-func (r *queryResolver) GetFeed(ctx context.Context, flavour feed.Flavour, isAnonymous bool,
-	persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility,
-	expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error) {
+func (r *queryResolver) GetFeed(ctx context.Context, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error) {
 	r.checkPreconditions()
 
 	uid, err := r.getLoggedInUserUID(ctx)

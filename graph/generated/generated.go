@@ -19,6 +19,8 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	"gitlab.slade360emr.com/go/engagement/graph/library"
+	"gitlab.slade360emr.com/go/engagement/graph/model"
+	calendar "google.golang.org/api/calendar/v3"
 )
 
 // region    ************************** generated!.gotpl **************************
@@ -39,6 +41,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	CalendarEvent() CalendarEventResolver
 	Entity() EntityResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -58,6 +61,39 @@ type ComplexityRoot struct {
 		SequenceNumber func(childComplexity int) int
 	}
 
+	CalendarEvent struct {
+		AnyoneCanAddSelf        func(childComplexity int) int
+		Attachments             func(childComplexity int) int
+		Attendees               func(childComplexity int) int
+		AttendeesOmitted        func(childComplexity int) int
+		ColorId                 func(childComplexity int) int
+		Description             func(childComplexity int) int
+		End                     func(childComplexity int) int
+		EndTimeUnspecified      func(childComplexity int) int
+		Etag                    func(childComplexity int) int
+		GuestsCanInviteOthers   func(childComplexity int) int
+		GuestsCanModify         func(childComplexity int) int
+		GuestsCanSeeOtherGuests func(childComplexity int) int
+		HangoutLink             func(childComplexity int) int
+		HtmlLink                func(childComplexity int) int
+		ICalUID                 func(childComplexity int) int
+		Id                      func(childComplexity int) int
+		Kind                    func(childComplexity int) int
+		Location                func(childComplexity int) int
+		Locked                  func(childComplexity int) int
+		OriginalStartTime       func(childComplexity int) int
+		PrivateCopy             func(childComplexity int) int
+		Recurrence              func(childComplexity int) int
+		RecurringEventId        func(childComplexity int) int
+		Sequence                func(childComplexity int) int
+		Start                   func(childComplexity int) int
+		Status                  func(childComplexity int) int
+		Summary                 func(childComplexity int) int
+		Transparency            func(childComplexity int) int
+		Updated                 func(childComplexity int) int
+		Visibility              func(childComplexity int) int
+	}
+
 	Context struct {
 		Flavour        func(childComplexity int) int
 		LocationID     func(childComplexity int) int
@@ -75,6 +111,33 @@ type ComplexityRoot struct {
 		ID      func(childComplexity int) int
 		Name    func(childComplexity int) int
 		Payload func(childComplexity int) int
+	}
+
+	EventAttachment struct {
+		FileID   func(childComplexity int) int
+		FileURL  func(childComplexity int) int
+		IconLink func(childComplexity int) int
+		MimeType func(childComplexity int) int
+		Title    func(childComplexity int) int
+	}
+
+	EventAttendee struct {
+		AdditionalGuests func(childComplexity int) int
+		Comment          func(childComplexity int) int
+		DisplayName      func(childComplexity int) int
+		Email            func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Optional         func(childComplexity int) int
+		Organizer        func(childComplexity int) int
+		Resource         func(childComplexity int) int
+		ResponseStatus   func(childComplexity int) int
+		Self             func(childComplexity int) int
+	}
+
+	EventDateTime struct {
+		Date     func(childComplexity int) int
+		DateTime func(childComplexity int) int
+		TimeZone func(childComplexity int) int
 	}
 
 	Feed struct {
@@ -220,6 +283,15 @@ type ComplexityRoot struct {
 	}
 }
 
+type CalendarEventResolver interface {
+	Attachments(ctx context.Context, obj *calendar.Event) ([]*model.EventAttachment, error)
+	Attendees(ctx context.Context, obj *calendar.Event) ([]*model.EventAttendee, error)
+
+	OriginalStartTime(ctx context.Context, obj *calendar.Event) (*model.EventDateTime, error)
+
+	Start(ctx context.Context, obj *calendar.Event) (*model.EventDateTime, error)
+	End(ctx context.Context, obj *calendar.Event) (*model.EventDateTime, error)
+}
 type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
 }
@@ -308,6 +380,216 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Action.SequenceNumber(childComplexity), true
 
+	case "CalendarEvent.anyoneCanAddSelf":
+		if e.complexity.CalendarEvent.AnyoneCanAddSelf == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.AnyoneCanAddSelf(childComplexity), true
+
+	case "CalendarEvent.attachments":
+		if e.complexity.CalendarEvent.Attachments == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Attachments(childComplexity), true
+
+	case "CalendarEvent.attendees":
+		if e.complexity.CalendarEvent.Attendees == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Attendees(childComplexity), true
+
+	case "CalendarEvent.attendeesOmitted":
+		if e.complexity.CalendarEvent.AttendeesOmitted == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.AttendeesOmitted(childComplexity), true
+
+	case "CalendarEvent.colorId":
+		if e.complexity.CalendarEvent.ColorId == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.ColorId(childComplexity), true
+
+	case "CalendarEvent.description":
+		if e.complexity.CalendarEvent.Description == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Description(childComplexity), true
+
+	case "CalendarEvent.end":
+		if e.complexity.CalendarEvent.End == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.End(childComplexity), true
+
+	case "CalendarEvent.endTimeUnspecified":
+		if e.complexity.CalendarEvent.EndTimeUnspecified == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.EndTimeUnspecified(childComplexity), true
+
+	case "CalendarEvent.etag":
+		if e.complexity.CalendarEvent.Etag == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Etag(childComplexity), true
+
+	case "CalendarEvent.guestsCanInviteOthers":
+		if e.complexity.CalendarEvent.GuestsCanInviteOthers == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.GuestsCanInviteOthers(childComplexity), true
+
+	case "CalendarEvent.guestsCanModify":
+		if e.complexity.CalendarEvent.GuestsCanModify == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.GuestsCanModify(childComplexity), true
+
+	case "CalendarEvent.guestsCanSeeOtherGuests":
+		if e.complexity.CalendarEvent.GuestsCanSeeOtherGuests == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.GuestsCanSeeOtherGuests(childComplexity), true
+
+	case "CalendarEvent.hangoutLink":
+		if e.complexity.CalendarEvent.HangoutLink == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.HangoutLink(childComplexity), true
+
+	case "CalendarEvent.htmlLink":
+		if e.complexity.CalendarEvent.HtmlLink == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.HtmlLink(childComplexity), true
+
+	case "CalendarEvent.iCalUID":
+		if e.complexity.CalendarEvent.ICalUID == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.ICalUID(childComplexity), true
+
+	case "CalendarEvent.id":
+		if e.complexity.CalendarEvent.Id == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Id(childComplexity), true
+
+	case "CalendarEvent.kind":
+		if e.complexity.CalendarEvent.Kind == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Kind(childComplexity), true
+
+	case "CalendarEvent.location":
+		if e.complexity.CalendarEvent.Location == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Location(childComplexity), true
+
+	case "CalendarEvent.locked":
+		if e.complexity.CalendarEvent.Locked == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Locked(childComplexity), true
+
+	case "CalendarEvent.originalStartTime":
+		if e.complexity.CalendarEvent.OriginalStartTime == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.OriginalStartTime(childComplexity), true
+
+	case "CalendarEvent.privateCopy":
+		if e.complexity.CalendarEvent.PrivateCopy == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.PrivateCopy(childComplexity), true
+
+	case "CalendarEvent.recurrence":
+		if e.complexity.CalendarEvent.Recurrence == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Recurrence(childComplexity), true
+
+	case "CalendarEvent.recurringEventId":
+		if e.complexity.CalendarEvent.RecurringEventId == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.RecurringEventId(childComplexity), true
+
+	case "CalendarEvent.sequence":
+		if e.complexity.CalendarEvent.Sequence == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Sequence(childComplexity), true
+
+	case "CalendarEvent.start":
+		if e.complexity.CalendarEvent.Start == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Start(childComplexity), true
+
+	case "CalendarEvent.status":
+		if e.complexity.CalendarEvent.Status == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Status(childComplexity), true
+
+	case "CalendarEvent.summary":
+		if e.complexity.CalendarEvent.Summary == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Summary(childComplexity), true
+
+	case "CalendarEvent.transparency":
+		if e.complexity.CalendarEvent.Transparency == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Transparency(childComplexity), true
+
+	case "CalendarEvent.updated":
+		if e.complexity.CalendarEvent.Updated == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Updated(childComplexity), true
+
+	case "CalendarEvent.visibility":
+		if e.complexity.CalendarEvent.Visibility == nil {
+			break
+		}
+
+		return e.complexity.CalendarEvent.Visibility(childComplexity), true
+
 	case "Context.flavour":
 		if e.complexity.Context.Flavour == nil {
 			break
@@ -382,6 +664,132 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.Payload(childComplexity), true
+
+	case "EventAttachment.fileID":
+		if e.complexity.EventAttachment.FileID == nil {
+			break
+		}
+
+		return e.complexity.EventAttachment.FileID(childComplexity), true
+
+	case "EventAttachment.fileURL":
+		if e.complexity.EventAttachment.FileURL == nil {
+			break
+		}
+
+		return e.complexity.EventAttachment.FileURL(childComplexity), true
+
+	case "EventAttachment.iconLink":
+		if e.complexity.EventAttachment.IconLink == nil {
+			break
+		}
+
+		return e.complexity.EventAttachment.IconLink(childComplexity), true
+
+	case "EventAttachment.mimeType":
+		if e.complexity.EventAttachment.MimeType == nil {
+			break
+		}
+
+		return e.complexity.EventAttachment.MimeType(childComplexity), true
+
+	case "EventAttachment.title":
+		if e.complexity.EventAttachment.Title == nil {
+			break
+		}
+
+		return e.complexity.EventAttachment.Title(childComplexity), true
+
+	case "EventAttendee.additionalGuests":
+		if e.complexity.EventAttendee.AdditionalGuests == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.AdditionalGuests(childComplexity), true
+
+	case "EventAttendee.comment":
+		if e.complexity.EventAttendee.Comment == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.Comment(childComplexity), true
+
+	case "EventAttendee.displayName":
+		if e.complexity.EventAttendee.DisplayName == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.DisplayName(childComplexity), true
+
+	case "EventAttendee.email":
+		if e.complexity.EventAttendee.Email == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.Email(childComplexity), true
+
+	case "EventAttendee.id":
+		if e.complexity.EventAttendee.ID == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.ID(childComplexity), true
+
+	case "EventAttendee.optional":
+		if e.complexity.EventAttendee.Optional == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.Optional(childComplexity), true
+
+	case "EventAttendee.organizer":
+		if e.complexity.EventAttendee.Organizer == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.Organizer(childComplexity), true
+
+	case "EventAttendee.resource":
+		if e.complexity.EventAttendee.Resource == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.Resource(childComplexity), true
+
+	case "EventAttendee.responseStatus":
+		if e.complexity.EventAttendee.ResponseStatus == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.ResponseStatus(childComplexity), true
+
+	case "EventAttendee.self":
+		if e.complexity.EventAttendee.Self == nil {
+			break
+		}
+
+		return e.complexity.EventAttendee.Self(childComplexity), true
+
+	case "EventDateTime.date":
+		if e.complexity.EventDateTime.Date == nil {
+			break
+		}
+
+		return e.complexity.EventDateTime.Date(childComplexity), true
+
+	case "EventDateTime.dateTime":
+		if e.complexity.EventDateTime.DateTime == nil {
+			break
+		}
+
+		return e.complexity.EventDateTime.DateTime(childComplexity), true
+
+	case "EventDateTime.timeZone":
+		if e.complexity.EventDateTime.TimeZone == nil {
+			break
+		}
+
+		return e.complexity.EventDateTime.TimeZone(childComplexity), true
 
 	case "Feed.actions":
 		if e.complexity.Feed.Actions == nil {
@@ -1243,6 +1651,90 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "graph/calendar.graphql", Input: `
+"""
+EventAttachment is used to serialize Google Calendar event attachments.
+"""
+type EventAttachment {
+    fileID: String!
+    fileURL: String!
+    iconLink: String!
+    mimeType: String!
+    title: String!
+}
+
+
+"""
+EventAttendee is used to serialize Google Calendar event attendees.
+"""
+type EventAttendee {
+    id: String!
+    additionalGuests: Int!
+    comment: String!
+    displayName: String!
+    email: String!
+    optional: Boolean!
+    organizer: Boolean!
+    resource: Boolean!
+    responseStatus: String!
+    self: Boolean!
+}
+
+"""
+EventDateTime is used to serialize Google Calendar event dates and times.
+"""
+type EventDateTime {
+    date: String!
+    dateTime: String!
+    timeZone: String!
+}
+
+
+"""
+CalendarEvent is used to serialize Google Calendar events.
+
+Some fields have been omitted:
+
+- extended properties
+- gadget
+- organizer
+- reminders
+- event source
+- conference data
+"""
+type CalendarEvent {
+    id: ID!
+    anyoneCanAddSelf: Boolean!
+    attachments: [EventAttachment!]!
+    attendees: [EventAttendee!]!
+    attendeesOmitted: Boolean!
+    colorId: String!
+    description: String!
+    endTimeUnspecified: Boolean!
+    etag: String!
+    guestsCanInviteOthers: Boolean
+    guestsCanModify: Boolean!
+    guestsCanSeeOtherGuests: Boolean
+    hangoutLink: String!
+    htmlLink: String!
+    iCalUID: String!
+    kind: String!
+    location: String!
+    locked: Boolean!
+    originalStartTime: EventDateTime
+    privateCopy: Boolean!
+    recurrence: [String!]!
+    recurringEventId: String!
+    sequence: Int!
+    start: EventDateTime
+    end: EventDateTime
+    status: String!
+    summary: String!
+    transparency: String!
+    updated: String!
+    visibility: String!
+}
+`, BuiltIn: false},
 	{Name: "graph/feed.graphql", Input: `scalar Time
 scalar Map
 
@@ -2264,6 +2756,1041 @@ func (ec *executionContext) _Action_allowAnonymous(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _CalendarEvent_id(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Id, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_anyoneCanAddSelf(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnyoneCanAddSelf, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_attachments(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CalendarEvent().Attachments(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.EventAttachment)
+	fc.Result = res
+	return ec.marshalNEventAttachment2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachmentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_attendees(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CalendarEvent().Attendees(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.EventAttendee)
+	fc.Result = res
+	return ec.marshalNEventAttendee2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendeeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_attendeesOmitted(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AttendeesOmitted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_colorId(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ColorId, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_description(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_endTimeUnspecified(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EndTimeUnspecified, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_etag(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Etag, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_guestsCanInviteOthers(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GuestsCanInviteOthers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_guestsCanModify(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GuestsCanModify, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_guestsCanSeeOtherGuests(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GuestsCanSeeOtherGuests, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_hangoutLink(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HangoutLink, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_htmlLink(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HtmlLink, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_iCalUID(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ICalUID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_kind(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Kind, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_location(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Location, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_locked(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Locked, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_originalStartTime(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CalendarEvent().OriginalStartTime(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.EventDateTime)
+	fc.Result = res
+	return ec.marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_privateCopy(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PrivateCopy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_recurrence(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Recurrence, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_recurringEventId(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RecurringEventId, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_sequence(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sequence, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_start(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CalendarEvent().Start(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.EventDateTime)
+	fc.Result = res
+	return ec.marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_end(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CalendarEvent().End(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.EventDateTime)
+	fc.Result = res
+	return ec.marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_status(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_summary(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Summary, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_transparency(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Transparency, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_updated(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Updated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CalendarEvent_visibility(ctx context.Context, field graphql.CollectedField, obj *calendar.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "CalendarEvent",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Visibility, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2613,6 +4140,636 @@ func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.Co
 	res := resTmp.(feed.Payload)
 	fc.Result = res
 	return ec.marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttachment_fileID(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttachment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FileID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttachment_fileURL(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttachment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FileURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttachment_iconLink(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttachment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IconLink, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttachment_mimeType(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttachment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MimeType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttachment_title(ctx context.Context, field graphql.CollectedField, obj *model.EventAttachment) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttachment",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_id(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_additionalGuests(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AdditionalGuests, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_comment(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Comment, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_displayName(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DisplayName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_email(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_optional(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Optional, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_organizer(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Organizer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_resource(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Resource, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_responseStatus(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ResponseStatus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventAttendee_self(ctx context.Context, field graphql.CollectedField, obj *model.EventAttendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventAttendee",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Self, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventDateTime_date(ctx context.Context, field graphql.CollectedField, obj *model.EventDateTime) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventDateTime",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventDateTime_dateTime(ctx context.Context, field graphql.CollectedField, obj *model.EventDateTime) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventDateTime",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventDateTime_timeZone(ctx context.Context, field graphql.CollectedField, obj *model.EventDateTime) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "EventDateTime",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TimeZone, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_id(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
@@ -7689,6 +9846,208 @@ func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var calendarEventImplementors = []string{"CalendarEvent"}
+
+func (ec *executionContext) _CalendarEvent(ctx context.Context, sel ast.SelectionSet, obj *calendar.Event) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, calendarEventImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CalendarEvent")
+		case "id":
+			out.Values[i] = ec._CalendarEvent_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "anyoneCanAddSelf":
+			out.Values[i] = ec._CalendarEvent_anyoneCanAddSelf(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "attachments":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CalendarEvent_attachments(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "attendees":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CalendarEvent_attendees(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "attendeesOmitted":
+			out.Values[i] = ec._CalendarEvent_attendeesOmitted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "colorId":
+			out.Values[i] = ec._CalendarEvent_colorId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._CalendarEvent_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "endTimeUnspecified":
+			out.Values[i] = ec._CalendarEvent_endTimeUnspecified(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "etag":
+			out.Values[i] = ec._CalendarEvent_etag(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "guestsCanInviteOthers":
+			out.Values[i] = ec._CalendarEvent_guestsCanInviteOthers(ctx, field, obj)
+		case "guestsCanModify":
+			out.Values[i] = ec._CalendarEvent_guestsCanModify(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "guestsCanSeeOtherGuests":
+			out.Values[i] = ec._CalendarEvent_guestsCanSeeOtherGuests(ctx, field, obj)
+		case "hangoutLink":
+			out.Values[i] = ec._CalendarEvent_hangoutLink(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "htmlLink":
+			out.Values[i] = ec._CalendarEvent_htmlLink(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "iCalUID":
+			out.Values[i] = ec._CalendarEvent_iCalUID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "kind":
+			out.Values[i] = ec._CalendarEvent_kind(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "location":
+			out.Values[i] = ec._CalendarEvent_location(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "locked":
+			out.Values[i] = ec._CalendarEvent_locked(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "originalStartTime":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CalendarEvent_originalStartTime(ctx, field, obj)
+				return res
+			})
+		case "privateCopy":
+			out.Values[i] = ec._CalendarEvent_privateCopy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "recurrence":
+			out.Values[i] = ec._CalendarEvent_recurrence(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "recurringEventId":
+			out.Values[i] = ec._CalendarEvent_recurringEventId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "sequence":
+			out.Values[i] = ec._CalendarEvent_sequence(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "start":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CalendarEvent_start(ctx, field, obj)
+				return res
+			})
+		case "end":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CalendarEvent_end(ctx, field, obj)
+				return res
+			})
+		case "status":
+			out.Values[i] = ec._CalendarEvent_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "summary":
+			out.Values[i] = ec._CalendarEvent_summary(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "transparency":
+			out.Values[i] = ec._CalendarEvent_transparency(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "updated":
+			out.Values[i] = ec._CalendarEvent_updated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "visibility":
+			out.Values[i] = ec._CalendarEvent_visibility(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var contextImplementors = []string{"Context"}
 
 func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, obj *feed.Context) graphql.Marshaler {
@@ -7801,6 +10160,162 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Event_context(ctx, field, obj)
 		case "payload":
 			out.Values[i] = ec._Event_payload(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var eventAttachmentImplementors = []string{"EventAttachment"}
+
+func (ec *executionContext) _EventAttachment(ctx context.Context, sel ast.SelectionSet, obj *model.EventAttachment) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, eventAttachmentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EventAttachment")
+		case "fileID":
+			out.Values[i] = ec._EventAttachment_fileID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "fileURL":
+			out.Values[i] = ec._EventAttachment_fileURL(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "iconLink":
+			out.Values[i] = ec._EventAttachment_iconLink(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "mimeType":
+			out.Values[i] = ec._EventAttachment_mimeType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "title":
+			out.Values[i] = ec._EventAttachment_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var eventAttendeeImplementors = []string{"EventAttendee"}
+
+func (ec *executionContext) _EventAttendee(ctx context.Context, sel ast.SelectionSet, obj *model.EventAttendee) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, eventAttendeeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EventAttendee")
+		case "id":
+			out.Values[i] = ec._EventAttendee_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "additionalGuests":
+			out.Values[i] = ec._EventAttendee_additionalGuests(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "comment":
+			out.Values[i] = ec._EventAttendee_comment(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "displayName":
+			out.Values[i] = ec._EventAttendee_displayName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "email":
+			out.Values[i] = ec._EventAttendee_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "optional":
+			out.Values[i] = ec._EventAttendee_optional(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "organizer":
+			out.Values[i] = ec._EventAttendee_organizer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "resource":
+			out.Values[i] = ec._EventAttendee_resource(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "responseStatus":
+			out.Values[i] = ec._EventAttendee_responseStatus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "self":
+			out.Values[i] = ec._EventAttendee_self(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var eventDateTimeImplementors = []string{"EventDateTime"}
+
+func (ec *executionContext) _EventDateTime(ctx context.Context, sel ast.SelectionSet, obj *model.EventDateTime) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, eventDateTimeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("EventDateTime")
+		case "date":
+			out.Values[i] = ec._EventDateTime_date(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "dateTime":
+			out.Values[i] = ec._EventDateTime_dateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "timeZone":
+			out.Values[i] = ec._EventDateTime_timeZone(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8972,6 +11487,100 @@ func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNEventAttachment2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachmentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.EventAttachment) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNEventAttachment2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachment(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNEventAttachment2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttachment(ctx context.Context, sel ast.SelectionSet, v *model.EventAttachment) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._EventAttachment(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNEventAttendee2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendeeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.EventAttendee) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNEventAttendee2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendee(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNEventAttendee2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventAttendee(ctx context.Context, sel ast.SelectionSet, v *model.EventAttendee) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._EventAttendee(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐEvent(ctx context.Context, v interface{}) (feed.Event, error) {
 	res, err := ec.unmarshalInputEventInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -9121,6 +11730,21 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
+	res, err := graphql.UnmarshalInt64(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
+	res := graphql.MarshalInt64(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -9876,6 +12500,13 @@ func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 
 func (ec *executionContext) marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐContext(ctx context.Context, sel ast.SelectionSet, v feed.Context) graphql.Marshaler {
 	return ec._Context(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOEventDateTime2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋmodelᚐEventDateTime(ctx context.Context, sel ast.SelectionSet, v *model.EventDateTime) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._EventDateTime(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFilterParams(ctx context.Context, v interface{}) (*feed.FilterParams, error) {

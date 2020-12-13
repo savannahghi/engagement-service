@@ -37,6 +37,7 @@ resolver:
 autobind:
   - "gitlab.slade360emr.com/go/engagement/graph/feed"
   - "gitlab.slade360emr.com/go/engagement/graph/library"
+  - "gitlab.slade360emr.com/go/engagement/graph/scheduling"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -73,3 +74,6 @@ models:
   FilterParamsInput:
     model:
       - gitlab.slade360emr.com/go/engagement/graph/feed.FilterParams
+  CalendarEvent:
+    model:
+      - "google.golang.org/api/calendar/v3.Event"
