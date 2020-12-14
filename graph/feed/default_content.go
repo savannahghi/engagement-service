@@ -26,22 +26,23 @@ const (
 	defaultPostedByUID    = "hOcaUv8dqqgmWYf9HEhjdudgf0b2"
 	futureHours           = 878400 // hours in a century of leap years...
 
-	getConsultationActionName = "GET_CONSULTATION"
-	getMedicineActionName     = "GET_MEDICINE"
-	getTestActionName         = "GET_TEST"
-	getInsuranceActionName    = "GET_INSURANCE"
-	getCoachingActionName     = "GET_COACHING"
-	addPatientActionName      = "ADD_PATIENT"
-	searchPatientActionName   = "SEARCH_PATIENT"
-	addInsuranceActionName    = "ADD_INSURANCE"
-	addNHIFActionName         = "ADD_NHIF"
-	completeProfileActionName = "COMPLETE_PROFILE"
-	completeKYCActionName     = "COMPLETE_KYC"
-	hideItemActionName        = "HIDE_ITEM"
-	pinItemActionName         = "PIN_ITEM"
-	resolveItemActionName     = "RESOLVE_ITEM"
-	helpActionName            = "GET_HELP"
-	verifyEmailActionName     = "VERIFY_EMAIL"
+	getConsultationActionName     = "GET_CONSULTATION"
+	getMedicineActionName         = "GET_MEDICINE"
+	getTestActionName             = "GET_TEST"
+	getInsuranceActionName        = "GET_INSURANCE"
+	getCoachingActionName         = "GET_COACHING"
+	addPatientActionName          = "ADD_PATIENT"
+	searchPatientActionName       = "SEARCH_PATIENT"
+	addInsuranceActionName        = "ADD_INSURANCE"
+	addNHIFActionName             = "ADD_NHIF"
+	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
+	completeProfileActionName     = "COMPLETE_PROFILE"
+	completeKYCActionName         = "COMPLETE_KYC"
+	hideItemActionName            = "HIDE_ITEM"
+	pinItemActionName             = "PIN_ITEM"
+	resolveItemActionName         = "RESOLVE_ITEM"
+	helpActionName                = "GET_HELP"
+	verifyEmailActionName         = "VERIFY_EMAIL"
 
 	defaultOrg        = "default-org-id-please-change"
 	defaultLocation   = "default-location-id-please-change"
@@ -189,6 +190,7 @@ func defaultProNudges(
 ) ([]Nudge, error) {
 	var nudges []Nudge
 	fns := []nudgeGenerator{
+		partnerAccountSetupNudge,
 		completeKYCNudge,
 		completeProfileNudge,
 		verifyEmailNudge,
@@ -483,6 +485,46 @@ func addNHIFNudge(
 	}
 	actions := []Action{
 		*addNHIFAction,
+	}
+	return createNudge(
+		ctx,
+		uid,
+		flavour,
+		title,
+		text,
+		imgURL,
+		title,
+		text,
+		actions,
+		repository,
+	)
+}
+
+func partnerAccountSetupNudge(
+	ctx context.Context,
+	uid string,
+	flavour Flavour,
+	repository Repository,
+) (*Nudge, error) {
+	title := "Complete your profile"
+	text := "Fill in your Be.Well profile to unlock more rewards"
+	imgURL := StaticBase + "/nudges/complete_profile.png"
+	partnerAccountSetupAction, err := createLocalAction(
+		ctx,
+		uid,
+		false,
+		flavour,
+		partnerAccountSetupActionName,
+		ActionTypePrimary,
+		HandlingFullPage,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't create %s action: %w", partnerAccountSetupActionName, err)
+	}
+	actions := []Action{
+		*partnerAccountSetupAction,
 	}
 	return createNudge(
 		ctx,
