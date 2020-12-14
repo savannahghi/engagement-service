@@ -37,7 +37,6 @@ const (
 	addNHIFActionName             = "ADD_NHIF"
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
 	completeProfileActionName     = "COMPLETE_PROFILE"
-	completeKYCActionName         = "COMPLETE_KYC"
 	hideItemActionName            = "HIDE_ITEM"
 	pinItemActionName             = "PIN_ITEM"
 	resolveItemActionName         = "RESOLVE_ITEM"
@@ -191,7 +190,6 @@ func defaultProNudges(
 	var nudges []Nudge
 	fns := []nudgeGenerator{
 		partnerAccountSetupNudge,
-		completeKYCNudge,
 		completeProfileNudge,
 		verifyEmailNudge,
 	}
@@ -506,8 +504,8 @@ func partnerAccountSetupNudge(
 	flavour Flavour,
 	repository Repository,
 ) (*Nudge, error) {
-	title := "Complete your profile"
-	text := "Fill in your Be.Well profile to unlock more rewards"
+	title := "Setup your partner account"
+	text := "Create a partner account to begin transacting on Be.Well"
 	imgURL := StaticBase + "/nudges/complete_profile.png"
 	partnerAccountSetupAction, err := createLocalAction(
 		ctx,
@@ -565,46 +563,6 @@ func completeProfileNudge(
 	}
 	actions := []Action{
 		*completeProfileAction,
-	}
-	return createNudge(
-		ctx,
-		uid,
-		flavour,
-		title,
-		text,
-		imgURL,
-		title,
-		text,
-		actions,
-		repository,
-	)
-}
-
-func completeKYCNudge(
-	ctx context.Context,
-	uid string,
-	flavour Flavour,
-	repository Repository,
-) (*Nudge, error) {
-	title := "Complete your business profile"
-	text := "Fill in your Be.Well business profile in order to start transacting"
-	imgURL := StaticBase + "/nudges/complete_kyc.png"
-	completeKYCAction, err := createLocalAction(
-		ctx,
-		uid,
-		false,
-		flavour,
-		completeKYCActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
-		repository,
-	)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't create %s action: %w", completeKYCActionName, err)
-	}
-	actions := []Action{
-		*completeKYCAction,
 	}
 	return createNudge(
 		ctx,
