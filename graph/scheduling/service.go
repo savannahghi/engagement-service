@@ -66,16 +66,16 @@ func NewService() *Service {
 	}
 
 	service := &Service{
-		gcalService:    gcalService,
-		firestore:      firestore,
+		gcalService: gcalService,
+		firestore:   firestore,
 	}
 	return service
 }
 
 // Service offers methods to interact with the Google Calendar API
 type Service struct {
-	gcalService    *calendar.Service
-	firestore      *firestore.Client
+	gcalService *calendar.Service
+	firestore   *firestore.Client
 }
 
 func (s Service) checkPreconditions() {

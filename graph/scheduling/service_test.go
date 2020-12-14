@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 )
 
-const calendarTestEmail = "ngure.nyaga@healthcloud.co.ke"
+const calendarTestEmail = base.TestUserEmail
 
 func TestMain(m *testing.M) {
 	os.Setenv("ROOT_COLLECTION_SUFFIX", "testing")
