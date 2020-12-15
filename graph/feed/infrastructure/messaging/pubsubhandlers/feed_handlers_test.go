@@ -10,8 +10,6 @@ import (
 	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
-	db "gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/database"
-	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging"
 	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging/pubsubhandlers"
 )
 
@@ -50,120 +48,6 @@ func getTestPubsubPayload(t *testing.T, el feed.Element) *base.PubSubPayload {
 				"topicID": ksuid.New().String(),
 			},
 		},
-	}
-}
-
-func TestHandleFeedRetrieval(t *testing.T) {
-	thinFeed := getTestThinFeed(t)
-	if thinFeed == nil {
-		return
-	}
-
-	ctx := context.Background()
-	type args struct {
-		m *base.PubSubPayload
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "nil payload",
-			args: args{
-				m: nil,
-			},
-			wantErr: true,
-		},
-		{
-			name: "non nil payload",
-			args: args{
-				m: getTestPubsubPayload(t, thinFeed),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := pubsubhandlers.HandleFeedRetrieval(ctx, tt.args.m); (err != nil) != tt.wantErr {
-				t.Errorf("HandleFeedRetrieval() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestHandleThinFeedRetrieval(t *testing.T) {
-	thinFeed := getTestThinFeed(t)
-	if thinFeed == nil {
-		return
-	}
-
-	ctx := context.Background()
-	type args struct {
-		m *base.PubSubPayload
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "nil payload",
-			args: args{
-				m: nil,
-			},
-			wantErr: true,
-		},
-		{
-			name: "non nil payload",
-			args: args{
-				m: getTestPubsubPayload(t, thinFeed),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := pubsubhandlers.HandleThinFeedRetrieval(ctx, tt.args.m); (err != nil) != tt.wantErr {
-				t.Errorf("HandleThinFeedRetrieval() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestHandleItemRetrieval(t *testing.T) {
-	item := getTestItem()
-
-	ctx := context.Background()
-	type args struct {
-		m *base.PubSubPayload
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "nil payload",
-			args: args{
-				m: nil,
-			},
-			wantErr: true,
-		},
-		{
-			name: "non nil payload",
-			args: args{
-				m: getTestPubsubPayload(t, &item),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := pubsubhandlers.HandleItemRetrieval(ctx, tt.args.m); (err != nil) != tt.wantErr {
-				t.Errorf("HandleItemRetrieval() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
 	}
 }
 
@@ -447,41 +331,6 @@ func TestHandleItemUnpin(t *testing.T) {
 	}
 }
 
-func TestHandleNudgeRetrieval(t *testing.T) {
-	nudge := testNudge()
-	ctx := context.Background()
-	type args struct {
-		m *base.PubSubPayload
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "nil payload",
-			args: args{
-				m: nil,
-			},
-			wantErr: true,
-		},
-		{
-			name: "non nil payload",
-			args: args{
-				m: getTestPubsubPayload(t, nudge),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := pubsubhandlers.HandleNudgeRetrieval(ctx, tt.args.m); (err != nil) != tt.wantErr {
-				t.Errorf("HandleNudgeRetrieval() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestHandleNudgePublish(t *testing.T) {
 	nudge := testNudge()
 	ctx := context.Background()
@@ -692,41 +541,6 @@ func TestHandleNudgeShow(t *testing.T) {
 	}
 }
 
-func TestHandleActionRetrieval(t *testing.T) {
-	action := getTestAction()
-	ctx := context.Background()
-	type args struct {
-		m *base.PubSubPayload
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "nil payload",
-			args: args{
-				m: nil,
-			},
-			wantErr: true,
-		},
-		{
-			name: "non nil payload",
-			args: args{
-				m: getTestPubsubPayload(t, &action),
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := pubsubhandlers.HandleActionRetrieval(ctx, tt.args.m); (err != nil) != tt.wantErr {
-				t.Errorf("HandleActionRetrieval() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestHandleActionPublish(t *testing.T) {
 	action := getTestAction()
 	ctx := context.Background()
@@ -900,37 +714,6 @@ func TestHandleIncomingEvent(t *testing.T) {
 			}
 		})
 	}
-}
-
-func getTestThinFeed(t *testing.T) *feed.Feed {
-	ctx := context.Background()
-	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
-
-	repository, err := db.NewFirebaseRepository(ctx)
-	if err != nil {
-		t.Errorf("can't instantiate new firebase repository: %v", err)
-		return nil
-	}
-
-	notificationService, err := messaging.NewMockNotificationService()
-	if err != nil {
-		t.Errorf("can't instantiate notification service")
-		return nil
-	}
-
-	agg, err := feed.NewCollection(repository, notificationService)
-	if err != nil {
-		t.Errorf("can't instantiate feed collection: %w", err)
-		return nil
-	}
-	anonymous := false
-	thinFeed, err := agg.GetThinFeed(ctx, &uid, &anonymous, flavour)
-	if err != nil {
-		t.Errorf("can't instantiate thin feed: %w", err)
-		return nil
-	}
-	return thinFeed
 }
 
 func getTestItem() feed.Item {

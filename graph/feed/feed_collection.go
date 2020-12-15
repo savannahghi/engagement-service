@@ -106,18 +106,6 @@ func (agg Collection) GetFeed(
 			"the retrieved feed failed precondition checks: %w", err)
 	}
 
-	if err := agg.notificationService.Notify(
-		ctx,
-		AddPubSubNamespace(FeedRetrievalTopic),
-		*uid,
-		flavour,
-		feed,
-		map[string]interface{}{},
-	); err != nil {
-		return nil, fmt.Errorf(
-			"unable to notify feed to channel: %w", err)
-	}
-
 	return feed, nil
 }
 
@@ -157,16 +145,5 @@ func (agg Collection) GetThinFeed(
 			"the retrieved feed failed precondition checks: %w", err)
 	}
 
-	if err := agg.notificationService.Notify(
-		ctx,
-		AddPubSubNamespace(ThinFeedRetrievalTopic),
-		*uid,
-		flavour,
-		feed,
-		map[string]interface{}{},
-	); err != nil {
-		return nil, fmt.Errorf(
-			"unable to notify feed to channel: %w", err)
-	}
 	return feed, nil
 }

@@ -341,24 +341,6 @@ func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	switch topicID {
-	case feed.FeedRetrievalTopic:
-		err = pubsubhandlers.HandleFeedRetrieval(ctx, m)
-		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
-			return
-		}
-	case feed.ThinFeedRetrievalTopic:
-		err = pubsubhandlers.HandleThinFeedRetrieval(ctx, m)
-		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
-			return
-		}
-	case feed.ItemRetrievalTopic:
-		err = pubsubhandlers.HandleItemRetrieval(ctx, m)
-		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
-			return
-		}
 	case feed.ItemPublishTopic:
 		err = pubsubhandlers.HandleItemPublish(ctx, m)
 		if err != nil {
@@ -407,12 +389,6 @@ func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case feed.NudgeRetrievalTopic:
-		err = pubsubhandlers.HandleNudgeRetrieval(ctx, m)
-		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
-			return
-		}
 	case feed.NudgePublishTopic:
 		err = pubsubhandlers.HandleNudgePublish(ctx, m)
 		if err != nil {
@@ -445,12 +421,6 @@ func GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case feed.NudgeShowTopic:
 		err = pubsubhandlers.HandleNudgeShow(ctx, m)
-		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
-			return
-		}
-	case feed.ActionRetrievalTopic:
-		err = pubsubhandlers.HandleActionRetrieval(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return

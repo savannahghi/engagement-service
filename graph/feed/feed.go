@@ -18,30 +18,25 @@ import (
 // feed related constants
 const (
 	// these topic names are exported because they are also used by sub-packages
-	FeedRetrievalTopic     = "feed.get"
-	ThinFeedRetrievalTopic = "thinfeed.get"
-	ItemRetrievalTopic     = "items.get"
-	ItemPublishTopic       = "items.publish"
-	ItemDeleteTopic        = "items.delete"
-	ItemResolveTopic       = "items.resolve"
-	ItemUnresolveTopic     = "items.unresolve"
-	ItemHideTopic          = "items.hide"
-	ItemShowTopic          = "items.show"
-	ItemPinTopic           = "items.pin"
-	ItemUnpinTopic         = "items.unpin"
-	NudgeRetrievalTopic    = "nudges.get"
-	NudgePublishTopic      = "nudges.publish"
-	NudgeDeleteTopic       = "nudges.delete"
-	NudgeResolveTopic      = "nudges.resolve"
-	NudgeUnresolveTopic    = "nudges.unresolve"
-	NudgeHideTopic         = "nudges.hide"
-	NudgeShowTopic         = "nudges.show"
-	ActionRetrievalTopic   = "actions.get"
-	ActionPublishTopic     = "actions.publish"
-	ActionDeleteTopic      = "actions.delete"
-	MessagePostTopic       = "message.post"
-	MessageDeleteTopic     = "message.delete"
-	IncomingEventTopic     = "incoming.event"
+	ItemPublishTopic    = "items.publish"
+	ItemDeleteTopic     = "items.delete"
+	ItemResolveTopic    = "items.resolve"
+	ItemUnresolveTopic  = "items.unresolve"
+	ItemHideTopic       = "items.hide"
+	ItemShowTopic       = "items.show"
+	ItemPinTopic        = "items.pin"
+	ItemUnpinTopic      = "items.unpin"
+	NudgePublishTopic   = "nudges.publish"
+	NudgeDeleteTopic    = "nudges.delete"
+	NudgeResolveTopic   = "nudges.resolve"
+	NudgeUnresolveTopic = "nudges.unresolve"
+	NudgeHideTopic      = "nudges.hide"
+	NudgeShowTopic      = "nudges.show"
+	ActionPublishTopic  = "actions.publish"
+	ActionDeleteTopic   = "actions.delete"
+	MessagePostTopic    = "message.post"
+	MessageDeleteTopic  = "message.delete"
+	IncomingEventTopic  = "incoming.event"
 
 	LogoURL        = "https://assets.healthcloud.co.ke/bewell_logo.png"
 	BlankImageURL  = "https://assets.healthcloud.co.ke/1px.png"
@@ -196,19 +191,6 @@ func (fe Feed) GetFeedItem(ctx context.Context, itemID string) (*Item, error) {
 		return nil, nil
 	}
 
-	if err := fe.notificationService.Notify(
-		ctx,
-		AddPubSubNamespace(ItemRetrievalTopic),
-		fe.UID,
-		fe.Flavour,
-		item,
-		map[string]interface{}{
-			"itemID": itemID,
-		},
-	); err != nil {
-		return nil, fmt.Errorf("unable to notify item to channel: %w", err)
-	}
-
 	return item, nil
 }
 
@@ -225,19 +207,6 @@ func (fe Feed) GetNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 
 	if nudge == nil {
 		return nil, nil
-	}
-
-	if err := fe.notificationService.Notify(
-		ctx,
-		AddPubSubNamespace(NudgeRetrievalTopic),
-		fe.UID,
-		fe.Flavour,
-		nudge,
-		map[string]interface{}{
-			"nudgeID": nudgeID,
-		},
-	); err != nil {
-		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
 	return nudge, nil
@@ -260,19 +229,6 @@ func (fe Feed) GetAction(
 
 	if action == nil {
 		return nil, nil
-	}
-
-	if err := fe.notificationService.Notify(
-		ctx,
-		AddPubSubNamespace(ActionRetrievalTopic),
-		fe.UID,
-		fe.Flavour,
-		action,
-		map[string]interface{}{
-			"actionID": actionID,
-		},
-	); err != nil {
-		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
 	return action, nil

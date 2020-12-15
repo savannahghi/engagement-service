@@ -138,9 +138,6 @@ func (ps PubSubNotificationService) Notify(
 // TopicIDs returns the known (registered) topic IDs
 func (ps PubSubNotificationService) TopicIDs() []string {
 	return []string{
-		feed.AddPubSubNamespace(feed.FeedRetrievalTopic),
-		feed.AddPubSubNamespace(feed.ThinFeedRetrievalTopic),
-		feed.AddPubSubNamespace(feed.ItemRetrievalTopic),
 		feed.AddPubSubNamespace(feed.ItemPublishTopic),
 		feed.AddPubSubNamespace(ps.environment),
 		feed.AddPubSubNamespace(feed.ItemResolveTopic),
@@ -149,14 +146,12 @@ func (ps PubSubNotificationService) TopicIDs() []string {
 		feed.AddPubSubNamespace(feed.ItemShowTopic),
 		feed.AddPubSubNamespace(feed.ItemPinTopic),
 		feed.AddPubSubNamespace(feed.ItemUnpinTopic),
-		feed.AddPubSubNamespace(feed.NudgeRetrievalTopic),
 		feed.AddPubSubNamespace(feed.NudgePublishTopic),
 		feed.AddPubSubNamespace(feed.NudgeDeleteTopic),
 		feed.AddPubSubNamespace(feed.NudgeResolveTopic),
 		feed.AddPubSubNamespace(feed.NudgeUnresolveTopic),
 		feed.AddPubSubNamespace(feed.NudgeHideTopic),
 		feed.AddPubSubNamespace(feed.NudgeShowTopic),
-		feed.AddPubSubNamespace(feed.ActionRetrievalTopic),
 		feed.AddPubSubNamespace(feed.ActionPublishTopic),
 		feed.AddPubSubNamespace(feed.ActionDeleteTopic),
 		feed.AddPubSubNamespace(feed.MessagePostTopic),

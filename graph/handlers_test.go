@@ -2343,7 +2343,9 @@ func TestGetFeed(t *testing.T) {
 
 	uid := xid.New().String()
 	consumer := feed.FlavourConsumer
-	client := http.DefaultClient
+	client := http.Client{
+		Timeout: time.Minute * 10, // set high when troubleshooting
+	}
 	anonymous := false
 
 	filterParams := feed.FilterParams{
@@ -5645,7 +5647,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      []byte(b64),
 			Attributes: map[string]string{
-				"topicID": feed.FeedRetrievalTopic,
+				"topicID": feed.ActionPublishTopic,
 			},
 		},
 	}

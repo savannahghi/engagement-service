@@ -36,33 +36,6 @@ const (
 // payloads received from Google Cloud Pubsub
 type HandlePubsubPayload func(ctx context.Context, m *base.PubSubPayload) error
 
-// HandleFeedRetrieval responds to feed retrieval messages
-func HandleFeedRetrieval(ctx context.Context, m *base.PubSubPayload) error {
-	if m == nil {
-		return fmt.Errorf("nil pub sub payload")
-	}
-
-	return nil
-}
-
-// HandleThinFeedRetrieval responds to thin feed retrieval messages
-func HandleThinFeedRetrieval(ctx context.Context, m *base.PubSubPayload) error {
-	if m == nil {
-		return fmt.Errorf("nil pub sub payload")
-	}
-
-	return nil
-}
-
-// HandleItemRetrieval responds to item retrieval messages
-func HandleItemRetrieval(ctx context.Context, m *base.PubSubPayload) error {
-	if m == nil {
-		return fmt.Errorf("nil pub sub payload")
-	}
-
-	return nil
-}
-
 // HandleItemPublish responds to item publish messages
 func HandleItemPublish(ctx context.Context, m *base.PubSubPayload) error {
 	if m == nil {
@@ -175,15 +148,6 @@ func HandleItemUnpin(ctx context.Context, m *base.PubSubPayload) error {
 	return nil
 }
 
-// HandleNudgeRetrieval responds to nudge retrieval messages
-func HandleNudgeRetrieval(ctx context.Context, m *base.PubSubPayload) error {
-	if m == nil {
-		return fmt.Errorf("nil pub sub payload")
-	}
-
-	return nil
-}
-
 // HandleNudgePublish responds to nudge publish messages
 func HandleNudgePublish(ctx context.Context, m *base.PubSubPayload) error {
 	if m == nil {
@@ -202,12 +166,6 @@ func HandleNudgePublish(ctx context.Context, m *base.PubSubPayload) error {
 func HandleNudgeDelete(ctx context.Context, m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
-	}
-
-	err := notifyFeedUpdate(ctx, m)
-	if err != nil {
-		return fmt.Errorf(
-			"can't send thin feed notification over FCM: %w", err)
 	}
 
 	return nil
@@ -269,25 +227,10 @@ func HandleNudgeShow(ctx context.Context, m *base.PubSubPayload) error {
 	return nil
 }
 
-// HandleActionRetrieval responds to action retrieval messages
-func HandleActionRetrieval(ctx context.Context, m *base.PubSubPayload) error {
-	if m == nil {
-		return fmt.Errorf("nil pub sub payload")
-	}
-
-	return nil
-}
-
 // HandleActionPublish responds to action publish messages
 func HandleActionPublish(ctx context.Context, m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
-	}
-
-	err := notifyFeedUpdate(ctx, m)
-	if err != nil {
-		return fmt.Errorf(
-			"can't send thin feed notification over FCM: %w", err)
 	}
 
 	return nil
@@ -297,12 +240,6 @@ func HandleActionPublish(ctx context.Context, m *base.PubSubPayload) error {
 func HandleActionDelete(ctx context.Context, m *base.PubSubPayload) error {
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
-	}
-
-	err := notifyFeedUpdate(ctx, m)
-	if err != nil {
-		return fmt.Errorf(
-			"can't send thin feed notification over FCM: %w", err)
 	}
 
 	return nil
