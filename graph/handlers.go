@@ -708,7 +708,7 @@ func PublishFeedItem(
 			return
 		}
 
-		item := &feed.Item{}
+		item := &base.Item{}
 		err = item.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -888,7 +888,7 @@ func PublishNudge(
 			return
 		}
 
-		nudge := &feed.Nudge{}
+		nudge := &base.Nudge{}
 		err = nudge.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1034,7 +1034,7 @@ func PublishAction(
 			return
 		}
 
-		action := &feed.Action{}
+		action := &base.Action{}
 		err = action.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1118,7 +1118,7 @@ func PostMessage(
 			return
 		}
 
-		message := &feed.Message{}
+		message := &base.Message{}
 		err = message.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1202,7 +1202,7 @@ func ProcessEvent(
 			return
 		}
 
-		event := &feed.Event{}
+		event := &base.Event{}
 		err = event.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)

@@ -40,19 +40,19 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
   MsgInput:
     model:
-      - gitlab.slade360emr.com/go/engagement/graph/feed.Message
+      - gitlab.slade360emr.com/go/base.Message
   Msg:
     model:
-      - gitlab.slade360emr.com/go/engagement/graph/feed.Message
+      - gitlab.slade360emr.com/go/base.Message
   EventInput:
     model:
-      - gitlab.slade360emr.com/go/engagement/graph/feed.Event
+      - gitlab.slade360emr.com/go/base.Event
   PayloadInput:
     model:
-      - gitlab.slade360emr.com/go/engagement/graph/feed.Payload
+      - gitlab.slade360emr.com/go/base.Payload
   ContextInput:
     model:
-      - gitlab.slade360emr.com/go/engagement/graph/feed.Context
+      - gitlab.slade360emr.com/go/base.Context
   FilterParamsInput:
     model:
       - gitlab.slade360emr.com/go/engagement/graph/feed.FilterParams

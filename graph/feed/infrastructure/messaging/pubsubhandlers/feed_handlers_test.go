@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"math/rand"
+	"reflect"
 	"testing"
 	"time"
 
@@ -13,11 +14,32 @@ import (
 	"gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/messaging/pubsubhandlers"
 )
 
+// TODO Get test FCM token from env
+// TODO Document the senders, they are very clear
+// TODO Document item publish: item is notified + *tray notification*
+// TODO Document item delete: item is notified, no tray notification
+// TODO Document item resolve: item is notified, no tray notification
+// TODO Document item unresolve: item is notified, no tray notification
+// TODO Document item hide: item is notified, no tray notification
+// TODO Document item show: item is notified, no tray notification
+// TODO Document item pin: item is notified, no tray notification
+// TODO Document item unpin: item is notified, no tray notification
+// TODO Document nudge publish: nudge is notified
+// TODO Document nudge delete: nudge is notified
+// TODO Document nudge resolve: nudge is notified
+// TODO Document nudge unresolve: nudge is notified
+// TODO Document nudge hide: nudge is notified
+// TODO Document show nudge: nudge is notified
+// TODO Document action publish: thin feed is notified
+// TODO Document action delete: thin feed is notified
+// TODO Document message post: message notified
+// TODO Document message delete: message notified
+
 const (
 	intMax = 9007199254740990
 )
 
-func getTestPubsubPayload(t *testing.T, el feed.Element) *base.PubSubPayload {
+func getTestPubsubPayload(t *testing.T, el base.Element) *base.PubSubPayload {
 	elData, err := el.ValidateAndMarshal()
 	if err != nil {
 		t.Errorf("invalid element: %w", err)
@@ -26,7 +48,7 @@ func getTestPubsubPayload(t *testing.T, el feed.Element) *base.PubSubPayload {
 
 	envelope := feed.NotificationEnvelope{
 		UID:     ksuid.New().String(),
-		Flavour: feed.FlavourConsumer,
+		Flavour: base.FlavourConsumer,
 		Payload: elData,
 		Metadata: map[string]interface{}{
 			ksuid.New().String(): ksuid.New().String(),
@@ -716,45 +738,45 @@ func TestHandleIncomingEvent(t *testing.T) {
 	}
 }
 
-func getTestItem() feed.Item {
-	return feed.Item{
+func getTestItem() base.Item {
+	return base.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
-		Status:         feed.StatusPending,
-		Visibility:     feed.VisibilityShow,
-		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
+		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
-		TextType:       feed.TextTypePlain,
-		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
-			feed.GetYoutubeVideoLink(feed.SampleVideoURL, "title", "description", feed.LogoURL),
+		TextType:       base.TextTypePlain,
+		Links: []base.Link{
+			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+			base.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
 		},
-		Actions: []feed.Action{
+		Actions: []base.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
-				ActionType:     feed.ActionTypeSecondary,
-				Handling:       feed.HandlingFullPage,
+				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     base.ActionTypeSecondary,
+				Handling:       base.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
-				ActionType:     feed.ActionTypePrimary,
-				Handling:       feed.HandlingInline,
+				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     base.ActionTypePrimary,
+				Handling:       base.HandlingInline,
 			},
 		},
-		Conversations: []feed.Message{
+		Conversations: []base.Message{
 			{
 				ID:             "msg-2",
 				Text:           "hii ni reply",
@@ -773,28 +795,28 @@ func getTestItem() feed.Item {
 			"group-1",
 			"group-2",
 		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelFcm,
-			feed.ChannelEmail,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
+		NotificationChannels: []base.Channel{
+			base.ChannelFcm,
+			base.ChannelEmail,
+			base.ChannelSms,
+			base.ChannelWhatsapp,
 		},
 	}
 }
 
-func testNudge() *feed.Nudge {
-	return &feed.Nudge{
+func testNudge() *base.Nudge {
+	return &base.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Expiry:         time.Now().Add(time.Hour * 24),
-		Status:         feed.StatusPending,
-		Visibility:     feed.VisibilityShow,
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
 		Title:          ksuid.New().String(),
-		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
+		Links: []base.Link{
+			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		},
 		Text: ksuid.New().String(),
-		Actions: []feed.Action{
+		Actions: []base.Action{
 			getTestAction(),
 		},
 		Users: []string{
@@ -803,11 +825,11 @@ func testNudge() *feed.Nudge {
 		Groups: []string{
 			ksuid.New().String(),
 		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelEmail,
-			feed.ChannelFcm,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
+		NotificationChannels: []base.Channel{
+			base.ChannelEmail,
+			base.ChannelFcm,
+			base.ChannelSms,
+			base.ChannelWhatsapp,
 		},
 	}
 }
@@ -816,13 +838,13 @@ func getTestSequenceNumber() int {
 	return rand.Intn(intMax)
 }
 
-func getTestEvent() feed.Event {
-	return feed.Event{
+func getTestEvent() base.Event {
+	return base.Event{
 		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
-		Context: feed.Context{
+		Context: base.Context{
 			UserID:         ksuid.New().String(),
-			Flavour:        feed.FlavourConsumer,
+			Flavour:        base.FlavourConsumer,
 			OrganizationID: ksuid.New().String(),
 			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
@@ -830,19 +852,19 @@ func getTestEvent() feed.Event {
 	}
 }
 
-func getTestAction() feed.Action {
-	return feed.Action{
+func getTestAction() base.Action {
+	return base.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.LogoURL),
-		ActionType:     feed.ActionTypePrimary,
-		Handling:       feed.HandlingFullPage,
+		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		ActionType:     base.ActionTypePrimary,
+		Handling:       base.HandlingFullPage,
 	}
 }
 
-func getTestMessage() feed.Message {
-	return feed.Message{
+func getTestMessage() base.Message {
+	return base.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Text:           ksuid.New().String(),
@@ -850,5 +872,185 @@ func getTestMessage() feed.Message {
 		PostedByUID:    ksuid.New().String(),
 		PostedByName:   ksuid.New().String(),
 		Timestamp:      time.Now(),
+	}
+}
+
+func TestNotifyItemUpdate(t *testing.T) {
+	type args struct {
+		ctx                 context.Context
+		sender              string
+		includeNotification bool
+		m                   *base.PubSubPayload
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		// TODO Wrong notification data in payload
+		// TODO Item can't be unmarshalled from envelope contents
+		// TODO Valid persistent item
+		// TODO Valid non-persistent item
+		// TODO Default: unknown sender
+		// TODO Item publish sender...new labels
+		// TODO Item publish sender, existing/default label
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := pubsubhandlers.NotifyItemUpdate(tt.args.ctx, tt.args.sender, tt.args.includeNotification, tt.args.m); (err != nil) != tt.wantErr {
+				t.Errorf("NotifyItemUpdate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestSendNotificationViaFCM(t *testing.T) {
+	type args struct {
+		ctx          context.Context
+		uids         []string
+		sender       string
+		pl           feed.NotificationEnvelope
+		notification *base.FirebaseSimpleNotificationInput
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		// TODO UIDs with no tokens...error
+		// TODO UIDs with no tokens...blank
+		// TODO UIDs with tokens...valid push
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := pubsubhandlers.SendNotificationViaFCM(tt.args.ctx, tt.args.uids, tt.args.sender, tt.args.pl, tt.args.notification); (err != nil) != tt.wantErr {
+				t.Errorf("SendNotificationViaFCM() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetThinFeed(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour base.Flavour
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *feed.Feed
+		wantErr bool
+	}{
+		// TODO: Initialize new feed
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := pubsubhandlers.GetThinFeed(tt.args.ctx, tt.args.uid, tt.args.flavour)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetThinFeed() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetThinFeed() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetUserTokens(t *testing.T) {
+	type args struct {
+		uids []string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		// TODO UIDs with tokens
+		// TODO UIDs with no tokens
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := pubsubhandlers.GetUserTokens(tt.args.uids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetUserTokens() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetUserTokens() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNotifyInboxCountUpdate(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour base.Flavour
+		count   int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		// TODO Successful inbox update notification
+		// TODO Unsuccessful inbox update notification
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := pubsubhandlers.NotifyInboxCountUpdate(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.count); (err != nil) != tt.wantErr {
+				t.Errorf("NotifyInboxCountUpdate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestNotifyNudgeUpdate(t *testing.T) {
+	type args struct {
+		ctx    context.Context
+		sender string
+		m      *base.PubSubPayload
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		// TODO Successful nudge update notification
+		// TODO Unsuccessful nudge update notification
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := pubsubhandlers.NotifyNudgeUpdate(tt.args.ctx, tt.args.sender, tt.args.m); (err != nil) != tt.wantErr {
+				t.Errorf("NotifyNudgeUpdate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUpdateInbox(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour base.Flavour
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		// TODO Successful inbox update
+		// TODO Failed inbox update
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := pubsubhandlers.UpdateInbox(tt.args.ctx, tt.args.uid, tt.args.flavour); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateInbox() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }

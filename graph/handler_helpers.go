@@ -61,7 +61,7 @@ func getThinFeed(
 	return thinFeed, nil
 }
 
-func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *feed.Flavour, *bool, error) {
+func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *base.Flavour, *bool, error) {
 	if r == nil {
 		return nil, nil, nil, fmt.Errorf("nil request")
 	}
@@ -76,7 +76,7 @@ func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *feed.Flavour, *bool
 		return nil, nil, nil, fmt.Errorf("can't get `flavour` path var: %w", err)
 	}
 
-	flavour := feed.Flavour(flavourStr)
+	flavour := base.Flavour(flavourStr)
 	if !flavour.IsValid() {
 		return nil, nil, nil, fmt.Errorf("`%s` is not a valid feed flavour", err)
 	}
@@ -95,7 +95,7 @@ func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *feed.Flavour, *bool
 
 }
 
-type patchItemFunc func(ctx context.Context, itemID string) (*feed.Item, error)
+type patchItemFunc func(ctx context.Context, itemID string) (*base.Item, error)
 
 func patchItem(
 	ctx context.Context,
@@ -131,7 +131,7 @@ func patchItem(
 	respondWithJSON(w, http.StatusOK, marshalled)
 }
 
-type patchNudgeFunc func(ctx context.Context, nudgeID string) (*feed.Nudge, error)
+type patchNudgeFunc func(ctx context.Context, nudgeID string) (*base.Nudge, error)
 
 func patchNudge(
 	ctx context.Context,
@@ -167,13 +167,13 @@ func patchNudge(
 	respondWithJSON(w, http.StatusOK, marshalled)
 }
 
-func getOptionalBooleanFilterQueryParam(r *http.Request, paramName string) (*feed.BooleanFilter, error) {
+func getOptionalBooleanFilterQueryParam(r *http.Request, paramName string) (*base.BooleanFilter, error) {
 	val := r.FormValue(paramName)
 	if val == "" {
 		return nil, nil // optional
 	}
 
-	boolFilter := feed.BooleanFilter(val)
+	boolFilter := base.BooleanFilter(val)
 	if !boolFilter.IsValid() {
 		return nil, fmt.Errorf("optional bool: `%s` is not a valid boolean filter value", val)
 	}
@@ -181,13 +181,13 @@ func getOptionalBooleanFilterQueryParam(r *http.Request, paramName string) (*fee
 	return &boolFilter, nil
 }
 
-func getRequiredBooleanFilterQueryParam(r *http.Request, paramName string) (feed.BooleanFilter, error) {
+func getRequiredBooleanFilterQueryParam(r *http.Request, paramName string) (base.BooleanFilter, error) {
 	val := r.FormValue(paramName)
 	if val == "" {
 		return "", fmt.Errorf("required BooleanFilter `%s` not set", paramName)
 	}
 
-	boolFilter := feed.BooleanFilter(val)
+	boolFilter := base.BooleanFilter(val)
 	if !boolFilter.IsValid() {
 		return "", fmt.Errorf("required bool: `%s` is not a valid boolean filter value", val)
 	}
@@ -198,13 +198,13 @@ func getRequiredBooleanFilterQueryParam(r *http.Request, paramName string) (feed
 func getOptionalStatusQueryParam(
 	r *http.Request,
 	paramName string,
-) (*feed.Status, error) {
+) (*base.Status, error) {
 	val, err := getStringVar(r, paramName)
 	if err != nil {
 		return nil, nil // this is an optional param
 	}
 
-	status := feed.Status(val)
+	status := base.Status(val)
 	if !status.IsValid() {
 		return nil, fmt.Errorf("`%s` is not a valid status", val)
 	}
@@ -215,13 +215,13 @@ func getOptionalStatusQueryParam(
 func getOptionalVisibilityQueryParam(
 	r *http.Request,
 	paramName string,
-) (*feed.Visibility, error) {
+) (*base.Visibility, error) {
 	val, err := getStringVar(r, paramName)
 	if err != nil {
 		return nil, nil // this is an optional param
 	}
 
-	visibility := feed.Visibility(val)
+	visibility := base.Visibility(val)
 	if !visibility.IsValid() {
 		return nil, fmt.Errorf("`%s` is not a valid visibility value", val)
 	}

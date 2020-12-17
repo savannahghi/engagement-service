@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/segmentio/ksuid"
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	db "gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/database"
 )
@@ -19,7 +20,7 @@ func TestSetDefaultActions(t *testing.T) {
 	type args struct {
 		ctx        context.Context
 		uid        string
-		flavour    feed.Flavour
+		flavour    base.Flavour
 		repository feed.Repository
 	}
 	tests := []struct {
@@ -32,7 +33,7 @@ func TestSetDefaultActions(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    feed.FlavourConsumer,
+				flavour:    base.FlavourConsumer,
 				repository: fr,
 			},
 		},
@@ -41,7 +42,7 @@ func TestSetDefaultActions(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    feed.FlavourPro,
+				flavour:    base.FlavourPro,
 				repository: fr,
 			},
 		},
@@ -92,7 +93,7 @@ func TestSetDefaultNudges(t *testing.T) {
 	type args struct {
 		ctx        context.Context
 		uid        string
-		flavour    feed.Flavour
+		flavour    base.Flavour
 		repository feed.Repository
 	}
 	tests := []struct {
@@ -105,7 +106,7 @@ func TestSetDefaultNudges(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    feed.FlavourConsumer,
+				flavour:    base.FlavourConsumer,
 				repository: fr,
 			},
 		},
@@ -114,7 +115,7 @@ func TestSetDefaultNudges(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    feed.FlavourPro,
+				flavour:    base.FlavourPro,
 				repository: fr,
 			},
 		},
@@ -137,8 +138,8 @@ func TestSetDefaultNudges(t *testing.T) {
 				}
 
 				// refetch nudges
-				pending := feed.StatusPending
-				show := feed.VisibilityShow
+				pending := base.StatusPending
+				show := base.VisibilityShow
 				nudges, err := fr.GetNudges(
 					ctx,
 					tt.args.uid,
@@ -169,7 +170,7 @@ func TestSetDefaultItems(t *testing.T) {
 	type args struct {
 		ctx        context.Context
 		uid        string
-		flavour    feed.Flavour
+		flavour    base.Flavour
 		repository feed.Repository
 	}
 	tests := []struct {
@@ -182,7 +183,7 @@ func TestSetDefaultItems(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    feed.FlavourConsumer,
+				flavour:    base.FlavourConsumer,
 				repository: fr,
 			},
 		},
@@ -191,7 +192,7 @@ func TestSetDefaultItems(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    feed.FlavourPro,
+				flavour:    base.FlavourPro,
 				repository: fr,
 			},
 		},
@@ -219,7 +220,7 @@ func TestSetDefaultItems(t *testing.T) {
 					ctx,
 					tt.args.uid,
 					tt.args.flavour,
-					feed.BooleanFilterBoth,
+					base.BooleanFilterBoth,
 					nil,
 					nil,
 					nil,

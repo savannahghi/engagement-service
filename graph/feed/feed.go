@@ -2,16 +2,10 @@ package feed
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"strings"
 	"time"
 
-	"github.com/asaskevich/govalidator"
 	"github.com/segmentio/ksuid"
-	"github.com/xeipuuv/gojsonschema"
 	"gitlab.slade360emr.com/go/base"
 )
 
@@ -37,27 +31,8 @@ const (
 	MessagePostTopic    = "message.post"
 	MessageDeleteTopic  = "message.delete"
 	IncomingEventTopic  = "incoming.event"
-
-	LogoURL        = "https://assets.healthcloud.co.ke/bewell_logo.png"
-	BlankImageURL  = "https://assets.healthcloud.co.ke/1px.png"
-	SampleVideoURL = "https://www.youtube.com/watch?v=bPiofmZGb8o"
-	ServiceName    = "feed"
-	TopicVersion   = "v1"
-
-	linkSchemaFile       = "link.schema.json"
-	messageSchemaFile    = "message.schema.json"
-	actionSchemaFile     = "action.schema.json"
-	nudgeSchemaFile      = "nudge.schema.json"
-	itemSchemaFile       = "item.schema.json"
-	feedSchemaFile       = "feed.schema.json"
-	contextSchemaFile    = "context.schema.json"
-	payloadSchemaFile    = "payload.schema.json"
-	eventSchemaFile      = "event.schema.json"
-	statusSchemaFile     = "status.schema.json"
-	visibilitySchemaFile = "visibility.schema.json"
-
-	fallbackSchemaHost   = "https://schema.healthcloud.co.ke"
-	schemaHostEnvVarName = "SCHEMA_HOST"
+	ServiceName         = "feed"
+	TopicVersion        = "v1"
 )
 
 // ErrNilNudge is a marker error for cases when a nudge should have
@@ -67,13 +42,6 @@ var ErrNilNudge = fmt.Errorf("nil nudge")
 // ErrNilFeedItem is a sentinel error used to indicate when a feed item
 // should have been non nil but was not
 var ErrNilFeedItem = fmt.Errorf("nil feed item")
-
-// Element is a building block of a feed e.g a nudge, action, feed item etc
-// An element should know how to validate itself against it's JSON schema
-type Element interface {
-	ValidateAndUnmarshal(b []byte) error
-	ValidateAndMarshal() ([]byte, error)
-}
 
 // Feed manages and serializes the nudges, actions and feed items that a
 // specific user should see.
@@ -96,16 +64,16 @@ type Feed struct {
 	UID string `json:"uid" firestore:"uid"`
 
 	// whether this is a consumer or pro feed
-	Flavour Flavour `json:"flavour" firestore:"flavour"`
+	Flavour base.Flavour `json:"flavour" firestore:"flavour"`
 
 	// what are the global actions available to this user?
-	Actions []Action `json:"actions" firestore:"actions"`
+	Actions []base.Action `json:"actions" firestore:"actions"`
 
 	// what does this user's feed contain?
-	Items []Item `json:"items" firestore:"items"`
+	Items []base.Item `json:"items" firestore:"items"`
 
 	// what prompts or nudges should this user see?
-	Nudges []Nudge `json:"nudges" firestore:"nudges"`
+	Nudges []base.Nudge `json:"nudges" firestore:"nudges"`
 
 	// indicates whether the user is Anonymous or not
 	IsAnonymous *bool `json:"isAnonymous" firestore:"isAnonymous"`
@@ -144,7 +112,7 @@ func (fe Feed) checkPreconditions() error {
 }
 
 // ValidateElement ensures that an element is non nil and valid
-func (fe Feed) ValidateElement(el Element) error {
+func (fe Feed) ValidateElement(el base.Element) error {
 	if el == nil {
 		return fmt.Errorf("nil element")
 	}
@@ -163,7 +131,7 @@ func (fe Feed) IsEntity() {}
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (fe *Feed) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(feedSchemaFile, b, fe)
+	err := base.ValidateAndUnmarshal(base.FeedSchemaFile, b, fe)
 	if err != nil {
 		return fmt.Errorf("invalid feed JSON: %w", err)
 	}
@@ -172,11 +140,11 @@ func (fe *Feed) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal validates against the JSON schema then marshals to JSON
 func (fe *Feed) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(feedSchemaFile, fe)
+	return base.ValidateAndMarshal(base.FeedSchemaFile, fe)
 }
 
 // GetFeedItem retrieves a feed item
-func (fe Feed) GetFeedItem(ctx context.Context, itemID string) (*Item, error) {
+func (fe Feed) GetFeedItem(ctx context.Context, itemID string) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -195,7 +163,7 @@ func (fe Feed) GetFeedItem(ctx context.Context, itemID string) (*Item, error) {
 }
 
 // GetNudge retrieves a feed item
-func (fe Feed) GetNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
+func (fe Feed) GetNudge(ctx context.Context, nudgeID string) (*base.Nudge, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -216,7 +184,7 @@ func (fe Feed) GetNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 func (fe Feed) GetAction(
 	ctx context.Context,
 	actionID string,
-) (*Action, error) {
+) (*base.Action, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -237,8 +205,8 @@ func (fe Feed) GetAction(
 // PublishFeedItem idempotently creates or updates a feed item
 func (fe Feed) PublishFeedItem(
 	ctx context.Context,
-	item *Item,
-) (*Item, error) {
+	item *base.Item,
+) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -257,7 +225,7 @@ func (fe Feed) PublishFeedItem(
 	}
 
 	for _, action := range item.Actions {
-		if action.ActionType == ActionTypeFloating {
+		if action.ActionType == base.ActionTypeFloating {
 			return nil, fmt.Errorf("floating actions are only allowed at the global level")
 		}
 	}
@@ -324,7 +292,7 @@ func (fe Feed) DeleteFeedItem(
 func (fe Feed) ResolveFeedItem(
 	ctx context.Context,
 	itemID string,
-) (*Item, error) {
+) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -338,7 +306,7 @@ func (fe Feed) ResolveFeedItem(
 		return nil, ErrNilFeedItem
 	}
 
-	item.Status = StatusDone
+	item.Status = base.StatusDone
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
@@ -367,7 +335,7 @@ func (fe Feed) ResolveFeedItem(
 func (fe Feed) PinFeedItem(
 	ctx context.Context,
 	itemID string,
-) (*Item, error) {
+) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -410,7 +378,7 @@ func (fe Feed) PinFeedItem(
 func (fe Feed) UnpinFeedItem(
 	ctx context.Context,
 	itemID string,
-) (*Item, error) {
+) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -453,7 +421,7 @@ func (fe Feed) UnpinFeedItem(
 func (fe Feed) UnresolveFeedItem(
 	ctx context.Context,
 	itemID string,
-) (*Item, error) {
+) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -467,7 +435,7 @@ func (fe Feed) UnresolveFeedItem(
 		return nil, ErrNilFeedItem
 	}
 
-	item.Status = StatusPending
+	item.Status = base.StatusPending
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
@@ -496,7 +464,7 @@ func (fe Feed) UnresolveFeedItem(
 func (fe Feed) HideFeedItem(
 	ctx context.Context,
 	itemID string,
-) (*Item, error) {
+) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -510,7 +478,7 @@ func (fe Feed) HideFeedItem(
 		return nil, ErrNilFeedItem
 	}
 
-	item.Visibility = VisibilityHide
+	item.Visibility = base.VisibilityHide
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
@@ -539,7 +507,7 @@ func (fe Feed) HideFeedItem(
 func (fe Feed) ShowFeedItem(
 	ctx context.Context,
 	itemID string,
-) (*Item, error) {
+) (*base.Item, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -553,7 +521,7 @@ func (fe Feed) ShowFeedItem(
 		return nil, ErrNilFeedItem
 	}
 
-	item.Visibility = VisibilityShow
+	item.Visibility = base.VisibilityShow
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	item, err = fe.repository.UpdateFeedItem(ctx, fe.UID, fe.Flavour, item)
@@ -630,8 +598,8 @@ func (fe Feed) UpdateUnreadPersistentItemsCount(ctx context.Context) error {
 // If the nudge does not have a sequence number, it is assigned one.
 func (fe Feed) PublishNudge(
 	ctx context.Context,
-	nudge *Nudge,
-) (*Nudge, error) {
+	nudge *base.Nudge,
+) (*base.Nudge, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -650,7 +618,7 @@ func (fe Feed) PublishNudge(
 	}
 
 	for _, action := range nudge.Actions {
-		if action.ActionType == ActionTypeFloating {
+		if action.ActionType == base.ActionTypeFloating {
 			return nil, fmt.Errorf("floating actions are only allowed at the global level")
 		}
 	}
@@ -680,7 +648,7 @@ func (fe Feed) PublishNudge(
 func (fe Feed) ResolveNudge(
 	ctx context.Context,
 	nudgeID string,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -694,7 +662,7 @@ func (fe Feed) ResolveNudge(
 		return nil, ErrNilNudge
 	}
 
-	nudge.Status = StatusDone
+	nudge.Status = base.StatusDone
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
@@ -722,7 +690,7 @@ func (fe Feed) ResolveNudge(
 func (fe Feed) UnresolveNudge(
 	ctx context.Context,
 	nudgeID string,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -736,7 +704,7 @@ func (fe Feed) UnresolveNudge(
 		return nil, ErrNilNudge
 	}
 
-	nudge.Status = StatusPending
+	nudge.Status = base.StatusPending
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
@@ -764,7 +732,7 @@ func (fe Feed) UnresolveNudge(
 func (fe Feed) HideNudge(
 	ctx context.Context,
 	nudgeID string,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -778,7 +746,7 @@ func (fe Feed) HideNudge(
 		return nil, ErrNilNudge
 	}
 
-	nudge.Visibility = VisibilityHide
+	nudge.Visibility = base.VisibilityHide
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
@@ -802,7 +770,7 @@ func (fe Feed) HideNudge(
 }
 
 // ShowNudge hides a feed item from a specific user's feed
-func (fe Feed) ShowNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
+func (fe Feed) ShowNudge(ctx context.Context, nudgeID string) (*base.Nudge, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -816,7 +784,7 @@ func (fe Feed) ShowNudge(ctx context.Context, nudgeID string) (*Nudge, error) {
 		return nil, ErrNilNudge
 	}
 
-	nudge.Visibility = VisibilityShow
+	nudge.Visibility = base.VisibilityShow
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	nudge, err = fe.repository.UpdateNudge(ctx, fe.UID, fe.Flavour, nudge)
@@ -889,8 +857,8 @@ func (fe Feed) DeleteNudge(ctx context.Context, nudgeID string) error {
 // If the action does not have a sequence number, it is assigned one.
 func (fe Feed) PublishAction(
 	ctx context.Context,
-	action *Action,
-) (*Action, error) {
+	action *base.Action,
+) (*base.Action, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -966,8 +934,8 @@ func (fe Feed) DeleteAction(ctx context.Context, actionID string) error {
 func (fe Feed) PostMessage(
 	ctx context.Context,
 	itemID string,
-	message *Message,
-) (*Message, error) {
+	message *base.Message,
+) (*base.Message, error) {
 	if err := fe.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("feed precondition check failed: %w", err)
 	}
@@ -1078,7 +1046,7 @@ func (fe Feed) DeleteMessage(
 //  4. Updating (streaming) analytics
 func (fe Feed) ProcessEvent(
 	ctx context.Context,
-	event *Event,
+	event *base.Event,
 ) error {
 	if err := fe.checkPreconditions(); err != nil {
 		return fmt.Errorf("feed precondition check failed: %w", err)
@@ -1135,560 +1103,9 @@ func (fe Feed) ProcessEvent(
 	return nil
 }
 
-// Action represents the global and non-global actions that a user can see/do
-type Action struct {
-	// A unique identifier for each action
-	ID string `json:"id" firestore:"id"`
-
-	// A higher sequence number means that it came later
-	SequenceNumber int `json:"sequenceNumber" firestore:"sequenceNumber"`
-
-	// A friendly name for the action; rich text with Unicode, can have emoji
-	Name string `json:"name" firestore:"name"`
-
-	// A link to a PNG image that would serve as an avatar
-	Icon Link `json:"icon" firestore:"icon"`
-
-	// Action types are: primary, secondary, overflow and floating
-	// Primary actions get dominant visual treatment;
-	// secondary actions less so;
-	// overflow actions are hidden;
-	// floating actions are material FABs
-	ActionType ActionType `json:"actionType" firestore:"actionType"`
-
-	// How the action should be handled e.g inline or full page.
-	// This is a hint for frontend logic.
-	Handling Handling `json:"handling" firestore:"handling"`
-
-	// indicated whether this action should or can be triggered by na anoymous user
-	AllowAnonymous bool `json:"allowAnonymous" firestore:"allowAnonymous"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (ac *Action) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(actionSchemaFile, b, ac)
-	if err != nil {
-		return fmt.Errorf("invalid action JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (ac *Action) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(actionSchemaFile, ac)
-}
-
-// IsEntity marks this as an Apollo federation GraphQL entity
-func (ac Action) IsEntity() {}
-
-// Event An event indicating that this action was triggered
-type Event struct {
-	// A unique identifier for each action
-	ID string `json:"id" firestore:"id"`
-
-	// An event name - two upper case words separated by an underscore
-	Name string `json:"name" firestore:"name"`
-
-	// Technical metadata - when/where/why/who/what/how etc
-	Context Context `json:"context,omitempty" firestore:"context,omitempty"`
-
-	// The actual 'business data' carried by the event
-	Payload Payload `json:"payload,omitempty" firestore:"payload,omitempty"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (ev *Event) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(eventSchemaFile, b, ev)
-	if err != nil {
-		return fmt.Errorf("invalid event JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (ev *Event) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(eventSchemaFile, ev)
-}
-
-// IsEntity marks this as an Apollo federation GraphQL entity
-func (ev Event) IsEntity() {}
-
-// Context identifies when/where/why/who/what/how an event occured.
-type Context struct {
-	// the system or human user that created this event
-	UserID string `json:"userID" firestore:"userID"`
-
-	// the flavour of the feed/app that originated this event
-	Flavour Flavour `json:"flavour" firestore:"flavour"`
-
-	// the client (organization) that this user belongs to
-	OrganizationID string `json:"organizationID" firestore:"organizationID"`
-
-	// the location (e.g branch) from which the event was sent
-	LocationID string `json:"locationID" firestore:"locationID"`
-
-	// when this event was sent
-	Timestamp time.Time `json:"timestamp" firestore:"timestamp"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (ct *Context) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(contextSchemaFile, b, ct)
-	if err != nil {
-		return fmt.Errorf("invalid context JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (ct *Context) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(contextSchemaFile, ct)
-}
-
-// Payload carries the actual 'business data' carried by the event.
-// It varies from event to event.
-type Payload struct {
-	Data map[string]interface{} `json:"data" firestore:"data"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (pl *Payload) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(payloadSchemaFile, b, pl)
-	if err != nil {
-		return fmt.Errorf("invalid payload JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (pl *Payload) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(payloadSchemaFile, pl)
-}
-
-// Nudge represents a "prompt" for a user e.g to set a PIN
-type Nudge struct {
-	// A unique identifier for each nudge
-	ID string `json:"id" firestore:"id"`
-
-	// A higher sequence number means that it came later
-	SequenceNumber int `json:"sequenceNumber" firestore:"sequenceNumber"`
-
-	// Visibility determines if a nudge should be visible or not
-	Visibility Visibility `json:"visibility" firestore:"visibility"`
-
-	// whether the nudge is done (acted on) or pending
-	Status Status `json:"status" firestore:"status"`
-
-	// When this nudge should be expired/removed, automatically. RFC3339.
-	Expiry time.Time `json:"expiry" firestore:"expiry"`
-
-	// the title (lead line) of the nudge
-	Title string `json:"title" firestore:"title"`
-
-	// the text/copy of the nudge
-	Text string `json:"text" firestore:"text"`
-
-	// an illustrative image for the nudge
-	Links []Link `json:"links" firestore:"links"`
-
-	// actions to include on the nudge
-	Actions []Action `json:"actions" firestore:"actions"`
-
-	// Identifiers of all the users that got this message
-	Users []string `json:"users,omitempty" firestore:"users,omitempty"`
-
-	// Identifiers of all the groups that got this message
-	Groups []string `json:"groups,omitempty" firestore:"groups,omitempty"`
-
-	// How the user should be notified of this new item, if at all
-	NotificationChannels []Channel `json:"notificationChannels,omitempty" firestore:"notificationChannels,omitempty"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (nu *Nudge) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(nudgeSchemaFile, b, nu)
-	if err != nil {
-		return fmt.Errorf("invalid nudge JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal verifies against JSON schema then marshals to JSON
-func (nu *Nudge) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(nudgeSchemaFile, nu)
-}
-
-// IsEntity marks this as an Apollo federation GraphQL entity
-func (nu Nudge) IsEntity() {}
-
-// Item is a single item in a feed or in an inbox
-type Item struct {
-	// A unique identifier for each feed item
-	ID string `json:"id" firestore:"id"`
-
-	// A higher sequence number means that it came later
-	SequenceNumber int `json:"sequenceNumber" firestore:"sequenceNumber"`
-
-	// When this feed item should be expired/removed, automatically. RFC3339.
-	Expiry time.Time `json:"expiry" firestore:"expiry"`
-
-	// If a feed item is persistent, it also goes to the inbox
-	// AND triggers a push notification.
-	// Pinning a feed item makes it persistent.
-	Persistent bool `json:"persistent" firestore:"persistent"`
-
-	// Whether the task under a feed item is completed, pending etc
-	Status Status `json:"status" firestore:"status"`
-
-	// Whether the feed item is to be shown or hidden
-	Visibility Visibility `json:"visibility" firestore:"visibility"`
-
-	// A link to a PNG image that would serve as an avatar
-	Icon Link `json:"icon" firestore:"icon"`
-
-	// The person - real or robot - that generated this feed item. Rich text.
-	Author string `json:"author" firestore:"author"`
-
-	// An OPTIONAL second title line. Rich text.
-	Tagline string `json:"tagline" firestore:"tagline"`
-
-	// A label e.g for the queue that this item belongs to
-	Label string `json:"label" firestore:"label"`
-
-	// When this feed item was created. RFC3339.
-	// This is used to calculate the feed item's age for display.
-	Timestamp time.Time `json:"timestamp" firestore:"timestamp"`
-
-	// An OPTIONAL summary line. Rich text.
-	Summary string `json:"summary" firestore:"summary"`
-
-	// Rich text that can include any unicode e.g emoji
-	Text string `json:"text" firestore:"text"`
-
-	// TextType determines how the frontend will render the text
-	TextType TextType `json:"textType" firestore:"textType"`
-
-	// an illustrative image for the item
-	Links []Link `json:"links" firestore:"links"`
-
-	// Actions are the primary, secondary and overflow actions associated
-	// with a feed item
-	Actions []Action `json:"actions,omitempty" firestore:"actions,omitempty"`
-
-	// Conversations are messages and replies around a feed item
-	Conversations []Message `json:"conversations,omitempty" firestore:"conversations,omitempty"`
-
-	// Identifiers of all the users that got this message
-	Users []string `json:"users,omitempty" firestore:"users,omitempty"`
-
-	// Identifiers of all the groups that got this message
-	Groups []string `json:"groups,omitempty" firestore:"groups,omitempty"`
-
-	// How the user should be notified of this new item, if at all
-	NotificationChannels []Channel `json:"notificationChannels,omitempty" firestore:"notificationChannels,omitempty"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (it *Item) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(itemSchemaFile, b, it)
-	if err != nil {
-		return fmt.Errorf("invalid item JSON: %w", err)
-	}
-
-	if it.Icon.LinkType != LinkTypePngImage {
-		return fmt.Errorf("an icon must be a PNG image")
-	}
-
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (it *Item) ValidateAndMarshal() ([]byte, error) {
-	if it.Icon.LinkType != LinkTypePngImage {
-		return nil, fmt.Errorf("an icon must be a PNG image")
-	}
-
-	return validateAndMarshal(itemSchemaFile, it)
-}
-
-// IsEntity marks this as an Apollo federation GraphQL entity
-func (it Item) IsEntity() {}
-
-// Message is a message in a thread of conversations attached to a feed item
-type Message struct {
-	// A unique identifier for each message on the thread
-	ID string `json:"id" firestore:"id"`
-
-	// A higher sequence number means that it came later
-	SequenceNumber int `json:"sequenceNumber" firestore:"sequenceNumber"`
-
-	// Rich text that can include any unicode e.g emoji
-	Text string `json:"text" firestore:"text"`
-
-	// The unique ID of any message that this one is replying to - a thread
-	ReplyTo string `json:"replyTo" firestore:"replyTo"`
-
-	// The UID of the user that posted the message
-	PostedByUID string `json:"postedByUID" firestore:"postedByUID"`
-
-	// The UID of the user that posted the message
-	PostedByName string `json:"postedByName" firestore:"postedByName"`
-
-	// when this message was sent
-	Timestamp time.Time `json:"timestamp" firestore:"timestamp"`
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (msg *Message) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(messageSchemaFile, b, msg)
-	if err != nil {
-		return fmt.Errorf("invalid message JSON: %w", err)
-	}
-	return nil
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (msg *Message) ValidateAndMarshal() ([]byte, error) {
-	return validateAndMarshal(messageSchemaFile, msg)
-}
-
-// Link holds references to media that is part of the feed.
-// The URL should embed authentication details.
-// The treatment will depend on the specified asset type.
-type Link struct {
-	// A unique identifier for each feed item
-	ID string `json:"id" firestore:"id"`
-
-	// A URL at which the video can be accessed.
-	// For a private video, the URL should include authentication information.
-	URL string `json:"url" firestore:"url"`
-
-	// LinkType of link
-	LinkType LinkType `json:"linkType" firestore:"linkType"`
-
-	// name or title of the linked item
-	Title string `json:"title" firestore:"title"`
-
-	// details about the linked item
-	Description string `json:"description" firestore:"description"`
-
-	// A URL to a PNG image that represents a thumbnail for the item
-	Thumbnail string `json:"thumbnail" firestore:"thumbnail"`
-}
-
-func (l *Link) validateLinkType() error {
-	if !govalidator.IsURL(l.URL) {
-		return fmt.Errorf("%s is not a valid URL", l.URL)
-	}
-	switch l.LinkType {
-	case LinkTypePdfDocument:
-		if !strings.Contains(l.URL, ".png") {
-			return fmt.Errorf("%s does not end with .pdf", l.URL)
-		}
-	case LinkTypePngImage:
-		if !strings.Contains(l.URL, ".png") {
-			return fmt.Errorf("%s does not end with .png", l.URL)
-		}
-	case LinkTypeYoutubeVideo:
-		if !strings.Contains(l.URL, "youtube.com") {
-			return fmt.Errorf("%s is not a youtube.com URL", l.URL)
-		}
-	}
-	return nil
-}
-
-// ValidateAndUnmarshal checks that the input data is valid as per the
-// relevant JSON schema and unmarshals it if it is
-func (l *Link) ValidateAndUnmarshal(b []byte) error {
-	err := validateAndUnmarshal(linkSchemaFile, b, l)
-	if err != nil {
-		return fmt.Errorf("invalid video JSON: %w", err)
-	}
-
-	return l.validateLinkType()
-}
-
-// ValidateAndMarshal validates against JSON schema then marshals to JSON
-func (l *Link) ValidateAndMarshal() ([]byte, error) {
-	err := l.validateLinkType()
-	if err != nil {
-		return nil, fmt.Errorf("can't marshal invalid link: %w", err)
-	}
-	return validateAndMarshal(linkSchemaFile, l)
-}
-
 // FilterParams organizes the parameters needed to filter persistent feed items
 type FilterParams struct {
 	Labels []string `json:"labels"`
-}
-
-func validateAgainstSchema(sch string, b []byte) error {
-	schemaURL := fmt.Sprintf("%s/%s", getSchemaURL(), sch)
-	schemaLoader := gojsonschema.NewReferenceLoader(schemaURL)
-	documentLoader := gojsonschema.NewStringLoader(string(b))
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-	if err != nil {
-		return fmt.Errorf(
-			"failed to validate `%s` against %s, got %#v: %w",
-			string(b),
-			sch,
-			result,
-			err,
-		)
-	}
-	if !result.Valid() {
-		errMsgs := []string{}
-		for _, vErr := range result.Errors() {
-			errType := vErr.Type()
-			val := vErr.Value()
-			context := vErr.Context().String()
-			field := vErr.Field()
-			desc := vErr.Description()
-			descFormat := vErr.DescriptionFormat()
-			details := vErr.Details()
-			errMsg := fmt.Sprintf(
-				"errType: %s\nval: %s\ncontext: %s\nfield: %s\ndesc: %s\ndescFormat: %s\ndetails: %s\n",
-				errType,
-				val,
-				context,
-				field,
-				desc,
-				descFormat,
-				details,
-			)
-			errMsgs = append(errMsgs, errMsg)
-		}
-		return fmt.Errorf(
-			"the result of validating `%s` against %s is not valid: %#v",
-			string(b),
-			sch,
-			errMsgs,
-		)
-	}
-	return nil
-}
-
-func validateAndUnmarshal(sch string, b []byte, el Element) error {
-	err := validateAgainstSchema(sch, b)
-	if err != nil {
-		return fmt.Errorf("invalid JSON: %w", err)
-	}
-	err = json.Unmarshal(b, el)
-	if err != nil {
-		return fmt.Errorf("can't unmarshal JSON to struct: %w", err)
-	}
-	return nil
-}
-
-func validateAndMarshal(sch string, el Element) ([]byte, error) {
-	bs, err := json.Marshal(el)
-	if err != nil {
-		return nil, fmt.Errorf("can't marshal %T to JSON: %w", el, err)
-	}
-	err = validateAgainstSchema(sch, bs)
-	if err != nil {
-		return nil, fmt.Errorf("invalid JSON: %w", err)
-	}
-	return bs, nil
-}
-
-// getSchemaURL serves JSON schema from this server and only falls back to a
-// remote schema host when the local server cannot serve the JSON schema files.
-// This has been done so as to reduce the impact of the network and DNS on the
-// schema validation process - a critical path activity.
-func getSchemaURL() string {
-	schemaHost, err := base.GetEnvVar(schemaHostEnvVarName)
-	if err != nil {
-		log.Printf("can't get env var `%s`: %s", schemaHostEnvVarName, err)
-	}
-
-	client := http.Client{
-		Timeout: time.Second * 1, // aggressive timeout
-	}
-	req, err := http.NewRequest(http.MethodGet, schemaHost, nil)
-	if err != nil {
-		log.Printf("can't create request to local schema URL: %s", err)
-	}
-	if err == nil {
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Printf("error accessing schema URL: %s", err)
-		}
-		if err == nil {
-			if resp.StatusCode != http.StatusOK {
-				log.Printf("schema URL error status code: %s", resp.Status)
-			}
-			if resp.StatusCode == http.StatusOK {
-				return schemaHost // we want this case to be the most common
-			}
-		}
-	}
-
-	// fall back to an externally hosted schema
-	return fallbackSchemaHost
-}
-
-// GetPNGImageLink returns an initialized PNG image link.
-//
-// It is used in testing and default data generation.
-func GetPNGImageLink(url string, title string, description string, thumbnailURL string) Link {
-	return Link{
-		ID:          ksuid.New().String(),
-		URL:         url,
-		LinkType:    LinkTypePngImage,
-		Title:       title,
-		Description: description,
-		Thumbnail:   thumbnailURL,
-	}
-}
-
-// GetSVGImageLink returns an initialized PNG image link.
-//
-// It is used in testing and default data generation.
-func GetSVGImageLink(url string, title string, description string, thumbnailURL string) Link {
-	return Link{
-		ID:          ksuid.New().String(),
-		URL:         url,
-		LinkType:    LinkTypeSvgImage,
-		Title:       title,
-		Description: description,
-		Thumbnail:   thumbnailURL,
-	}
-}
-
-// GetYoutubeVideoLink returns an initialized YouTube video link.
-//
-// It is used in testing and default data generation.
-func GetYoutubeVideoLink(url string, title string, description string, thumbnailURL string) Link {
-	return Link{
-		ID:          ksuid.New().String(),
-		URL:         url,
-		LinkType:    LinkTypeYoutubeVideo,
-		Title:       title,
-		Description: description,
-		Thumbnail:   thumbnailURL,
-	}
-}
-
-// GetPDFDocumentLink returns an initialized PDF document link.
-//
-// It is used in testing and default data generation.
-func GetPDFDocumentLink(url string, title string, description string, thumbnailURL string) Link {
-	return Link{
-		ID:          ksuid.New().String(),
-		URL:         url,
-		LinkType:    LinkTypePdfDocument,
-		Title:       title,
-		Description: description,
-		Thumbnail:   thumbnailURL,
-	}
 }
 
 // AddPubSubNamespace creates a namespaced topic name

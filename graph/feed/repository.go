@@ -2,6 +2,8 @@ package feed
 
 import (
 	"context"
+
+	"gitlab.slade360emr.com/go/base"
 )
 
 // Repository defines methods for persistence and retrieval of feeds
@@ -12,11 +14,11 @@ type Repository interface {
 		ctx context.Context,
 		uid *string,
 		isAnonymous *bool,
-		flavour Flavour,
-		persistent BooleanFilter,
-		status *Status,
-		visibility *Visibility,
-		expired *BooleanFilter,
+		flavour base.Flavour,
+		persistent base.BooleanFilter,
+		status *base.Status,
+		visibility *base.Visibility,
+		expired *base.BooleanFilter,
 		filterParams *FilterParams,
 	) (*Feed, error)
 
@@ -24,31 +26,31 @@ type Repository interface {
 	GetFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		itemID string,
-	) (*Item, error)
+	) (*base.Item, error)
 
 	// saving a new feed item
 	SaveFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-		item *Item,
-	) (*Item, error)
+		flavour base.Flavour,
+		item *base.Item,
+	) (*base.Item, error)
 
 	// updating an existing feed item
 	UpdateFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-		item *Item,
-	) (*Item, error)
+		flavour base.Flavour,
+		item *base.Item,
+	) (*base.Item, error)
 
 	// DeleteFeedItem permanently deletes a feed item and it's copies
 	DeleteFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		itemID string,
 	) error
 
@@ -56,31 +58,31 @@ type Repository interface {
 	GetNudge(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		nudgeID string,
-	) (*Nudge, error)
+	) (*base.Nudge, error)
 
 	// saving a new modified nudge
 	SaveNudge(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-		nudge *Nudge,
-	) (*Nudge, error)
+		flavour base.Flavour,
+		nudge *base.Nudge,
+	) (*base.Nudge, error)
 
 	// updating an existing nudge
 	UpdateNudge(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-		nudge *Nudge,
-	) (*Nudge, error)
+		flavour base.Flavour,
+		nudge *base.Nudge,
+	) (*base.Nudge, error)
 
 	// DeleteNudge permanently deletes a nudge and it's copies
 	DeleteNudge(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		nudgeID string,
 	) error
 
@@ -88,23 +90,23 @@ type Repository interface {
 	GetAction(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		actionID string,
-	) (*Action, error)
+	) (*base.Action, error)
 
 	// saving a new action
 	SaveAction(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-		action *Action,
-	) (*Action, error)
+		flavour base.Flavour,
+		action *base.Action,
+	) (*base.Action, error)
 
 	// DeleteAction permanently deletes an action and it's copies
 	DeleteAction(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		actionID string,
 	) error
 
@@ -112,25 +114,25 @@ type Repository interface {
 	PostMessage(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		itemID string,
-		message *Message,
-	) (*Message, error)
+		message *base.Message,
+	) (*base.Message, error)
 
 	// GetMessage retrieves THE LATEST VERSION OF a message
 	GetMessage(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		itemID string,
 		messageID string,
-	) (*Message, error)
+	) (*base.Message, error)
 
 	// DeleteMessage deletes a message
 	DeleteMessage(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		itemID string,
 		messageID string,
 	) error
@@ -139,67 +141,67 @@ type Repository interface {
 	GetMessages(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		itemID string,
-	) ([]Message, error)
+	) ([]base.Message, error)
 
 	SaveIncomingEvent(
 		ctx context.Context,
-		event *Event,
+		event *base.Event,
 	) error
 
 	SaveOutgoingEvent(
 		ctx context.Context,
-		event *Event,
+		event *base.Event,
 	) error
 
 	GetNudges(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-		status *Status,
-		visibility *Visibility,
-	) ([]Nudge, error)
+		flavour base.Flavour,
+		status *base.Status,
+		visibility *base.Visibility,
+	) ([]base.Nudge, error)
 
 	GetActions(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-	) ([]Action, error)
+		flavour base.Flavour,
+	) ([]base.Action, error)
 
 	GetItems(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
-		persistent BooleanFilter,
-		status *Status,
-		visibility *Visibility,
-		expired *BooleanFilter,
+		flavour base.Flavour,
+		persistent base.BooleanFilter,
+		status *base.Status,
+		visibility *base.Visibility,
+		expired *base.BooleanFilter,
 		filterParams *FilterParams,
-	) ([]Item, error)
+	) ([]base.Item, error)
 
 	Labels(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 	) ([]string, error)
 
 	SaveLabel(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 		label string,
 	) error
 
 	UnreadPersistentItems(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 	) (int, error)
 
 	UpdateUnreadPersistentItemsCount(
 		ctx context.Context,
 		uid string,
-		flavour Flavour,
+		flavour base.Flavour,
 	) error
 }

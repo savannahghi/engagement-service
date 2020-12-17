@@ -9,6 +9,7 @@ import (
 
 	"github.com/markbates/pkger"
 	"github.com/segmentio/ksuid"
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/library"
 )
 
@@ -55,41 +56,41 @@ var _ = pkger.Dir(defaultContentDir)
 type actionGenerator func(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error)
+) (*base.Action, error)
 
 type nudgeGenerator func(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Nudge, error)
+) (*base.Nudge, error)
 
 type itemGenerator func(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Item, error)
+) (*base.Item, error)
 
 // SetDefaultActions ensures that a feed has default actions
 func SetDefaultActions(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Action, error) {
-	actions := []Action{}
+) ([]base.Action, error) {
+	actions := []base.Action{}
 
 	switch flavour {
-	case FlavourConsumer:
+	case base.FlavourConsumer:
 		consumerActions, err := defaultConsumerActions(ctx, uid, flavour, repository)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize default consumer actions: %w", err)
 		}
 		actions = consumerActions
-	case FlavourPro:
+	case base.FlavourPro:
 		proActions, err := defaultProActions(ctx, uid, flavour, repository)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize default pro actions: %w", err)
@@ -104,19 +105,19 @@ func SetDefaultActions(
 func SetDefaultNudges(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Nudge, error) {
-	var nudges []Nudge
+) ([]base.Nudge, error) {
+	var nudges []base.Nudge
 
 	switch flavour {
-	case FlavourConsumer:
+	case base.FlavourConsumer:
 		consumerNudges, err := defaultConsumerNudges(ctx, uid, flavour, repository)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize default consumer nudges: %w", err)
 		}
 		nudges = consumerNudges
-	case FlavourPro:
+	case base.FlavourPro:
 		proNudges, err := defaultProNudges(ctx, uid, flavour, repository)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize default pro nudges: %w", err)
@@ -131,19 +132,19 @@ func SetDefaultNudges(
 func SetDefaultItems(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Item, error) {
-	var items []Item
+) ([]base.Item, error) {
+	var items []base.Item
 
 	switch flavour {
-	case FlavourConsumer:
+	case base.FlavourConsumer:
 		consumerItems, err := defaultConsumerItems(ctx, uid, flavour, repository)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize default consumer items: %w", err)
 		}
 		items = consumerItems
-	case FlavourPro:
+	case base.FlavourPro:
 		proItems, err := defaultProItems(ctx, uid, flavour, repository)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize default pro items: %w", err)
@@ -161,10 +162,10 @@ func SetDefaultItems(
 func defaultConsumerNudges(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Nudge, error) {
-	var nudges []Nudge
+) ([]base.Nudge, error) {
+	var nudges []base.Nudge
 	fns := []nudgeGenerator{
 		addInsuranceNudge,
 		addNHIFNudge,
@@ -184,10 +185,10 @@ func defaultConsumerNudges(
 func defaultProNudges(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Nudge, error) {
-	var nudges []Nudge
+) ([]base.Nudge, error) {
+	var nudges []base.Nudge
 	fns := []nudgeGenerator{
 		partnerAccountSetupNudge,
 		completeProfileNudge,
@@ -206,10 +207,10 @@ func defaultProNudges(
 func defaultConsumerActions(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Action, error) {
-	var actions []Action
+) ([]base.Action, error) {
+	var actions []base.Action
 	fns := []actionGenerator{
 		defaultHelpAction,
 		defaultCoachingAction,
@@ -231,10 +232,10 @@ func defaultConsumerActions(
 func defaultProActions(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Action, error) {
-	var actions []Action
+) ([]base.Action, error) {
+	var actions []base.Action
 	fns := []actionGenerator{
 		defaultAddPatientAction,
 		defaultHelpAction,
@@ -253,17 +254,17 @@ func defaultProActions(
 func defaultSeeDoctorAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getConsultationActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/see_doctor.svg",
 		"See Doctor",
 		"See a doctor",
@@ -274,17 +275,17 @@ func defaultSeeDoctorAction(
 func defaultBuyMedicineAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getMedicineActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/medicine.svg",
 		"Get Medicine",
 		"Get medicines",
@@ -295,17 +296,17 @@ func defaultBuyMedicineAction(
 func defaultGetTestAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getTestActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/get_tested.svg",
 		"Get tests",
 		"Get diagnostic tests",
@@ -316,17 +317,17 @@ func defaultGetTestAction(
 func defaultGetInsuranceAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getInsuranceActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/buy_cover.svg",
 		"Buy Cover",
 		"Buy medical insurance",
@@ -337,17 +338,17 @@ func defaultGetInsuranceAction(
 func defaultCoachingAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getCoachingActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/fitness.svg",
 		"Coaching",
 		"Get Health Coaching",
@@ -358,17 +359,17 @@ func defaultCoachingAction(
 func defaultHelpAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		true,
 		flavour,
 		helpActionName,
-		ActionTypeFloating,
-		HandlingFullPage,
+		base.ActionTypeFloating,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/help.svg",
 		"Help",
 		"Get Help",
@@ -379,17 +380,17 @@ func defaultHelpAction(
 func defaultSearchPatientAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		searchPatientActionName,
-		ActionTypeSecondary,
-		HandlingFullPage,
+		base.ActionTypeSecondary,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/search_user.svg",
 		"Search a patient",
 		"Search for a patient",
@@ -400,17 +401,17 @@ func defaultSearchPatientAction(
 func defaultAddPatientAction(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Action, error) {
+) (*base.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		addPatientActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		StaticBase+"/actions/svg/add_user.svg",
 		"Register patient",
 		"Register a patient",
@@ -421,9 +422,9 @@ func defaultAddPatientAction(
 func addInsuranceNudge(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	title := "Add Insurance"
 	text := "Link your existing medical cover"
 	imgURL := StaticBase + "/nudges/add_insurance.png"
@@ -433,15 +434,15 @@ func addInsuranceNudge(
 		false,
 		flavour,
 		addInsuranceActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		repository,
 	)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", addInsuranceActionName, err)
 	}
-	actions := []Action{
+	actions := []base.Action{
 		*addInsuranceAction,
 	}
 	return createNudge(
@@ -461,9 +462,9 @@ func addInsuranceNudge(
 func addNHIFNudge(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	title := "Add NHIF"
 	text := "Link your NHIF cover"
 	imgURL := StaticBase + "/nudges/add_insurance.png"
@@ -473,15 +474,15 @@ func addNHIFNudge(
 		false,
 		flavour,
 		addNHIFActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		repository,
 	)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", addNHIFActionName, err)
 	}
-	actions := []Action{
+	actions := []base.Action{
 		*addNHIFAction,
 	}
 	return createNudge(
@@ -501,9 +502,9 @@ func addNHIFNudge(
 func partnerAccountSetupNudge(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	title := "Setup your partner account"
 	text := "Create a partner account to begin transacting on Be.Well"
 	imgURL := StaticBase + "/nudges/complete_profile.png"
@@ -513,15 +514,15 @@ func partnerAccountSetupNudge(
 		false,
 		flavour,
 		partnerAccountSetupActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		repository,
 	)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", partnerAccountSetupActionName, err)
 	}
-	actions := []Action{
+	actions := []base.Action{
 		*partnerAccountSetupAction,
 	}
 	return createNudge(
@@ -541,9 +542,9 @@ func partnerAccountSetupNudge(
 func completeProfileNudge(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	title := "Complete your profile"
 	text := "Fill in your Be.Well profile to unlock more rewards"
 	imgURL := StaticBase + "/nudges/complete_profile.png"
@@ -553,15 +554,15 @@ func completeProfileNudge(
 		false,
 		flavour,
 		completeProfileActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		repository,
 	)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", completeProfileActionName, err)
 	}
-	actions := []Action{
+	actions := []base.Action{
 		*completeProfileAction,
 	}
 	return createNudge(
@@ -581,9 +582,9 @@ func completeProfileNudge(
 func verifyEmailNudge(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	title := "Email Verification"
 	text := "Please add and verify your email address"
 	imgURL := StaticBase + "/nudges/verify_email.png"
@@ -593,15 +594,15 @@ func verifyEmailNudge(
 		false,
 		flavour,
 		verifyEmailActionName,
-		ActionTypePrimary,
-		HandlingFullPage,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
 		repository,
 	)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", verifyEmailActionName, err)
 	}
-	actions := []Action{
+	actions := []base.Action{
 		*verifyEmailAction,
 	}
 	return createNudge(
@@ -621,31 +622,32 @@ func verifyEmailNudge(
 func createNudge(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	title string,
 	text string,
 	imageURL string,
 	imageTitle string,
 	imageDescription string,
-	actions []Action,
+	actions []base.Action,
 	repository Repository,
-) (*Nudge, error) {
+) (*base.Nudge, error) {
 	future := time.Now().Add(time.Hour * futureHours)
-	nudge := &Nudge{
+	nudge := &base.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
-		Visibility:     VisibilityShow,
-		Status:         StatusPending,
+		Visibility:     base.VisibilityShow,
+		Status:         base.StatusPending,
 		Expiry:         future,
 		Title:          title,
 		Text:           text,
-		Links: []Link{
-			GetPNGImageLink(imageURL, imageTitle, imageDescription, imageURL),
+		Links: []base.Link{
+			base.GetPNGImageLink(
+				imageURL, imageTitle, imageDescription, imageURL),
 		},
 		Actions:              actions,
 		Groups:               []string{},
 		Users:                []string{uid},
-		NotificationChannels: []Channel{},
+		NotificationChannels: []base.Channel{},
 	}
 	_, err := nudge.ValidateAndMarshal()
 	if err != nil {
@@ -663,20 +665,21 @@ func createGlobalAction(
 	ctx context.Context,
 	uid string,
 	allowAnonymous bool,
-	flavour Flavour,
+	flavour base.Flavour,
 	name string,
-	actionType ActionType,
-	handling Handling,
+	actionType base.ActionType,
+	handling base.Handling,
 	iconLink string,
 	iconTitle string,
 	iconDescription string,
 	repository Repository,
-) (*Action, error) {
-	action := &Action{
+) (*base.Action, error) {
+	action := &base.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Name:           name,
-		Icon:           GetSVGImageLink(iconLink, iconTitle, iconDescription, iconLink),
+		Icon: base.GetSVGImageLink(
+			iconLink, iconTitle, iconDescription, iconLink),
 		ActionType:     actionType,
 		Handling:       handling,
 		AllowAnonymous: allowAnonymous,
@@ -697,18 +700,22 @@ func createLocalAction(
 	ctx context.Context,
 	uid string,
 	allowAnonymous bool,
-	flavour Flavour,
+	flavour base.Flavour,
 	name string,
-	actionType ActionType,
-	handling Handling,
+	actionType base.ActionType,
+	handling base.Handling,
 	repository Repository,
-) (*Action, error) {
-	action := &Action{
+) (*base.Action, error) {
+	action := &base.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Name:           name,
-		Icon: GetPNGImageLink(
-			StaticBase+"/1px.png", "Blank Image", "Default Blank Image", StaticBase+"/1px.png"),
+		Icon: base.GetPNGImageLink(
+			StaticBase+"/1px.png",
+			"Blank Image",
+			"Default Blank Image",
+			StaticBase+"/1px.png",
+		),
 		ActionType:     actionType,
 		Handling:       handling,
 		AllowAnonymous: allowAnonymous,
@@ -726,7 +733,7 @@ func createLocalAction(
 func createFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	itemID string,
 	author string,
 	tagline string,
@@ -736,34 +743,35 @@ func createFeedItem(
 	iconDescription string,
 	summary string,
 	text string,
-	links []Link,
-	actions []Action,
-	conversations []Message,
+	links []base.Link,
+	actions []base.Action,
+	conversations []base.Message,
 	persistent bool,
 	repository Repository,
-) (*Item, error) {
+) (*base.Item, error) {
 	future := time.Now().Add(time.Hour * futureHours)
-	item := &Item{
-		ID:                   itemID,
-		SequenceNumber:       defaultSequenceNumber,
-		Expiry:               future,
-		Persistent:           persistent,
-		Status:               StatusPending,
-		Visibility:           VisibilityShow,
-		Icon:                 GetPNGImageLink(iconImageURL, iconTitle, iconDescription, iconImageURL),
+	item := &base.Item{
+		ID:             itemID,
+		SequenceNumber: defaultSequenceNumber,
+		Expiry:         future,
+		Persistent:     persistent,
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
+		Icon: base.GetPNGImageLink(
+			iconImageURL, iconTitle, iconDescription, iconImageURL),
 		Author:               author,
 		Tagline:              tagline,
 		Label:                label,
 		Timestamp:            time.Now(),
 		Summary:              summary,
 		Text:                 text,
-		TextType:             TextTypeMarkdown,
+		TextType:             base.TextTypeMarkdown,
 		Links:                links,
 		Actions:              actions,
 		Conversations:        conversations,
 		Groups:               []string{},
 		Users:                []string{uid},
-		NotificationChannels: []Channel{},
+		NotificationChannels: []base.Channel{},
 	}
 	_, err := item.ValidateAndMarshal()
 	if err != nil {
@@ -779,10 +787,10 @@ func createFeedItem(
 func defaultConsumerItems(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Item, error) {
-	var items []Item
+) ([]base.Item, error) {
+	var items []base.Item
 	fns := []itemGenerator{
 		ultimateComposite,
 		simpleConsumerWelcome,
@@ -800,10 +808,10 @@ func defaultConsumerItems(
 func defaultProItems(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Item, error) {
-	var items []Item
+) ([]base.Item, error) {
+	var items []base.Item
 	fns := []itemGenerator{
 		ultimateComposite,
 		simpleProWelcome,
@@ -821,9 +829,9 @@ func defaultProItems(
 func simpleConsumerWelcome(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Item, error) {
+) (*base.Item, error) {
 	persistent := true // at least one persistent message in welcome data
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
@@ -864,9 +872,9 @@ func simpleConsumerWelcome(
 func simpleProWelcome(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Item, error) {
+) (*base.Item, error) {
 	persistent := true // at least one persistent message in welcome data
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
@@ -907,299 +915,299 @@ func simpleProWelcome(
 func ultimateComposite(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) (*Item, error) {
+) (*base.Item, error) {
 	// here's what Be.Well can do for you... / help you do for your patients
 	persistent := false
 	tagline := "This is Be.Well..."
 	summary := "This is Be.Well..."
 	text := "This is Be.Well..."
-	links := []Link{
-		GetPNGImageLink(
+	links := []base.Link{
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner01.png",
 			"As within, so without",
 			"As within, so without. Care begins with the self.",
 			StaticBase+"/items/images/thumbs/bewell_banner01.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner02.png",
 			"Have you made your bed today?",
 			"Have you made your bed today? Your morning routine can get you started on a high note or not.",
 			StaticBase+"/items/images/thumbs/bewell_banner02.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner03.png",
 			"Smiles are contagious",
 			"Smiles are contagious, pass it on and heal a heart",
 			StaticBase+"/items/images/thumbs/bewell_banner03.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner04.png",
 			"Tossing and turning?",
 			"Too much screen time tampers with sleep",
 			StaticBase+"/items/images/thumbs/bewell_banner04.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner05.png",
 			"Wellness review",
 			"You should have a wellness review daily",
 			StaticBase+"/items/images/thumbs/bewell_banner05.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner06.png",
 			"Wellness review",
 			"You should have a wellness review daily",
 			StaticBase+"/items/images/thumbs/bewell_banner06.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner07.png",
 			"Healthcare Simplified",
 			"HealthCare Simplified. Get Be.Well",
 			StaticBase+"/items/images/thumbs/bewell_banner07.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner08.png",
 			"Hot + Hot",
 			"Did you know that Hot + Hot=Cool?",
 			StaticBase+"/items/images/thumbs/bewell_banner08.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner09.png",
 			"Does chewing gum improve focus?",
 			"Does chewing gum improve focus? Yes or No. Tell us in the comments section.",
 			StaticBase+"/items/images/thumbs/bewell_banner09.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner10.png",
 			"Are you well?",
 			"We take care of you with convenient teleconsultation.",
 			StaticBase+"/items/images/thumbs/bewell_banner10.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner11.png",
 			"Hands that heal",
 			"Get Be.Well",
 			StaticBase+"/items/images/thumbs/bewell_banner11.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner12.png",
 			"Mindfulness matters",
 			"Use Be.Well to consult",
 			StaticBase+"/items/images/thumbs/bewell_banner12.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner13.png",
 			"Be confident",
 			"Be confident, you can consult in confidence. Use Be.Well.",
 			StaticBase+"/items/images/thumbs/bewell_banner13.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner14.png",
 			"Wellnes begins in the womb",
 			"Wellness begins in the womb, we are here to walk with you",
 			StaticBase+"/items/images/thumbs/bewell_banner14.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner15.png",
 			"Self healing is...",
 			"Self healing is...what techniques do you use to slow down and rejuvenate",
 			StaticBase+"/items/images/thumbs/bewell_banner15.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner16.png",
 			"Live. Love. Laugh. and Be.Well",
 			"Live. Love. Laugh and Be.Well. Download Be.Well",
 			StaticBase+"/items/images/thumbs/bewell_banner16.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner17.png",
 			"Mindfulness matters",
 			"Mindfulness matters. Use Be.Well to consult",
 			StaticBase+"/items/images/thumbs/bewell_banner17.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner18.png",
 			"Be.Well can transform you",
 			"Be.Well can transform you. Get Be.Well",
 			StaticBase+"/items/images/thumbs/bewell_banner18.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner19.png",
 			"Need to refill your meds?",
 			"Need to refill your meds? We will deliver",
 			StaticBase+"/items/images/thumbs/tbewell_banner19.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner20.png",
 			"Be optimistic, live longer",
 			"Use Be.Well to help you manage ailments",
 			StaticBase+"/items/images/thumbs/bewell_banner20.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner21.png",
 			"Are you too anxious?",
 			"Are you too anxious? Consult on Be.Well",
 			StaticBase+"/items/images/thumbs/bewell_banner21.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner22.png",
 			"Would you rather be taking tablets or syrup?",
 			"Share your reasons in the comments section",
 			StaticBase+"/items/images/thumbs/bewell_banner22.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner23.png",
 			"Does coffee cure depression in women?",
 			"How does coffee affect you?",
 			StaticBase+"/items/images/thumbs/bewell_banner23.png",
 		),
-		GetPNGImageLink(
+		base.GetPNGImageLink(
 			StaticBase+"/items/images/bewell_banner24.png",
 			"Is your allergy triggered by stress?",
 			"Get Be.Well for more insights",
 			StaticBase+"/items/images/thumbs/bewell_banner24.png",
 		),
 
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_25.pdf",
 			"Does sunlight enable weight loss?",
 			"Get Be.Well for meaningful insights",
 			StaticBase+"/items/documents/thumbs/bewell_banner_25.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_26.pdf",
 			"Anti-depressants and your libido.",
 			"Consult your doctor on Be.Well",
 			StaticBase+"/items/documents/thumbs/bewell_banner_26.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_27.pdf",
 			"Need to refill your meds?",
 			"We will deliver",
 			StaticBase+"/items/documents/thumbs/bewell_banner_27.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_28.pdf",
 			"Sexual wellness tips.",
 			"Get Be.Well for the best tips",
 			StaticBase+"/items/documents/thumbs/bewell_banner_28.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_29.pdf",
 			"How do you get your kids to take meds?",
 			"Do you negotiate or introduce Kiboko the motivator?",
 			StaticBase+"/items/documents/thumbs/bewell_banner_29.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_30.pdf",
 			"What are some of the meds that were part of you growing up?",
 			"Get Be.Well",
 			StaticBase+"/items/documents/thumbs/bewell_banner_30.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_31.pdf",
 			"Mind your Mind",
 			"Use Be.Well",
 			StaticBase+"/items/documents/thumbs/bewell_banner_31.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_32.pdf",
 			"Did you know that financial wellness affects your wellbeing as a whole?",
 			"What else? Get Be.Well",
 			StaticBase+"/items/documents/thumbs/bewell_banner_32.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_33.pdf",
 			"How does technology preserve your health?",
 			"Get Be.Well for meaningful insights",
 			StaticBase+"/items/documents/thumbs/bewell_banner_33.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_34.pdf",
 			"Your life can be transformed by an App",
 			"Get Be.Well",
 			StaticBase+"/items/documents/thumbs/bewell_banner_34.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_35.pdf",
 			"It's not enough to just have a life transforming App",
 			"You have to USE the App",
 			StaticBase+"/items/documents/thumbs/bewell_banner_35.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_36.pdf",
 			"Create your wellness habits",
 			"Create your wellness habits and add your accountability partners on Be.Well",
 			StaticBase+"/items/documents/thumbs/bewell_banner_36.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_37.pdf",
 			"Patients don't need patience",
 			"Dial your doctor, Now!",
 			StaticBase+"/items/documents/thumbs/bewell_banner_37.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_38.pdf",
 			"Simplifying and streamlining Healthcare",
 			"Get Be.Well today!",
 			StaticBase+"/items/documents/thumbs/bewell_banner_38.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_39.pdf",
 			"Monitor your mental state",
 			"Get Be.Well today!",
 			StaticBase+"/items/documents/thumbs/bewell_banner_39.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_40.pdf",
 			"Modern Medicine vs Mystic Medicine",
 			"Modern Medicine vs Mystic Medicine. What works for you?",
 			StaticBase+"/items/documents/thumbs/bewell_banner_40.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_41.pdf",
 			"To Be.Well, your finances have to be well",
 			"To Be.Well, your finances have to be well",
 			StaticBase+"/items/documents/thumbs/bewell_banner_41.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_42.pdf",
 			"Finance and Romance",
 			"do they go hand in hand?",
 			StaticBase+"/items/documents/thumbs/bewell_banner_42.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_43.pdf",
 			"Let's talk about sex",
 			"Let's talk about sex, the Be.Well way",
 			StaticBase+"/items/documents/thumbs/bewell_banner_43.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_44.pdf",
 			"Consult about sexual health in confidence",
 			"Consult about sexual health in confidence",
 			StaticBase+"/items/documents/thumbs/bewell_banner_44.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_45.pdf",
 			"Is technology replacing your parenting?",
 			"Is technology replacing your parenting?",
 			StaticBase+"/items/documents/thumbs/bewell_banner_45.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_46.pdf",
 			"Bottled water cures diseases",
 			"Bottled water cures diseases. True or False?",
 			StaticBase+"/items/documents/thumbs/bewell_banner_46.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_47.pdf",
 			"Why fight for these gadgets?",
 			"Why fight for these gadgets? Could it be a symptom or addiction?",
 			StaticBase+"/items/documents/thumbs/bewell_banner_47.png",
 		),
-		GetPDFDocumentLink(
+		base.GetPDFDocumentLink(
 			StaticBase+"/items/documents/bewell_banner_48.pdf",
 			"Put your money where your mind is",
 			"Put your money where your mind is",
@@ -1211,7 +1219,7 @@ func ultimateComposite(
 		return nil, fmt.Errorf("can't initialize default actions: %w", err)
 	}
 
-	conversations := []Message{}
+	conversations := []base.Message{}
 	itemID := ksuid.New().String()
 	return createFeedItem(
 		ctx,
@@ -1237,14 +1245,14 @@ func ultimateComposite(
 func getMessage(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	itemID string,
 	text string,
-	replyTo *Message,
+	replyTo *base.Message,
 	postedByName string,
 	repository Repository,
-) (*Message, error) {
-	msg := &Message{
+) (*base.Message, error) {
+	msg := &base.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Text:           text,
@@ -1271,10 +1279,10 @@ func getMessage(
 func getConsumerWelcomeThread(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	itemID string,
 	repository Repository,
-) ([]Message, error) {
+) ([]base.Message, error) {
 	welcome, err := getMessage(
 		ctx,
 		uid,
@@ -1429,7 +1437,7 @@ func getConsumerWelcomeThread(
 		return nil, err
 	}
 
-	return []Message{
+	return []base.Message{
 		*welcome,
 		*pharmacyReply,
 		*deliveryAssistant,
@@ -1446,10 +1454,10 @@ func getConsumerWelcomeThread(
 func getProWelcomeThread(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	itemID string,
 	repository Repository,
-) ([]Message, error) {
+) ([]base.Message, error) {
 	welcome, err := getMessage(
 		ctx,
 		uid,
@@ -1590,7 +1598,7 @@ func getProWelcomeThread(
 		return nil, err
 	}
 
-	return []Message{
+	return []base.Message{
 		*welcome,
 		*pharmacyReply,
 		*deliveryAssistant,
@@ -1604,33 +1612,33 @@ func getProWelcomeThread(
 	}, nil
 }
 
-func getFeedWelcomeVideos() []Link {
-	return []Link{
-		GetYoutubeVideoLink(
+func getFeedWelcomeVideos() []base.Link {
+	return []base.Link{
+		base.GetYoutubeVideoLink(
 			"https://youtu.be/gcv2Z2AdpjM",
 			"Be.Well lead",
 			"Introducing Be.Well by Slade 360",
 			StaticBase+"/items/videos/thumbs/01_lead.png",
 		),
-		GetYoutubeVideoLink(
+		base.GetYoutubeVideoLink(
 			"https://youtu.be/W_daZjDET9Q",
 			"Prescription delivery",
 			"Get your medications delivered on Be.Well",
 			StaticBase+"/items/videos/thumbs/02_prescription.png",
 		),
-		GetYoutubeVideoLink(
+		base.GetYoutubeVideoLink(
 			"https://youtu.be/IbtVBXNvpSA",
 			"Teleconsults",
 			"Consult a doctor on Be.Well",
 			StaticBase+"/items/videos/thumbs/03_teleconsult.png",
 		),
-		GetYoutubeVideoLink(
+		base.GetYoutubeVideoLink(
 			"https://youtu.be/mKnlXcS3_Z0",
 			"Slade 360",
 			"Slade 360. HealthCare. Simplified.",
 			StaticBase+"/items/videos/thumbs/04_slade.png",
 		),
-		GetYoutubeVideoLink(
+		base.GetYoutubeVideoLink(
 			"https://youtu.be/XNDLnPfagLQ",
 			"Mental health",
 			"Mental health",
@@ -1639,9 +1647,9 @@ func getFeedWelcomeVideos() []Link {
 	}
 }
 
-func feedItemsFromCMSFeedTag(ctx context.Context) []Item {
+func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 	libraryService := library.NewService()
-	items := []Item{}
+	items := []base.Item{}
 	feedPosts, err := libraryService.GetFeedContent(ctx)
 	if err != nil {
 		//  non-fatal, intentionally
@@ -1658,44 +1666,44 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []Item {
 	return items
 }
 
-func feedItemFromCMSPost(post library.GhostCMSPost) Item {
+func feedItemFromCMSPost(post library.GhostCMSPost) base.Item {
 	future := time.Now().Add(time.Hour * futureHours)
-	return Item{
+	return base.Item{
 		ID:                   post.UUID,
 		SequenceNumber:       int(post.UpdatedAt.Unix()),
 		Expiry:               future,
 		Persistent:           false,
-		Status:               StatusPending,
-		Visibility:           VisibilityShow,
-		Icon:                 GetPNGImageLink(DefaultIconPath, "Icon", "Feed Item Icon", DefaultIconPath),
+		Status:               base.StatusPending,
+		Visibility:           base.VisibilityShow,
+		Icon:                 base.GetPNGImageLink(DefaultIconPath, "Icon", "Feed Item Icon", DefaultIconPath),
 		Author:               defaultAuthor,
 		Tagline:              post.Slug,
 		Label:                DefaultLabel,
 		Summary:              TruncateStringWithEllipses(post.Excerpt, 140),
 		Timestamp:            post.UpdatedAt,
 		Text:                 post.HTML,
-		TextType:             TextTypeHTML,
+		TextType:             base.TextTypeHTML,
 		Links:                getLinks(post),
-		Actions:              []Action{},
-		Conversations:        []Message{},
+		Actions:              []base.Action{},
+		Conversations:        []base.Message{},
 		Users:                []string{},
 		Groups:               []string{},
-		NotificationChannels: []Channel{},
+		NotificationChannels: []base.Channel{},
 	}
 }
 
-func getLinks(post library.GhostCMSPost) []Link {
+func getLinks(post library.GhostCMSPost) []base.Link {
 	featureImageLink := post.FeatureImage
 	if strings.HasSuffix(featureImageLink, ".png") {
-		return []Link{
+		return []base.Link{
 			{
 				ID:       ksuid.New().String(),
 				URL:      featureImageLink,
-				LinkType: LinkTypePngImage,
+				LinkType: base.LinkTypePngImage,
 			},
 		}
 	}
-	return []Link{}
+	return []base.Link{}
 }
 
 // TruncateStringWithEllipses truncates a string at the indicated length and adds trailing ellipses
@@ -1729,17 +1737,17 @@ func TruncateStringWithEllipses(str string, length int) string {
 func defaultActions(
 	ctx context.Context,
 	uid string,
-	flavour Flavour,
+	flavour base.Flavour,
 	repository Repository,
-) ([]Action, error) {
+) ([]base.Action, error) {
 	resolveAction, err := createLocalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		resolveItemActionName,
-		ActionTypePrimary,
-		HandlingInline,
+		base.ActionTypePrimary,
+		base.HandlingInline,
 		repository,
 	)
 	if err != nil {
@@ -1752,8 +1760,8 @@ func defaultActions(
 		true,
 		flavour,
 		pinItemActionName,
-		ActionTypePrimary,
-		HandlingInline,
+		base.ActionTypePrimary,
+		base.HandlingInline,
 		repository,
 	)
 	if err != nil {
@@ -1766,14 +1774,14 @@ func defaultActions(
 		true,
 		flavour,
 		hideItemActionName,
-		ActionTypePrimary,
-		HandlingInline,
+		base.ActionTypePrimary,
+		base.HandlingInline,
 		repository,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create hide action: %w", err)
 	}
-	actions := []Action{
+	actions := []base.Action{
 		*resolveAction,
 		*pinAction,
 		*hideAction,

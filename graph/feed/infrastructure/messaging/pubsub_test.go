@@ -59,8 +59,8 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 	type args struct {
 		channel  string
 		uid      string
-		flavour  feed.Flavour
-		el       feed.Element
+		flavour  base.Flavour
+		el       base.Element
 		metadata map[string]interface{}
 	}
 	tests := []struct {
@@ -73,7 +73,7 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 			pubsub: srv,
 			args: args{
 				channel: "message.post",
-				el: &feed.Message{
+				el: &base.Message{
 					ID:             ksuid.New().String(),
 					SequenceNumber: 1,
 					Text:           ksuid.New().String(),
@@ -83,7 +83,7 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 					Timestamp:      time.Now(),
 				},
 				uid:      ksuid.New().String(),
-				flavour:  feed.FlavourConsumer,
+				flavour:  base.FlavourConsumer,
 				metadata: map[string]interface{}{},
 			},
 			wantErr: false,
@@ -93,14 +93,14 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 			pubsub: srv,
 			args: args{
 				channel: "message.post",
-				el: &feed.Message{
+				el: &base.Message{
 					ID:        ksuid.New().String(),
 					Text:      ksuid.New().String(),
 					ReplyTo:   ksuid.New().String(),
 					Timestamp: time.Now(),
 				},
 				uid:      ksuid.New().String(),
-				flavour:  feed.FlavourPro,
+				flavour:  base.FlavourPro,
 				metadata: map[string]interface{}{},
 			},
 			wantErr: true,

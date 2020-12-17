@@ -8,7 +8,6 @@ require (
 	cloud.google.com/go/storage v1.12.0
 	github.com/99designs/gqlgen v0.13.0
 	github.com/agnivade/levenshtein v1.1.0 // indirect
-	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/handlers v1.5.1
@@ -22,9 +21,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
 	github.com/vektah/gqlparser/v2 v2.1.0
-	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
-	github.com/xeipuuv/gojsonschema v1.2.0
-	gitlab.slade360emr.com/go/base v0.0.84
+	gitlab.slade360emr.com/go/base v0.0.91
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
 	google.golang.org/api v0.36.0
 	google.golang.org/grpc v1.34.0

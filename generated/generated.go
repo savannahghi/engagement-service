@@ -235,17 +235,17 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		DeleteMessage     func(childComplexity int, flavour feed.Flavour, itemID string, messageID string) int
-		HideFeedItem      func(childComplexity int, flavour feed.Flavour, itemID string) int
-		HideNudge         func(childComplexity int, flavour feed.Flavour, nudgeID string) int
-		PinFeedItem       func(childComplexity int, flavour feed.Flavour, itemID string) int
-		PostMessage       func(childComplexity int, flavour feed.Flavour, itemID string, message feed.Message) int
-		ProcessEvent      func(childComplexity int, flavour feed.Flavour, event feed.Event) int
-		ResolveFeedItem   func(childComplexity int, flavour feed.Flavour, itemID string) int
-		ShowFeedItem      func(childComplexity int, flavour feed.Flavour, itemID string) int
-		ShowNudge         func(childComplexity int, flavour feed.Flavour, nudgeID string) int
-		UnpinFeedItem     func(childComplexity int, flavour feed.Flavour, itemID string) int
-		UnresolveFeedItem func(childComplexity int, flavour feed.Flavour, itemID string) int
+		DeleteMessage     func(childComplexity int, flavour base.Flavour, itemID string, messageID string) int
+		HideFeedItem      func(childComplexity int, flavour base.Flavour, itemID string) int
+		HideNudge         func(childComplexity int, flavour base.Flavour, nudgeID string) int
+		PinFeedItem       func(childComplexity int, flavour base.Flavour, itemID string) int
+		PostMessage       func(childComplexity int, flavour base.Flavour, itemID string, message base.Message) int
+		ProcessEvent      func(childComplexity int, flavour base.Flavour, event base.Event) int
+		ResolveFeedItem   func(childComplexity int, flavour base.Flavour, itemID string) int
+		ShowFeedItem      func(childComplexity int, flavour base.Flavour, itemID string) int
+		ShowNudge         func(childComplexity int, flavour base.Flavour, nudgeID string) int
+		UnpinFeedItem     func(childComplexity int, flavour base.Flavour, itemID string) int
+		UnresolveFeedItem func(childComplexity int, flavour base.Flavour, itemID string) int
 		Upload            func(childComplexity int, input base.UploadInput) int
 	}
 
@@ -271,10 +271,10 @@ type ComplexityRoot struct {
 	Query struct {
 		FindUploadByID        func(childComplexity int, id string) int
 		GetFaqsContent        func(childComplexity int) int
-		GetFeed               func(childComplexity int, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) int
+		GetFeed               func(childComplexity int, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *feed.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
-		Labels                func(childComplexity int, flavour feed.Flavour) int
-		UnreadPersistentItems func(childComplexity int, flavour feed.Flavour) int
+		Labels                func(childComplexity int, flavour base.Flavour) int
+		UnreadPersistentItems func(childComplexity int, flavour base.Flavour) int
 		__resolve__service    func(childComplexity int) int
 		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
@@ -300,25 +300,25 @@ type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*feed.Feed, error)
 }
 type MutationResolver interface {
-	ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
-	UnresolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
-	PinFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
-	UnpinFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
-	HideFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
-	ShowFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error)
-	HideNudge(ctx context.Context, flavour feed.Flavour, nudgeID string) (*feed.Nudge, error)
-	ShowNudge(ctx context.Context, flavour feed.Flavour, nudgeID string) (*feed.Nudge, error)
-	PostMessage(ctx context.Context, flavour feed.Flavour, itemID string, message feed.Message) (*feed.Message, error)
-	DeleteMessage(ctx context.Context, flavour feed.Flavour, itemID string, messageID string) (bool, error)
-	ProcessEvent(ctx context.Context, flavour feed.Flavour, event feed.Event) (bool, error)
+	ResolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
+	UnresolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
+	PinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
+	UnpinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
+	HideFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
+	ShowFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
+	HideNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error)
+	ShowNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error)
+	PostMessage(ctx context.Context, flavour base.Flavour, itemID string, message base.Message) (*base.Message, error)
+	DeleteMessage(ctx context.Context, flavour base.Flavour, itemID string, messageID string) (bool, error)
+	ProcessEvent(ctx context.Context, flavour base.Flavour, event base.Event) (bool, error)
 	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
 }
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context) ([]*library.GhostCMSPost, error)
-	GetFeed(ctx context.Context, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error)
-	Labels(ctx context.Context, flavour feed.Flavour) ([]string, error)
-	UnreadPersistentItems(ctx context.Context, flavour feed.Flavour) (int, error)
+	GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error)
+	Labels(ctx context.Context, flavour base.Flavour) ([]string, error)
+	UnreadPersistentItems(ctx context.Context, flavour base.Flavour) (int, error)
 	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
 
@@ -1304,7 +1304,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteMessage(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string), args["messageID"].(string)), true
+		return e.complexity.Mutation.DeleteMessage(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string), args["messageID"].(string)), true
 
 	case "Mutation.hideFeedItem":
 		if e.complexity.Mutation.HideFeedItem == nil {
@@ -1316,7 +1316,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.HideFeedItem(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.HideFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.hideNudge":
 		if e.complexity.Mutation.HideNudge == nil {
@@ -1328,7 +1328,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.HideNudge(childComplexity, args["flavour"].(feed.Flavour), args["nudgeID"].(string)), true
+		return e.complexity.Mutation.HideNudge(childComplexity, args["flavour"].(base.Flavour), args["nudgeID"].(string)), true
 
 	case "Mutation.pinFeedItem":
 		if e.complexity.Mutation.PinFeedItem == nil {
@@ -1340,7 +1340,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.PinFeedItem(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.PinFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.postMessage":
 		if e.complexity.Mutation.PostMessage == nil {
@@ -1352,7 +1352,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.PostMessage(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string), args["message"].(feed.Message)), true
+		return e.complexity.Mutation.PostMessage(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string), args["message"].(base.Message)), true
 
 	case "Mutation.processEvent":
 		if e.complexity.Mutation.ProcessEvent == nil {
@@ -1364,7 +1364,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ProcessEvent(childComplexity, args["flavour"].(feed.Flavour), args["event"].(feed.Event)), true
+		return e.complexity.Mutation.ProcessEvent(childComplexity, args["flavour"].(base.Flavour), args["event"].(base.Event)), true
 
 	case "Mutation.resolveFeedItem":
 		if e.complexity.Mutation.ResolveFeedItem == nil {
@@ -1376,7 +1376,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ResolveFeedItem(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.ResolveFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.showFeedItem":
 		if e.complexity.Mutation.ShowFeedItem == nil {
@@ -1388,7 +1388,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ShowFeedItem(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.ShowFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.showNudge":
 		if e.complexity.Mutation.ShowNudge == nil {
@@ -1400,7 +1400,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ShowNudge(childComplexity, args["flavour"].(feed.Flavour), args["nudgeID"].(string)), true
+		return e.complexity.Mutation.ShowNudge(childComplexity, args["flavour"].(base.Flavour), args["nudgeID"].(string)), true
 
 	case "Mutation.unpinFeedItem":
 		if e.complexity.Mutation.UnpinFeedItem == nil {
@@ -1412,7 +1412,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UnpinFeedItem(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.UnpinFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.unresolveFeedItem":
 		if e.complexity.Mutation.UnresolveFeedItem == nil {
@@ -1424,7 +1424,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UnresolveFeedItem(childComplexity, args["flavour"].(feed.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.UnresolveFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.upload":
 		if e.complexity.Mutation.Upload == nil {
@@ -1558,7 +1558,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feed.Flavour), args["isAnonymous"].(bool), args["persistent"].(feed.BooleanFilter), args["status"].(*feed.Status), args["visibility"].(*feed.Visibility), args["expired"].(*feed.BooleanFilter), args["filterParams"].(*feed.FilterParams)), true
+		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(base.Flavour), args["isAnonymous"].(bool), args["persistent"].(base.BooleanFilter), args["status"].(*base.Status), args["visibility"].(*base.Visibility), args["expired"].(*base.BooleanFilter), args["filterParams"].(*feed.FilterParams)), true
 
 	case "Query.getLibraryContent":
 		if e.complexity.Query.GetLibraryContent == nil {
@@ -1577,7 +1577,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Labels(childComplexity, args["flavour"].(feed.Flavour)), true
+		return e.complexity.Query.Labels(childComplexity, args["flavour"].(base.Flavour)), true
 
 	case "Query.unreadPersistentItems":
 		if e.complexity.Query.UnreadPersistentItems == nil {
@@ -1589,7 +1589,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.UnreadPersistentItems(childComplexity, args["flavour"].(feed.Flavour)), true
+		return e.complexity.Query.UnreadPersistentItems(childComplexity, args["flavour"].(base.Flavour)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -2190,10 +2190,10 @@ func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2223,10 +2223,10 @@ func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Contex
 func (ec *executionContext) field_Mutation_hideFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2247,10 +2247,10 @@ func (ec *executionContext) field_Mutation_hideFeedItem_args(ctx context.Context
 func (ec *executionContext) field_Mutation_hideNudge_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2271,10 +2271,10 @@ func (ec *executionContext) field_Mutation_hideNudge_args(ctx context.Context, r
 func (ec *executionContext) field_Mutation_pinFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2295,10 +2295,10 @@ func (ec *executionContext) field_Mutation_pinFeedItem_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2313,10 +2313,10 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 		}
 	}
 	args["itemID"] = arg1
-	var arg2 feed.Message
+	var arg2 base.Message
 	if tmp, ok := rawArgs["message"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
-		arg2, err = ec.unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx, tmp)
+		arg2, err = ec.unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2328,19 +2328,19 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_processEvent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["flavour"] = arg0
-	var arg1 feed.Event
+	var arg1 base.Event
 	if tmp, ok := rawArgs["event"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("event"))
-		arg1, err = ec.unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐEvent(ctx, tmp)
+		arg1, err = ec.unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐEvent(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2352,10 +2352,10 @@ func (ec *executionContext) field_Mutation_processEvent_args(ctx context.Context
 func (ec *executionContext) field_Mutation_resolveFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2376,10 +2376,10 @@ func (ec *executionContext) field_Mutation_resolveFeedItem_args(ctx context.Cont
 func (ec *executionContext) field_Mutation_showFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2400,10 +2400,10 @@ func (ec *executionContext) field_Mutation_showFeedItem_args(ctx context.Context
 func (ec *executionContext) field_Mutation_showNudge_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2424,10 +2424,10 @@ func (ec *executionContext) field_Mutation_showNudge_args(ctx context.Context, r
 func (ec *executionContext) field_Mutation_unpinFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2448,10 +2448,10 @@ func (ec *executionContext) field_Mutation_unpinFeedItem_args(ctx context.Contex
 func (ec *executionContext) field_Mutation_unresolveFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2532,10 +2532,10 @@ func (ec *executionContext) field_Query_findUploadByID_args(ctx context.Context,
 func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2550,37 +2550,37 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 		}
 	}
 	args["isAnonymous"] = arg1
-	var arg2 feed.BooleanFilter
+	var arg2 base.BooleanFilter
 	if tmp, ok := rawArgs["persistent"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("persistent"))
-		arg2, err = ec.unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx, tmp)
+		arg2, err = ec.unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["persistent"] = arg2
-	var arg3 *feed.Status
+	var arg3 *base.Status
 	if tmp, ok := rawArgs["status"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-		arg3, err = ec.unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx, tmp)
+		arg3, err = ec.unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["status"] = arg3
-	var arg4 *feed.Visibility
+	var arg4 *base.Visibility
 	if tmp, ok := rawArgs["visibility"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-		arg4, err = ec.unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx, tmp)
+		arg4, err = ec.unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["visibility"] = arg4
-	var arg5 *feed.BooleanFilter
+	var arg5 *base.BooleanFilter
 	if tmp, ok := rawArgs["expired"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expired"))
-		arg5, err = ec.unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx, tmp)
+		arg5, err = ec.unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2601,10 +2601,10 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Query_labels_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2616,10 +2616,10 @@ func (ec *executionContext) field_Query_labels_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_unreadPersistentItems_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 feed.Flavour
+	var arg0 base.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2666,7 +2666,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Action_id(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_id(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2701,7 +2701,7 @@ func (ec *executionContext) _Action_id(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2736,7 +2736,7 @@ func (ec *executionContext) _Action_sequenceNumber(ctx context.Context, field gr
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_name(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_name(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2771,7 +2771,7 @@ func (ec *executionContext) _Action_name(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_icon(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_icon(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2801,12 +2801,12 @@ func (ec *executionContext) _Action_icon(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Link)
+	res := resTmp.(base.Link)
 	fc.Result = res
-	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
+	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_actionType(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_actionType(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2836,12 +2836,12 @@ func (ec *executionContext) _Action_actionType(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.ActionType)
+	res := resTmp.(base.ActionType)
 	fc.Result = res
-	return ec.marshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐActionType(ctx, field.Selections, res)
+	return ec.marshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2871,12 +2871,12 @@ func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Handling)
+	res := resTmp.(base.Handling)
 	fc.Result = res
-	return ec.marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐHandling(ctx, field.Selections, res)
+	return ec.marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐHandling(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_allowAnonymous(ctx context.Context, field graphql.CollectedField, obj *feed.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_allowAnonymous(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3946,7 +3946,7 @@ func (ec *executionContext) _CalendarEvent_visibility(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3981,7 +3981,7 @@ func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_flavour(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_flavour(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4011,12 +4011,12 @@ func (ec *executionContext) _Context_flavour(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Flavour)
+	res := resTmp.(base.Flavour)
 	fc.Result = res
-	return ec.marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, field.Selections, res)
+	return ec.marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_organizationID(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_organizationID(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4051,7 +4051,7 @@ func (ec *executionContext) _Context_organizationID(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_locationID(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_locationID(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4086,7 +4086,7 @@ func (ec *executionContext) _Context_locationID(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphql.CollectedField, obj *feed.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4163,7 +4163,7 @@ func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field grap
 	return ec.marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFeed(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4198,7 +4198,7 @@ func (ec *executionContext) _Event_id(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_name(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_name(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4233,7 +4233,7 @@ func (ec *executionContext) _Event_name(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_context(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_context(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4260,12 +4260,12 @@ func (ec *executionContext) _Event_context(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(feed.Context)
+	res := resTmp.(base.Context)
 	fc.Result = res
-	return ec.marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐContext(ctx, field.Selections, res)
+	return ec.marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.CollectedField, obj *feed.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4292,9 +4292,9 @@ func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(feed.Payload)
+	res := resTmp.(base.Payload)
 	fc.Result = res
-	return ec.marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐPayload(ctx, field.Selections, res)
+	return ec.marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EventAttachment_fileID(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttachment) (ret graphql.Marshaler) {
@@ -5062,9 +5062,9 @@ func (ec *executionContext) _Feed_flavour(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Flavour)
+	res := resTmp.(base.Flavour)
 	fc.Result = res
-	return ec.marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx, field.Selections, res)
+	return ec.marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_actions(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
@@ -5097,9 +5097,9 @@ func (ec *executionContext) _Feed_actions(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Action)
+	res := resTmp.([]base.Action)
 	fc.Result = res
-	return ec.marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐActionᚄ(ctx, field.Selections, res)
+	return ec.marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_nudges(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
@@ -5132,9 +5132,9 @@ func (ec *executionContext) _Feed_nudges(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Nudge)
+	res := resTmp.([]base.Nudge)
 	fc.Result = res
-	return ec.marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐNudgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudgeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_items(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
@@ -5167,9 +5167,9 @@ func (ec *executionContext) _Feed_items(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Item)
+	res := resTmp.([]base.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItemᚄ(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItemᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql.CollectedField, obj *feed.Feed) (ret graphql.Marshaler) {
@@ -6236,7 +6236,7 @@ func (ec *executionContext) _GhostCMSTag_url(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_id(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_id(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6271,7 +6271,7 @@ func (ec *executionContext) _Item_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6306,7 +6306,7 @@ func (ec *executionContext) _Item_sequenceNumber(ctx context.Context, field grap
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_expiry(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_expiry(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6341,7 +6341,7 @@ func (ec *executionContext) _Item_expiry(ctx context.Context, field graphql.Coll
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_persistent(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_persistent(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6376,7 +6376,7 @@ func (ec *executionContext) _Item_persistent(ctx context.Context, field graphql.
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_status(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_status(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6406,12 +6406,12 @@ func (ec *executionContext) _Item_status(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Status)
+	res := resTmp.(base.Status)
 	fc.Result = res
-	return ec.marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_visibility(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_visibility(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6441,12 +6441,12 @@ func (ec *executionContext) _Item_visibility(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Visibility)
+	res := resTmp.(base.Visibility)
 	fc.Result = res
-	return ec.marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx, field.Selections, res)
+	return ec.marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_icon(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_icon(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6476,12 +6476,12 @@ func (ec *executionContext) _Item_icon(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Link)
+	res := resTmp.(base.Link)
 	fc.Result = res
-	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
+	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_author(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_author(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6516,7 +6516,7 @@ func (ec *executionContext) _Item_author(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_tagline(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_tagline(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6551,7 +6551,7 @@ func (ec *executionContext) _Item_tagline(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_label(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_label(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6586,7 +6586,7 @@ func (ec *executionContext) _Item_label(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_timestamp(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_timestamp(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6621,7 +6621,7 @@ func (ec *executionContext) _Item_timestamp(ctx context.Context, field graphql.C
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_summary(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_summary(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6656,7 +6656,7 @@ func (ec *executionContext) _Item_summary(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_text(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_text(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6691,7 +6691,7 @@ func (ec *executionContext) _Item_text(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_textType(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_textType(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6721,12 +6721,12 @@ func (ec *executionContext) _Item_textType(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.TextType)
+	res := resTmp.(base.TextType)
 	fc.Result = res
-	return ec.marshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐTextType(ctx, field.Selections, res)
+	return ec.marshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐTextType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_links(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_links(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6753,12 +6753,12 @@ func (ec *executionContext) _Item_links(ctx context.Context, field graphql.Colle
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Link)
+	res := resTmp.([]base.Link)
 	fc.Result = res
-	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_actions(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_actions(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6785,12 +6785,12 @@ func (ec *executionContext) _Item_actions(ctx context.Context, field graphql.Col
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Action)
+	res := resTmp.([]base.Action)
 	fc.Result = res
-	return ec.marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐAction(ctx, field.Selections, res)
+	return ec.marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_conversations(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_conversations(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6817,12 +6817,12 @@ func (ec *executionContext) _Item_conversations(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Message)
+	res := resTmp.([]base.Message)
 	fc.Result = res
-	return ec.marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx, field.Selections, res)
+	return ec.marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_users(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_users(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6854,7 +6854,7 @@ func (ec *executionContext) _Item_users(ctx context.Context, field graphql.Colle
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_groups(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_groups(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6886,7 +6886,7 @@ func (ec *executionContext) _Item_groups(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *feed.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6913,12 +6913,12 @@ func (ec *executionContext) _Item_notificationChannels(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Channel)
+	res := resTmp.([]base.Channel)
 	fc.Result = res
-	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx, field.Selections, res)
+	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_id(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_id(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6953,7 +6953,7 @@ func (ec *executionContext) _Link_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_url(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_url(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6988,7 +6988,7 @@ func (ec *executionContext) _Link_url(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7018,12 +7018,12 @@ func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.LinkType)
+	res := resTmp.(base.LinkType)
 	fc.Result = res
-	return ec.marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLinkType(ctx, field.Selections, res)
+	return ec.marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLinkType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_title(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_title(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7058,7 +7058,7 @@ func (ec *executionContext) _Link_title(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_description(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_description(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7093,7 +7093,7 @@ func (ec *executionContext) _Link_description(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_thumbnail(ctx context.Context, field graphql.CollectedField, obj *feed.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_thumbnail(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7128,7 +7128,7 @@ func (ec *executionContext) _Link_thumbnail(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7163,7 +7163,7 @@ func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.Collected
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7198,7 +7198,7 @@ func (ec *executionContext) _Msg_sequenceNumber(ctx context.Context, field graph
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_text(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_text(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7233,7 +7233,7 @@ func (ec *executionContext) _Msg_text(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_replyTo(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_replyTo(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7265,7 +7265,7 @@ func (ec *executionContext) _Msg_replyTo(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_postedByUID(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_postedByUID(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7300,7 +7300,7 @@ func (ec *executionContext) _Msg_postedByUID(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7335,7 +7335,7 @@ func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_timestamp(ctx context.Context, field graphql.CollectedField, obj *feed.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_timestamp(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7395,7 +7395,7 @@ func (ec *executionContext) _Mutation_resolveFeedItem(ctx context.Context, field
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ResolveFeedItem(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().ResolveFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7407,9 +7407,9 @@ func (ec *executionContext) _Mutation_resolveFeedItem(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Item)
+	res := resTmp.(*base.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_unresolveFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7437,7 +7437,7 @@ func (ec *executionContext) _Mutation_unresolveFeedItem(ctx context.Context, fie
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UnresolveFeedItem(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().UnresolveFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7449,9 +7449,9 @@ func (ec *executionContext) _Mutation_unresolveFeedItem(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Item)
+	res := resTmp.(*base.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_pinFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7479,7 +7479,7 @@ func (ec *executionContext) _Mutation_pinFeedItem(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PinFeedItem(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().PinFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7491,9 +7491,9 @@ func (ec *executionContext) _Mutation_pinFeedItem(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Item)
+	res := resTmp.(*base.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_unpinFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7521,7 +7521,7 @@ func (ec *executionContext) _Mutation_unpinFeedItem(ctx context.Context, field g
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UnpinFeedItem(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().UnpinFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7533,9 +7533,9 @@ func (ec *executionContext) _Mutation_unpinFeedItem(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Item)
+	res := resTmp.(*base.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_hideFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7563,7 +7563,7 @@ func (ec *executionContext) _Mutation_hideFeedItem(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().HideFeedItem(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().HideFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7575,9 +7575,9 @@ func (ec *executionContext) _Mutation_hideFeedItem(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Item)
+	res := resTmp.(*base.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_showFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7605,7 +7605,7 @@ func (ec *executionContext) _Mutation_showFeedItem(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ShowFeedItem(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().ShowFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7617,9 +7617,9 @@ func (ec *executionContext) _Mutation_showFeedItem(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Item)
+	res := resTmp.(*base.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_hideNudge(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7647,7 +7647,7 @@ func (ec *executionContext) _Mutation_hideNudge(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().HideNudge(rctx, args["flavour"].(feed.Flavour), args["nudgeID"].(string))
+		return ec.resolvers.Mutation().HideNudge(rctx, args["flavour"].(base.Flavour), args["nudgeID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7659,9 +7659,9 @@ func (ec *executionContext) _Mutation_hideNudge(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Nudge)
+	res := resTmp.(*base.Nudge)
 	fc.Result = res
-	return ec.marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐNudge(ctx, field.Selections, res)
+	return ec.marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_showNudge(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7689,7 +7689,7 @@ func (ec *executionContext) _Mutation_showNudge(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ShowNudge(rctx, args["flavour"].(feed.Flavour), args["nudgeID"].(string))
+		return ec.resolvers.Mutation().ShowNudge(rctx, args["flavour"].(base.Flavour), args["nudgeID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7701,9 +7701,9 @@ func (ec *executionContext) _Mutation_showNudge(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Nudge)
+	res := resTmp.(*base.Nudge)
 	fc.Result = res
-	return ec.marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐNudge(ctx, field.Selections, res)
+	return ec.marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7731,7 +7731,7 @@ func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PostMessage(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string), args["message"].(feed.Message))
+		return ec.resolvers.Mutation().PostMessage(rctx, args["flavour"].(base.Flavour), args["itemID"].(string), args["message"].(base.Message))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7743,9 +7743,9 @@ func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*feed.Message)
+	res := resTmp.(*base.Message)
 	fc.Result = res
-	return ec.marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7773,7 +7773,7 @@ func (ec *executionContext) _Mutation_deleteMessage(ctx context.Context, field g
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteMessage(rctx, args["flavour"].(feed.Flavour), args["itemID"].(string), args["messageID"].(string))
+		return ec.resolvers.Mutation().DeleteMessage(rctx, args["flavour"].(base.Flavour), args["itemID"].(string), args["messageID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7815,7 +7815,7 @@ func (ec *executionContext) _Mutation_processEvent(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ProcessEvent(rctx, args["flavour"].(feed.Flavour), args["event"].(feed.Event))
+		return ec.resolvers.Mutation().ProcessEvent(rctx, args["flavour"].(base.Flavour), args["event"].(base.Event))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7874,7 +7874,7 @@ func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.
 	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7909,7 +7909,7 @@ func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7944,7 +7944,7 @@ func (ec *executionContext) _Nudge_sequenceNumber(ctx context.Context, field gra
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_visibility(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_visibility(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7974,12 +7974,12 @@ func (ec *executionContext) _Nudge_visibility(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Visibility)
+	res := resTmp.(base.Visibility)
 	fc.Result = res
-	return ec.marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx, field.Selections, res)
+	return ec.marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_status(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_status(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8009,12 +8009,12 @@ func (ec *executionContext) _Nudge_status(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(feed.Status)
+	res := resTmp.(base.Status)
 	fc.Result = res
-	return ec.marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_expiry(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_expiry(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8046,7 +8046,7 @@ func (ec *executionContext) _Nudge_expiry(ctx context.Context, field graphql.Col
 	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_title(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_title(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8081,7 +8081,7 @@ func (ec *executionContext) _Nudge_title(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_text(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_text(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8116,7 +8116,7 @@ func (ec *executionContext) _Nudge_text(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_actions(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_actions(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8146,12 +8146,12 @@ func (ec *executionContext) _Nudge_actions(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Action)
+	res := resTmp.([]base.Action)
 	fc.Result = res
-	return ec.marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐActionᚄ(ctx, field.Selections, res)
+	return ec.marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_groups(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_groups(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8183,7 +8183,7 @@ func (ec *executionContext) _Nudge_groups(ctx context.Context, field graphql.Col
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_users(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_users(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8215,7 +8215,7 @@ func (ec *executionContext) _Nudge_users(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_links(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_links(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8242,12 +8242,12 @@ func (ec *executionContext) _Nudge_links(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Link)
+	res := resTmp.([]base.Link)
 	fc.Result = res
-	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *feed.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8274,12 +8274,12 @@ func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]feed.Channel)
+	res := resTmp.([]base.Channel)
 	fc.Result = res
-	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx, field.Selections, res)
+	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Payload_data(ctx context.Context, field graphql.CollectedField, obj *feed.Payload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Payload_data(ctx context.Context, field graphql.CollectedField, obj *base.Payload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8406,7 +8406,7 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feed.Flavour), args["isAnonymous"].(bool), args["persistent"].(feed.BooleanFilter), args["status"].(*feed.Status), args["visibility"].(*feed.Visibility), args["expired"].(*feed.BooleanFilter), args["filterParams"].(*feed.FilterParams))
+		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(base.Flavour), args["isAnonymous"].(bool), args["persistent"].(base.BooleanFilter), args["status"].(*base.Status), args["visibility"].(*base.Visibility), args["expired"].(*base.BooleanFilter), args["filterParams"].(*feed.FilterParams))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8448,7 +8448,7 @@ func (ec *executionContext) _Query_labels(ctx context.Context, field graphql.Col
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Labels(rctx, args["flavour"].(feed.Flavour))
+		return ec.resolvers.Query().Labels(rctx, args["flavour"].(base.Flavour))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8490,7 +8490,7 @@ func (ec *executionContext) _Query_unreadPersistentItems(ctx context.Context, fi
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().UnreadPersistentItems(rctx, args["flavour"].(feed.Flavour))
+		return ec.resolvers.Query().UnreadPersistentItems(rctx, args["flavour"].(base.Flavour))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10131,8 +10131,8 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj interface{}) (feed.Context, error) {
-	var it feed.Context
+func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj interface{}) (base.Context, error) {
+	var it base.Context
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -10175,8 +10175,8 @@ func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj interface{}) (feed.Event, error) {
-	var it feed.Event
+func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj interface{}) (base.Event, error) {
+	var it base.Event
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -10193,7 +10193,7 @@ func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("context"))
-			it.Context, err = ec.unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐContext(ctx, v)
+			it.Context, err = ec.unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10201,7 +10201,7 @@ func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("payload"))
-			it.Payload, err = ec.unmarshalNPayloadInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐPayload(ctx, v)
+			it.Payload, err = ec.unmarshalNPayloadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10231,8 +10231,8 @@ func (ec *executionContext) unmarshalInputFilterParamsInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj interface{}) (feed.Message, error) {
-	var it feed.Message
+func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj interface{}) (base.Message, error) {
+	var it base.Message
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -10299,8 +10299,8 @@ func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj inte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj interface{}) (feed.Payload, error) {
-	var it feed.Payload
+func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj interface{}) (base.Payload, error) {
+	var it base.Payload
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -10397,7 +10397,7 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 
 var actionImplementors = []string{"Action"}
 
-func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, obj *feed.Action) graphql.Marshaler {
+func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, obj *base.Action) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, actionImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -10611,7 +10611,7 @@ func (ec *executionContext) _CalendarEvent(ctx context.Context, sel ast.Selectio
 
 var contextImplementors = []string{"Context"}
 
-func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, obj *feed.Context) graphql.Marshaler {
+func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, obj *base.Context) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, contextImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -10698,7 +10698,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 
 var eventImplementors = []string{"Event"}
 
-func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *feed.Event) graphql.Marshaler {
+func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *base.Event) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, eventImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -11169,7 +11169,7 @@ func (ec *executionContext) _GhostCMSTag(ctx context.Context, sel ast.SelectionS
 
 var itemImplementors = []string{"Item"}
 
-func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj *feed.Item) graphql.Marshaler {
+func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj *base.Item) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, itemImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -11273,7 +11273,7 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 
 var linkImplementors = []string{"Link"}
 
-func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj *feed.Link) graphql.Marshaler {
+func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj *base.Link) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, linkImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -11325,7 +11325,7 @@ func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj
 
 var msgImplementors = []string{"Msg"}
 
-func (ec *executionContext) _Msg(ctx context.Context, sel ast.SelectionSet, obj *feed.Message) graphql.Marshaler {
+func (ec *executionContext) _Msg(ctx context.Context, sel ast.SelectionSet, obj *base.Message) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, msgImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -11465,7 +11465,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 var nudgeImplementors = []string{"Nudge"}
 
-func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, obj *feed.Nudge) graphql.Marshaler {
+func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, obj *base.Nudge) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, nudgeImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -11532,7 +11532,7 @@ func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, ob
 
 var payloadImplementors = []string{"Payload"}
 
-func (ec *executionContext) _Payload(ctx context.Context, sel ast.SelectionSet, obj *feed.Payload) graphql.Marshaler {
+func (ec *executionContext) _Payload(ctx context.Context, sel ast.SelectionSet, obj *base.Payload) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, payloadImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -12032,11 +12032,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAction2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐAction(ctx context.Context, sel ast.SelectionSet, v feed.Action) graphql.Marshaler {
+func (ec *executionContext) marshalNAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx context.Context, sel ast.SelectionSet, v base.Action) graphql.Marshaler {
 	return ec._Action(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐActionᚄ(ctx context.Context, sel ast.SelectionSet, v []feed.Action) graphql.Marshaler {
+func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionᚄ(ctx context.Context, sel ast.SelectionSet, v []base.Action) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -12060,7 +12060,7 @@ func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAction2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐAction(ctx, sel, v[i])
+			ret[i] = ec.marshalNAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -12073,13 +12073,13 @@ func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐActionType(ctx context.Context, v interface{}) (feed.ActionType, error) {
-	var res feed.ActionType
+func (ec *executionContext) unmarshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionType(ctx context.Context, v interface{}) (base.ActionType, error) {
+	var res base.ActionType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐActionType(ctx context.Context, sel ast.SelectionSet, v feed.ActionType) graphql.Marshaler {
+func (ec *executionContext) marshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionType(ctx context.Context, sel ast.SelectionSet, v base.ActionType) graphql.Marshaler {
 	return v
 }
 
@@ -12119,17 +12119,17 @@ func (ec *executionContext) marshalNBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx context.Context, v interface{}) (feed.BooleanFilter, error) {
-	var res feed.BooleanFilter
+func (ec *executionContext) unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, v interface{}) (base.BooleanFilter, error) {
+	var res base.BooleanFilter
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v feed.BooleanFilter) graphql.Marshaler {
+func (ec *executionContext) marshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v base.BooleanFilter) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐContext(ctx context.Context, v interface{}) (feed.Context, error) {
+func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx context.Context, v interface{}) (base.Context, error) {
 	res, err := ec.unmarshalInputContextInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -12228,7 +12228,7 @@ func (ec *executionContext) marshalNEventAttendee2ᚖgoogleᚗgolangᚗorgᚋapi
 	return ec._EventAttendee(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐEvent(ctx context.Context, v interface{}) (feed.Event, error) {
+func (ec *executionContext) unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐEvent(ctx context.Context, v interface{}) (base.Event, error) {
 	res, err := ec.unmarshalInputEventInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -12247,13 +12247,13 @@ func (ec *executionContext) marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋen
 	return ec._Feed(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx context.Context, v interface{}) (feed.Flavour, error) {
-	var res feed.Flavour
+func (ec *executionContext) unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx context.Context, v interface{}) (base.Flavour, error) {
+	var res base.Flavour
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐFlavour(ctx context.Context, sel ast.SelectionSet, v feed.Flavour) graphql.Marshaler {
+func (ec *executionContext) marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx context.Context, sel ast.SelectionSet, v base.Flavour) graphql.Marshaler {
 	return v
 }
 
@@ -12345,13 +12345,13 @@ func (ec *executionContext) marshalNGhostCMSTag2ᚕgitlabᚗslade360emrᚗcomᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐHandling(ctx context.Context, v interface{}) (feed.Handling, error) {
-	var res feed.Handling
+func (ec *executionContext) unmarshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐHandling(ctx context.Context, v interface{}) (base.Handling, error) {
+	var res base.Handling
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐHandling(ctx context.Context, sel ast.SelectionSet, v feed.Handling) graphql.Marshaler {
+func (ec *executionContext) marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐHandling(ctx context.Context, sel ast.SelectionSet, v base.Handling) graphql.Marshaler {
 	return v
 }
 
@@ -12400,11 +12400,11 @@ func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNItem2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx context.Context, sel ast.SelectionSet, v feed.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx context.Context, sel ast.SelectionSet, v base.Item) graphql.Marshaler {
 	return ec._Item(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []feed.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []base.Item) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -12428,7 +12428,7 @@ func (ec *executionContext) marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋen
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNItem2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx, sel, v[i])
+			ret[i] = ec.marshalNItem2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -12441,7 +12441,7 @@ func (ec *executionContext) marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋen
 	return ret
 }
 
-func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐItem(ctx context.Context, sel ast.SelectionSet, v *feed.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx context.Context, sel ast.SelectionSet, v *base.Item) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -12451,17 +12451,17 @@ func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋen
 	return ec._Item(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx context.Context, sel ast.SelectionSet, v feed.Link) graphql.Marshaler {
+func (ec *executionContext) marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {
 	return ec._Link(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLinkType(ctx context.Context, v interface{}) (feed.LinkType, error) {
-	var res feed.LinkType
+func (ec *executionContext) unmarshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLinkType(ctx context.Context, v interface{}) (base.LinkType, error) {
+	var res base.LinkType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLinkType(ctx context.Context, sel ast.SelectionSet, v feed.LinkType) graphql.Marshaler {
+func (ec *executionContext) marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLinkType(ctx context.Context, sel ast.SelectionSet, v base.LinkType) graphql.Marshaler {
 	return v
 }
 
@@ -12486,11 +12486,11 @@ func (ec *executionContext) marshalNMap2map(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNMsg2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v feed.Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMsg2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v base.Message) graphql.Marshaler {
 	return ec._Msg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v *feed.Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v *base.Message) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -12500,16 +12500,16 @@ func (ec *executionContext) marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋeng
 	return ec._Msg(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx context.Context, v interface{}) (feed.Message, error) {
+func (ec *executionContext) unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, v interface{}) (base.Message, error) {
 	res, err := ec.unmarshalInputMsgInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNudge2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐNudge(ctx context.Context, sel ast.SelectionSet, v feed.Nudge) graphql.Marshaler {
+func (ec *executionContext) marshalNNudge2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx context.Context, sel ast.SelectionSet, v base.Nudge) graphql.Marshaler {
 	return ec._Nudge(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐNudgeᚄ(ctx context.Context, sel ast.SelectionSet, v []feed.Nudge) graphql.Marshaler {
+func (ec *executionContext) marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudgeᚄ(ctx context.Context, sel ast.SelectionSet, v []base.Nudge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -12533,7 +12533,7 @@ func (ec *executionContext) marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋe
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNNudge2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐNudge(ctx, sel, v[i])
+			ret[i] = ec.marshalNNudge2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -12546,7 +12546,7 @@ func (ec *executionContext) marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋe
 	return ret
 }
 
-func (ec *executionContext) marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐNudge(ctx context.Context, sel ast.SelectionSet, v *feed.Nudge) graphql.Marshaler {
+func (ec *executionContext) marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx context.Context, sel ast.SelectionSet, v *base.Nudge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -12556,18 +12556,18 @@ func (ec *executionContext) marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋe
 	return ec._Nudge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNPayloadInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐPayload(ctx context.Context, v interface{}) (feed.Payload, error) {
+func (ec *executionContext) unmarshalNPayloadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx context.Context, v interface{}) (base.Payload, error) {
 	res, err := ec.unmarshalInputPayloadInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx context.Context, v interface{}) (feed.Status, error) {
-	var res feed.Status
+func (ec *executionContext) unmarshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, v interface{}) (base.Status, error) {
+	var res base.Status
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx context.Context, sel ast.SelectionSet, v feed.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, sel ast.SelectionSet, v base.Status) graphql.Marshaler {
 	return v
 }
 
@@ -12616,13 +12616,13 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) unmarshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐTextType(ctx context.Context, v interface{}) (feed.TextType, error) {
-	var res feed.TextType
+func (ec *executionContext) unmarshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐTextType(ctx context.Context, v interface{}) (base.TextType, error) {
+	var res base.TextType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐTextType(ctx context.Context, sel ast.SelectionSet, v feed.TextType) graphql.Marshaler {
+func (ec *executionContext) marshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐTextType(ctx context.Context, sel ast.SelectionSet, v base.TextType) graphql.Marshaler {
 	return v
 }
 
@@ -12660,13 +12660,13 @@ func (ec *executionContext) unmarshalNUploadInput2gitlabᚗslade360emrᚗcomᚋg
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (feed.Visibility, error) {
-	var res feed.Visibility
+func (ec *executionContext) unmarshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, v interface{}) (base.Visibility, error) {
+	var res base.Visibility
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, sel ast.SelectionSet, v feed.Visibility) graphql.Marshaler {
+func (ec *executionContext) marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, sel ast.SelectionSet, v base.Visibility) graphql.Marshaler {
 	return v
 }
 
@@ -13006,11 +13006,11 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOAction2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐAction(ctx context.Context, sel ast.SelectionSet, v feed.Action) graphql.Marshaler {
+func (ec *executionContext) marshalOAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx context.Context, sel ast.SelectionSet, v base.Action) graphql.Marshaler {
 	return ec._Action(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐAction(ctx context.Context, sel ast.SelectionSet, v []feed.Action) graphql.Marshaler {
+func (ec *executionContext) marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx context.Context, sel ast.SelectionSet, v []base.Action) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -13037,7 +13037,7 @@ func (ec *executionContext) marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOAction2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐAction(ctx, sel, v[i])
+			ret[i] = ec.marshalOAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -13074,33 +13074,33 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx context.Context, v interface{}) (*feed.BooleanFilter, error) {
+func (ec *executionContext) unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, v interface{}) (*base.BooleanFilter, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(feed.BooleanFilter)
+	var res = new(base.BooleanFilter)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v *feed.BooleanFilter) graphql.Marshaler {
+func (ec *executionContext) marshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v *base.BooleanFilter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx context.Context, v interface{}) (feed.Channel, error) {
-	var res feed.Channel
+func (ec *executionContext) unmarshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, v interface{}) (base.Channel, error) {
+	var res base.Channel
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx context.Context, sel ast.SelectionSet, v feed.Channel) graphql.Marshaler {
+func (ec *executionContext) marshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, sel ast.SelectionSet, v base.Channel) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx context.Context, v interface{}) ([]feed.Channel, error) {
+func (ec *executionContext) unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, v interface{}) ([]base.Channel, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -13113,10 +13113,10 @@ func (ec *executionContext) unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo
 		}
 	}
 	var err error
-	res := make([]feed.Channel, len(vSlice))
+	res := make([]base.Channel, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx, vSlice[i])
+		res[i], err = ec.unmarshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -13124,7 +13124,7 @@ func (ec *executionContext) unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo
 	return res, nil
 }
 
-func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx context.Context, sel ast.SelectionSet, v []feed.Channel) graphql.Marshaler {
+func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, sel ast.SelectionSet, v []base.Channel) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -13151,7 +13151,7 @@ func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐChannel(ctx, sel, v[i])
+			ret[i] = ec.marshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -13164,7 +13164,7 @@ func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 	return ret
 }
 
-func (ec *executionContext) marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐContext(ctx context.Context, sel ast.SelectionSet, v feed.Context) graphql.Marshaler {
+func (ec *executionContext) marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx context.Context, sel ast.SelectionSet, v base.Context) graphql.Marshaler {
 	return ec._Context(ctx, sel, &v)
 }
 
@@ -13183,11 +13183,11 @@ func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emr�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx context.Context, sel ast.SelectionSet, v feed.Link) graphql.Marshaler {
+func (ec *executionContext) marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {
 	return ec._Link(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx context.Context, sel ast.SelectionSet, v []feed.Link) graphql.Marshaler {
+func (ec *executionContext) marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v []base.Link) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -13214,7 +13214,7 @@ func (ec *executionContext) marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋen
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐLink(ctx, sel, v[i])
+			ret[i] = ec.marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -13242,11 +13242,11 @@ func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.Selecti
 	return graphql.MarshalMap(v)
 }
 
-func (ec *executionContext) marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v feed.Message) graphql.Marshaler {
+func (ec *executionContext) marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v base.Message) graphql.Marshaler {
 	return ec._Msg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx context.Context, sel ast.SelectionSet, v []feed.Message) graphql.Marshaler {
+func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v []base.Message) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -13273,7 +13273,7 @@ func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋeng
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐMessage(ctx, sel, v[i])
+			ret[i] = ec.marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -13286,20 +13286,20 @@ func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋeng
 	return ret
 }
 
-func (ec *executionContext) marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐPayload(ctx context.Context, sel ast.SelectionSet, v feed.Payload) graphql.Marshaler {
+func (ec *executionContext) marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx context.Context, sel ast.SelectionSet, v base.Payload) graphql.Marshaler {
 	return ec._Payload(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx context.Context, v interface{}) (*feed.Status, error) {
+func (ec *executionContext) unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, v interface{}) (*base.Status, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(feed.Status)
+	var res = new(base.Status)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐStatus(ctx context.Context, sel ast.SelectionSet, v *feed.Status) graphql.Marshaler {
+func (ec *executionContext) marshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, sel ast.SelectionSet, v *base.Status) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -13375,16 +13375,16 @@ func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel as
 	return graphql.MarshalTime(v)
 }
 
-func (ec *executionContext) unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, v interface{}) (*feed.Visibility, error) {
+func (ec *executionContext) unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, v interface{}) (*base.Visibility, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(feed.Visibility)
+	var res = new(base.Visibility)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋgraphᚋfeedᚐVisibility(ctx context.Context, sel ast.SelectionSet, v *feed.Visibility) graphql.Marshaler {
+func (ec *executionContext) marshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, sel ast.SelectionSet, v *base.Visibility) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

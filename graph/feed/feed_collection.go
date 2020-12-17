@@ -68,11 +68,11 @@ func (agg Collection) GetFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
-	flavour Flavour,
-	persistent BooleanFilter,
-	status *Status,
-	visibility *Visibility,
-	expired *BooleanFilter,
+	flavour base.Flavour,
+	persistent base.BooleanFilter,
+	status *base.Status,
+	visibility *base.Visibility,
+	expired *base.BooleanFilter,
 	filterParams *FilterParams,
 ) (*Feed, error) {
 	if err := agg.checkPreconditions(); err != nil {
@@ -118,7 +118,7 @@ func (agg Collection) GetThinFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
-	flavour Flavour,
+	flavour base.Flavour,
 ) (*Feed, error) {
 	if err := agg.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf("precondition check failed: %w", err)
@@ -126,9 +126,9 @@ func (agg Collection) GetThinFeed(
 	feed := &Feed{
 		UID:         *uid,
 		Flavour:     flavour,
-		Actions:     []Action{},
-		Items:       []Item{},
-		Nudges:      []Nudge{},
+		Actions:     []base.Action{},
+		Items:       []base.Item{},
+		Nudges:      []base.Nudge{},
 		IsAnonymous: isAnonymous,
 	}
 

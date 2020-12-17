@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/generated"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 )
@@ -22,7 +23,7 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*feed.Fee
 	}
 
 	uid := components[0]
-	flavour := feed.Flavour(components[1])
+	flavour := base.Flavour(components[1])
 	if !flavour.IsValid() {
 		return nil, fmt.Errorf("%s is not a valid flavour", flavour)
 	}
@@ -39,7 +40,7 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*feed.Fee
 		&uid,
 		&anonymous,
 		flavour,
-		feed.BooleanFilterBoth,
+		base.BooleanFilterBoth,
 		nil,
 		nil,
 		nil,

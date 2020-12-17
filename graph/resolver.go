@@ -68,7 +68,7 @@ func (r Resolver) getLoggedInUserUID(ctx context.Context) (string, error) {
 	return authToken.UID, nil
 }
 
-func (r Resolver) getThinFeed(ctx context.Context, flavour feed.Flavour) (*feed.Feed, error) {
+func (r Resolver) getThinFeed(ctx context.Context, flavour base.Flavour) (*feed.Feed, error) {
 	r.checkPreconditions()
 
 	uid, err := r.getLoggedInUserUID(ctx)

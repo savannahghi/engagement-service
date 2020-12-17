@@ -10,6 +10,7 @@ import (
 
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 	db "gitlab.slade360emr.com/go/engagement/graph/feed/infrastructure/database"
 )
@@ -27,46 +28,46 @@ func getEmptyJson(t *testing.T) []byte {
 	return emptyJSONBytes
 }
 
-func getTestItem() feed.Item {
-	return feed.Item{
+func getTestItem() base.Item {
+	return base.Item{
 		ID:             "item-1",
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
-		Status:         feed.StatusPending,
-		Visibility:     feed.VisibilityShow,
-		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
+		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
-		TextType:       feed.TextTypePlain,
-		Links: []feed.Link{
-			feed.GetYoutubeVideoLink(sampleVideoURL, "title", "description", feed.BlankImageURL),
+		TextType:       base.TextTypePlain,
+		Links: []base.Link{
+			base.GetYoutubeVideoLink(sampleVideoURL, "title", "description", base.BlankImageURL),
 		},
-		Actions: []feed.Action{
+		Actions: []base.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType:     feed.ActionTypeSecondary,
-				Handling:       feed.HandlingFullPage,
+				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType:     base.ActionTypeSecondary,
+				Handling:       base.HandlingFullPage,
 				AllowAnonymous: false,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType:     feed.ActionTypePrimary,
-				Handling:       feed.HandlingInline,
+				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType:     base.ActionTypePrimary,
+				Handling:       base.HandlingInline,
 				AllowAnonymous: true,
 			},
 		},
-		Conversations: []feed.Message{
+		Conversations: []base.Message{
 			{
 				ID:             "msg-2",
 				SequenceNumber: 1,
@@ -85,11 +86,11 @@ func getTestItem() feed.Item {
 			"group-1",
 			"group-2",
 		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelFcm,
-			feed.ChannelEmail,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
+		NotificationChannels: []base.Channel{
+			base.ChannelFcm,
+			base.ChannelEmail,
+			base.ChannelSms,
+			base.ChannelWhatsapp,
 		},
 	}
 }
@@ -102,7 +103,7 @@ func TestNewInMemoryFeed(t *testing.T) {
 func TestMessage_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
-	validElement := feed.Message{
+	validElement := base.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Text:           "some message text",
@@ -140,7 +141,7 @@ func TestMessage_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg := &feed.Message{}
+			msg := &base.Message{}
 			if err := msg.ValidateAndUnmarshal(
 				tt.args.b); (err != nil) != tt.wantErr {
 				t.Errorf(
@@ -156,43 +157,43 @@ func TestMessage_ValidateAndUnmarshal(t *testing.T) {
 func TestItem_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
-	validElement := feed.Item{
+	validElement := base.Item{
 		ID:             "item-1",
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
-		Status:         feed.StatusPending,
-		Visibility:     feed.VisibilityShow,
-		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
+		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
-		TextType:       feed.TextTypeMarkdown,
-		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
+		TextType:       base.TextTypeMarkdown,
+		Links: []base.Link{
+			base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
 		},
-		Actions: []feed.Action{
+		Actions: []base.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType:     feed.ActionTypeSecondary,
-				Handling:       feed.HandlingFullPage,
+				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType:     base.ActionTypeSecondary,
+				Handling:       base.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType:     feed.ActionTypePrimary,
-				Handling:       feed.HandlingInline,
+				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType:     base.ActionTypePrimary,
+				Handling:       base.HandlingInline,
 			},
 		},
-		Conversations: []feed.Message{
+		Conversations: []base.Message{
 			{
 				ID:             "msg-2",
 				SequenceNumber: 1,
@@ -211,11 +212,11 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 			"group-1",
 			"group-2",
 		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelFcm,
-			feed.ChannelEmail,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
+		NotificationChannels: []base.Channel{
+			base.ChannelFcm,
+			base.ChannelEmail,
+			base.ChannelSms,
+			base.ChannelWhatsapp,
 		},
 	}
 	validBytes, err := json.Marshal(validElement)
@@ -228,18 +229,18 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		SequenceNumber int
 		Expiry         time.Time
 		Persistent     bool
-		Status         feed.Status
-		Visibility     feed.Visibility
-		Icon           feed.Link
+		Status         base.Status
+		Visibility     base.Visibility
+		Icon           base.Link
 		Author         string
 		Tagline        string
 		Label          string
 		Timestamp      time.Time
 		Summary        string
 		Text           string
-		Links          []feed.Link
-		Actions        []feed.Action
-		Conversations  []feed.Message
+		Links          []base.Link
+		Actions        []base.Action
+		Conversations  []base.Message
 		Users          []string
 		Groups         []string
 	}
@@ -269,7 +270,7 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			it := &feed.Item{
+			it := &base.Item{
 				ID:             tt.fields.ID,
 				SequenceNumber: tt.fields.SequenceNumber,
 				Expiry:         tt.fields.Expiry,
@@ -304,24 +305,24 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
-	validElement := feed.Nudge{
+	validElement := base.Nudge{
 		ID:             "nudge-1",
 		SequenceNumber: 1,
-		Visibility:     feed.VisibilityShow,
-		Status:         feed.StatusPending,
+		Visibility:     base.VisibilityShow,
+		Status:         base.StatusPending,
 		Title:          "Update your profile!",
-		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
+		Links: []base.Link{
+			base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
 		},
 		Text: "An up to date profile will help us serve you better!",
-		Actions: []feed.Action{
+		Actions: []base.Action{
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType:     feed.ActionTypePrimary,
-				Handling:       feed.HandlingInline,
+				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType:     base.ActionTypePrimary,
+				Handling:       base.HandlingInline,
 			},
 		},
 		Groups: []string{
@@ -332,11 +333,11 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 			"user-1",
 			"user-2",
 		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelFcm,
-			feed.ChannelEmail,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
+		NotificationChannels: []base.Channel{
+			base.ChannelFcm,
+			base.ChannelEmail,
+			base.ChannelSms,
+			base.ChannelWhatsapp,
 		},
 	}
 	validBytes, err := json.Marshal(validElement)
@@ -347,12 +348,12 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 	type fields struct {
 		ID             string
 		SequenceNumber int
-		Visibility     feed.Visibility
-		Status         feed.Status
+		Visibility     base.Visibility
+		Status         base.Status
 		Title          string
 		Text           string
-		Links          []feed.Link
-		Actions        []feed.Action
+		Links          []base.Link
+		Actions        []base.Action
 		Groups         []string
 		Users          []string
 	}
@@ -382,7 +383,7 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			nu := &feed.Nudge{
+			nu := &base.Nudge{
 				ID:             tt.fields.ID,
 				SequenceNumber: tt.fields.SequenceNumber,
 				Visibility:     tt.fields.Visibility,
@@ -409,13 +410,13 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 func TestAction_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
-	validElement := feed.Action{
+	validElement := base.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Name:           "ACTION_NAME",
-		Icon:           feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
-		ActionType:     feed.ActionTypeSecondary,
-		Handling:       feed.HandlingFullPage,
+		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+		ActionType:     base.ActionTypeSecondary,
+		Handling:       base.HandlingFullPage,
 		AllowAnonymous: false,
 	}
 	validBytes, err := json.Marshal(validElement)
@@ -427,9 +428,9 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		ID             string
 		SequenceNumber int
 		Name           string
-		Icon           feed.Link
-		ActionType     feed.ActionType
-		Handling       feed.Handling
+		Icon           base.Link
+		ActionType     base.ActionType
+		Handling       base.Handling
 		AllowAnonymous bool
 	}
 	type args struct {
@@ -458,7 +459,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ac := &feed.Action{}
+			ac := &base.Action{}
 			if err := ac.ValidateAndUnmarshal(
 				tt.args.b); (err != nil) != tt.wantErr {
 				t.Errorf(
@@ -478,50 +479,50 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 		UID:            "a-uid",
 		IsAnonymous:    &anonymous,
 		SequenceNumber: int(time.Now().Unix()),
-		Flavour:        feed.FlavourConsumer,
-		Actions: []feed.Action{
+		Flavour:        base.FlavourConsumer,
+		Actions: []base.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon: feed.GetPNGImageLink(
-					feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType:     feed.ActionTypeSecondary,
-				Handling:       feed.HandlingFullPage,
+				Icon: base.GetPNGImageLink(
+					base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType:     base.ActionTypeSecondary,
+				Handling:       base.HandlingFullPage,
 				AllowAnonymous: false,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon: feed.GetPNGImageLink(
-					feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType:     feed.ActionTypePrimary,
-				Handling:       feed.HandlingInline,
+				Icon: base.GetPNGImageLink(
+					base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType:     base.ActionTypePrimary,
+				Handling:       base.HandlingInline,
 				AllowAnonymous: false,
 			},
 		},
-		Nudges: []feed.Nudge{
+		Nudges: []base.Nudge{
 			{
 				ID:             "nudge-1",
 				SequenceNumber: 1,
-				Visibility:     feed.VisibilityShow,
-				Status:         feed.StatusPending,
+				Visibility:     base.VisibilityShow,
+				Status:         base.StatusPending,
 				Title:          "Update your profile!",
-				Links: []feed.Link{
-					feed.GetPNGImageLink(
-						feed.LogoURL, "title", "description", feed.BlankImageURL),
+				Links: []base.Link{
+					base.GetPNGImageLink(
+						base.LogoURL, "title", "description", base.BlankImageURL),
 				},
 				Text: "An up to date profile will help us serve you better!",
-				Actions: []feed.Action{
+				Actions: []base.Action{
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypePrimary,
+						Handling:       base.HandlingInline,
 						AllowAnonymous: false,
 					},
 				},
@@ -533,27 +534,27 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 					"user-1",
 					"user-2",
 				},
-				NotificationChannels: []feed.Channel{
-					feed.ChannelFcm,
-					feed.ChannelEmail,
-					feed.ChannelSms,
-					feed.ChannelWhatsapp,
+				NotificationChannels: []base.Channel{
+					base.ChannelFcm,
+					base.ChannelEmail,
+					base.ChannelSms,
+					base.ChannelWhatsapp,
 				},
 			},
 		},
-		Items: []feed.Item{
+		Items: []base.Item{
 			{
 				ID:             "item-1",
 				SequenceNumber: 1,
 				Expiry:         time.Now(),
 				Persistent:     true,
-				Status:         feed.StatusPending,
-				Visibility:     feed.VisibilityShow,
-				Icon: feed.GetPNGImageLink(
-					feed.LogoURL, "title", "description", feed.BlankImageURL),
-				Links: []feed.Link{
-					feed.GetPNGImageLink(
-						feed.LogoURL, "title", "description", feed.BlankImageURL),
+				Status:         base.StatusPending,
+				Visibility:     base.VisibilityShow,
+				Icon: base.GetPNGImageLink(
+					base.LogoURL, "title", "description", base.BlankImageURL),
+				Links: []base.Link{
+					base.GetPNGImageLink(
+						base.LogoURL, "title", "description", base.BlankImageURL),
 				},
 				Author:    "Bot 1",
 				Tagline:   "Bot speaks...",
@@ -561,30 +562,30 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Timestamp: time.Now(),
 				Summary:   "I am a bot...",
 				Text:      "This bot can speak",
-				TextType:  feed.TextTypeMarkdown,
-				Actions: []feed.Action{
+				TextType:  base.TextTypeMarkdown,
+				Actions: []base.Action{
 					{
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypeSecondary,
-						Handling:       feed.HandlingFullPage,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypeSecondary,
+						Handling:       base.HandlingFullPage,
 						AllowAnonymous: false,
 					},
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypePrimary,
+						Handling:       base.HandlingInline,
 						AllowAnonymous: false,
 					},
 				},
-				Conversations: []feed.Message{
+				Conversations: []base.Message{
 					{
 						ID:             "msg-2",
 						SequenceNumber: 1,
@@ -603,11 +604,11 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 					"group-1",
 					"group-2",
 				},
-				NotificationChannels: []feed.Channel{
-					feed.ChannelFcm,
-					feed.ChannelEmail,
-					feed.ChannelSms,
-					feed.ChannelWhatsapp,
+				NotificationChannels: []base.Channel{
+					base.ChannelFcm,
+					base.ChannelEmail,
+					base.ChannelSms,
+					base.ChannelWhatsapp,
 				},
 			},
 		},
@@ -620,10 +621,10 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 	type fields struct {
 		UID         string
 		IsAnonymous *bool
-		Flavour     feed.Flavour
-		Actions     []feed.Action
-		Items       []feed.Item
-		Nudges      []feed.Nudge
+		Flavour     base.Flavour
+		Actions     []base.Action
+		Items       []base.Item
+		Nudges      []base.Nudge
 	}
 	type args struct {
 		b []byte
@@ -676,10 +677,10 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 		UID            string
 		IsAnonymous    *bool
 		SequenceNumber int
-		Flavour        feed.Flavour
-		Actions        []feed.Action
-		Items          []feed.Item
-		Nudges         []feed.Nudge
+		Flavour        base.Flavour
+		Actions        []base.Action
+		Items          []base.Item
+		Nudges         []base.Nudge
 	}
 	anonymous := false
 	tests := []struct {
@@ -693,50 +694,50 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 				UID:            "a-uid",
 				IsAnonymous:    &anonymous,
 				SequenceNumber: int(time.Now().Unix()),
-				Flavour:        feed.FlavourPro,
-				Actions: []feed.Action{
+				Flavour:        base.FlavourPro,
+				Actions: []base.Action{
 					{
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypeSecondary,
-						Handling:       feed.HandlingFullPage,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypeSecondary,
+						Handling:       base.HandlingFullPage,
 						AllowAnonymous: false,
 					},
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypePrimary,
+						Handling:       base.HandlingInline,
 						AllowAnonymous: false,
 					},
 				},
-				Nudges: []feed.Nudge{
+				Nudges: []base.Nudge{
 					{
 						ID:             "nudge-1",
 						SequenceNumber: 1,
-						Visibility:     feed.VisibilityShow,
-						Status:         feed.StatusPending,
+						Visibility:     base.VisibilityShow,
+						Status:         base.StatusPending,
 						Title:          "Update your profile!",
-						Links: []feed.Link{
-							feed.GetPNGImageLink(
-								feed.LogoURL, "title", "description", feed.BlankImageURL),
+						Links: []base.Link{
+							base.GetPNGImageLink(
+								base.LogoURL, "title", "description", base.BlankImageURL),
 						},
 						Text: "Help us serve you better!",
-						Actions: []feed.Action{
+						Actions: []base.Action{
 							{
 								ID:             "action-1",
 								SequenceNumber: 1,
 								Name:           "First action",
-								Icon: feed.GetPNGImageLink(
-									feed.LogoURL, "title", "description", feed.BlankImageURL),
-								ActionType:     feed.ActionTypePrimary,
-								Handling:       feed.HandlingInline,
+								Icon: base.GetPNGImageLink(
+									base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     base.ActionTypePrimary,
+								Handling:       base.HandlingInline,
 								AllowAnonymous: false,
 							},
 						},
@@ -748,27 +749,27 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 							"user-1",
 							"user-2",
 						},
-						NotificationChannels: []feed.Channel{
-							feed.ChannelFcm,
-							feed.ChannelEmail,
-							feed.ChannelSms,
-							feed.ChannelWhatsapp,
+						NotificationChannels: []base.Channel{
+							base.ChannelFcm,
+							base.ChannelEmail,
+							base.ChannelSms,
+							base.ChannelWhatsapp,
 						},
 					},
 				},
-				Items: []feed.Item{
+				Items: []base.Item{
 					{
 						ID:             "item-1",
 						SequenceNumber: 1,
 						Expiry:         time.Now(),
 						Persistent:     true,
-						Status:         feed.StatusPending,
-						Visibility:     feed.VisibilityShow,
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						Links: []feed.Link{
-							feed.GetPNGImageLink(
-								feed.LogoURL, "title", "description", feed.BlankImageURL),
+						Status:         base.StatusPending,
+						Visibility:     base.VisibilityShow,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						Links: []base.Link{
+							base.GetPNGImageLink(
+								base.LogoURL, "title", "description", base.BlankImageURL),
 						},
 						Author:    "Bot 1",
 						Tagline:   "Bot speaks...",
@@ -776,30 +777,30 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Timestamp: time.Now(),
 						Summary:   "I am a bot...",
 						Text:      "This bot can speak",
-						TextType:  feed.TextTypeMarkdown,
-						Actions: []feed.Action{
+						TextType:  base.TextTypeMarkdown,
+						Actions: []base.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           "ACTION_NAME",
-								Icon: feed.GetPNGImageLink(
-									feed.LogoURL, "title", "description", feed.BlankImageURL),
-								ActionType:     feed.ActionTypeSecondary,
-								Handling:       feed.HandlingFullPage,
+								Icon: base.GetPNGImageLink(
+									base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     base.ActionTypeSecondary,
+								Handling:       base.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 							{
 								ID:             "action-1",
 								SequenceNumber: 1,
 								Name:           "First action",
-								Icon: feed.GetPNGImageLink(
-									feed.LogoURL, "title", "description", feed.BlankImageURL),
-								ActionType:     feed.ActionTypePrimary,
-								Handling:       feed.HandlingInline,
+								Icon: base.GetPNGImageLink(
+									base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     base.ActionTypePrimary,
+								Handling:       base.HandlingInline,
 								AllowAnonymous: false,
 							},
 						},
-						Conversations: []feed.Message{
+						Conversations: []base.Message{
 							{
 								ID:             "msg-2",
 								SequenceNumber: 1,
@@ -818,11 +819,11 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 							"group-1",
 							"group-2",
 						},
-						NotificationChannels: []feed.Channel{
-							feed.ChannelFcm,
-							feed.ChannelEmail,
-							feed.ChannelSms,
-							feed.ChannelWhatsapp,
+						NotificationChannels: []base.Channel{
+							base.ChannelFcm,
+							base.ChannelEmail,
+							base.ChannelSms,
+							base.ChannelWhatsapp,
 						},
 					},
 				},
@@ -866,9 +867,9 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 		ID             string
 		SequenceNumber int
 		Name           string
-		Icon           feed.Link
-		ActionType     feed.ActionType
-		Handling       feed.Handling
+		Icon           base.Link
+		ActionType     base.ActionType
+		Handling       base.Handling
 	}
 	tests := []struct {
 		name    string
@@ -881,10 +882,10 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon: feed.GetPNGImageLink(
-					feed.LogoURL, "title", "description", feed.BlankImageURL),
-				ActionType: feed.ActionTypePrimary,
-				Handling:   feed.HandlingInline,
+				Icon: base.GetPNGImageLink(
+					base.LogoURL, "title", "description", base.BlankImageURL),
+				ActionType: base.ActionTypePrimary,
+				Handling:   base.HandlingInline,
 			},
 			wantErr: false,
 		},
@@ -895,7 +896,7 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ac := &feed.Action{
+			ac := &base.Action{
 				ID:             tt.fields.ID,
 				SequenceNumber: tt.fields.SequenceNumber,
 				Name:           tt.fields.Name,
@@ -923,15 +924,15 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
 		ID                   string
 		SequenceNumber       int
-		Visibility           feed.Visibility
-		Status               feed.Status
+		Visibility           base.Visibility
+		Status               base.Status
 		Title                string
-		Links                []feed.Link
+		Links                []base.Link
 		Text                 string
-		Actions              []feed.Action
+		Actions              []base.Action
 		Groups               []string
 		Users                []string
-		NotificationChannels []feed.Channel
+		NotificationChannels []base.Channel
 	}
 	tests := []struct {
 		name    string
@@ -943,23 +944,23 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 			fields: fields{
 				ID:             "nudge-1",
 				SequenceNumber: 1,
-				Visibility:     feed.VisibilityShow,
-				Status:         feed.StatusPending,
+				Visibility:     base.VisibilityShow,
+				Status:         base.StatusPending,
 				Title:          "Update your profile!",
-				Links: []feed.Link{
-					feed.GetPNGImageLink(
-						feed.LogoURL, "title", "description", feed.BlankImageURL),
+				Links: []base.Link{
+					base.GetPNGImageLink(
+						base.LogoURL, "title", "description", base.BlankImageURL),
 				},
 				Text: "An up to date profile will help us serve you better!",
-				Actions: []feed.Action{
+				Actions: []base.Action{
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypePrimary,
+						Handling:       base.HandlingInline,
 						AllowAnonymous: false,
 					},
 				},
@@ -971,11 +972,11 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 					"user-1",
 					"user-2",
 				},
-				NotificationChannels: []feed.Channel{
-					feed.ChannelFcm,
-					feed.ChannelEmail,
-					feed.ChannelSms,
-					feed.ChannelWhatsapp,
+				NotificationChannels: []base.Channel{
+					base.ChannelFcm,
+					base.ChannelEmail,
+					base.ChannelSms,
+					base.ChannelWhatsapp,
 				},
 			},
 			wantErr: false,
@@ -987,7 +988,7 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			nu := &feed.Nudge{
+			nu := &base.Nudge{
 				ID:                   tt.fields.ID,
 				SequenceNumber:       tt.fields.SequenceNumber,
 				Visibility:           tt.fields.Visibility,
@@ -1022,22 +1023,22 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 		SequenceNumber       int
 		Expiry               time.Time
 		Persistent           bool
-		Status               feed.Status
-		Visibility           feed.Visibility
-		Icon                 feed.Link
+		Status               base.Status
+		Visibility           base.Visibility
+		Icon                 base.Link
 		Author               string
 		Tagline              string
 		Label                string
 		Timestamp            time.Time
 		Summary              string
 		Text                 string
-		TextType             feed.TextType
-		Links                []feed.Link
-		Actions              []feed.Action
-		Conversations        []feed.Message
+		TextType             base.TextType
+		Links                []base.Link
+		Actions              []base.Action
+		Conversations        []base.Message
 		Users                []string
 		Groups               []string
-		NotificationChannels []feed.Channel
+		NotificationChannels []base.Channel
 	}
 	tests := []struct {
 		name    string
@@ -1051,44 +1052,44 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				SequenceNumber: 1,
 				Expiry:         time.Now(),
 				Persistent:     true,
-				Status:         feed.StatusPending,
-				Visibility:     feed.VisibilityShow,
-				Icon: feed.GetPNGImageLink(
-					feed.LogoURL, "title", "description", feed.BlankImageURL),
+				Status:         base.StatusPending,
+				Visibility:     base.VisibilityShow,
+				Icon: base.GetPNGImageLink(
+					base.LogoURL, "title", "description", base.BlankImageURL),
 				Author:    "Bot 1",
 				Tagline:   "Bot speaks...",
 				Label:     "DRUGS",
 				Timestamp: time.Now(),
 				Summary:   "I am a bot...",
 				Text:      "This bot can speak",
-				TextType:  feed.TextTypeMarkdown,
-				Links: []feed.Link{
-					feed.GetPNGImageLink(
-						feed.LogoURL, "title", "description", feed.BlankImageURL),
+				TextType:  base.TextTypeMarkdown,
+				Links: []base.Link{
+					base.GetPNGImageLink(
+						base.LogoURL, "title", "description", base.BlankImageURL),
 				},
-				Actions: []feed.Action{
+				Actions: []base.Action{
 					{
 						ID:             ksuid.New().String(),
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypeSecondary,
-						Handling:       feed.HandlingFullPage,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypeSecondary,
+						Handling:       base.HandlingFullPage,
 						AllowAnonymous: false,
 					},
 					{
 						ID:             "action-1",
 						SequenceNumber: 1,
 						Name:           "First action",
-						Icon: feed.GetPNGImageLink(
-							feed.LogoURL, "title", "description", feed.BlankImageURL),
-						ActionType:     feed.ActionTypePrimary,
-						Handling:       feed.HandlingInline,
+						Icon: base.GetPNGImageLink(
+							base.LogoURL, "title", "description", base.BlankImageURL),
+						ActionType:     base.ActionTypePrimary,
+						Handling:       base.HandlingInline,
 						AllowAnonymous: false,
 					},
 				},
-				Conversations: []feed.Message{
+				Conversations: []base.Message{
 					{
 						ID:             "msg-2",
 						SequenceNumber: 1,
@@ -1107,11 +1108,11 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 					"group-1",
 					"group-2",
 				},
-				NotificationChannels: []feed.Channel{
-					feed.ChannelFcm,
-					feed.ChannelEmail,
-					feed.ChannelSms,
-					feed.ChannelWhatsapp,
+				NotificationChannels: []base.Channel{
+					base.ChannelFcm,
+					base.ChannelEmail,
+					base.ChannelSms,
+					base.ChannelWhatsapp,
 				},
 			},
 			wantErr: false,
@@ -1123,7 +1124,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			it := &feed.Item{
+			it := &base.Item{
 				ID:                   tt.fields.ID,
 				SequenceNumber:       tt.fields.SequenceNumber,
 				Expiry:               tt.fields.Expiry,
@@ -1194,7 +1195,7 @@ func TestMessage_ValidateAndMarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg := &feed.Message{
+			msg := &base.Message{
 				ID:             tt.fields.ID,
 				SequenceNumber: tt.fields.SequenceNumber,
 				Text:           tt.fields.Text,
@@ -1222,9 +1223,9 @@ func TestMessage_ValidateAndMarshal(t *testing.T) {
 func TestContext_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
-	validElement := feed.Context{
+	validElement := base.Context{
 		UserID:         "uid-1",
-		Flavour:        feed.FlavourConsumer,
+		Flavour:        base.FlavourConsumer,
 		OrganizationID: "org-1",
 		LocationID:     "loc-1",
 		Timestamp:      time.Now(),
@@ -1265,7 +1266,7 @@ func TestContext_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ct := &feed.Context{
+			ct := &base.Context{
 				UserID:         tt.fields.UserID,
 				OrganizationID: tt.fields.OrganizationID,
 				LocationID:     tt.fields.LocationID,
@@ -1286,7 +1287,7 @@ func TestContext_ValidateAndUnmarshal(t *testing.T) {
 func TestContext_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
 		UserID         string
-		Flavour        feed.Flavour
+		Flavour        base.Flavour
 		OrganizationID string
 		LocationID     string
 		Timestamp      time.Time
@@ -1300,7 +1301,7 @@ func TestContext_ValidateAndMarshal(t *testing.T) {
 			name: "valid case",
 			fields: fields{
 				UserID:         "uid-1",
-				Flavour:        feed.FlavourConsumer,
+				Flavour:        base.FlavourConsumer,
 				OrganizationID: "org-1",
 				LocationID:     "loc-1",
 				Timestamp:      time.Now(),
@@ -1314,7 +1315,7 @@ func TestContext_ValidateAndMarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ct := &feed.Context{
+			ct := &base.Context{
 				UserID:         tt.fields.UserID,
 				Flavour:        tt.fields.Flavour,
 				OrganizationID: tt.fields.OrganizationID,
@@ -1340,7 +1341,7 @@ func TestContext_ValidateAndMarshal(t *testing.T) {
 func TestPayload_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
-	validElement := feed.Payload{
+	validElement := base.Payload{
 		Data: map[string]interface{}{"a": 1},
 	}
 	validBytes, err := json.Marshal(validElement)
@@ -1376,7 +1377,7 @@ func TestPayload_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pl := &feed.Payload{
+			pl := &base.Payload{
 				Data: tt.fields.Data,
 			}
 			if err := pl.ValidateAndUnmarshal(
@@ -1410,7 +1411,7 @@ func TestPayload_ValidateAndMarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pl := &feed.Payload{
+			pl := &base.Payload{
 				Data: tt.fields.Data,
 			}
 			got, err := pl.ValidateAndMarshal()
@@ -1432,17 +1433,17 @@ func TestPayload_ValidateAndMarshal(t *testing.T) {
 func TestEvent_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
 
-	validElement := feed.Event{
+	validElement := base.Event{
 		ID:   "event-1",
 		Name: "THIS_EVENT",
-		Context: feed.Context{
+		Context: base.Context{
 			UserID:         "user-1",
-			Flavour:        feed.FlavourConsumer,
+			Flavour:        base.FlavourConsumer,
 			OrganizationID: "org-1",
 			LocationID:     "loc-1",
 			Timestamp:      time.Now(),
 		},
-		Payload: feed.Payload{
+		Payload: base.Payload{
 			Data: map[string]interface{}{"a": 1},
 		},
 	}
@@ -1453,8 +1454,8 @@ func TestEvent_ValidateAndUnmarshal(t *testing.T) {
 	type fields struct {
 		ID      string
 		Name    string
-		Context feed.Context
-		Payload feed.Payload
+		Context base.Context
+		Payload base.Payload
 	}
 	type args struct {
 		b []byte
@@ -1482,7 +1483,7 @@ func TestEvent_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ev := &feed.Event{
+			ev := &base.Event{
 				ID:      tt.fields.ID,
 				Name:    tt.fields.Name,
 				Context: tt.fields.Context,
@@ -1504,8 +1505,8 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
 		ID      string
 		Name    string
-		Context feed.Context
-		Payload feed.Payload
+		Context base.Context
+		Payload base.Payload
 	}
 	tests := []struct {
 		name    string
@@ -1517,14 +1518,14 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 			fields: fields{
 				ID:   "event-1",
 				Name: "THIS_EVENT",
-				Context: feed.Context{
+				Context: base.Context{
 					UserID:         "user-1",
-					Flavour:        feed.FlavourConsumer,
+					Flavour:        base.FlavourConsumer,
 					OrganizationID: "org-1",
 					LocationID:     "loc-1",
 					Timestamp:      time.Now(),
 				},
-				Payload: feed.Payload{
+				Payload: base.Payload{
 					Data: map[string]interface{}{"a": 1},
 				},
 			},
@@ -1537,7 +1538,7 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ev := &feed.Event{
+			ev := &base.Event{
 				ID:      tt.fields.ID,
 				Name:    tt.fields.Name,
 				Context: tt.fields.Context,
@@ -1562,10 +1563,10 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 func TestFeed_GetItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -1627,7 +1628,7 @@ func TestFeed_GetItem(t *testing.T) {
 func TestFeed_GetNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -1639,7 +1640,7 @@ func TestFeed_GetNudge(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, fr)
 
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 	nudge := testNudge()
 
 	savedNudge, err := fr.SaveNudge(ctx, uid, flavour, nudge)
@@ -1691,7 +1692,7 @@ func TestFeed_GetNudge(t *testing.T) {
 func TestFeed_GetAction(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -1754,7 +1755,7 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
 
@@ -1771,7 +1772,7 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 
 	type args struct {
 		ctx  context.Context
-		item *feed.Item
+		item *base.Item
 	}
 	tests := []struct {
 		name    string
@@ -1790,7 +1791,7 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 			name: "unsuccessful, invalid item, will fail validation",
 			args: args{
 				ctx:  ctx,
-				item: &feed.Item{},
+				item: &base.Item{},
 			},
 			wantErr: true,
 		},
@@ -1812,10 +1813,10 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 func TestFeed_DeleteFeedItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -1870,10 +1871,10 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 func TestFeed_ResolveFeedItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -1897,7 +1898,7 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		wantStatus feed.Status
+		wantStatus base.Status
 		wantErr    bool
 	}{
 		{
@@ -1906,7 +1907,7 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 				ctx:    ctx,
 				itemID: item.ID,
 			},
-			wantStatus: feed.StatusDone,
+			wantStatus: base.StatusDone,
 			wantErr:    false,
 		},
 	}
@@ -1927,10 +1928,10 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 func TestFeed_UnresolveFeedItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -1954,7 +1955,7 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		wantStatus feed.Status
+		wantStatus base.Status
 		wantErr    bool
 	}{
 		{
@@ -1963,7 +1964,7 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 				ctx:    ctx,
 				itemID: item.ID,
 			},
-			wantStatus: feed.StatusPending,
+			wantStatus: base.StatusPending,
 			wantErr:    false,
 		},
 	}
@@ -1984,10 +1985,10 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 func TestFeed_PinFeedItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -2041,10 +2042,10 @@ func TestFeed_PinFeedItem(t *testing.T) {
 func TestFeed_UnpinFeedItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -2098,10 +2099,10 @@ func TestFeed_UnpinFeedItem(t *testing.T) {
 func TestFeed_HideFeedItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -2125,7 +2126,7 @@ func TestFeed_HideFeedItem(t *testing.T) {
 	tests := []struct {
 		name           string
 		args           args
-		wantVisibility feed.Visibility
+		wantVisibility base.Visibility
 		wantErr        bool
 	}{
 		{
@@ -2134,7 +2135,7 @@ func TestFeed_HideFeedItem(t *testing.T) {
 				ctx:    ctx,
 				itemID: item.ID,
 			},
-			wantVisibility: feed.VisibilityHide,
+			wantVisibility: base.VisibilityHide,
 			wantErr:        false,
 		},
 	}
@@ -2155,10 +2156,10 @@ func TestFeed_HideFeedItem(t *testing.T) {
 func TestFeed_ShowFeedItem(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
+	flavour := base.FlavourConsumer
 
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -2182,7 +2183,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 	tests := []struct {
 		name           string
 		args           args
-		wantVisibility feed.Visibility
+		wantVisibility base.Visibility
 		wantErr        bool
 	}{
 		{
@@ -2191,7 +2192,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 				ctx:    ctx,
 				itemID: item.ID,
 			},
-			wantVisibility: feed.VisibilityShow,
+			wantVisibility: base.VisibilityShow,
 			wantErr:        false,
 		},
 	}
@@ -2212,7 +2213,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 func TestFeed_PublishNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2224,7 +2225,7 @@ func TestFeed_PublishNudge(t *testing.T) {
 
 	type args struct {
 		ctx   context.Context
-		nudge *feed.Nudge
+		nudge *base.Nudge
 	}
 	tests := []struct {
 		name    string
@@ -2265,7 +2266,7 @@ func TestFeed_PublishNudge(t *testing.T) {
 func TestFeed_DeleteNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2316,7 +2317,7 @@ func TestFeed_DeleteNudge(t *testing.T) {
 func TestFeed_ResolveNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2336,7 +2337,7 @@ func TestFeed_ResolveNudge(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		wantStatus feed.Status
+		wantStatus base.Status
 		wantErr    bool
 	}{
 		{
@@ -2345,7 +2346,7 @@ func TestFeed_ResolveNudge(t *testing.T) {
 				ctx:     ctx,
 				nudgeID: savedNudge.ID,
 			},
-			wantStatus: feed.StatusDone,
+			wantStatus: base.StatusDone,
 			wantErr:    false,
 		},
 	}
@@ -2366,7 +2367,7 @@ func TestFeed_ResolveNudge(t *testing.T) {
 func TestFeed_UnresolveNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2386,7 +2387,7 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 	tests := []struct {
 		name       string
 		args       args
-		wantStatus feed.Status
+		wantStatus base.Status
 		wantErr    bool
 	}{
 		{
@@ -2395,7 +2396,7 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 				ctx:     ctx,
 				nudgeID: savedNudge.ID,
 			},
-			wantStatus: feed.StatusPending,
+			wantStatus: base.StatusPending,
 			wantErr:    false,
 		},
 	}
@@ -2416,7 +2417,7 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 func TestFeed_HideNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2436,7 +2437,7 @@ func TestFeed_HideNudge(t *testing.T) {
 	tests := []struct {
 		name           string
 		args           args
-		wantVisibility feed.Visibility
+		wantVisibility base.Visibility
 		wantErr        bool
 	}{
 		{
@@ -2445,7 +2446,7 @@ func TestFeed_HideNudge(t *testing.T) {
 				ctx:     ctx,
 				nudgeID: savedNudge.ID,
 			},
-			wantVisibility: feed.VisibilityHide,
+			wantVisibility: base.VisibilityHide,
 			wantErr:        false,
 		},
 	}
@@ -2466,7 +2467,7 @@ func TestFeed_HideNudge(t *testing.T) {
 func TestFeed_ShowNudge(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2486,7 +2487,7 @@ func TestFeed_ShowNudge(t *testing.T) {
 	tests := []struct {
 		name           string
 		args           args
-		wantVisibility feed.Visibility
+		wantVisibility base.Visibility
 		wantErr        bool
 	}{
 		{
@@ -2495,7 +2496,7 @@ func TestFeed_ShowNudge(t *testing.T) {
 				ctx:     ctx,
 				nudgeID: savedNudge.ID,
 			},
-			wantVisibility: feed.VisibilityShow,
+			wantVisibility: base.VisibilityShow,
 			wantErr:        false,
 		},
 	}
@@ -2516,7 +2517,7 @@ func TestFeed_ShowNudge(t *testing.T) {
 func TestFeed_PublishAction(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2528,7 +2529,7 @@ func TestFeed_PublishAction(t *testing.T) {
 
 	type args struct {
 		ctx    context.Context
-		action *feed.Action
+		action *base.Action
 	}
 	tests := []struct {
 		name    string
@@ -2569,7 +2570,7 @@ func TestFeed_PublishAction(t *testing.T) {
 func TestFeed_DeleteAction(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -2619,7 +2620,7 @@ func TestFeed_DeleteAction(t *testing.T) {
 func TestFeed_PostMessage(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -2637,7 +2638,7 @@ func TestFeed_PostMessage(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		itemID  string
-		message *feed.Message
+		message *base.Message
 	}
 	tests := []struct {
 		name    string
@@ -2689,7 +2690,7 @@ func TestFeed_PostMessage(t *testing.T) {
 func TestFeed_DeleteMessage(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -2750,7 +2751,7 @@ func TestFeed_DeleteMessage(t *testing.T) {
 func TestFeed_ProcessEvent(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 	anonymous := false
 	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, fl)
@@ -2761,7 +2762,7 @@ func TestFeed_ProcessEvent(t *testing.T) {
 
 	type args struct {
 		ctx   context.Context
-		event *feed.Event
+		event *base.Event
 	}
 	tests := []struct {
 		name    string
@@ -2794,8 +2795,8 @@ func TestFeed_ProcessEvent(t *testing.T) {
 	}
 }
 
-func getTestMessage() feed.Message {
-	return feed.Message{
+func getTestMessage() base.Message {
+	return base.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Text:           ksuid.New().String(),
@@ -2810,31 +2811,31 @@ func getTestSequenceNumber() int {
 	return rand.Intn(intMax)
 }
 
-func testItem() *feed.Item {
-	return &feed.Item{
+func testItem() *base.Item {
+	return &base.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Expiry:         getTextExpiry(),
 		Persistent:     true,
-		Status:         feed.StatusPending,
-		Visibility:     feed.VisibilityShow,
-		Icon: feed.GetPNGImageLink(
-			feed.LogoURL, "title", "description", feed.BlankImageURL),
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
+		Icon: base.GetPNGImageLink(
+			base.LogoURL, "title", "description", base.BlankImageURL),
 		Author:    ksuid.New().String(),
 		Tagline:   ksuid.New().String(),
 		Label:     ksuid.New().String(),
 		Timestamp: time.Now(),
 		Summary:   ksuid.New().String(),
 		Text:      ksuid.New().String(),
-		TextType:  feed.TextTypeMarkdown,
-		Links: []feed.Link{
-			feed.GetPNGImageLink(
-				feed.LogoURL, "title", "description", feed.BlankImageURL),
+		TextType:  base.TextTypeMarkdown,
+		Links: []base.Link{
+			base.GetPNGImageLink(
+				base.LogoURL, "title", "description", base.BlankImageURL),
 		},
-		Actions: []feed.Action{
+		Actions: []base.Action{
 			getTestAction(),
 		},
-		Conversations: []feed.Message{
+		Conversations: []base.Message{
 			getTestMessage(),
 		},
 		Users: []string{
@@ -2843,11 +2844,11 @@ func testItem() *feed.Item {
 		Groups: []string{
 			ksuid.New().String(),
 		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelEmail,
-			feed.ChannelFcm,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
+		NotificationChannels: []base.Channel{
+			base.ChannelEmail,
+			base.ChannelFcm,
+			base.ChannelSms,
+			base.ChannelWhatsapp,
 		},
 	}
 }
@@ -2856,13 +2857,13 @@ func getTextExpiry() time.Time {
 	return time.Now().Add(time.Hour * 24000)
 }
 
-func getTestEvent() feed.Event {
-	return feed.Event{
+func getTestEvent() base.Event {
+	return base.Event{
 		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
-		Context: feed.Context{
+		Context: base.Context{
 			UserID:         ksuid.New().String(),
-			Flavour:        feed.FlavourConsumer,
+			Flavour:        base.FlavourConsumer,
 			OrganizationID: ksuid.New().String(),
 			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
@@ -2870,30 +2871,30 @@ func getTestEvent() feed.Event {
 	}
 }
 
-func getTestAction() feed.Action {
-	return feed.Action{
+func getTestAction() base.Action {
+	return base.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon: feed.GetPNGImageLink(
-			feed.LogoURL, "title", "description", feed.BlankImageURL),
-		ActionType: feed.ActionTypePrimary,
-		Handling:   feed.HandlingFullPage,
+		Icon: base.GetPNGImageLink(
+			base.LogoURL, "title", "description", base.BlankImageURL),
+		ActionType: base.ActionTypePrimary,
+		Handling:   base.HandlingFullPage,
 	}
 }
 
-func testNudge() *feed.Nudge {
-	return &feed.Nudge{
+func testNudge() *base.Nudge {
+	return &base.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
-		Status:         feed.StatusPending,
-		Visibility:     feed.VisibilityShow,
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
 		Title:          ksuid.New().String(),
-		Links: []feed.Link{
-			feed.GetPNGImageLink(feed.LogoURL, "title", "description", feed.BlankImageURL),
+		Links: []base.Link{
+			base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
 		},
 		Text: ksuid.New().String(),
-		Actions: []feed.Action{
+		Actions: []base.Action{
 			getTestAction(),
 		},
 		Users: []string{
@@ -2902,37 +2903,37 @@ func testNudge() *feed.Nudge {
 		Groups: []string{
 			ksuid.New().String(),
 		},
-		NotificationChannels: []feed.Channel{
-			feed.ChannelEmail,
-			feed.ChannelFcm,
-			feed.ChannelSms,
-			feed.ChannelWhatsapp,
+		NotificationChannels: []base.Channel{
+			base.ChannelEmail,
+			base.ChannelFcm,
+			base.ChannelSms,
+			base.ChannelWhatsapp,
 		},
 	}
 }
 
 func TestLink_ValidateAndUnmarshal(t *testing.T) {
 	emptyJSONBytes := getEmptyJson(t)
-	validLink := feed.Link{
+	validLink := base.Link{
 		ID:          ksuid.New().String(),
 		URL:         sampleVideoURL,
-		LinkType:    feed.LinkTypeYoutubeVideo,
+		LinkType:    base.LinkTypeYoutubeVideo,
 		Title:       "title",
 		Description: "description",
-		Thumbnail:   feed.BlankImageURL,
+		Thumbnail:   base.BlankImageURL,
 	}
 	validLinkJSONBytes, err := json.Marshal(validLink)
 	assert.Nil(t, err)
 	assert.NotNil(t, validLinkJSONBytes)
 	assert.Greater(t, len(validLinkJSONBytes), 3)
 
-	invalidVideoLink := feed.Link{
+	invalidVideoLink := base.Link{
 		ID:          ksuid.New().String(),
 		URL:         "www.example.com/not_a_youtube_video",
-		LinkType:    feed.LinkTypeYoutubeVideo,
+		LinkType:    base.LinkTypeYoutubeVideo,
 		Title:       "title",
 		Description: "description",
-		Thumbnail:   feed.BlankImageURL,
+		Thumbnail:   base.BlankImageURL,
 	}
 	invalidLinkJSONBytes, err := json.Marshal(invalidVideoLink)
 	assert.Nil(t, err)
@@ -2971,7 +2972,7 @@ func TestLink_ValidateAndUnmarshal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := &feed.Link{}
+			l := &base.Link{}
 			if err := l.ValidateAndUnmarshal(tt.args.b); (err != nil) != tt.wantErr {
 				t.Errorf("Link.ValidateAndUnmarshal() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -2983,7 +2984,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 	type fields struct {
 		ID          string
 		URL         string
-		Type        feed.LinkType
+		Type        base.LinkType
 		Title       string
 		Description string
 		Thumbnail   string
@@ -2998,10 +2999,10 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 			fields: fields{
 				ID:          ksuid.New().String(),
 				URL:         sampleVideoURL,
-				Type:        feed.LinkTypeYoutubeVideo,
+				Type:        base.LinkTypeYoutubeVideo,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   feed.BlankImageURL,
+				Thumbnail:   base.BlankImageURL,
 			},
 			wantErr: false,
 		},
@@ -3010,10 +3011,10 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 			fields: fields{
 				ID:          ksuid.New().String(),
 				URL:         "not a valid URL",
-				Type:        feed.LinkTypeYoutubeVideo,
+				Type:        base.LinkTypeYoutubeVideo,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   feed.BlankImageURL,
+				Thumbnail:   base.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -3022,10 +3023,10 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 			fields: fields{
 				ID:          ksuid.New().String(),
 				URL:         "www.example.com/not_a_video",
-				Type:        feed.LinkTypeYoutubeVideo,
+				Type:        base.LinkTypeYoutubeVideo,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   feed.BlankImageURL,
+				Thumbnail:   base.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -3034,10 +3035,10 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 			fields: fields{
 				ID:          ksuid.New().String(),
 				URL:         "www.example.com/not_a_png",
-				Type:        feed.LinkTypePngImage,
+				Type:        base.LinkTypePngImage,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   feed.BlankImageURL,
+				Thumbnail:   base.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -3046,17 +3047,17 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 			fields: fields{
 				ID:          ksuid.New().String(),
 				URL:         "www.example.com/not_a_pdf",
-				Type:        feed.LinkTypePdfDocument,
+				Type:        base.LinkTypePdfDocument,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   feed.BlankImageURL,
+				Thumbnail:   base.BlankImageURL,
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := &feed.Link{
+			l := &base.Link{
 				ID:          tt.fields.ID,
 				URL:         tt.fields.URL,
 				LinkType:    tt.fields.Type,
@@ -3079,7 +3080,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 func TestFeed_Labels(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -3122,7 +3123,7 @@ func TestFeed_Labels(t *testing.T) {
 func TestFeed_SaveLabel(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -3160,7 +3161,7 @@ func TestFeed_SaveLabel(t *testing.T) {
 func TestFeed_UnreadPersistentItems(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false
@@ -3203,7 +3204,7 @@ func TestFeed_UnreadPersistentItems(t *testing.T) {
 func TestFeed_UpdateUnreadPersistentItemsCount(t *testing.T) {
 	ctx := context.Background()
 	agg := getFeedAggregate(t)
-	fl := feed.FlavourConsumer
+	fl := base.FlavourConsumer
 	uid := ksuid.New().String()
 
 	anonymous := false

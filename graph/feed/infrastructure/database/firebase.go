@@ -100,11 +100,11 @@ func (fr Repository) GetFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
-	flavour feed.Flavour,
-	persistent feed.BooleanFilter,
-	status *feed.Status,
-	visibility *feed.Visibility,
-	expired *feed.BooleanFilter,
+	flavour base.Flavour,
+	persistent base.BooleanFilter,
+	status *base.Status,
+	visibility *base.Visibility,
+	expired *base.BooleanFilter,
 	filterParams *feed.FilterParams,
 ) (*feed.Feed, error) {
 	if err := fr.checkPreconditions(); err != nil {
@@ -139,7 +139,7 @@ func (fr Repository) GetFeed(
 	// only add default content if...
 	// - the `persistent` filter is set to "BOTH"
 	// - all other filters are nil
-	noFilters := persistent == feed.BooleanFilterBoth && status == nil && visibility == nil && expired == nil && filterParams == nil
+	noFilters := persistent == base.BooleanFilterBoth && status == nil && visibility == nil && expired == nil && filterParams == nil
 	noActions := len(actions) == 0
 	noNudges := len(nudges) == 0
 	noItems := len(items) == 0
@@ -170,7 +170,7 @@ func (fr Repository) GetFeed(
 func (fr Repository) initializeDefaultFeed(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) error {
 	fr.mu.Lock() // create default data once
 
@@ -197,23 +197,23 @@ func (fr Repository) initializeDefaultFeed(
 func (fr Repository) GetFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
-) (*feed.Item, error) {
+) (*base.Item, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
 
 	itemsCollection := fr.getItemsCollection(uid, flavour)
-	el, err := fr.getSingleElement(ctx, itemsCollection, itemID, &feed.Item{})
+	el, err := fr.getSingleElement(ctx, itemsCollection, itemID, &base.Item{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to get items: %w", err)
 	}
 	if el == nil {
 		return nil, nil
 	}
-	item, ok := el.(*feed.Item)
+	item, ok := el.(*base.Item)
 	if !ok {
 		return nil, fmt.Errorf("expected an Item, got %T", el)
 	}
@@ -221,7 +221,7 @@ func (fr Repository) GetFeedItem(
 	messages, err := fr.GetMessages(ctx, uid, flavour, itemID)
 	if err != nil || messages == nil {
 		// the thread may not have been initiated yet
-		item.Conversations = []feed.Message{}
+		item.Conversations = []base.Message{}
 	} else {
 		item.Conversations = messages
 	}
@@ -236,9 +236,9 @@ func (fr Repository) GetFeedItem(
 func (fr Repository) SaveFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-	item *feed.Item,
-) (*feed.Item, error) {
+	flavour base.Flavour,
+	item *base.Item,
+) (*base.Item, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
@@ -268,7 +268,7 @@ func (fr Repository) SaveFeedItem(
 	messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 	if err != nil || messages == nil {
 		// the thread may not have been initiated yet
-		item.Conversations = []feed.Message{}
+		item.Conversations = []base.Message{}
 	} else {
 		item.Conversations = messages
 	}
@@ -280,9 +280,9 @@ func (fr Repository) SaveFeedItem(
 func (fr Repository) UpdateFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-	item *feed.Item,
-) (*feed.Item, error) {
+	flavour base.Flavour,
+	item *base.Item,
+) (*base.Item, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
@@ -312,7 +312,7 @@ func (fr Repository) UpdateFeedItem(
 	messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 	if err != nil || messages == nil {
 		// the thread may not have been initiated yet
-		item.Conversations = []feed.Message{}
+		item.Conversations = []base.Message{}
 	} else {
 		item.Conversations = messages
 	}
@@ -324,7 +324,7 @@ func (fr Repository) UpdateFeedItem(
 func (fr Repository) DeleteFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
 ) error {
 	if err := fr.checkPreconditions(); err != nil {
@@ -344,23 +344,23 @@ func (fr Repository) DeleteFeedItem(
 func (fr Repository) GetNudge(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	nudgeID string,
-) (*feed.Nudge, error) {
+) (*base.Nudge, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
 
 	nudgeCollection := fr.getNudgesCollection(uid, flavour)
-	el, err := fr.getSingleElement(ctx, nudgeCollection, nudgeID, &feed.Nudge{})
+	el, err := fr.getSingleElement(ctx, nudgeCollection, nudgeID, &base.Nudge{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 	if el == nil {
 		return nil, nil
 	}
-	nudge, ok := el.(*feed.Nudge)
+	nudge, ok := el.(*base.Nudge)
 	if !ok {
 		return nil, fmt.Errorf("expected an nudge, got %T", el)
 	}
@@ -375,9 +375,9 @@ func (fr Repository) GetNudge(
 func (fr Repository) SaveNudge(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-	nudge *feed.Nudge,
-) (*feed.Nudge, error) {
+	flavour base.Flavour,
+	nudge *base.Nudge,
+) (*base.Nudge, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
@@ -402,9 +402,9 @@ func (fr Repository) SaveNudge(
 func (fr Repository) UpdateNudge(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-	nudge *feed.Nudge,
-) (*feed.Nudge, error) {
+	flavour base.Flavour,
+	nudge *base.Nudge,
+) (*base.Nudge, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
@@ -438,7 +438,7 @@ func (fr Repository) UpdateNudge(
 func (fr Repository) DeleteNudge(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	nudgeID string,
 ) error {
 	if err := fr.checkPreconditions(); err != nil {
@@ -458,23 +458,23 @@ func (fr Repository) DeleteNudge(
 func (fr Repository) GetAction(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	actionID string,
-) (*feed.Action, error) {
+) (*base.Action, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
 
 	actionCollection := fr.getActionsCollection(uid, flavour)
-	el, err := fr.getSingleElement(ctx, actionCollection, actionID, &feed.Action{})
+	el, err := fr.getSingleElement(ctx, actionCollection, actionID, &base.Action{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 	if el == nil {
 		return nil, nil
 	}
-	action, ok := el.(*feed.Action)
+	action, ok := el.(*base.Action)
 	if !ok {
 		return nil, fmt.Errorf("expected an action, got %T", el)
 	}
@@ -489,9 +489,9 @@ func (fr Repository) GetAction(
 func (fr Repository) SaveAction(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-	action *feed.Action,
-) (*feed.Action, error) {
+	flavour base.Flavour,
+	action *base.Action,
+) (*base.Action, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
@@ -525,7 +525,7 @@ func (fr Repository) SaveAction(
 func (fr Repository) DeleteAction(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	actionID string,
 ) error {
 	if err := fr.checkPreconditions(); err != nil {
@@ -545,10 +545,10 @@ func (fr Repository) DeleteAction(
 func (fr Repository) PostMessage(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
-	message *feed.Message,
-) (*feed.Message, error) {
+	message *base.Message,
+) (*base.Message, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
@@ -573,15 +573,15 @@ func (fr Repository) PostMessage(
 func (fr Repository) GetMessages(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
-) ([]feed.Message, error) {
+) ([]base.Message, error) {
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
 
-	messages := []feed.Message{}
+	messages := []base.Message{}
 	seenMessageIDs := []string{}
 	query := fr.getMessagesQuery(uid, flavour, itemID)
 	msgDocs, err := query.Documents(ctx).GetAll()
@@ -589,7 +589,7 @@ func (fr Repository) GetMessages(
 		return nil, fmt.Errorf("unable to get messages: %w", err)
 	}
 	for _, msgDoc := range msgDocs {
-		msg := &feed.Message{}
+		msg := &base.Message{}
 		err := msgDoc.DataTo(msg)
 		if err != nil {
 			return nil, fmt.Errorf(
@@ -610,19 +610,19 @@ func (fr Repository) GetMessages(
 func (fr Repository) GetMessage(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
 	messageID string,
-) (*feed.Message, error) {
+) (*base.Message, error) {
 	messageCollection := fr.getMessagesCollection(uid, flavour, itemID)
-	el, err := fr.getSingleElement(ctx, messageCollection, messageID, &feed.Message{})
+	el, err := fr.getSingleElement(ctx, messageCollection, messageID, &base.Message{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to get message: %w", err)
 	}
 	if el == nil {
 		return nil, nil
 	}
-	message, ok := el.(*feed.Message)
+	message, ok := el.(*base.Message)
 	if !ok {
 		return nil, fmt.Errorf("expected a message, got %T", el)
 	}
@@ -636,7 +636,7 @@ func (fr Repository) GetMessage(
 func (fr Repository) DeleteMessage(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
 	messageID string,
 ) error {
@@ -657,7 +657,7 @@ func (fr Repository) DeleteMessage(
 // before they are processed further
 func (fr Repository) SaveIncomingEvent(
 	ctx context.Context,
-	event *feed.Event,
+	event *base.Event,
 ) error {
 	if event == nil {
 		return fmt.Errorf("nil event")
@@ -682,7 +682,7 @@ func (fr Repository) SaveIncomingEvent(
 // before they are sent
 func (fr Repository) SaveOutgoingEvent(
 	ctx context.Context,
-	event *feed.Event,
+	event *base.Event,
 ) error {
 	if event == nil {
 		return fmt.Errorf("nil event")
@@ -710,7 +710,7 @@ func (fr Repository) getFeedCollectionName() string {
 
 func (fr Repository) getUserCollection(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) *firestore.CollectionRef {
 	feedCollection := fr.firestoreClient.Collection(fr.getFeedCollectionName())
 	userCollection := feedCollection.Doc(flavour.String()).Collection(uid)
@@ -719,7 +719,7 @@ func (fr Repository) getUserCollection(
 
 func (fr Repository) getElementCollection(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	subCollectionName string,
 ) *firestore.CollectionRef {
 	return fr.getUserCollection(
@@ -730,28 +730,28 @@ func (fr Repository) getElementCollection(
 
 func (fr Repository) getActionsCollection(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) *firestore.CollectionRef {
 	return fr.getElementCollection(uid, flavour, actionsSubcollectionName)
 }
 
 func (fr Repository) getNudgesCollection(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) *firestore.CollectionRef {
 	return fr.getElementCollection(uid, flavour, nudgesSubcollectionName)
 }
 
 func (fr Repository) getItemsCollection(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) *firestore.CollectionRef {
 	return fr.getElementCollection(uid, flavour, itemsSubcollectionName)
 }
 
 func (fr Repository) getMessagesCollection(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
 ) *firestore.CollectionRef {
 	itemsColl := fr.getElementCollection(uid, flavour, itemsSubcollectionName)
@@ -784,11 +784,11 @@ func (fr Repository) elementExists(
 }
 func (fr Repository) getItemsQuery(
 	uid string,
-	flavour feed.Flavour,
-	persistent feed.BooleanFilter,
-	status *feed.Status,
-	visibility *feed.Visibility,
-	expired *feed.BooleanFilter,
+	flavour base.Flavour,
+	persistent base.BooleanFilter,
+	status *base.Status,
+	visibility *base.Visibility,
+	expired *base.BooleanFilter,
 	filterParams *feed.FilterParams,
 ) (*firestore.Query, error) {
 	itemsQuery := fr.getItemsCollection(
@@ -802,12 +802,12 @@ func (fr Repository) getItemsQuery(
 	).Limit(itemsLimit)
 
 	switch persistent {
-	case feed.BooleanFilterTrue:
+	case base.BooleanFilterTrue:
 		itemsQuery = itemsQuery.Where("persistent", "==", true)
-	case feed.BooleanFilterFalse:
+	case base.BooleanFilterFalse:
 		itemsQuery = itemsQuery.Where("persistent", "==", false)
 
-		// feed.BooleanFilterBoth is "passed": no filters added to the query
+		// base.BooleanFilterBoth is "passed": no filters added to the query
 	}
 
 	if status != nil {
@@ -817,11 +817,11 @@ func (fr Repository) getItemsQuery(
 		itemsQuery = itemsQuery.Where("visibility", "==", visibility)
 	}
 	if expired != nil {
-		if *expired == feed.BooleanFilterFalse {
+		if *expired == base.BooleanFilterFalse {
 			itemsQuery = itemsQuery.Where("expiry", ">=", time.Now())
 		}
 
-		if *expired == feed.BooleanFilterTrue {
+		if *expired == base.BooleanFilterTrue {
 			itemsQuery = itemsQuery.Where("expiry", "<=", time.Now())
 		}
 	}
@@ -836,13 +836,13 @@ func (fr Repository) getItemsQuery(
 func (fr Repository) GetItems(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-	persistent feed.BooleanFilter,
-	status *feed.Status,
-	visibility *feed.Visibility,
-	expired *feed.BooleanFilter,
+	flavour base.Flavour,
+	persistent base.BooleanFilter,
+	status *base.Status,
+	visibility *base.Visibility,
+	expired *base.BooleanFilter,
 	filterParams *feed.FilterParams,
-) ([]feed.Item, error) {
+) ([]base.Item, error) {
 	query, err := fr.getItemsQuery(
 		uid,
 		flavour,
@@ -856,14 +856,14 @@ func (fr Repository) GetItems(
 		return nil, fmt.Errorf("unable to compose items query: %w", err)
 	}
 
-	items := []feed.Item{}
+	items := []base.Item{}
 	seenItemIDs := []string{}
 	itemDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get items: %w", err)
 	}
 	for _, itemDoc := range itemDocs {
-		item := &feed.Item{}
+		item := &base.Item{}
 		err := itemDoc.DataTo(item)
 		if err != nil {
 			return nil, fmt.Errorf(
@@ -886,9 +886,9 @@ func (fr Repository) GetItems(
 func (fr Repository) GetActions(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-) ([]feed.Action, error) {
-	actions := []feed.Action{}
+	flavour base.Flavour,
+) ([]base.Action, error) {
+	actions := []base.Action{}
 	seenActionIDs := []string{}
 
 	query := fr.getActionsQuery(uid, flavour)
@@ -897,7 +897,7 @@ func (fr Repository) GetActions(
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 	for _, actionDoc := range actionDocs {
-		action := &feed.Action{}
+		action := &base.Action{}
 		err := actionDoc.DataTo(action)
 		if err != nil {
 			return nil, fmt.Errorf(
@@ -915,7 +915,7 @@ func (fr Repository) GetActions(
 func (fr Repository) Labels(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) ([]string, error) {
 	labelDoc := fr.getUserCollection(uid, flavour).Doc(labelsDocID)
 	lDoc, err := labelDoc.Get(ctx)
@@ -955,7 +955,7 @@ func (fr Repository) Labels(
 func (fr Repository) SaveLabel(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	label string,
 ) error {
 	labels, err := fr.Labels(ctx, uid, flavour)
@@ -981,7 +981,7 @@ func (fr Repository) SaveLabel(
 func (fr Repository) UnreadPersistentItems(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) (int, error) {
 	// unreadInboxCountsDocID
 	unreadDoc := fr.getUserCollection(uid, flavour).Doc(unreadInboxCountsDocID)
@@ -1022,12 +1022,12 @@ func (fr Repository) UnreadPersistentItems(
 func (fr Repository) UpdateUnreadPersistentItemsCount(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) error {
 	unreadDoc := fr.getUserCollection(uid, flavour).Doc(unreadInboxCountsDocID)
 
 	persistentItemsQ, err := fr.getItemsQuery(
-		uid, flavour, feed.BooleanFilterTrue, nil, nil, nil, nil)
+		uid, flavour, base.BooleanFilterTrue, nil, nil, nil, nil)
 	if err != nil {
 		return fmt.Errorf("can't compose persistent items query: %w", err)
 	}
@@ -1062,9 +1062,9 @@ func (fr Repository) UpdateUnreadPersistentItemsCount(
 
 func (fr Repository) getNudgesQuery(
 	uid string,
-	flavour feed.Flavour,
-	status *feed.Status,
-	visibility *feed.Visibility,
+	flavour base.Flavour,
+	status *base.Status,
+	visibility *base.Visibility,
 ) *firestore.Query {
 	nudgesQuery := fr.getNudgesCollection(
 		uid, flavour,
@@ -1082,7 +1082,7 @@ func (fr Repository) getNudgesQuery(
 
 func (fr Repository) getMessagesQuery(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 	itemID string,
 ) *firestore.Query {
 	messagesQuery := fr.getMessagesCollection(uid, flavour, itemID).Query.OrderBy(
@@ -1094,11 +1094,11 @@ func (fr Repository) getMessagesQuery(
 func (fr Repository) GetNudges(
 	ctx context.Context,
 	uid string,
-	flavour feed.Flavour,
-	status *feed.Status,
-	visibility *feed.Visibility,
-) ([]feed.Nudge, error) {
-	nudges := []feed.Nudge{}
+	flavour base.Flavour,
+	status *base.Status,
+	visibility *base.Visibility,
+) ([]base.Nudge, error) {
+	nudges := []base.Nudge{}
 	seenNudgeIDs := []string{}
 
 	query := fr.getNudgesQuery(
@@ -1112,7 +1112,7 @@ func (fr Repository) GetNudges(
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 	for _, nudgeDoc := range nudgeDocs {
-		nudge := &feed.Nudge{}
+		nudge := &base.Nudge{}
 		err := nudgeDoc.DataTo(nudge)
 		if err != nil {
 			return nil, fmt.Errorf(
@@ -1128,7 +1128,7 @@ func (fr Repository) GetNudges(
 
 func (fr Repository) getActionsQuery(
 	uid string,
-	flavour feed.Flavour,
+	flavour base.Flavour,
 ) *firestore.Query {
 	query := fr.getActionsCollection(uid, flavour).Query.OrderBy(
 		"id", firestore.Desc,
@@ -1140,8 +1140,8 @@ func (fr Repository) getSingleElement(
 	ctx context.Context,
 	collection *firestore.CollectionRef,
 	id string,
-	el feed.Element,
-) (feed.Element, error) {
+	el base.Element,
+) (base.Element, error) {
 	query := orderAndLimitBySequence(collection.Where(
 		"id", "==", id,
 	))
@@ -1167,7 +1167,7 @@ func (fr Repository) getSingleElement(
 
 func (fr Repository) saveElement(
 	ctx context.Context,
-	el feed.Element,
+	el base.Element,
 	id string,
 	sequenceNumber int,
 	coll *firestore.CollectionRef,
@@ -1198,7 +1198,7 @@ func (fr Repository) saveElement(
 	return nil
 }
 
-func validateElement(el feed.Element) error {
+func validateElement(el base.Element) error {
 	if el == nil {
 		return fmt.Errorf("failed validation: nil element")
 	}
@@ -1231,8 +1231,8 @@ func fetchQueryDocs(
 
 func docToElement(
 	doc *firestore.DocumentSnapshot,
-	el feed.Element,
-) (feed.Element, error) {
+	el base.Element,
+) (base.Element, error) {
 	if el == nil {
 		return nil, fmt.Errorf("nil element")
 	}

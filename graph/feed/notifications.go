@@ -2,6 +2,8 @@ package feed
 
 import (
 	"context"
+
+	"gitlab.slade360emr.com/go/base"
 )
 
 // NotificationService defines the behavior of our notifications
@@ -12,8 +14,8 @@ type NotificationService interface {
 		ctx context.Context,
 		topicID string,
 		uid string,
-		flavour Flavour,
-		payload Element,
+		flavour base.Flavour,
+		payload base.Element,
 		metadata map[string]interface{},
 	) error
 
@@ -28,7 +30,7 @@ type NotificationService interface {
 // process them intelligently.
 type NotificationEnvelope struct {
 	UID      string                 `json:"uid"`
-	Flavour  Flavour                `json:"flavour"`
+	Flavour  base.Flavour           `json:"flavour"`
 	Payload  []byte                 `json:"payload"`
 	Metadata map[string]interface{} `json:"metadata"`
 }

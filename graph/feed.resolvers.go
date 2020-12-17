@@ -7,11 +7,12 @@ import (
 	"context"
 	"fmt"
 
+	"gitlab.slade360emr.com/go/base"
 	generated1 "gitlab.slade360emr.com/go/engagement/generated"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 )
 
-func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
+func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -22,7 +23,7 @@ func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feed.Fla
 	return thinFeed.ResolveFeedItem(ctx, itemID)
 }
 
-func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
+func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -33,7 +34,7 @@ func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour feed.F
 	return thinFeed.UnresolveFeedItem(ctx, itemID)
 }
 
-func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
+func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -44,7 +45,7 @@ func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour feed.Flavour
 	return thinFeed.PinFeedItem(ctx, itemID)
 }
 
-func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
+func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -55,7 +56,7 @@ func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour feed.Flavo
 	return thinFeed.UnpinFeedItem(ctx, itemID)
 }
 
-func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
+func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -66,7 +67,7 @@ func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour feed.Flavou
 	return thinFeed.HideFeedItem(ctx, itemID)
 }
 
-func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour feed.Flavour, itemID string) (*feed.Item, error) {
+func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -77,7 +78,7 @@ func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour feed.Flavou
 	return thinFeed.ShowFeedItem(ctx, itemID)
 }
 
-func (r *mutationResolver) HideNudge(ctx context.Context, flavour feed.Flavour, nudgeID string) (*feed.Nudge, error) {
+func (r *mutationResolver) HideNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -88,7 +89,7 @@ func (r *mutationResolver) HideNudge(ctx context.Context, flavour feed.Flavour, 
 	return thinFeed.HideNudge(ctx, nudgeID)
 }
 
-func (r *mutationResolver) ShowNudge(ctx context.Context, flavour feed.Flavour, nudgeID string) (*feed.Nudge, error) {
+func (r *mutationResolver) ShowNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -99,7 +100,7 @@ func (r *mutationResolver) ShowNudge(ctx context.Context, flavour feed.Flavour, 
 	return thinFeed.ShowNudge(ctx, nudgeID)
 }
 
-func (r *mutationResolver) PostMessage(ctx context.Context, flavour feed.Flavour, itemID string, message feed.Message) (*feed.Message, error) {
+func (r *mutationResolver) PostMessage(ctx context.Context, flavour base.Flavour, itemID string, message base.Message) (*base.Message, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -110,7 +111,7 @@ func (r *mutationResolver) PostMessage(ctx context.Context, flavour feed.Flavour
 	return thinFeed.PostMessage(ctx, itemID, &message)
 }
 
-func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour feed.Flavour, itemID string, messageID string) (bool, error) {
+func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour base.Flavour, itemID string, messageID string) (bool, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -126,7 +127,7 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour feed.Flavo
 	return true, nil
 }
 
-func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feed.Flavour, event feed.Event) (bool, error) {
+func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour base.Flavour, event base.Event) (bool, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -142,7 +143,7 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feed.Flavou
 	return true, nil
 }
 
-func (r *queryResolver) GetFeed(ctx context.Context, flavour feed.Flavour, isAnonymous bool, persistent feed.BooleanFilter, status *feed.Status, visibility *feed.Visibility, expired *feed.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error) {
+func (r *queryResolver) GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *feed.FilterParams) (*feed.Feed, error) {
 	r.checkPreconditions()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -173,7 +174,7 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour feed.Flavour, isAno
 	return feed, nil
 }
 
-func (r *queryResolver) Labels(ctx context.Context, flavour feed.Flavour) ([]string, error) {
+func (r *queryResolver) Labels(ctx context.Context, flavour base.Flavour) ([]string, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)
@@ -184,7 +185,7 @@ func (r *queryResolver) Labels(ctx context.Context, flavour feed.Flavour) ([]str
 	return thinFeed.Labels(ctx)
 }
 
-func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour feed.Flavour) (int, error) {
+func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour base.Flavour) (int, error) {
 	r.checkPreconditions()
 
 	thinFeed, err := r.getThinFeed(ctx, flavour)

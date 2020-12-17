@@ -94,8 +94,8 @@ func (ps PubSubNotificationService) Notify(
 	ctx context.Context,
 	topicID string,
 	uid string,
-	flavour feed.Flavour,
-	el feed.Element,
+	flavour base.Flavour,
+	el base.Element,
 	metadata map[string]interface{},
 ) error {
 	if err := ps.checkPreconditions(); err != nil {

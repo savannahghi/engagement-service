@@ -204,7 +204,7 @@ func TestAggregate_GetThinFeed(t *testing.T) {
 		ctx         context.Context
 		uid         string
 		isAnonymous bool
-		flavour     feed.Flavour
+		flavour     base.Flavour
 	}
 	tests := []struct {
 		name    string
@@ -217,7 +217,7 @@ func TestAggregate_GetThinFeed(t *testing.T) {
 				ctx:         ctx,
 				uid:         ksuid.New().String(),
 				isAnonymous: false,
-				flavour:     feed.FlavourConsumer,
+				flavour:     base.FlavourConsumer,
 			},
 			wantErr: false,
 		},
@@ -291,21 +291,21 @@ func TestAggregate_GetFeed(t *testing.T) {
 	}
 
 	uid := ksuid.New().String()
-	flavour := feed.FlavourConsumer
-	persistent := feed.BooleanFilterBoth
-	status := feed.StatusPending
-	visibility := feed.VisibilityHide
-	expired := feed.BooleanFilterFalse
+	flavour := base.FlavourConsumer
+	persistent := base.BooleanFilterBoth
+	status := base.StatusPending
+	visibility := base.VisibilityHide
+	expired := base.BooleanFilterFalse
 
 	type args struct {
 		ctx          context.Context
 		uid          string
 		isAnonymous  bool
-		flavour      feed.Flavour
-		persistent   feed.BooleanFilter
-		status       feed.Status
-		visibility   feed.Visibility
-		expired      feed.BooleanFilter
+		flavour      base.Flavour
+		persistent   base.BooleanFilter
+		status       base.Status
+		visibility   base.Visibility
+		expired      base.BooleanFilter
 		filterParams *feed.FilterParams
 	}
 	tests := []struct {
