@@ -1118,3 +1118,21 @@ func AddPubSubNamespace(topicName string) string {
 		TopicVersion,
 	)
 }
+
+// GetDefaultNudgeByTitle retrieves a default feed nudge
+func (fe Feed) GetDefaultNudgeByTitle(ctx context.Context, title string) (*base.Nudge, error) {
+	if err := fe.checkPreconditions(); err != nil {
+		return nil, fmt.Errorf("feed precondition check failed: %w", err)
+	}
+
+	nudge, err := fe.repository.GetDefaultNudgeByTitle(ctx, fe.UID, fe.Flavour, title)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve verify email nudge: %w", err)
+	}
+
+	if nudge == nil {
+		return nil, fmt.Errorf("can't get the default verify email nudge")
+	}
+
+	return nudge, nil
+}

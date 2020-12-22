@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -250,6 +251,12 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).Path("/nudges/{nudgeID}/resolve/").HandlerFunc(
 		ResolveNudge(ctx, fr, ns),
 	).Name("resolveNudge")
+
+	feedISC.Methods(
+		http.MethodPatch,
+	).Path("/defaultnudges/{title}/resolve/").HandlerFunc(
+		ResolveDefaultNudge(ctx, fr, ns),
+	).Name("resolveDefaultNudge")
 
 	feedISC.Methods(
 		http.MethodPatch,
@@ -931,6 +938,47 @@ func ResolveNudge(
 		}
 
 		patchNudge(ctx, fr, ns, thinFeed.ResolveNudge, w, r)
+	}
+}
+
+// ResolveDefaultNudge marks a default nudges as resolved
+func ResolveDefaultNudge(
+	ctx context.Context,
+	fr feed.Repository,
+	ns feed.NotificationService,
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		title, err := getStringVar(r, "title")
+
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		thinFeed, err := getThinFeed(ctx, fr, ns, r)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		nudge, err := thinFeed.GetDefaultNudgeByTitle(ctx, title)
+		if err != nil {
+			if errors.Is(err, feed.ErrNilNudge) {
+				respondWithError(w, http.StatusNotFound, err)
+				return
+			}
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		_, err = thinFeed.ResolveNudge(ctx, nudge.ID)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		respondWithJSON(w, http.StatusOK, nil)
+
 	}
 }
 

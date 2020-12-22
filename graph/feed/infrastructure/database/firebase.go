@@ -1253,3 +1253,34 @@ func docToElement(
 func isPointer(i interface{}) bool {
 	return reflect.ValueOf(i).Type().Kind() == reflect.Ptr
 }
+
+// GetDefaultNudgeByTitle returns a default nudge given its title
+func (fr Repository) GetDefaultNudgeByTitle(
+	ctx context.Context,
+	uid string,
+	flavour base.Flavour,
+	title string,
+) (*base.Nudge, error) {
+	collection := fr.getNudgesCollection(uid, flavour)
+	query := collection.Where("title", "==", title)
+	nudgeDocs, err := query.Documents(ctx).GetAll()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get nudge: %w", err)
+	}
+
+	if len(nudgeDocs) == 0 {
+		return nil, feed.ErrNilNudge
+	}
+
+	var nudge *base.Nudge
+	for _, nudgeDoc := range nudgeDocs {
+		nudgeData := &base.Nudge{}
+		err = nudgeDoc.DataTo(nudgeData)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to unmarshal nudge from firebase doc: %w", err)
+		}
+		nudge = nudgeData
+	}
+	return nudge, nil
+}

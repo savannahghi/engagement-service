@@ -1742,3 +1742,73 @@ func TestRepository_UpdateUnreadPersistentItemsCount(t *testing.T) {
 		})
 	}
 }
+
+func TestRepository_GetDefaultNudgeByTitle(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
+
+	uid := ksuid.New().String()
+	flavour := base.FlavourConsumer
+	nudge := testNudge()
+
+	savedNudge, err := fr.SaveNudge(ctx, uid, flavour, nudge)
+	if err != nil {
+		t.Errorf("can't save the nudge %v:", err)
+		return
+	}
+	if savedNudge == nil {
+		t.Errorf("nil saved nudge")
+		return
+	}
+
+	type args struct {
+		uid     string
+		flavour base.Flavour
+		title   string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy case - get a nudge",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				title:   nudge.Title,
+			},
+			wantErr: false,
+		},
+		{
+			name: "sad case - get a non existent nudge",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				title:   "non existent title",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nudge, err := fr.GetDefaultNudgeByTitle(ctx, tt.args.uid, tt.args.flavour, tt.args.title)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.GetDefaultNudgeByTitle() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && nudge == nil {
+				t.Errorf("expected to get a nudge")
+				return
+			}
+		})
+	}
+}

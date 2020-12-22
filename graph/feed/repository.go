@@ -204,4 +204,11 @@ type Repository interface {
 		uid string,
 		flavour base.Flavour,
 	) error
+
+	GetDefaultNudgeByTitle(
+		ctx context.Context,
+		uid string,
+		flavour base.Flavour,
+		title string,
+	) (*base.Nudge, error)
 }

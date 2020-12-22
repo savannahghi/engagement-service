@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -1991,6 +1992,8 @@ func TestRoutes(t *testing.T) {
 	nudgeID := ksuid.New().String()
 	actionID := ksuid.New().String()
 	messageID := ksuid.New().String()
+	title := url.QueryEscape(feed.VerifyEmailNudgeTitle)
+	badTitle := url.QueryEscape("not a default feed title")
 
 	type args struct {
 		routeName string
@@ -2318,6 +2321,46 @@ func TestRoutes(t *testing.T) {
 				},
 			},
 			wantURL: fmt.Sprintf("/feed/%s/%s/%v/nudges/%s/hide/", uid, fl.String(), false, nudgeID),
+			wantErr: false,
+		},
+		{
+			name: "resolve default nudge",
+			args: args{
+				routeName: "resolveDefaultNudge",
+				params: []string{
+					"uid", uid,
+					"isAnonymous", "false",
+					"flavour", fl.String(),
+					"title", title,
+				},
+			},
+			wantURL: fmt.Sprintf(
+				"/feed/%s/%s/%v/defaultnudges/%s/resolve/",
+				uid,
+				fl.String(),
+				false,
+				title,
+			),
+			wantErr: false,
+		},
+		{
+			name: "resolve a non existent default nudge",
+			args: args{
+				routeName: "resolveDefaultNudge",
+				params: []string{
+					"uid", uid,
+					"isAnonymous", "false",
+					"flavour", fl.String(),
+					"title", badTitle,
+				},
+			},
+			wantURL: fmt.Sprintf(
+				"/feed/%s/%s/%v/defaultnudges/%s/resolve/",
+				uid,
+				fl.String(),
+				false,
+				badTitle,
+			),
 			wantErr: false,
 		},
 	}
@@ -5971,6 +6014,136 @@ func TestPostUpload(t *testing.T) {
 					)
 					return
 				}
+			}
+		})
+	}
+}
+
+func TestResolveDefaultNudge(t *testing.T) {
+	ctx := context.Background()
+	uid := xid.New().String()
+	fl := base.FlavourConsumer
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase Repository: %s", err)
+	}
+
+	defaultNudges, err := feed.SetDefaultNudges(
+		ctx,
+		uid,
+		fl,
+		fr,
+	)
+	if err != nil {
+		t.Errorf("can't set default nudges: %v", err)
+		return
+	}
+	if len(defaultNudges) == 0 {
+		t.Errorf("zero default nudges found")
+		return
+	}
+
+	headers := getDefaultHeaders(t, baseURL)
+
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "resolve valid nudge",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/feed/%s/%s/%v/defaultnudges/%s/resolve/",
+					baseURL,
+					uid,
+					fl.String(),
+					false,
+					feed.VerifyEmailNudgeTitle,
+				),
+				httpMethod: http.MethodPatch,
+				headers:    headers,
+				body:       nil,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "try to resolve non existent nudge",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/feed/%s/%s/%v/defaultnudges/%s/resolve/",
+					baseURL,
+					uid,
+					fl.String(),
+					false,
+					"not a nudge title",
+				),
+				httpMethod: http.MethodPatch,
+				headers:    headers,
+				body:       nil,
+			},
+			wantStatus: http.StatusNotFound,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
+
+			for k, v := range tt.args.headers {
+				r.Header.Add(k, v)
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantStatus != resp.StatusCode {
+				t.Errorf("expected %v, but got %v", tt.wantStatus, resp.StatusCode)
+				return
 			}
 		})
 	}

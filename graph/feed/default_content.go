@@ -48,6 +48,21 @@ const (
 	defaultLocation   = "default-location-id-please-change"
 	defaultContentDir = "/static/"
 	defaultAuthor     = "Be.Well Team"
+
+	// VerifyEmailNudgeTitle defines the title for verify email nudge
+	VerifyEmailNudgeTitle = "Email Verification"
+
+	// AddInsuranceNudgeTitle defines the title for add insurance nudge
+	AddInsuranceNudgeTitle = "Add Insurance"
+
+	// AddNHIFNudgeTitle defines the title for add NHIF nudge
+	AddNHIFNudgeTitle = "Add NHIF"
+
+	// PartnerAccountSetupNudgeTitle defines the title for partner account setup nudge
+	PartnerAccountSetupNudgeTitle = "Setup your partner account"
+
+	// CompleteProfileNudgeTitle defines the title for complete profile nudge
+	CompleteProfileNudgeTitle = "Complete your profile"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -425,7 +440,7 @@ func addInsuranceNudge(
 	flavour base.Flavour,
 	repository Repository,
 ) (*base.Nudge, error) {
-	title := "Add Insurance"
+	title := AddInsuranceNudgeTitle
 	text := "Link your existing medical cover"
 	imgURL := StaticBase + "/nudges/add_insurance.png"
 	addInsuranceAction, err := createLocalAction(
@@ -465,7 +480,7 @@ func addNHIFNudge(
 	flavour base.Flavour,
 	repository Repository,
 ) (*base.Nudge, error) {
-	title := "Add NHIF"
+	title := AddNHIFNudgeTitle
 	text := "Link your NHIF cover"
 	imgURL := StaticBase + "/nudges/add_insurance.png"
 	addNHIFAction, err := createLocalAction(
@@ -505,7 +520,7 @@ func partnerAccountSetupNudge(
 	flavour base.Flavour,
 	repository Repository,
 ) (*base.Nudge, error) {
-	title := "Setup your partner account"
+	title := PartnerAccountSetupNudgeTitle
 	text := "Create a partner account to begin transacting on Be.Well"
 	imgURL := StaticBase + "/nudges/complete_profile.png"
 	partnerAccountSetupAction, err := createLocalAction(
@@ -545,7 +560,7 @@ func completeProfileNudge(
 	flavour base.Flavour,
 	repository Repository,
 ) (*base.Nudge, error) {
-	title := "Complete your profile"
+	title := CompleteProfileNudgeTitle
 	text := "Fill in your Be.Well profile to unlock more rewards"
 	imgURL := StaticBase + "/nudges/complete_profile.png"
 	completeProfileAction, err := createLocalAction(
@@ -585,7 +600,7 @@ func verifyEmailNudge(
 	flavour base.Flavour,
 	repository Repository,
 ) (*base.Nudge, error) {
-	title := "Email Verification"
+	title := VerifyEmailNudgeTitle
 	text := "Please add and verify your email address"
 	imgURL := StaticBase + "/nudges/verify_email.png"
 	verifyEmailAction, err := createLocalAction(
