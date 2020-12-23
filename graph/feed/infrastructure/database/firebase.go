@@ -117,7 +117,7 @@ func (fr Repository) GetFeed(
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 
-	nudges, err := fr.GetNudges(ctx, *uid, flavour, status, visibility)
+	nudges, err := fr.GetNudges(ctx, *uid, flavour, status, visibility, expired)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
@@ -1065,17 +1065,45 @@ func (fr Repository) getNudgesQuery(
 	flavour base.Flavour,
 	status *base.Status,
 	visibility *base.Visibility,
+	expired *base.BooleanFilter,
 ) *firestore.Query {
 	nudgesQuery := fr.getNudgesCollection(
 		uid, flavour,
-	).Query.OrderBy("expiry", firestore.Desc).OrderBy(
+	).Query.OrderBy(
+		"expiry", firestore.Desc,
+	).OrderBy(
 		"id", firestore.Desc,
-	).OrderBy("sequenceNumber", firestore.Desc)
+	).OrderBy(
+		"sequenceNumber", firestore.Desc,
+	)
+
+	// default path - if they are not provided then we make assumptions
+	if status == nil {
+		nudgesQuery = nudgesQuery.Where("status", "==", base.StatusPending)
+	}
+
+	if visibility == nil {
+		nudgesQuery = nudgesQuery.Where("visibility", "==", base.VisibilityShow)
+	}
+
+	if expired == nil {
+		nudgesQuery = nudgesQuery.Where("expiry", ">=", time.Now())
+	}
+
 	if status != nil {
 		nudgesQuery = nudgesQuery.Where("status", "==", status)
 	}
 	if visibility != nil {
 		nudgesQuery = nudgesQuery.Where("visibility", "==", visibility)
+	}
+	if expired != nil {
+		if *expired == base.BooleanFilterFalse {
+			nudgesQuery = nudgesQuery.Where("expiry", ">=", time.Now())
+		}
+
+		if *expired == base.BooleanFilterTrue {
+			nudgesQuery = nudgesQuery.Where("expiry", "<=", time.Now())
+		}
 	}
 	return &nudgesQuery
 }
@@ -1097,6 +1125,7 @@ func (fr Repository) GetNudges(
 	flavour base.Flavour,
 	status *base.Status,
 	visibility *base.Visibility,
+	expired *base.BooleanFilter,
 ) ([]base.Nudge, error) {
 	nudges := []base.Nudge{}
 	seenNudgeIDs := []string{}
@@ -1106,6 +1135,7 @@ func (fr Repository) GetNudges(
 		flavour,
 		status,
 		visibility,
+		expired,
 	)
 	nudgeDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {

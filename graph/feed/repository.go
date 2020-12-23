@@ -161,6 +161,7 @@ type Repository interface {
 		flavour base.Flavour,
 		status *base.Status,
 		visibility *base.Visibility,
+		expired *base.BooleanFilter,
 	) ([]base.Nudge, error)
 
 	GetActions(

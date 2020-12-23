@@ -140,12 +140,14 @@ func TestSetDefaultNudges(t *testing.T) {
 				// refetch nudges
 				pending := base.StatusPending
 				show := base.VisibilityShow
+				expired := base.BooleanFilterFalse
 				nudges, err := fr.GetNudges(
 					ctx,
 					tt.args.uid,
 					tt.args.flavour,
 					&pending,
 					&show,
+					&expired,
 				)
 				if err != nil {
 					t.Errorf("unable to fetch nudges after default initialiation: %s", err)
