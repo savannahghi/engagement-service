@@ -39,6 +39,22 @@ const (
 	intMax = 9007199254740990
 )
 
+func onboardingISCClient(t *testing.T) *base.InterServiceClient {
+	deps, err := base.LoadDepsFromYAML()
+	if err != nil {
+		t.Errorf("can't load inter-service config from YAML: %v", err)
+		return nil
+	}
+
+	profileClient, err := base.SetupISCclient(*deps, "profile")
+	if err != nil {
+		t.Errorf("can't set up profile interservice client: %v", err)
+		return nil
+	}
+
+	return profileClient
+}
+
 func getTestPubsubPayload(t *testing.T, el base.Element) *base.PubSubPayload {
 	elData, err := el.ValidateAndMarshal()
 	if err != nil {
@@ -46,8 +62,17 @@ func getTestPubsubPayload(t *testing.T, el base.Element) *base.PubSubPayload {
 		return nil
 	}
 
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return nil
+	}
+
 	envelope := feed.NotificationEnvelope{
-		UID:     ksuid.New().String(),
+		UID:     token.UID,
 		Flavour: base.FlavourConsumer,
 		Payload: elData,
 		Metadata: map[string]interface{}{
@@ -74,7 +99,7 @@ func getTestPubsubPayload(t *testing.T, el base.Element) *base.PubSubPayload {
 }
 
 func TestHandleItemPublish(t *testing.T) {
-	item := getTestItem()
+	item := getTestItem(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -109,7 +134,7 @@ func TestHandleItemPublish(t *testing.T) {
 }
 
 func TestHandleItemDelete(t *testing.T) {
-	item := getTestItem()
+	item := getTestItem(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -144,7 +169,7 @@ func TestHandleItemDelete(t *testing.T) {
 }
 
 func TestHandleItemResolve(t *testing.T) {
-	item := getTestItem()
+	item := getTestItem(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -179,7 +204,7 @@ func TestHandleItemResolve(t *testing.T) {
 }
 
 func TestHandleItemUnresolve(t *testing.T) {
-	item := getTestItem()
+	item := getTestItem(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -214,7 +239,7 @@ func TestHandleItemUnresolve(t *testing.T) {
 }
 
 func TestHandleItemHide(t *testing.T) {
-	item := getTestItem()
+	item := getTestItem(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -249,7 +274,7 @@ func TestHandleItemHide(t *testing.T) {
 }
 
 func TestHandleItemShow(t *testing.T) {
-	item := getTestItem()
+	item := getTestItem(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -284,7 +309,7 @@ func TestHandleItemShow(t *testing.T) {
 }
 
 func TestHandleItemPin(t *testing.T) {
-	nudge := testNudge()
+	nudge := testNudge(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -319,7 +344,7 @@ func TestHandleItemPin(t *testing.T) {
 }
 
 func TestHandleItemUnpin(t *testing.T) {
-	item := getTestItem()
+	item := getTestItem(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -354,7 +379,7 @@ func TestHandleItemUnpin(t *testing.T) {
 }
 
 func TestHandleNudgePublish(t *testing.T) {
-	nudge := testNudge()
+	nudge := testNudge(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -389,7 +414,7 @@ func TestHandleNudgePublish(t *testing.T) {
 }
 
 func TestHandleNudgeDelete(t *testing.T) {
-	nudge := testNudge()
+	nudge := testNudge(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -424,7 +449,7 @@ func TestHandleNudgeDelete(t *testing.T) {
 }
 
 func TestHandleNudgeResolve(t *testing.T) {
-	nudge := testNudge()
+	nudge := testNudge(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -459,7 +484,7 @@ func TestHandleNudgeResolve(t *testing.T) {
 }
 
 func TestHandleNudgeUnresolve(t *testing.T) {
-	nudge := testNudge()
+	nudge := testNudge(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -494,7 +519,7 @@ func TestHandleNudgeUnresolve(t *testing.T) {
 }
 
 func TestHandleNudgeHide(t *testing.T) {
-	nudge := testNudge()
+	nudge := testNudge(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -529,7 +554,7 @@ func TestHandleNudgeHide(t *testing.T) {
 }
 
 func TestHandleNudgeShow(t *testing.T) {
-	nudge := testNudge()
+	nudge := testNudge(t)
 	ctx := context.Background()
 	type args struct {
 		m *base.PubSubPayload
@@ -738,7 +763,16 @@ func TestHandleIncomingEvent(t *testing.T) {
 	}
 }
 
-func getTestItem() base.Item {
+func getTestItem(t *testing.T) base.Item {
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return base.Item{}
+	}
+
 	return base.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
@@ -788,8 +822,7 @@ func getTestItem() base.Item {
 			},
 		},
 		Users: []string{
-			"user-1",
-			"user-2",
+			token.UID,
 		},
 		Groups: []string{
 			"group-1",
@@ -804,7 +837,15 @@ func getTestItem() base.Item {
 	}
 }
 
-func testNudge() *base.Nudge {
+func testNudge(t *testing.T) *base.Nudge {
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return nil
+	}
 	return &base.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
@@ -820,7 +861,7 @@ func testNudge() *base.Nudge {
 			getTestAction(),
 		},
 		Users: []string{
-			ksuid.New().String(),
+			token.UID,
 		},
 		Groups: []string{
 			ksuid.New().String(),

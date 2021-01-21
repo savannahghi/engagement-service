@@ -3,7 +3,6 @@ package feed_test
 import (
 	"testing"
 
-	"github.com/rs/xid"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/graph/feed"
 )
@@ -51,6 +50,15 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 	}
 	rps := feed.NewRemoteProfileService(profileClient)
 
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		profileClient,
+	)
+	if err != nil {
+		t.Errorf("can't get phone number user: %v", err)
+		return
+	}
+
 	type args struct {
 		uids feed.UserUIDs
 	}
@@ -64,7 +72,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 			name: "email inter-service API call to profile",
 			args: args{
 				uids: feed.UserUIDs{
-					UIDs: []string{xid.New().String()},
+					UIDs: []string{token.UID},
 				},
 			},
 			wantNil: false,
@@ -102,6 +110,15 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 	}
 	rps := feed.NewRemoteProfileService(profileClient)
 
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		profileClient,
+	)
+	if err != nil {
+		t.Errorf("can't get phone number user: %v", err)
+		return
+	}
+
 	type args struct {
 		uids feed.UserUIDs
 	}
@@ -115,7 +132,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 			name: "phone inter-service API call to profile",
 			args: args{
 				uids: feed.UserUIDs{
-					UIDs: []string{xid.New().String()},
+					UIDs: []string{token.UID},
 				},
 			},
 			wantNil: false,
@@ -153,6 +170,15 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 	}
 	rps := feed.NewRemoteProfileService(profileClient)
 
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		profileClient,
+	)
+	if err != nil {
+		t.Errorf("can't get phone number user: %v", err)
+		return
+	}
+
 	type args struct {
 		uids feed.UserUIDs
 	}
@@ -166,7 +192,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 			name: "tokens inter-service API call to profile",
 			args: args{
 				uids: feed.UserUIDs{
-					UIDs: []string{xid.New().String()},
+					UIDs: []string{token.UID},
 				},
 			},
 			wantNil: false,
