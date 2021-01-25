@@ -1992,7 +1992,7 @@ func TestRoutes(t *testing.T) {
 	nudgeID := ksuid.New().String()
 	actionID := ksuid.New().String()
 	messageID := ksuid.New().String()
-	title := url.QueryEscape(feed.VerifyEmailNudgeTitle)
+	title := url.QueryEscape(feed.AddPrimaryEmailNudgeTitle)
 	badTitle := url.QueryEscape("not a default feed title")
 
 	type args struct {
@@ -6066,7 +6066,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 					uid,
 					fl.String(),
 					false,
-					feed.VerifyEmailNudgeTitle,
+					feed.AddPrimaryEmailNudgeTitle,
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,

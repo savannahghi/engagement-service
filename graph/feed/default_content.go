@@ -49,8 +49,13 @@ const (
 	defaultContentDir = "/static/"
 	defaultAuthor     = "Be.Well Team"
 
-	// VerifyEmailNudgeTitle defines the title for verify email nudge
-	VerifyEmailNudgeTitle = "Email Verification"
+	// Default nudges `titles` have been defined as constants as
+	// these same titles are used to `resolve` these default nudges
+	// once a user completes the action that shall be defined by the nudges
+
+	// AddPrimaryEmailNudgeTitle defines the title for verify email nudge
+	// that adds and verifies a primary email address
+	AddPrimaryEmailNudgeTitle = "Add Primary Email Address"
 
 	// AddInsuranceNudgeTitle defines the title for add insurance nudge
 	AddInsuranceNudgeTitle = "Add Insurance"
@@ -600,8 +605,8 @@ func verifyEmailNudge(
 	flavour base.Flavour,
 	repository Repository,
 ) (*base.Nudge, error) {
-	title := VerifyEmailNudgeTitle
-	text := "Please add and verify your email address"
+	title := AddPrimaryEmailNudgeTitle
+	text := "Please add and verify your primary email address"
 	imgURL := StaticBase + "/nudges/verify_email.png"
 	verifyEmailAction, err := createLocalAction(
 		ctx,
