@@ -971,14 +971,24 @@ func ResolveDefaultNudge(
 			return
 		}
 
+		resp := map[string]string{"status": "success"}
+		marshalled, err := json.Marshal(resp)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		if nudge.Status == base.StatusDone {
+			respondWithJSON(w, http.StatusOK, marshalled)
+		}
+
 		_, err = thinFeed.ResolveNudge(ctx, nudge.ID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		respondWithJSON(w, http.StatusOK, nil)
-
+		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }
 

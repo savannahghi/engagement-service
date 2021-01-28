@@ -6019,6 +6019,31 @@ func TestPostUpload(t *testing.T) {
 	}
 }
 
+func resolveTestNudge(
+	ctx context.Context,
+	uid string,
+	fl base.Flavour,
+	nudge *base.Nudge,
+) error {
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		return fmt.Errorf("can't initialize Firebase Repository: %s",
+			err,
+		)
+	}
+
+	nudge.Status = base.StatusDone
+	nudge.SequenceNumber = nudge.SequenceNumber + 1
+	_, err = fr.UpdateNudge(ctx, uid, fl, nudge)
+	if err != nil {
+		return fmt.Errorf("unable to resolve nudge: %w",
+			err,
+		)
+	}
+
+	return nil
+}
+
 func TestResolveDefaultNudge(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
@@ -6035,13 +6060,33 @@ func TestResolveDefaultNudge(t *testing.T) {
 		fr,
 	)
 	if err != nil {
-		t.Errorf("can't set default nudges: %v", err)
-		return
+		t.Errorf("can't set default nudges: %s", err)
 	}
 	if len(defaultNudges) == 0 {
 		t.Errorf("zero default nudges found")
 		return
 	}
+
+	for _, nudge := range defaultNudges {
+		if nudge.Title == feed.AddInsuranceNudgeTitle {
+			err := resolveTestNudge(
+				ctx,
+				uid,
+				fl,
+				&nudge,
+			)
+			if err != nil {
+				t.Errorf("unable to resolve nudge: %w", err)
+				return
+			}
+		}
+	}
+
+	bs, err := json.Marshal(map[string]string{"status": "success"})
+	if err != nil {
+		t.Errorf("unable to marshal upload input to JSON: %s", err)
+	}
+	payload := bytes.NewBuffer(bs)
 
 	headers := getDefaultHeaders(t, baseURL)
 
@@ -6058,7 +6103,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "resolve valid nudge",
+			name: "success: resolve valid nudge",
 			args: args{
 				url: fmt.Sprintf(
 					"%s/feed/%s/%s/%v/defaultnudges/%s/resolve/",
@@ -6070,13 +6115,31 @@ func TestResolveDefaultNudge(t *testing.T) {
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,
-				body:       nil,
+				body:       payload,
 			},
 			wantStatus: http.StatusOK,
 			wantErr:    false,
 		},
 		{
-			name: "try to resolve non existent nudge",
+			name: "success: an already resolved nudge",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/feed/%s/%s/%v/defaultnudges/%s/resolve/",
+					baseURL,
+					uid,
+					fl.String(),
+					false,
+					feed.AddInsuranceNudgeTitle,
+				),
+				httpMethod: http.MethodPatch,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "failure: try to resolve non existent nudge",
 			args: args{
 				url: fmt.Sprintf(
 					"%s/feed/%s/%s/%v/defaultnudges/%s/resolve/",
