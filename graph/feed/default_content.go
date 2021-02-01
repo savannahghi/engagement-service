@@ -37,7 +37,6 @@ const (
 	addInsuranceActionName        = "ADD_INSURANCE"
 	addNHIFActionName             = "ADD_NHIF"
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
-	completeProfileActionName     = "COMPLETE_PROFILE"
 	hideItemActionName            = "HIDE_ITEM"
 	pinItemActionName             = "PIN_ITEM"
 	resolveItemActionName         = "RESOLVE_ITEM"
@@ -65,9 +64,6 @@ const (
 
 	// PartnerAccountSetupNudgeTitle defines the title for partner account setup nudge
 	PartnerAccountSetupNudgeTitle = "Setup your partner account"
-
-	// CompleteProfileNudgeTitle defines the title for complete profile nudge
-	CompleteProfileNudgeTitle = "Complete your profile"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -189,7 +185,6 @@ func defaultConsumerNudges(
 	fns := []nudgeGenerator{
 		addInsuranceNudge,
 		addNHIFNudge,
-		completeProfileNudge,
 		verifyEmailNudge,
 	}
 	for _, fn := range fns {
@@ -211,7 +206,6 @@ func defaultProNudges(
 	var nudges []base.Nudge
 	fns := []nudgeGenerator{
 		partnerAccountSetupNudge,
-		completeProfileNudge,
 		verifyEmailNudge,
 	}
 	for _, fn := range fns {
@@ -544,46 +538,6 @@ func partnerAccountSetupNudge(
 	}
 	actions := []base.Action{
 		*partnerAccountSetupAction,
-	}
-	return createNudge(
-		ctx,
-		uid,
-		flavour,
-		title,
-		text,
-		imgURL,
-		title,
-		text,
-		actions,
-		repository,
-	)
-}
-
-func completeProfileNudge(
-	ctx context.Context,
-	uid string,
-	flavour base.Flavour,
-	repository Repository,
-) (*base.Nudge, error) {
-	title := CompleteProfileNudgeTitle
-	text := "Fill in your Be.Well profile to unlock more rewards"
-	imgURL := StaticBase + "/nudges/complete_profile.png"
-	completeProfileAction, err := createLocalAction(
-		ctx,
-		uid,
-		false,
-		flavour,
-		completeProfileActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
-		repository,
-	)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't create %s action: %w", completeProfileActionName, err)
-	}
-	actions := []base.Action{
-		*completeProfileAction,
 	}
 	return createNudge(
 		ctx,
