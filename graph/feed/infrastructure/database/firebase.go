@@ -801,6 +801,30 @@ func (fr Repository) getItemsQuery(
 		"sequenceNumber", firestore.Desc,
 	).Limit(itemsLimit)
 
+	if status == nil {
+		itemsQuery = itemsQuery.Where(
+			"status",
+			"==",
+			base.StatusPending,
+		)
+	}
+
+	if visibility == nil {
+		itemsQuery = itemsQuery.Where(
+			"visibility",
+			"==",
+			base.VisibilityShow,
+		)
+	}
+
+	if expired == nil {
+		itemsQuery = itemsQuery.Where(
+			"expiry",
+			">=",
+			time.Now(),
+		)
+	}
+
 	switch persistent {
 	case base.BooleanFilterTrue:
 		itemsQuery = itemsQuery.Where("persistent", "==", true)
@@ -1077,17 +1101,28 @@ func (fr Repository) getNudgesQuery(
 		"sequenceNumber", firestore.Desc,
 	)
 
-	// default path - if they are not provided then we make assumptions
 	if status == nil {
-		nudgesQuery = nudgesQuery.Where("status", "==", base.StatusPending)
+		nudgesQuery = nudgesQuery.Where(
+			"status",
+			"==",
+			base.StatusPending,
+		)
 	}
 
 	if visibility == nil {
-		nudgesQuery = nudgesQuery.Where("visibility", "==", base.VisibilityShow)
+		nudgesQuery = nudgesQuery.Where(
+			"visibility",
+			"==",
+			base.VisibilityShow,
+		)
 	}
 
 	if expired == nil {
-		nudgesQuery = nudgesQuery.Where("expiry", ">=", time.Now())
+		nudgesQuery = nudgesQuery.Where(
+			"expiry",
+			">=",
+			time.Now(),
+		)
 	}
 
 	if status != nil {

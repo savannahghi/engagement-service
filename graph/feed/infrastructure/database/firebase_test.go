@@ -1812,3 +1812,188 @@ func TestRepository_GetDefaultNudgeByTitle(t *testing.T) {
 		})
 	}
 }
+
+func TestRepository_GetNudges(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
+
+	uid := ksuid.New().String()
+	flavour := base.FlavourConsumer
+	nudge := testNudge()
+
+	savedNudge, err := fr.SaveNudge(ctx, uid, flavour, nudge)
+	if err != nil {
+		t.Errorf("can't save the nudge %v:", err)
+		return
+	}
+	if savedNudge == nil {
+		t.Errorf("nil saved nudge")
+		return
+	}
+
+	pending := base.StatusPending
+	show := base.VisibilityShow
+
+	type args struct {
+		ctx        context.Context
+		uid        string
+		flavour    base.Flavour
+		status     *base.Status
+		visibility *base.Visibility
+		expired    *base.BooleanFilter
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy case: default logic",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: flavour,
+			},
+			wantErr: false,
+		},
+		{
+			name: "happy case: filters provided",
+			args: args{
+				ctx:        ctx,
+				uid:        uid,
+				flavour:    flavour,
+				status:     &pending,
+				visibility: &show,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nudges, err := fr.GetNudges(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.status,
+				tt.args.visibility,
+				tt.args.expired,
+			)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.GetNudges() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+				return
+			}
+			if tt.wantErr && nudges != nil {
+				t.Errorf("nudge was not expected since an error occured: %v", err)
+				return
+			}
+
+			if !tt.wantErr && nudges == nil {
+				t.Errorf("nudge was expected since no error occured: %v", err)
+				return
+			}
+		})
+	}
+}
+
+func TestRepository_GetItems(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	assert.Nil(t, err)
+	assert.NotNil(t, fr)
+
+	testItem := getTestItem()
+	uid := ksuid.New().String()
+	flavour := base.FlavourConsumer
+
+	item, err := fr.SaveFeedItem(ctx, uid, flavour, &testItem)
+	if err != nil {
+		t.Errorf("can't save the item %v:", err)
+		return
+	}
+	if item == nil {
+		t.Errorf("nil saved item")
+		return
+	}
+
+	pending := base.StatusPending
+	show := base.VisibilityShow
+
+	type args struct {
+		ctx          context.Context
+		uid          string
+		flavour      base.Flavour
+		persistent   base.BooleanFilter
+		status       *base.Status
+		visibility   *base.Visibility
+		expired      *base.BooleanFilter
+		filterParams *feed.FilterParams
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []base.Item
+		wantErr bool
+	}{
+		{
+			name: "happy case: default logic",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: flavour,
+			},
+			wantErr: false,
+		},
+		{
+			name: "happy case: filters provided",
+			args: args{
+				ctx:        ctx,
+				uid:        uid,
+				flavour:    flavour,
+				status:     &pending,
+				visibility: &show,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			items, err := fr.GetItems(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.persistent,
+				tt.args.status,
+				tt.args.visibility,
+				tt.args.expired,
+				tt.args.filterParams,
+			)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.GetNudges() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+				return
+			}
+			if tt.wantErr && items != nil {
+				t.Errorf("nudge was not expected since an error occured: %v", err)
+				return
+			}
+
+			if !tt.wantErr && items == nil {
+				t.Errorf("nudge was expected since no error occured: %v", err)
+				return
+			}
+		})
+	}
+}
