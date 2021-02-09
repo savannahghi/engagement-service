@@ -27,16 +27,15 @@ const (
 	defaultPostedByUID    = "hOcaUv8dqqgmWYf9HEhjdudgf0b2"
 	futureHours           = 878400 // hours in a century of leap years...
 
-	getConsultationActionName = "GET_CONSULTATION"
-	getMedicineActionName     = "GET_MEDICINE"
-	getTestActionName         = "GET_TEST"
-	getInsuranceActionName    = "GET_INSURANCE"
-	getCoachingActionName     = "GET_COACHING"
-	addPatientActionName      = "ADD_PATIENT"
-	searchPatientActionName   = "SEARCH_PATIENT"
-	addInsuranceActionName    = "ADD_INSURANCE"
-	// TODO: Effectively uncomment this when the logic for adding NHIF has been implemented
-	// addNHIFActionName             = "ADD_NHIF"
+	getConsultationActionName     = "GET_CONSULTATION"
+	getMedicineActionName         = "GET_MEDICINE"
+	getTestActionName             = "GET_TEST"
+	getInsuranceActionName        = "GET_INSURANCE"
+	getCoachingActionName         = "GET_COACHING"
+	addPatientActionName          = "ADD_PATIENT"
+	searchPatientActionName       = "SEARCH_PATIENT"
+	addInsuranceActionName        = "ADD_INSURANCE"
+	addNHIFActionName             = "ADD_NHIF"
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
 	hideItemActionName            = "HIDE_ITEM"
 	pinItemActionName             = "PIN_ITEM"
@@ -61,7 +60,7 @@ const (
 	AddInsuranceNudgeTitle = "Add Insurance"
 
 	// AddNHIFNudgeTitle defines the title for add NHIF nudge
-	// AddNHIFNudgeTitle = "Add NHIF"
+	AddNHIFNudgeTitle = "Add NHIF"
 
 	// PartnerAccountSetupNudgeTitle defines the title for partner account setup nudge
 	PartnerAccountSetupNudgeTitle = "Setup your partner account"
@@ -185,9 +184,7 @@ func defaultConsumerNudges(
 	var nudges []base.Nudge
 	fns := []nudgeGenerator{
 		addInsuranceNudge,
-		// TODO: Effectively uncomment this when the logic for adding NHIF has been implemented
-		// Follow up @mathenge
-		// addNHIFNudge,
+		addNHIFNudge,
 		verifyEmailNudge,
 	}
 	for _, fn := range fns {
@@ -476,46 +473,45 @@ func addInsuranceNudge(
 	)
 }
 
-// TODO: Effectively uncomment this when the logic for adding NHIF has been implemented
-// func addNHIFNudge(
-// 	ctx context.Context,
-// 	uid string,
-// 	flavour base.Flavour,
-// 	repository Repository,
-// ) (*base.Nudge, error) {
-// 	title := AddNHIFNudgeTitle
-// 	text := "Link your NHIF cover"
-// 	imgURL := StaticBase + "/nudges/add_insurance.png"
-// 	addNHIFAction, err := createLocalAction(
-// 		ctx,
-// 		uid,
-// 		false,
-// 		flavour,
-// 		addNHIFActionName,
-// 		base.ActionTypePrimary,
-// 		base.HandlingFullPage,
-// 		repository,
-// 	)
-// 	if err != nil {
-// 		return nil, fmt.Errorf(
-// 			"can't create %s action: %w", addNHIFActionName, err)
-// 	}
-// 	actions := []base.Action{
-// 		*addNHIFAction,
-// 	}
-// 	return createNudge(
-// 		ctx,
-// 		uid,
-// 		flavour,
-// 		title,
-// 		text,
-// 		imgURL,
-// 		title,
-// 		text,
-// 		actions,
-// 		repository,
-// 	)
-// }
+func addNHIFNudge(
+	ctx context.Context,
+	uid string,
+	flavour base.Flavour,
+	repository Repository,
+) (*base.Nudge, error) {
+	title := AddNHIFNudgeTitle
+	text := "Link your NHIF cover"
+	imgURL := StaticBase + "/nudges/add_insurance.png"
+	addNHIFAction, err := createLocalAction(
+		ctx,
+		uid,
+		false,
+		flavour,
+		addNHIFActionName,
+		base.ActionTypePrimary,
+		base.HandlingFullPage,
+		repository,
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't create %s action: %w", addNHIFActionName, err)
+	}
+	actions := []base.Action{
+		*addNHIFAction,
+	}
+	return createNudge(
+		ctx,
+		uid,
+		flavour,
+		title,
+		text,
+		imgURL,
+		title,
+		text,
+		actions,
+		repository,
+	)
+}
 
 func partnerAccountSetupNudge(
 	ctx context.Context,
