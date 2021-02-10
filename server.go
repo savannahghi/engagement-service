@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
+
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/graph"
 )
 
 const waitSeconds = 30
@@ -26,7 +27,7 @@ func main() {
 	if err != nil {
 		base.LogStartupError(ctx, err)
 	}
-	srv := graph.PrepareServer(ctx, port)
+	srv := presentation.PrepareServer(ctx, port, presentation.AllowedOrigins)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			base.LogStartupError(ctx, err)

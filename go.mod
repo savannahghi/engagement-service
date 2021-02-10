@@ -17,8 +17,12 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imroc/req v0.3.0
+	github.com/jinzhu/gorm v1.9.16 // indirect
+	github.com/labstack/echo v3.3.10+incompatible // indirect
+	github.com/labstack/gommon v0.3.0
 	github.com/markbates/pkger v0.17.1
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
+	github.com/nanamen/go-echo-rest-sample v0.0.0-20180902044854-6c7e89a4fa2a
 	github.com/rs/xid v1.2.1
 	github.com/segmentio/ksuid v1.0.3
 	github.com/sirupsen/logrus v1.7.0
@@ -33,5 +37,6 @@ require (
 	google.golang.org/api v0.36.0
 	google.golang.org/genproto v0.0.0-20210120162456-f5e8c5e2aaf2 // indirect
 	google.golang.org/grpc v1.35.0
+	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
