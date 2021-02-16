@@ -1010,7 +1010,14 @@ func TestNotifyItemUpdate(t *testing.T) {
 }
 
 func TestSendNotificationViaFCM(t *testing.T) {
-	ctx := context.Background()
+	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1069,7 +1076,14 @@ func TestGetUserTokens(t *testing.T) {
 }
 
 func TestNotifyInboxCountUpdate(t *testing.T) {
-	ctx := context.Background()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1083,8 +1097,26 @@ func TestNotifyInboxCountUpdate(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO Successful inbox update notification
-		// TODO Unsuccessful inbox update notification
+		{
+			name: "Successful: inbox update notification",
+			args: args{
+				ctx:     ctx,
+				uid:     token.UID,
+				flavour: base.FlavourConsumer,
+				count:   10,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid: fail to send a notification message",
+			args: args{
+				ctx:     context.Background(),
+				uid:     "invalid uid",
+				flavour: base.FlavourConsumer,
+				count:   10,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1122,7 +1154,14 @@ func TestNotifyNudgeUpdate(t *testing.T) {
 }
 
 func TestUpdateInbox(t *testing.T) {
-	ctx := context.Background()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1135,8 +1174,33 @@ func TestUpdateInbox(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO Successful inbox update
-		// TODO Failed inbox update
+		{
+			name: "Successful inbox update",
+			args: args{
+				ctx:     ctx,
+				uid:     token.UID,
+				flavour: base.FlavourConsumer,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Failed inbox update on Consumer",
+			args: args{
+				ctx:     ctx,
+				uid:     "invalid uid",
+				flavour: base.FlavourConsumer,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Failed inbox update on Pro",
+			args: args{
+				ctx:     ctx,
+				uid:     "invalid uid",
+				flavour: base.FlavourPro,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
