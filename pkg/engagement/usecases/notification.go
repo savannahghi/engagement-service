@@ -552,8 +552,7 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 	var envelope resources.NotificationEnvelope
 	err := json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
-		return fmt.Errorf(
-			"can't unmarshal notification envelope from pubsub data: %w", err)
+		return fmt.Errorf("can't unmarshal notification envelope from pubsub data: %w", err)
 	}
 
 	var nudge base.Nudge

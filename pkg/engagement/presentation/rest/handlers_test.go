@@ -3446,51 +3446,6 @@ func getDefaultHeaders(t *testing.T, rootDomain string) map[string]string {
 	}
 }
 
-func getGraphQLHeaders(t *testing.T) map[string]string {
-	return req.Header{
-		"Accept":        "application/json",
-		"Content-Type":  "application/json",
-		"Authorization": getBearerTokenHeader(t),
-	}
-}
-
-func getBearerTokenHeader(t *testing.T) string {
-	ctx := context.Background()
-	user, err := base.GetOrCreateFirebaseUser(ctx, base.TestUserEmail)
-	if err != nil {
-		t.Errorf("can't get or create firebase user: %s", err)
-		return ""
-	}
-
-	if user == nil {
-		t.Errorf("nil firebase user")
-		return ""
-	}
-
-	customToken, err := base.CreateFirebaseCustomToken(ctx, user.UID)
-	if err != nil {
-		t.Errorf("can't create custom token: %s", err)
-		return ""
-	}
-
-	if customToken == "" {
-		t.Errorf("blank custom token: %s", err)
-		return ""
-	}
-
-	idTokens, err := base.AuthenticateCustomFirebaseToken(customToken)
-	if err != nil {
-		t.Errorf("can't authenticate custom token: %s", err)
-		return ""
-	}
-	if idTokens == nil {
-		t.Errorf("nil idTokens")
-		return ""
-	}
-
-	return fmt.Sprintf("Bearer %s", idTokens.IDToken)
-}
-
 func getInterserviceClient(t *testing.T, rootDomain string) *base.InterServiceClient {
 	service := base.ISCService{
 		Name:       "feed",
@@ -3815,16 +3770,6 @@ func getTestMessage() base.Message {
 		PostedByName:   ksuid.New().String(),
 		Timestamp:      time.Now(),
 	}
-}
-
-func mapToJSONReader(m map[string]interface{}) (io.Reader, error) {
-	bs, err := json.Marshal(m)
-	if err != nil {
-		return nil, fmt.Errorf("unable to marshal map to JSON: %w", err)
-	}
-
-	buf := bytes.NewBuffer(bs)
-	return buf, nil
 }
 
 func TestGoogleCloudPubSubHandler(t *testing.T) {

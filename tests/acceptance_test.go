@@ -1,5 +1,4 @@
-// TODO: move this file to "engagement/tests" folder
-package rest_test
+package tests
 
 import (
 	"fmt"

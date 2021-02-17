@@ -1128,7 +1128,16 @@ func TestNotifyInboxCountUpdate(t *testing.T) {
 }
 
 func TestNotifyNudgeUpdate(t *testing.T) {
-	ctx := context.Background()
+	nudge := aTestNudge(t)
+	action := getATestAction()
+	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1141,12 +1150,29 @@ func TestNotifyNudgeUpdate(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO Successful nudge update notification
-		// TODO Unsuccessful nudge update notification
+		{
+			name: "Successful nudge update notification",
+			args: args{
+				ctx:    ctx,
+				sender: "Be Well",
+				m:      getTestPubsubPayload(t, nudge),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Fail to notify nudge update - Use invalid payload",
+			args: args{
+				ctx:    ctx,
+				sender: "Be Well",
+				m:      getTestPubsubPayload(t, &action),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := notify.NotifyNudgeUpdate(tt.args.ctx, tt.args.sender, tt.args.m); (err != nil) != tt.wantErr {
+			err := notify.NotifyNudgeUpdate(tt.args.ctx, tt.args.sender, tt.args.m)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("NotifyNudgeUpdate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
