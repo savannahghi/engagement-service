@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
@@ -1010,7 +1011,23 @@ func TestHandleIncomingEvent(t *testing.T) {
 }
 
 func TestNotifyItemUpdate(t *testing.T) {
-	ctx := context.Background()
+	item := getTheTestItem(t)
+	invalidItem := getTheTestItem(t)
+	invalidItem.Label = "new-label"
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+
+	if err != nil {
+		t.Errorf("failed to get user push tokens: %v", err)
+		return
+	}
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1024,12 +1041,72 @@ func TestNotifyItemUpdate(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO Wrong notification data in payload
-		// TODO Item can't be unmarshalled from envelope contents
-		// TODO Valid persistent item
+		{
+			name: "valid:use a valid persistent item",
+			args: args{
+				ctx:                 ctx,
+				sender:              "ITEM_PUBLISHED",
+				includeNotification: true,
+				m:                   getTestPubsubPayload(t, &item),
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid:unknown sender",
+			args: args{
+				ctx:                 ctx,
+				sender:              "unknown sender",
+				includeNotification: true,
+				m:                   getTestPubsubPayload(t, &item),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid: Item can't be unmarshalled from envelope contents",
+			args: args{
+				ctx:                 ctx,
+				sender:              "ITEM_PUBLISHED",
+				includeNotification: true,
+				m: &base.PubSubPayload{
+					Subscription: ksuid.New().String(),
+					Message: base.PubSubMessage{
+						MessageID: ksuid.New().String(),
+						Data:      nil,
+						Attributes: map[string]string{
+							"topicID": common.ActionPublishTopic,
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid: Wrong notification data in payload",
+			args: args{
+				ctx:                 ctx,
+				sender:              "ITEM_PUBLISHED",
+				includeNotification: true,
+				m: &base.PubSubPayload{
+					Subscription: ksuid.New().String(),
+					Message: base.PubSubMessage{
+						MessageID: "invalid id",
+						Data:      []byte("data"),
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Valid: use a new label",
+			args: args{
+				ctx:                 ctx,
+				sender:              "ITEM_PUBLISHED",
+				includeNotification: true,
+				m:                   getTestPubsubPayload(t, &invalidItem),
+			},
+			wantErr: false,
+		},
 		// TODO Valid non-persistent item
-		// TODO Default: unknown sender
-		// TODO Item publish sender...new labels
 		// TODO Item publish sender, existing/default label
 	}
 	for _, tt := range tests {
@@ -1042,7 +1119,8 @@ func TestNotifyItemUpdate(t *testing.T) {
 }
 
 func TestSendNotificationViaFCM(t *testing.T) {
-	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	_ = base.RemoveTestPhoneNumberUser(t, onboardingISCClient(t))
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1050,6 +1128,13 @@ func TestSendNotificationViaFCM(t *testing.T) {
 		t.Errorf("failed to create a test user: %v", err)
 		return
 	}
+	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+
+	if err != nil {
+		t.Errorf("failed to get user push tokens: %v", err)
+		return
+	}
+	imageurl := "some-image-url"
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1064,9 +1149,81 @@ func TestSendNotificationViaFCM(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO UIDs with no tokens...error
-		// TODO UIDs with no tokens...blank
-		// TODO UIDs with tokens...valid push
+		{
+			name: "valid: UIDs with tokens",
+			args: args{
+				ctx:    ctx,
+				uids:   []string{token.UID},
+				sender: "Be.Well",
+				pl: resources.NotificationEnvelope{
+					UID:     token.UID,
+					Flavour: base.FlavourConsumer,
+					Payload: []byte("payload"),
+					Metadata: map[string]interface{}{
+						"language": "en",
+					},
+				},
+				notification: &base.FirebaseSimpleNotificationInput{
+					Title:    "Scheduled visit",
+					Body:     "Your visit has been scheduled for Thursday morning",
+					ImageURL: &imageurl,
+					Data: map[string]interface{}{
+						"patient": "outpatient",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid: UIDs with blank tokens",
+			args: args{
+				ctx:    ctx,
+				uids:   []string{""},
+				sender: "Be.Well",
+				pl: resources.NotificationEnvelope{
+					UID:     "",
+					Flavour: base.FlavourConsumer,
+					Payload: []byte("payload"),
+					Metadata: map[string]interface{}{
+						"language": "en",
+					},
+				},
+				notification: &base.FirebaseSimpleNotificationInput{
+					Title:    "Scheduled visit",
+					Body:     "Your visit has been scheduled for Thursday morning",
+					ImageURL: &imageurl,
+					Data: map[string]interface{}{
+						"patient": "outpatient",
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: UIDs with no tokens",
+			args: args{
+				ctx:    context.Background(),
+				uids:   []string{"f4f39af7-5b64-4c2f-91bd-42b3af315a4e"},
+				sender: "Be.Well",
+				pl: resources.NotificationEnvelope{
+					UID:     "",
+					Flavour: base.FlavourConsumer,
+					Payload: []byte("payload"),
+					Metadata: map[string]interface{}{
+						"language": "en",
+					},
+				},
+				notification: &base.FirebaseSimpleNotificationInput{
+					Title:    "Scheduled visit",
+					Body:     "Your visit has been scheduled for Thursday morning",
+					ImageURL: &imageurl,
+					Data: map[string]interface{}{
+						"patient": "outpatient",
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

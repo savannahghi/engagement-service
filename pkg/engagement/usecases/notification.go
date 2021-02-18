@@ -201,7 +201,6 @@ func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *base.PubSubP
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
-
 	err := n.NotifyItemUpdate(ctx, itemPublishSender, true, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
