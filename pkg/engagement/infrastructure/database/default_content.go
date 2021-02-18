@@ -32,9 +32,6 @@ const (
 	addInsuranceActionName        = "ADD_INSURANCE"
 	addNHIFActionName             = "ADD_NHIF"
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
-	hideItemActionName            = "HIDE_ITEM"
-	pinItemActionName             = "PIN_ITEM"
-	resolveItemActionName         = "RESOLVE_ITEM"
 	helpActionName                = "GET_HELP"
 	verifyEmailActionName         = "VERIFY_EMAIL"
 
@@ -42,10 +39,6 @@ const (
 	defaultLocation   = "default-location-id-please-change"
 	defaultContentDir = "/static/"
 	defaultAuthor     = "Be.Well Team"
-
-	// Default nudges `titles` have been defined as constants as
-	// these same titles are used to `resolve` these default nudges
-	// once a user completes the action that shall be defined by the nudges
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -1701,7 +1694,7 @@ func defaultActions(
 		uid,
 		false,
 		flavour,
-		resolveItemActionName,
+		common.ResolveItemActionName,
 		base.ActionTypePrimary,
 		base.HandlingInline,
 		repository,
@@ -1715,7 +1708,7 @@ func defaultActions(
 		uid,
 		true,
 		flavour,
-		pinItemActionName,
+		common.PinItemActionName,
 		base.ActionTypePrimary,
 		base.HandlingInline,
 		repository,
@@ -1729,7 +1722,7 @@ func defaultActions(
 		uid,
 		true,
 		flavour,
-		hideItemActionName,
+		common.HideItemActionName,
 		base.ActionTypePrimary,
 		base.HandlingInline,
 		repository,

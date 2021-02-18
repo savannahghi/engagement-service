@@ -373,7 +373,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 	item *base.Item,
 ) (*base.Item, error) {
 	if item == nil {
-		return nil, fmt.Errorf("cano't publish nil feed item")
+		return nil, fmt.Errorf("can't publish nil feed item")
 	}
 
 	if item.SequenceNumber == 0 {
@@ -467,6 +467,13 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 	item.Status = base.StatusDone
 	item.SequenceNumber = item.SequenceNumber + 1
 
+	for i, action := range item.Actions {
+		if action.Name == common.ResolveItemActionName {
+			item.Actions[i].Name = common.UnResolveItemActionName
+			item.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
+
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
@@ -507,6 +514,13 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 
 	item.Persistent = true
 	item.SequenceNumber = item.SequenceNumber + 1
+
+	for i, action := range item.Actions {
+		if action.Name == common.PinItemActionName {
+			item.Actions[i].Name = common.UnPinItemActionName
+			item.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
@@ -549,6 +563,13 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 	item.Persistent = false
 	item.SequenceNumber = item.SequenceNumber + 1
 
+	for i, action := range item.Actions {
+		if action.Name == common.UnPinItemActionName {
+			item.Actions[i].Name = common.PinItemActionName
+			item.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
+
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		return nil, fmt.Errorf("unable to pin feed item: %w", err)
@@ -589,6 +610,13 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 
 	item.Status = base.StatusPending
 	item.SequenceNumber = item.SequenceNumber + 1
+
+	for i, action := range item.Actions {
+		if action.Name == common.UnResolveItemActionName {
+			item.Actions[i].Name = common.ResolveItemActionName
+			item.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
@@ -631,6 +659,13 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 	item.Visibility = base.VisibilityHide
 	item.SequenceNumber = item.SequenceNumber + 1
 
+	for i, action := range item.Actions {
+		if action.Name == common.HideItemActionName {
+			item.Actions[i].Name = common.ShowItemActionName
+			item.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
+
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
 		return nil, fmt.Errorf("unable to hide feed item: %w", err)
@@ -672,6 +707,13 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 
 	item.Visibility = base.VisibilityShow
 	item.SequenceNumber = item.SequenceNumber + 1
+
+	for i, action := range item.Actions {
+		if action.Name == common.ShowItemActionName {
+			item.Actions[i].Name = common.HideItemActionName
+			item.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
@@ -813,6 +855,13 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 	nudge.Status = base.StatusDone
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
+	for i, action := range nudge.Actions {
+		if action.Name == common.ResolveItemActionName {
+			nudge.Actions[i].Name = common.UnResolveItemActionName
+			nudge.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
+
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
 		return nil, fmt.Errorf("unable to resolve nudge: %w", err)
@@ -853,6 +902,13 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 
 	nudge.Status = base.StatusPending
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
+
+	for i, action := range nudge.Actions {
+		if action.Name == common.UnResolveItemActionName {
+			nudge.Actions[i].Name = common.ResolveItemActionName
+			nudge.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
 
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
@@ -895,6 +951,13 @@ func (fe FeedUseCaseImpl) HideNudge(
 	nudge.Visibility = base.VisibilityHide
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
+	for i, action := range nudge.Actions {
+		if action.Name == common.HideItemActionName {
+			nudge.Actions[i].Name = common.ShowItemActionName
+			nudge.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
+
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
 		return nil, fmt.Errorf("unable to hide nudge: %w", err)
@@ -934,6 +997,13 @@ func (fe FeedUseCaseImpl) ShowNudge(
 
 	nudge.Visibility = base.VisibilityShow
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
+
+	for i, action := range nudge.Actions {
+		if action.Name == common.ShowItemActionName {
+			nudge.Actions[i].Name = common.HideItemActionName
+			nudge.Actions[i].SequenceNumber = action.SequenceNumber + 1
+		}
+	}
 
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
