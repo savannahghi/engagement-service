@@ -111,8 +111,10 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path(base.PubSubHandlerPath).Methods(
-		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
+
+	//TODO:(dexter) restore after demo
+	// r.Path(base.PubSubHandlerPath).Methods(
+	// 	http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
 
 	// static files
 	schemaFileHandler, err := rest.SchemaHandler()

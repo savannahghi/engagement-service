@@ -67,19 +67,20 @@ func mapToJSONReader(m map[string]interface{}) (io.Reader, error) {
 	return buf, nil
 }
 
-func GetTestEvent() base.Event {
-	return base.Event{
-		ID:   ksuid.New().String(),
-		Name: "TEST_EVENT",
-		Context: base.Context{
-			UserID:         ksuid.New().String(),
-			Flavour:        base.FlavourConsumer,
-			OrganizationID: ksuid.New().String(),
-			LocationID:     ksuid.New().String(),
-			Timestamp:      time.Now(),
-		},
-	}
-}
+// TODO(dexter) : restore after demo
+// func GetTestEvent() base.Event {
+// 	return base.Event{
+// 		ID:   ksuid.New().String(),
+// 		Name: "TEST_EVENT",
+// 		Context: base.Context{
+// 			UserID:         ksuid.New().String(),
+// 			Flavour:        base.FlavourConsumer,
+// 			OrganizationID: ksuid.New().String(),
+// 			LocationID:     ksuid.New().String(),
+// 			Timestamp:      time.Now(),
+// 		},
+// 	}
+// }
 
 func GetTestSequenceNumber() int {
 	return rand.Intn(intMax)

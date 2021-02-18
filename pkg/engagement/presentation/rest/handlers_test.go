@@ -31,7 +31,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"google.golang.org/api/idtoken"
 )
 
 const (
@@ -3772,152 +3771,154 @@ func getTestMessage() base.Message {
 	}
 }
 
-func TestGoogleCloudPubSubHandler(t *testing.T) {
-	ctx := context.Background()
-	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
-	testPush := base.PubSubPayload{
-		Subscription: ksuid.New().String(),
-		Message: base.PubSubMessage{
-			MessageID: ksuid.New().String(),
-			Data:      []byte(b64),
-			Attributes: map[string]string{
-				"topicID": common.ActionPublishTopic,
-			},
-		},
-	}
-	testPushJSON, err := json.Marshal(testPush)
-	if err != nil {
-		t.Errorf("can't marshal JSON: %s", err)
-		return
-	}
+// todo(salaton) : restore after demo
 
-	idTokenHTTPClient, err := idtoken.NewClient(ctx, base.Aud)
-	if err != nil {
-		t.Errorf("can't initialize idToken HTTP client: %s", err)
-		return
-	}
+// func TestGoogleCloudPubSubHandler(t *testing.T) {
+// 	ctx := context.Background()
+// 	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
+// 	testPush := base.PubSubPayload{
+// 		Subscription: ksuid.New().String(),
+// 		Message: base.PubSubMessage{
+// 			MessageID: ksuid.New().String(),
+// 			Data:      []byte(b64),
+// 			Attributes: map[string]string{
+// 				"topicID": common.ActionPublishTopic,
+// 			},
+// 		},
+// 	}
+// 	testPushJSON, err := json.Marshal(testPush)
+// 	if err != nil {
+// 		t.Errorf("can't marshal JSON: %s", err)
+// 		return
+// 	}
 
-	pubsubURL := fmt.Sprintf("%s%s", baseURL, base.PubSubHandlerPath)
-	req, err := http.NewRequest(
-		http.MethodPost,
-		pubsubURL,
-		bytes.NewBuffer(testPushJSON),
-	)
-	if err != nil {
-		t.Errorf("can't initialize request: %s", err)
-		return
-	}
-	req.Header.Add("Content-Type", "application/json")
+// 	idTokenHTTPClient, err := idtoken.NewClient(ctx, base.Aud)
+// 	if err != nil {
+// 		t.Errorf("can't initialize idToken HTTP client: %s", err)
+// 		return
+// 	}
 
-	type args struct {
-		r      *http.Request
-		client *http.Client
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantStatus int
-		wantErr    bool
-	}{
-		{
-			name: "valid pubsub format payload with valid auth",
-			args: args{
-				r:      req,
-				client: idTokenHTTPClient,
-			},
-			wantStatus: http.StatusOK,
-			wantErr:    false,
-		},
-		{
-			name: "no auth header",
-			args: args{
-				r:      req,
-				client: http.DefaultClient,
-			},
-			wantStatus: http.StatusBadRequest,
-			wantErr:    true,
-		},
-		// TODO Bad topic
-		// TODO Item publish, good input
-		// TODO Item publish, bad input
-		// TODO Item resolve, good input
-		// TODO Item resolve, bad input
-		// TODO Item delete, good input
-		// TODO Item delete, bad input
-		// TODO Item hide, bad input
-		// TODO Item hide, good input
-		// TODO Item show, bad input
-		// TODO Item show, good input
-		// TODO Item pin, bad input
-		// TODO Item pin, good input
-		// TODO Item unpin, bad input
-		// TODO Item unpin, good input
-		// TODO Nudge publish, bad input
-		// TODO Nudge publish, good input
-		// TODO Nudge delete, bad input
-		// TODO Nudge delete, good input
-		// TODO Nudge resolve, bad input
-		// TODO Nudge resolve, good input
-		// TODO Nudge unresolve, bad input
-		// TODO Nudge unresolve, good input
-		// TODO Nudge hide, bad input
-		// TODO Nudge hide, good input
-		// TODO Nudge show, bad input
-		// TODO Nudge show, good input
-		// TODO Action publish, bad input
-		// TODO Action publish, good input
-		// TODO Action delete, bad input
-		// TODO Action delete, good input
-		// TODO Message post, bad input
-		// TODO Message post, good input
-		// TODO Message delete, bad input
-		// TODO Message delete, good input
-		// TODO Incoming event, bad input
-		// TODO Incoming event, good input
-		// TODO Unknown pubsub topic (fallback)
-		// TODO Check success resp status: map[string]string{"status": "success"}
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			resp, err := tt.args.client.Do(tt.args.r)
-			if err != nil {
-				t.Errorf("request error: %s", err)
-				return
-			}
+// 	pubsubURL := fmt.Sprintf("%s%s", baseURL, base.PubSubHandlerPath)
+// 	req, err := http.NewRequest(
+// 		http.MethodPost,
+// 		pubsubURL,
+// 		bytes.NewBuffer(testPushJSON),
+// 	)
+// 	if err != nil {
+// 		t.Errorf("can't initialize request: %s", err)
+// 		return
+// 	}
+// 	req.Header.Add("Content-Type", "application/json")
 
-			if resp == nil && !tt.wantErr {
-				t.Errorf("nil response")
-				return
-			}
+// 	type args struct {
+// 		r      *http.Request
+// 		client *http.Client
+// 	}
+// 	tests := []struct {
+// 		name       string
+// 		args       args
+// 		wantStatus int
+// 		wantErr    bool
+// 	}{
+// 		{
+// 			name: "valid pubsub format payload with valid auth",
+// 			args: args{
+// 				r:      req,
+// 				client: idTokenHTTPClient,
+// 			},
+// 			wantStatus: http.StatusOK,
+// 			wantErr:    false,
+// 		},
+// 		{
+// 			name: "no auth header",
+// 			args: args{
+// 				r:      req,
+// 				client: http.DefaultClient,
+// 			},
+// 			wantStatus: http.StatusBadRequest,
+// 			wantErr:    true,
+// 		},
+// 		// TODO Bad topic
+// 		// TODO Item publish, good input
+// 		// TODO Item publish, bad input
+// 		// TODO Item resolve, good input
+// 		// TODO Item resolve, bad input
+// 		// TODO Item delete, good input
+// 		// TODO Item delete, bad input
+// 		// TODO Item hide, bad input
+// 		// TODO Item hide, good input
+// 		// TODO Item show, bad input
+// 		// TODO Item show, good input
+// 		// TODO Item pin, bad input
+// 		// TODO Item pin, good input
+// 		// TODO Item unpin, bad input
+// 		// TODO Item unpin, good input
+// 		// TODO Nudge publish, bad input
+// 		// TODO Nudge publish, good input
+// 		// TODO Nudge delete, bad input
+// 		// TODO Nudge delete, good input
+// 		// TODO Nudge resolve, bad input
+// 		// TODO Nudge resolve, good input
+// 		// TODO Nudge unresolve, bad input
+// 		// TODO Nudge unresolve, good input
+// 		// TODO Nudge hide, bad input
+// 		// TODO Nudge hide, good input
+// 		// TODO Nudge show, bad input
+// 		// TODO Nudge show, good input
+// 		// TODO Action publish, bad input
+// 		// TODO Action publish, good input
+// 		// TODO Action delete, bad input
+// 		// TODO Action delete, good input
+// 		// TODO Message post, bad input
+// 		// TODO Message post, good input
+// 		// TODO Message delete, bad input
+// 		// TODO Message delete, good input
+// 		// TODO Incoming event, bad input
+// 		// TODO Incoming event, good input
+// 		// TODO Unknown pubsub topic (fallback)
+// 		// TODO Check success resp status: map[string]string{"status": "success"}
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			resp, err := tt.args.client.Do(tt.args.r)
+// 			if err != nil {
+// 				t.Errorf("request error: %s", err)
+// 				return
+// 			}
 
-			respBs, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				t.Errorf("unable to read response body: %s", err)
-				return
-			}
+// 			if resp == nil && !tt.wantErr {
+// 				t.Errorf("nil response")
+// 				return
+// 			}
 
-			if resp.StatusCode != tt.wantStatus {
-				t.Errorf("wanted status %d, got %d and resp %s",
-					tt.wantStatus, resp.StatusCode, string(respBs))
-				log.Printf("request JSON: %s", string(testPushJSON))
-				return
-			}
+// 			respBs, err := ioutil.ReadAll(resp.Body)
+// 			if err != nil {
+// 				t.Errorf("unable to read response body: %s", err)
+// 				return
+// 			}
 
-			if !tt.wantErr {
-				decoded := map[string]string{}
-				err = json.Unmarshal(respBs, &decoded)
-				if err != nil {
-					t.Errorf("can't decode response to map: %s", err)
-					return
-				}
-				if decoded["status"] != "success" {
-					t.Errorf("did not get success status")
-					return
-				}
-			}
-		})
-	}
-}
+// 			if resp.StatusCode != tt.wantStatus {
+// 				t.Errorf("wanted status %d, got %d and resp %s",
+// 					tt.wantStatus, resp.StatusCode, string(respBs))
+// 				log.Printf("request JSON: %s", string(testPushJSON))
+// 				return
+// 			}
+
+// 			if !tt.wantErr {
+// 				decoded := map[string]string{}
+// 				err = json.Unmarshal(respBs, &decoded)
+// 				if err != nil {
+// 					t.Errorf("can't decode response to map: %s", err)
+// 					return
+// 				}
+// 				if decoded["status"] != "success" {
+// 					t.Errorf("did not get success status")
+// 					return
+// 				}
+// 			}
+// 		})
+// 	}
+// }
 
 func TestPostUpload(t *testing.T) {
 	headers := getDefaultHeaders(t, baseURL)
