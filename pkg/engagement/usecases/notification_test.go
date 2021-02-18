@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"reflect"
 	"testing"
 	"time"
@@ -24,6 +25,7 @@ import (
 const (
 	onboardingService = "profile"
 	intMax            = 9007199254740990
+	registerPushToken = "testing/register_push_token"
 )
 
 // TODO Get test FCM token from env
@@ -76,6 +78,36 @@ func onboardingISCClient(t *testing.T) *base.InterServiceClient {
 	}
 
 	return profileClient
+}
+
+func RegisterPushToken(
+	t *testing.T,
+	UID string,
+	onboardingClient *base.InterServiceClient,
+) (bool, error) {
+	token := "random"
+	if onboardingClient == nil {
+		return false, fmt.Errorf("nil ISC client")
+	}
+
+	payload := map[string]interface{}{
+		"pushTokens": token,
+		"uid":        UID,
+	}
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		registerPushToken,
+		payload,
+	)
+	if err != nil {
+		return false, fmt.Errorf("unable to make a request to register push token: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("expected a StatusOK (200) status code but instead got %v", resp.StatusCode)
+	}
+
+	return true, nil
 }
 
 func getATestMessage() base.Message {
@@ -1046,20 +1078,57 @@ func TestSendNotificationViaFCM(t *testing.T) {
 }
 
 func TestGetUserTokens(t *testing.T) {
-	ctx := context.Background()
+	// clean up
+	_ = base.RemoveTestPhoneNumberUser(t, onboardingISCClient(t))
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+
+	if err != nil {
+		t.Errorf("failed to get user push tokens: %v", err)
+		return
+	}
+
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
 		uids []string
 	}
+	tokens := token.UID
 	tests := []struct {
 		name    string
 		args    args
 		want    []string
 		wantErr bool
 	}{
-		// TODO UIDs with tokens
-		// TODO UIDs with no tokens
+		{
+			name: "happy case: get user push tokens",
+			args: args{
+				uids: []string{
+					tokens,
+				},
+			},
+			wantErr: false,
+			want: []string{
+				"random",
+			},
+		},
+
+		{
+			name: "sad case: get user push tokens",
+			args: args{
+				uids: []string{
+					"invalid_uid",
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
