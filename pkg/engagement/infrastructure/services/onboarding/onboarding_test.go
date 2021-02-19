@@ -70,7 +70,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "email inter-service API call to profile",
+			name: "happy case: get email addresses inter-service API call to profile",
 			args: args{
 				uids: onboarding.UserUIDs{
 					UIDs: []string{token.UID},
@@ -78,6 +78,16 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 			},
 			wantNil: false,
 			wantErr: false,
+		},
+		{
+			name: "sad case: get email addresses inter-service API call to profile",
+			args: args{
+				uids: onboarding.UserUIDs{
+					UIDs: []string{},
+				},
+			},
+			wantNil: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -130,7 +140,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "phone inter-service API call to profile",
+			name: "happy case: get phone numbers inter-service API call to profile",
 			args: args{
 				uids: onboarding.UserUIDs{
 					UIDs: []string{token.UID},
@@ -138,6 +148,16 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 			},
 			wantNil: false,
 			wantErr: false,
+		},
+		{
+			name: "sad case: get phone numbers inter-service API call to profile",
+			args: args{
+				uids: onboarding.UserUIDs{
+					UIDs: []string{}, // empty UID list
+				},
+			},
+			wantNil: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -190,7 +210,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "tokens inter-service API call to profile",
+			name: "happy case: get device tokens inter-service API call to profile",
 			args: args{
 				uids: onboarding.UserUIDs{
 					UIDs: []string{token.UID},
@@ -198,6 +218,16 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 			},
 			wantNil: false,
 			wantErr: false,
+		},
+		{
+			name: "sad case: get device tokens inter-service API call to profile",
+			args: args{
+				uids: onboarding.UserUIDs{
+					UIDs: []string{},
+				},
+			},
+			wantNil: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
