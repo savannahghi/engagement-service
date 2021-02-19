@@ -112,9 +112,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
 
-	//TODO:(dexter) restore after demo
-	// r.Path(base.PubSubHandlerPath).Methods(
-	// 	http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
+	r.Path(base.PubSubHandlerPath).Methods(
+		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
 
 	// static files
 	schemaFileHandler, err := rest.SchemaHandler()

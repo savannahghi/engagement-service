@@ -456,6 +456,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 	includeNotification bool, // whether to show a tray notification
 	m *base.PubSubPayload,
 ) error {
+
 	var envelope resources.NotificationEnvelope
 	err := json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
@@ -468,7 +469,6 @@ func (n NotificationImpl) NotifyItemUpdate(
 	if err != nil {
 		return fmt.Errorf("can't unmarshal item from pubsub data: %w", err)
 	}
-
 	// include notifications for persistent items
 	var notification *base.FirebaseSimpleNotificationInput
 	iconURL := common.DefaultIconPath

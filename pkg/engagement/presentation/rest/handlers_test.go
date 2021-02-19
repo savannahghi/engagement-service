@@ -23,6 +23,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/rest"
+	"google.golang.org/api/idtoken"
 
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
@@ -31,12 +32,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 )
 
 const (
 	testHTTPClientTimeout = 180
 	intMax                = 9007199254740990
 	onboardingService     = "profile"
+	registerPushToken     = "testing/register_push_token"
 )
 
 // these are set up once in TestMain and used by all the acceptance tests in
@@ -77,6 +80,52 @@ func startTestServer(ctx context.Context) (*http.Server, string, error) {
 	// the cleanup of this server (deferred shutdown) needs to occur in the
 	// acceptance test that will use this
 	return srv, baseURL, nil
+}
+
+func onboardingISCClient(t *testing.T) *base.InterServiceClient {
+	deps, err := base.LoadDepsFromYAML()
+	if err != nil {
+		t.Errorf("can't load inter-service config from YAML: %v", err)
+		return nil
+	}
+
+	profileClient, err := base.SetupISCclient(*deps, "profile")
+	if err != nil {
+		t.Errorf("can't set up profile interservice client: %v", err)
+		return nil
+	}
+
+	return profileClient
+}
+
+func RegisterPushToken(
+	t *testing.T,
+	UID string,
+	onboardingClient *base.InterServiceClient,
+) (bool, error) {
+	token := "random"
+	if onboardingClient == nil {
+		return false, fmt.Errorf("nil ISC client")
+	}
+
+	payload := map[string]interface{}{
+		"pushTokens": token,
+		"uid":        UID,
+	}
+	resp, err := onboardingClient.MakeRequest(
+		http.MethodPost,
+		registerPushToken,
+		payload,
+	)
+	if err != nil {
+		return false, fmt.Errorf("unable to make a request to register push token: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("expected a StatusOK (200) status code but instead got %v", resp.StatusCode)
+	}
+
+	return true, nil
 }
 
 func TestMain(m *testing.M) {
@@ -761,13 +810,13 @@ func TestGetFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -883,7 +932,7 @@ func TestGetNudge(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testNudge := testNudge()
+	testNudge := testNudge(t)
 	err := postElement(
 		ctx,
 		t,
@@ -1127,7 +1176,7 @@ func TestPublishFeedItem(t *testing.T) {
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
 	headers := getDefaultHeaders(t, baseURL)
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 
 	bs, err := json.Marshal(testItem)
 	if err != nil {
@@ -1239,13 +1288,13 @@ func TestDeleteFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -1361,7 +1410,7 @@ func TestDeleteNudge(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testNudge := testNudge()
+	testNudge := testNudge(t)
 	err := postElement(
 		ctx,
 		t,
@@ -1605,13 +1654,13 @@ func TestPostMessage(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -1736,13 +1785,13 @@ func TestDeleteMessage(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -1988,7 +2037,7 @@ func TestPublishNudge(t *testing.T) {
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
 	headers := getDefaultHeaders(t, baseURL)
-	nudge := testNudge()
+	nudge := testNudge(t)
 
 	bs, err := json.Marshal(nudge)
 	if err != nil {
@@ -2100,7 +2149,7 @@ func TestResolveNudge(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testNudge := testNudge()
+	testNudge := testNudge(t)
 	err := postElement(
 		ctx,
 		t,
@@ -2222,7 +2271,7 @@ func TestUnresolveNudge(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testNudge := testNudge()
+	testNudge := testNudge(t)
 	err := postElement(
 		ctx,
 		t,
@@ -2344,7 +2393,7 @@ func TestShowNudge(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testNudge := testNudge()
+	testNudge := testNudge(t)
 	err := postElement(
 		ctx,
 		t,
@@ -2466,7 +2515,7 @@ func TestHideNudge(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testNudge := testNudge()
+	testNudge := testNudge(t)
 	err := postElement(
 		ctx,
 		t,
@@ -2700,13 +2749,13 @@ func TestResolveFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -2822,13 +2871,13 @@ func TestUnresolveFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -2944,13 +2993,13 @@ func TestPinFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -3066,13 +3115,13 @@ func TestUnpinFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -3188,13 +3237,13 @@ func TestHideFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -3310,13 +3359,13 @@ func TestShowFeedItem(t *testing.T) {
 	ctx := context.Background()
 	uid := xid.New().String()
 	fl := base.FlavourConsumer
-	testItem := getTestItem()
+	testItem := getTestItem(t)
 	err := postElement(
 		ctx,
 		t,
 		uid,
 		fl,
-		&testItem,
+		testItem,
 		baseURL,
 		"publishFeedItem",
 	)
@@ -3634,8 +3683,21 @@ func postMessage(
 	return nil
 }
 
-func getTestItem() base.Item {
-	return base.Item{
+func getTestItem(t *testing.T) *base.Item {
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return nil
+	}
+	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	if err != nil {
+		t.Errorf("failed to get user push tokens: %v", err)
+		return nil
+	}
+	return &base.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
@@ -3684,8 +3746,7 @@ func getTestItem() base.Item {
 			},
 		},
 		Users: []string{
-			"user-1",
-			"user-2",
+			token.UID,
 		},
 		Groups: []string{
 			"group-1",
@@ -3700,7 +3761,20 @@ func getTestItem() base.Item {
 	}
 }
 
-func testNudge() *base.Nudge {
+func testNudge(t *testing.T) *base.Nudge {
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return &base.Nudge{}
+	}
+	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	if err != nil {
+		t.Errorf("failed to get user push tokens: %v", err)
+		return nil
+	}
 	return &base.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
@@ -3716,7 +3790,7 @@ func testNudge() *base.Nudge {
 			getTestAction(),
 		},
 		Users: []string{
-			ksuid.New().String(),
+			token.UID,
 		},
 		Groups: []string{
 			ksuid.New().String(),
@@ -3771,154 +3845,1145 @@ func getTestMessage() base.Message {
 	}
 }
 
-// todo(salaton) : restore after demo
+func GetPayloadRequest(data base.PubSubPayload) (*http.Request, error) {
+	testDataJSON, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("can't marshal JSON: %w", err)
+	}
 
-// func TestGoogleCloudPubSubHandler(t *testing.T) {
-// 	ctx := context.Background()
-// 	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
-// 	testPush := base.PubSubPayload{
-// 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
-// 			MessageID: ksuid.New().String(),
-// 			Data:      []byte(b64),
-// 			Attributes: map[string]string{
-// 				"topicID": common.ActionPublishTopic,
-// 			},
-// 		},
-// 	}
-// 	testPushJSON, err := json.Marshal(testPush)
-// 	if err != nil {
-// 		t.Errorf("can't marshal JSON: %s", err)
-// 		return
-// 	}
+	pubsubURL := fmt.Sprintf("%s%s", baseURL, base.PubSubHandlerPath)
+	req, err := http.NewRequest(
+		http.MethodPost,
+		pubsubURL,
+		bytes.NewBuffer(testDataJSON),
+	)
 
-// 	idTokenHTTPClient, err := idtoken.NewClient(ctx, base.Aud)
-// 	if err != nil {
-// 		t.Errorf("can't initialize idToken HTTP client: %s", err)
-// 		return
-// 	}
+	if err != nil {
+		return nil, fmt.Errorf("can't initialize request: %s", err)
+	}
+	req.Header.Add("Content-Type", "application/json")
 
-// 	pubsubURL := fmt.Sprintf("%s%s", baseURL, base.PubSubHandlerPath)
-// 	req, err := http.NewRequest(
-// 		http.MethodPost,
-// 		pubsubURL,
-// 		bytes.NewBuffer(testPushJSON),
-// 	)
-// 	if err != nil {
-// 		t.Errorf("can't initialize request: %s", err)
-// 		return
-// 	}
-// 	req.Header.Add("Content-Type", "application/json")
+	return req, nil
+}
 
-// 	type args struct {
-// 		r      *http.Request
-// 		client *http.Client
-// 	}
-// 	tests := []struct {
-// 		name       string
-// 		args       args
-// 		wantStatus int
-// 		wantErr    bool
-// 	}{
-// 		{
-// 			name: "valid pubsub format payload with valid auth",
-// 			args: args{
-// 				r:      req,
-// 				client: idTokenHTTPClient,
-// 			},
-// 			wantStatus: http.StatusOK,
-// 			wantErr:    false,
-// 		},
-// 		{
-// 			name: "no auth header",
-// 			args: args{
-// 				r:      req,
-// 				client: http.DefaultClient,
-// 			},
-// 			wantStatus: http.StatusBadRequest,
-// 			wantErr:    true,
-// 		},
-// 		// TODO Bad topic
-// 		// TODO Item publish, good input
-// 		// TODO Item publish, bad input
-// 		// TODO Item resolve, good input
-// 		// TODO Item resolve, bad input
-// 		// TODO Item delete, good input
-// 		// TODO Item delete, bad input
-// 		// TODO Item hide, bad input
-// 		// TODO Item hide, good input
-// 		// TODO Item show, bad input
-// 		// TODO Item show, good input
-// 		// TODO Item pin, bad input
-// 		// TODO Item pin, good input
-// 		// TODO Item unpin, bad input
-// 		// TODO Item unpin, good input
-// 		// TODO Nudge publish, bad input
-// 		// TODO Nudge publish, good input
-// 		// TODO Nudge delete, bad input
-// 		// TODO Nudge delete, good input
-// 		// TODO Nudge resolve, bad input
-// 		// TODO Nudge resolve, good input
-// 		// TODO Nudge unresolve, bad input
-// 		// TODO Nudge unresolve, good input
-// 		// TODO Nudge hide, bad input
-// 		// TODO Nudge hide, good input
-// 		// TODO Nudge show, bad input
-// 		// TODO Nudge show, good input
-// 		// TODO Action publish, bad input
-// 		// TODO Action publish, good input
-// 		// TODO Action delete, bad input
-// 		// TODO Action delete, good input
-// 		// TODO Message post, bad input
-// 		// TODO Message post, good input
-// 		// TODO Message delete, bad input
-// 		// TODO Message delete, good input
-// 		// TODO Incoming event, bad input
-// 		// TODO Incoming event, good input
-// 		// TODO Unknown pubsub topic (fallback)
-// 		// TODO Check success resp status: map[string]string{"status": "success"}
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			resp, err := tt.args.client.Do(tt.args.r)
-// 			if err != nil {
-// 				t.Errorf("request error: %s", err)
-// 				return
-// 			}
+func TestGoogleCloudPubSubHandler(t *testing.T) {
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
 
-// 			if resp == nil && !tt.wantErr {
-// 				t.Errorf("nil response")
-// 				return
-// 			}
+	if err != nil {
+		t.Errorf("failed to get user push tokens: %v", err)
+		return
+	}
 
-// 			respBs, err := ioutil.ReadAll(resp.Body)
-// 			if err != nil {
-// 				t.Errorf("unable to read response body: %s", err)
-// 				return
-// 			}
+	item := getTestItem(t)
+	itemData, err := json.Marshal(item)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
 
-// 			if resp.StatusCode != tt.wantStatus {
-// 				t.Errorf("wanted status %d, got %d and resp %s",
-// 					tt.wantStatus, resp.StatusCode, string(respBs))
-// 				log.Printf("request JSON: %s", string(testPushJSON))
-// 				return
-// 			}
+	notification := resources.NotificationEnvelope{
+		UID:     token.UID,
+		Flavour: base.FlavourConsumer,
+		Payload: itemData,
+	}
 
-// 			if !tt.wantErr {
-// 				decoded := map[string]string{}
-// 				err = json.Unmarshal(respBs, &decoded)
-// 				if err != nil {
-// 					t.Errorf("can't decode response to map: %s", err)
-// 					return
-// 				}
-// 				if decoded["status"] != "success" {
-// 					t.Errorf("did not get success status")
-// 					return
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+	notificationData, err := json.Marshal(notification)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
+
+	nudge := testNudge(t)
+	nudgeDataJSON, err := json.Marshal(&nudge)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
+
+	nudgeNotification := resources.NotificationEnvelope{
+		UID:     token.UID,
+		Flavour: base.FlavourConsumer,
+		Payload: nudgeDataJSON,
+	}
+
+	nudgeData, err := json.Marshal(nudgeNotification)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
+
+	action := getTestAction()
+	actionDataJSON, err := json.Marshal(action)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
+
+	message := getTestMessage()
+	messageDataJSON, err := json.Marshal(message)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
+
+	event := getTestEvent()
+	eventDataJSON, err := json.Marshal(event)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
+
+	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
+
+	actionPublishTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      actionDataJSON,
+			Attributes: map[string]string{
+				"topicID": common.ActionPublishTopic,
+			},
+		},
+	}
+
+	invalidActionPublishTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      itemData,
+			Attributes: map[string]string{
+				"topicID":       "invalid topic",
+				"invalid field": "invalid field",
+			},
+		},
+	}
+
+	actionPublishRequest, _ := GetPayloadRequest(actionPublishTopicPayload)
+	invalidActionPublishRequest, _ := GetPayloadRequest(invalidActionPublishTopicPayload)
+
+	actionDeleteTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      actionDataJSON,
+			Attributes: map[string]string{
+				"topicID": common.ActionDeleteTopic,
+			},
+		},
+	}
+
+	invalidActionDeleteTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      itemData,
+			Attributes: map[string]string{
+				"topicID":       "invalid topic",
+				"invalid field": "invalid field",
+			},
+		},
+	}
+
+	invalidActionDeleteRequest, _ := GetPayloadRequest(invalidActionDeleteTopicPayload)
+	actionDeleteRequest, _ := GetPayloadRequest(actionDeleteTopicPayload)
+
+	messagePostTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID": common.MessagePostTopic,
+			},
+		},
+	}
+
+	invalidMessagePostTopicPayload := base.PubSubPayload{
+		Message: base.PubSubMessage{
+			Data: itemData,
+			Attributes: map[string]string{
+				"topicID":       "invalid topic",
+				"invalid field": "invalid field",
+			},
+		},
+	}
+
+	invalidMessagePostRequest, err := GetPayloadRequest(invalidMessagePostTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	messagePostRequest, err := GetPayloadRequest(messagePostTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	messageDeleteTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID": common.MessageDeleteTopic,
+			},
+		},
+	}
+
+	invalidMessageDeleteTopicPayload := base.PubSubPayload{
+		Message: base.PubSubMessage{
+			Data: itemData,
+			Attributes: map[string]string{
+				"topicID":       "invalid topic",
+				"invalid field": "invalid field",
+			},
+		},
+	}
+
+	invalidMessageDeleteRequest, err := GetPayloadRequest(invalidMessageDeleteTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+	messageDeleteRequest, err := GetPayloadRequest(messageDeleteTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	incomingEventTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      eventDataJSON,
+			Attributes: map[string]string{
+				"topicID": common.IncomingEventTopic,
+			},
+		},
+	}
+
+	invalidIncomingEventTopicPayload := base.PubSubPayload{
+		Message: base.PubSubMessage{
+			Data: itemData,
+			Attributes: map[string]string{
+				"topicID":       "invalid topic",
+				"invalid field": "invalid field",
+			},
+		},
+	}
+
+	invalidIncomingEventRequest, err := GetPayloadRequest(invalidIncomingEventTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+	incomingEventRequest, err := GetPayloadRequest(incomingEventTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	invalidTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      []byte(b64),
+			Attributes: map[string]string{
+				"invalid": "invalid topic",
+			},
+		},
+	}
+
+	invalidTopicRequest, _ := GetPayloadRequest(invalidTopicPayload)
+
+	itemPublishTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemPublishTopic,
+			},
+		},
+	}
+
+	invalidItemPublishTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemPublishTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+
+	invalidItemPublishTopicRequest, _ := GetPayloadRequest(invalidItemPublishTopicPayload)
+	itemPublishTopicRequest, _ := GetPayloadRequest(itemPublishTopicPayload)
+
+	itemResolveTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemResolveTopic,
+			},
+		},
+	}
+
+	invalidItemResolveTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemResolveTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+
+	invalidItemResolveTopicRequest, _ := GetPayloadRequest(invalidItemResolveTopicPayload)
+	itemResolveTopicRequest, _ := GetPayloadRequest(itemResolveTopicPayload)
+
+	itemUnresolveTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemUnresolveTopic,
+			},
+		},
+	}
+
+	invalidItemUnresolveTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemUnresolveTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidItemUnresolveTopicRequest, err := GetPayloadRequest(invalidItemUnresolveTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemUnresolveTopicRequest, err := GetPayloadRequest(itemUnresolveTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemDeleteTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemDeleteTopic,
+			},
+		},
+	}
+
+	invalidItemDeleteTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemDeleteTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidItemDeleteTopicRequest, err := GetPayloadRequest(invalidItemDeleteTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemDeleteTopicRequest, err := GetPayloadRequest(itemDeleteTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemHideTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemHideTopic,
+			},
+		},
+	}
+
+	invalidItemHideTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemHideTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidItemHideTopicRequest, err := GetPayloadRequest(invalidItemHideTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemHideTopicRequest, err := GetPayloadRequest(itemHideTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemShowTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemShowTopic,
+			},
+		},
+	}
+
+	invalidItemShowTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemShowTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidItemShowTopicRequest, err := GetPayloadRequest(invalidItemShowTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemShowTopicRequest, err := GetPayloadRequest(itemShowTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemPinTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemPinTopic,
+			},
+		},
+	}
+
+	invalidItemPinTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemPinTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidItemPinTopicRequest, err := GetPayloadRequest(invalidItemPinTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemPinTopicRequest, err := GetPayloadRequest(itemPinTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemUnpinTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      notificationData,
+			Attributes: map[string]string{
+				"topicID": common.ItemUnpinTopic,
+			},
+		},
+	}
+
+	invalidItemUnpinTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.ItemUnpinTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidItemUnpinTopicRequest, err := GetPayloadRequest(invalidItemUnpinTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	itemUnpinTopicRequest, err := GetPayloadRequest(itemUnpinTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgePublishTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      nudgeData,
+			Attributes: map[string]string{
+				"topicID": common.NudgePublishTopic,
+			},
+		},
+	}
+
+	invalidNudgePublishTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.NudgePublishTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidNudgePublishTopicRequest, err := GetPayloadRequest(invalidNudgePublishTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgePublishTopicRequest, err := GetPayloadRequest(nudgePublishTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeDeleteTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      nudgeData,
+			Attributes: map[string]string{
+				"topicID": common.NudgeDeleteTopic,
+			},
+		},
+	}
+
+	invalidNudgeDeleteTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.NudgeDeleteTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidNudgeDeleteTopicRequest, err := GetPayloadRequest(invalidNudgeDeleteTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeDeleteTopicRequest, err := GetPayloadRequest(nudgeDeleteTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeResolveTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      nudgeData,
+			Attributes: map[string]string{
+				"topicID": common.NudgeResolveTopic,
+			},
+		},
+	}
+
+	invalidNudgeResolveTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.NudgeResolveTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidNudgeResolveTopicRequest, err := GetPayloadRequest(invalidNudgeResolveTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeResolveTopicRequest, err := GetPayloadRequest(nudgeResolveTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeUnresolveTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      nudgeData,
+			Attributes: map[string]string{
+				"topicID": common.NudgeUnresolveTopic,
+			},
+		},
+	}
+
+	invalidNudgeUnresolveTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.NudgeUnresolveTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidNudgeUnresolveTopicRequest, err := GetPayloadRequest(invalidNudgeUnresolveTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeUnresolveTopicRequest, err := GetPayloadRequest(nudgeUnresolveTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeHideTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      nudgeData,
+			Attributes: map[string]string{
+				"topicID": common.NudgeHideTopic,
+			},
+		},
+	}
+
+	invalidNudgeHideTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.NudgeHideTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidNudgeHideTopicRequest, err := GetPayloadRequest(invalidNudgeHideTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeHideTopicRequest, err := GetPayloadRequest(nudgeHideTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeShowTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      nudgeData,
+			Attributes: map[string]string{
+				"topicID": common.NudgeShowTopic,
+			},
+		},
+	}
+
+	invalidNudgeShowTopicPayload := base.PubSubPayload{
+		Subscription: "invalid",
+		Message: base.PubSubMessage{
+			MessageID: "invalid",
+			Data:      messageDataJSON,
+			Attributes: map[string]string{
+				"topicID":       common.NudgeShowTopic,
+				"invalid field": "invalid field",
+			},
+		},
+	}
+	invalidNudgeShowTopicRequest, err := GetPayloadRequest(invalidNudgeShowTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	nudgeShowTopicRequest, err := GetPayloadRequest(nudgeShowTopicPayload)
+	if err != nil {
+		t.Errorf("can't initialize request: %w", err)
+		return
+	}
+
+	idTokenHTTPClient, err := idtoken.NewClient(ctx, base.Aud)
+	if err != nil {
+		t.Errorf("can't initialize idToken HTTP client: %s", err)
+		return
+	}
+
+	type args struct {
+		r      *http.Request
+		client *http.Client
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "valid pubsub format payload with valid auth - Action Publish Topic",
+			args: args{
+				r:      actionPublishRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid action publish payload",
+			args: args{
+				r:      invalidActionPublishRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid pubsub format payload with valid auth - Action Delete Topic",
+			args: args{
+				r:      actionDeleteRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid action delete payload",
+			args: args{
+				r:      invalidActionDeleteRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid pubsub format payload with valid auth - Message Post Topic",
+			args: args{
+				r:      messagePostRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid message post topic payload",
+			args: args{
+				r:      invalidMessagePostRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid pubsub format payload with valid auth - Message Delete Topic",
+			args: args{
+				r:      messageDeleteRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid message delete topic payload",
+			args: args{
+				r:      invalidMessageDeleteRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid pubsub format payload with valid auth - Incoming Event Topic",
+			args: args{
+				r:      incomingEventRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid incoming event topic payload",
+			args: args{
+				r:      invalidIncomingEventRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "no auth header",
+			args: args{
+				r:      itemUnresolveTopicRequest,
+				client: http.DefaultClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "invalid topic",
+			args: args{
+				r:      invalidTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item publish payload",
+			args: args{
+				r:      itemPublishTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item publish payload",
+			args: args{
+				r:      invalidItemPublishTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item resolve payload",
+			args: args{
+				r:      itemResolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item resolve payload",
+			args: args{
+				r:      invalidItemResolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item unresolve payload",
+			args: args{
+				r:      itemUnresolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item unresolve payload",
+			args: args{
+				r:      invalidItemUnresolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item delete payload",
+			args: args{
+				r:      itemDeleteTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item delete payload",
+			args: args{
+				r:      invalidItemDeleteTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item hide payload",
+			args: args{
+				r:      itemHideTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item hide payload",
+			args: args{
+				r:      invalidItemHideTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item show payload",
+			args: args{
+				r:      itemShowTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item show payload",
+			args: args{
+				r:      invalidItemShowTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item pin payload",
+			args: args{
+				r:      itemPinTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item pin payload",
+			args: args{
+				r:      invalidItemPinTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid item unpin payload",
+			args: args{
+				r:      itemUnpinTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid item unpin payload",
+			args: args{
+				r:      invalidItemUnpinTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid nudge publish topic payload",
+			args: args{
+				r:      nudgePublishTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid nudge publish payload",
+			args: args{
+				r:      invalidNudgePublishTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid nudge delete topic payload",
+			args: args{
+				r:      nudgeDeleteTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid nudge delete payload",
+			args: args{
+				r:      invalidNudgeDeleteTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid nudge resolve topic payload",
+			args: args{
+				r:      nudgeResolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid nudge resolve payload",
+			args: args{
+				r:      invalidNudgeResolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid nudge unresolve topic payload",
+			args: args{
+				r:      nudgeUnresolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid nudge unresolve payload",
+			args: args{
+				r:      invalidNudgeUnresolveTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid nudge hide topic payload",
+			args: args{
+				r:      nudgeHideTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid nudge hide payload",
+			args: args{
+				r:      invalidNudgeHideTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid nudge show topic payload",
+			args: args{
+				r:      nudgeShowTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "invalid nudge show payload",
+			args: args{
+				r:      invalidNudgeShowTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		// TODO Check success resp status: map[string]string{"status": "success"}
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := tt.args.client.Do(tt.args.r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			respBs, err := ioutil.ReadAll(resp.Body)
+
+			if err != nil {
+				t.Errorf("unable to read response body: %s", err)
+				return
+			}
+
+			if resp.StatusCode != tt.wantStatus {
+				t.Errorf("wanted status %d, got %d and resp %s",
+					tt.wantStatus, resp.StatusCode, string(respBs))
+				return
+			}
+
+			if !tt.wantErr {
+				decoded := map[string]string{}
+				err = json.Unmarshal(respBs, &decoded)
+				if err != nil {
+					t.Errorf("can't decode response to map: %s", err)
+					return
+				}
+				if decoded["status"] != "success" {
+					t.Errorf("did not get success status")
+					return
+				}
+			}
+		})
+	}
+}
 
 func TestPostUpload(t *testing.T) {
 	headers := getDefaultHeaders(t, baseURL)
