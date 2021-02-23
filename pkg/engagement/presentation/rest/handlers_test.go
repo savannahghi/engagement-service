@@ -613,6 +613,7 @@ func TestGetFeed(t *testing.T) {
 
 	uid := xid.New().String()
 	consumer := base.FlavourConsumer
+	invalidConsumer := "invalidConsumer"
 	client := http.Client{
 		Timeout: time.Minute * 10, // set high when troubleshooting
 	}
@@ -721,6 +722,22 @@ func TestGetFeed(t *testing.T) {
 			},
 			wantStatus: http.StatusOK,
 			wantErr:    false,
+		},
+		{
+			name: "invalid - invalid flavour",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/feed/%s/%s/%v/?persistent=BOTH",
+					baseURL,
+					uid,
+					invalidConsumer,
+					anonymous,
+				),
+				httpMethod: http.MethodGet,
+				body:       nil,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
 		},
 	}
 	for _, tt := range tests {

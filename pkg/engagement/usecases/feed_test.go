@@ -1887,6 +1887,16 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "invalid case: nil item, will fail to publish feed item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: fl,
+				item:    nil,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
