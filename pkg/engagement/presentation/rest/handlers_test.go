@@ -3949,7 +3949,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      actionDataJSON,
 			Attributes: map[string]string{
-				"topicID": common.ActionPublishTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ActionPublishTopic),
 			},
 		},
 	}
@@ -3975,7 +3975,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      actionDataJSON,
 			Attributes: map[string]string{
-				"topicID": common.ActionDeleteTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ActionDeleteTopic),
 			},
 		},
 	}
@@ -4001,7 +4001,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID": common.MessagePostTopic,
+				"topicID": helpers.AddPubSubNamespace(common.MessagePostTopic),
 			},
 		},
 	}
@@ -4034,7 +4034,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID": common.MessageDeleteTopic,
+				"topicID": helpers.AddPubSubNamespace(common.MessageDeleteTopic),
 			},
 		},
 	}
@@ -4066,7 +4066,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      eventDataJSON,
 			Attributes: map[string]string{
-				"topicID": common.IncomingEventTopic,
+				"topicID": helpers.AddPubSubNamespace(common.IncomingEventTopic),
 			},
 		},
 	}
@@ -4111,7 +4111,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemPublishTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemPublishTopic),
 			},
 		},
 	}
@@ -4122,7 +4122,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemPublishTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemPublishTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4137,7 +4137,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemResolveTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemResolveTopic),
 			},
 		},
 	}
@@ -4148,7 +4148,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemResolveTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemResolveTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4163,7 +4163,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemUnresolveTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemUnresolveTopic),
 			},
 		},
 	}
@@ -4174,7 +4174,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemUnresolveTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemUnresolveTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4197,7 +4197,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemDeleteTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemDeleteTopic),
 			},
 		},
 	}
@@ -4208,7 +4208,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemDeleteTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemDeleteTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4231,7 +4231,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemHideTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemHideTopic),
 			},
 		},
 	}
@@ -4242,7 +4242,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemHideTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemHideTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4265,7 +4265,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemShowTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemShowTopic),
 			},
 		},
 	}
@@ -4276,7 +4276,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemShowTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemShowTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4299,7 +4299,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemPinTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemPinTopic),
 			},
 		},
 	}
@@ -4310,7 +4310,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemPinTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemPinTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4333,7 +4333,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      notificationData,
 			Attributes: map[string]string{
-				"topicID": common.ItemUnpinTopic,
+				"topicID": helpers.AddPubSubNamespace(common.ItemUnpinTopic),
 			},
 		},
 	}
@@ -4344,7 +4344,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.ItemUnpinTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.ItemUnpinTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4367,7 +4367,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      nudgeData,
 			Attributes: map[string]string{
-				"topicID": common.NudgePublishTopic,
+				"topicID": helpers.AddPubSubNamespace(common.NudgePublishTopic),
 			},
 		},
 	}
@@ -4378,7 +4378,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.NudgePublishTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.NudgePublishTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4401,7 +4401,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      nudgeData,
 			Attributes: map[string]string{
-				"topicID": common.NudgeDeleteTopic,
+				"topicID": helpers.AddPubSubNamespace(common.NudgeDeleteTopic),
 			},
 		},
 	}
@@ -4412,7 +4412,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.NudgeDeleteTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.NudgeDeleteTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4435,7 +4435,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      nudgeData,
 			Attributes: map[string]string{
-				"topicID": common.NudgeResolveTopic,
+				"topicID": helpers.AddPubSubNamespace(common.NudgeResolveTopic),
 			},
 		},
 	}
@@ -4446,7 +4446,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.NudgeResolveTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.NudgeResolveTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4469,7 +4469,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      nudgeData,
 			Attributes: map[string]string{
-				"topicID": common.NudgeUnresolveTopic,
+				"topicID": helpers.AddPubSubNamespace(common.NudgeUnresolveTopic),
 			},
 		},
 	}
@@ -4480,7 +4480,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.NudgeUnresolveTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.NudgeUnresolveTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4503,7 +4503,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      nudgeData,
 			Attributes: map[string]string{
-				"topicID": common.NudgeHideTopic,
+				"topicID": helpers.AddPubSubNamespace(common.NudgeHideTopic),
 			},
 		},
 	}
@@ -4514,7 +4514,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.NudgeHideTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.NudgeHideTopic),
 				"invalid field": "invalid field",
 			},
 		},
@@ -4537,7 +4537,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: ksuid.New().String(),
 			Data:      nudgeData,
 			Attributes: map[string]string{
-				"topicID": common.NudgeShowTopic,
+				"topicID": helpers.AddPubSubNamespace(common.NudgeShowTopic),
 			},
 		},
 	}
@@ -4548,7 +4548,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			MessageID: "invalid",
 			Data:      messageDataJSON,
 			Attributes: map[string]string{
-				"topicID":       common.NudgeShowTopic,
+				"topicID":       helpers.AddPubSubNamespace(common.NudgeShowTopic),
 				"invalid field": "invalid field",
 			},
 		},

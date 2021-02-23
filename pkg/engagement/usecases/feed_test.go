@@ -9,17 +9,14 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
-
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
-
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
 )
 
 const (
@@ -1715,6 +1712,69 @@ func TestFeed_GetNudge(t *testing.T) {
 	}
 }
 
+func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
+	ctx := context.Background()
+	agg, err := InitializeTestNewFeed(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize a new feed")
+		return
+	}
+	fl := base.FlavourConsumer
+	uid := ksuid.New().String()
+
+	nudge := testNudge()
+	savedNudge, err := agg.Repository.SaveNudge(ctx, uid, fl, nudge)
+	if err != nil {
+		t.Errorf("failed to save nudge")
+		return
+	}
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour base.Flavour
+		title   string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *base.Nudge
+		wantErr bool
+	}{
+		{
+			name: "valid case - Existing nudge",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: fl,
+				title:   savedNudge.Title,
+			},
+			want:    savedNudge,
+			wantErr: false,
+		},
+		{
+			name: "invalid case - Non-existent nudge",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: fl,
+				title:   "",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := agg.GetDefaultNudgeByTitle(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.title)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FeedUseCaseImpl.GetDefaultNudgeByTitle() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FeedUseCaseImpl.GetDefaultNudgeByTitle() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 func TestFeed_GetAction(t *testing.T) {
 	ctx := context.Background()
 	agg, err := InitializeTestNewFeed(ctx)
@@ -2722,6 +2782,7 @@ func TestFeed_PostMessage(t *testing.T) {
 	assert.Nil(t, err)
 
 	message := getTestMessage()
+	invalidMessage := getInvalidTestMessage()
 
 	type args struct {
 		ctx     context.Context
@@ -2743,6 +2804,17 @@ func TestFeed_PostMessage(t *testing.T) {
 				flavour: fl,
 				itemID:  item.ID,
 				message: &message,
+			},
+			wantErr: false,
+		},
+		{
+			name: "successful post -missing message ID and sequence number set to 0",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: fl,
+				itemID:  item.ID,
+				message: &invalidMessage,
 			},
 			wantErr: false,
 		},
@@ -2863,6 +2935,7 @@ func TestFeed_ProcessEvent(t *testing.T) {
 	assert.NotNil(t, fe)
 
 	event := getTestEvent()
+	invalidEvent := getInvalidTestEvent()
 
 	type args struct {
 		ctx     context.Context
@@ -2895,6 +2968,26 @@ func TestFeed_ProcessEvent(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "invalid flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: "invalid flavour",
+				event:   &event,
+			},
+			wantErr: true,
+		},
+		{
+			name: "event with missing details and invalid flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: fl,
+				event:   &invalidEvent,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -2909,6 +3002,18 @@ func getTestMessage() base.Message {
 	return base.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
+		Text:           ksuid.New().String(),
+		ReplyTo:        ksuid.New().String(),
+		PostedByUID:    ksuid.New().String(),
+		PostedByName:   ksuid.New().String(),
+		Timestamp:      time.Now(),
+	}
+}
+
+func getInvalidTestMessage() base.Message {
+	return base.Message{
+		ID:             "",
+		SequenceNumber: 0,
 		Text:           ksuid.New().String(),
 		ReplyTo:        ksuid.New().String(),
 		PostedByUID:    ksuid.New().String(),
@@ -2974,6 +3079,20 @@ func getTestEvent() base.Event {
 		Context: base.Context{
 			UserID:         ksuid.New().String(),
 			Flavour:        base.FlavourConsumer,
+			OrganizationID: ksuid.New().String(),
+			LocationID:     ksuid.New().String(),
+			Timestamp:      time.Now(),
+		},
+	}
+}
+
+func getInvalidTestEvent() base.Event {
+	return base.Event{
+		ID:   "",
+		Name: "TEST_EVENT",
+		Context: base.Context{
+			UserID:         "",
+			Flavour:        "",
 			OrganizationID: ksuid.New().String(),
 			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),

@@ -16,6 +16,7 @@ import (
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
 
@@ -159,115 +160,115 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(w http.ResponseWriter
 	ctx := r.Context()
 
 	switch topicID {
-	case common.ItemPublishTopic:
+	case helpers.AddPubSubNamespace(common.ItemPublishTopic):
 		err = p.interactor.Notification.HandleItemPublish(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ItemDeleteTopic:
+	case helpers.AddPubSubNamespace(common.ItemDeleteTopic):
 		err = p.interactor.Notification.HandleItemDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ItemResolveTopic:
+	case helpers.AddPubSubNamespace(common.ItemResolveTopic):
 		err = p.interactor.Notification.HandleItemResolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ItemUnresolveTopic:
+	case helpers.AddPubSubNamespace(common.ItemUnresolveTopic):
 		err = p.interactor.Notification.HandleItemUnresolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ItemHideTopic:
+	case helpers.AddPubSubNamespace(common.ItemHideTopic):
 		err = p.interactor.Notification.HandleItemHide(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ItemShowTopic:
+	case helpers.AddPubSubNamespace(common.ItemShowTopic):
 		err = p.interactor.Notification.HandleItemShow(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ItemPinTopic:
+	case helpers.AddPubSubNamespace(common.ItemPinTopic):
 		err = p.interactor.Notification.HandleItemPin(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ItemUnpinTopic:
+	case helpers.AddPubSubNamespace(common.ItemUnpinTopic):
 		err = p.interactor.Notification.HandleItemUnpin(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.NudgePublishTopic:
+	case helpers.AddPubSubNamespace(common.NudgePublishTopic):
 		err = p.interactor.Notification.HandleNudgePublish(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.NudgeDeleteTopic:
+	case helpers.AddPubSubNamespace(common.NudgeDeleteTopic):
 		err = p.interactor.Notification.HandleNudgeDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.NudgeResolveTopic:
+	case helpers.AddPubSubNamespace(common.NudgeResolveTopic):
 		err = p.interactor.Notification.HandleNudgeResolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.NudgeUnresolveTopic:
+	case helpers.AddPubSubNamespace(common.NudgeUnresolveTopic):
 		err = p.interactor.Notification.HandleNudgeUnresolve(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.NudgeHideTopic:
+	case helpers.AddPubSubNamespace(common.NudgeHideTopic):
 		err = p.interactor.Notification.HandleNudgeHide(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.NudgeShowTopic:
+	case helpers.AddPubSubNamespace(common.NudgeShowTopic):
 		err = p.interactor.Notification.HandleNudgeShow(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ActionPublishTopic:
+	case helpers.AddPubSubNamespace(common.ActionPublishTopic):
 		err = p.interactor.Notification.HandleActionPublish(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.ActionDeleteTopic:
+	case helpers.AddPubSubNamespace(common.ActionDeleteTopic):
 		err = p.interactor.Notification.HandleActionDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.MessagePostTopic:
+	case helpers.AddPubSubNamespace(common.MessagePostTopic):
 		err = p.interactor.Notification.HandleMessagePost(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.MessageDeleteTopic:
+	case helpers.AddPubSubNamespace(common.MessageDeleteTopic):
 		err = p.interactor.Notification.HandleMessageDelete(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
-	case common.IncomingEventTopic:
+	case helpers.AddPubSubNamespace(common.IncomingEventTopic):
 		err = p.interactor.Notification.HandleIncomingEvent(ctx, m)
 		if err != nil {
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)

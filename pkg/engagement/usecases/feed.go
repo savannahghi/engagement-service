@@ -1213,7 +1213,6 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 	itemID string,
 	messageID string,
 ) error {
-
 	message, err := fe.Repository.GetMessage(
 		ctx,
 		uid,
@@ -1224,7 +1223,6 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 	if err != nil || message == nil {
 		return nil // no harm "re-deleting" an already deleted message
 	}
-
 	err = fe.Repository.DeleteMessage(
 		ctx,
 		uid,
