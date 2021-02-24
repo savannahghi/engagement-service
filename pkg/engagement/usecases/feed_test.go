@@ -15,7 +15,17 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
+	mockFCM "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm/mock"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
+	mockMessaging "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging/mock"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
+	mockOnboarding "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding/mock"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	mockEngagement "gitlab.slade360emr.com/go/engagement/pkg/engagement/repository/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
 )
 
@@ -41,6 +51,33 @@ func InitializeTestNewFeed(ctx context.Context) (*usecases.FeedUseCaseImpl, erro
 	}
 	feed := usecases.NewFeed(fr, ns)
 	return feed, nil
+}
+
+var fakeEngagement mockEngagement.FakeEngagementRepository
+var fakeOnboarding mockOnboarding.FakeServiceOnboarding
+var fakeMessaging mockMessaging.FakeServiceMessaging
+var fakeFCM mockFCM.FakeServiceFcm
+
+// InitializeFakeEngagementInteractor represents a fake engagement interactor
+func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
+	var r repository.Repository = &fakeEngagement
+	var onboardingSvc onboarding.ProfileService = &fakeOnboarding
+	var messagingSvc messaging.NotificationService = &fakeMessaging
+	var fcmSvc fcm.PushService = &fakeFCM
+
+	feed := usecases.NewFeed(r, messagingSvc)
+	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc)
+	uploads := uploads.NewUploadsService()
+	library := library.NewLibraryService()
+
+	i, err := interactor.NewEngagementInteractor(
+		feed, notification, uploads, library,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("can't instantiate service : %w", err)
+	}
+	return i, nil
 }
 
 func getEmptyJson(t *testing.T) []byte {
