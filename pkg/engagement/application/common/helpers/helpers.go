@@ -8,7 +8,7 @@ import (
 
 const (
 	// ServiceName ...
-	ServiceName = "feed"
+	ServiceName = "engagement"
 	// TopicVersion ...
 	TopicVersion = "v1"
 )
