@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"reflect"
 	"testing"
 	"time"
 
@@ -1261,7 +1260,6 @@ func TestGetUserTokens(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []string
 		wantErr bool
 	}{
 		{
@@ -1272,9 +1270,6 @@ func TestGetUserTokens(t *testing.T) {
 				},
 			},
 			wantErr: false,
-			want: []string{
-				"random",
-			},
 		},
 
 		{
@@ -1289,13 +1284,22 @@ func TestGetUserTokens(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := notify.GetUserTokens(tt.args.uids)
+			tokens, err := notify.GetUserTokens(tt.args.uids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetUserTokens() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetUserTokens() = %v, want %v", got, tt.want)
+			if !tt.wantErr {
+				if len(tokens) == 0 {
+					t.Errorf("expected user tokens")
+					return
+				}
+			}
+			if tt.wantErr {
+				if len(tokens) != 0 {
+					t.Errorf("did not expected user tokens")
+					return
+				}
 			}
 		})
 	}
