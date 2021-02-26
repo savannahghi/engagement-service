@@ -669,3 +669,517 @@ func TestResolveFeedItem(t *testing.T) {
 	}
 
 }
+
+func TestPinFeedItem(t *testing.T) {
+	ctx := context.Background()
+
+	i, err := InitializeFakeEngagementInteractor()
+	if err != nil {
+		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
+		return
+	}
+	uid := ksuid.New().String()
+
+	testItem := getTestItem()
+
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour base.Flavour
+		itemID  string
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantPersistent bool
+		wantErr        bool
+	}{
+		{
+			name: "valid:successfully_pin_feed_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: true,
+			wantErr:        false,
+		},
+		{
+			name: "invalid:fail_to_get_feed_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+		{
+			name: "invalid:fail_to_update_feed_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+		{
+			name: "invalid:fail_to_send_notification",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+		{
+			name: "invalid:nil_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  "",
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if tt.name == "valid:successfully_pin_feed_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+						Actions: []base.Action{
+							{
+								ID:             ksuid.New().String(),
+								SequenceNumber: 1,
+								Name:           common.PinItemActionName,
+								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     base.ActionTypeSecondary,
+								Handling:       base.HandlingFullPage,
+								AllowAnonymous: false,
+							},
+						},
+					}, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, nil
+				}
+
+				fakeMessaging.NotifyFn = func(
+					ctx context.Context,
+					topicID string,
+					uid string,
+					flavour base.Flavour,
+					payload base.Element,
+					metadata map[string]interface{},
+				) error {
+					return nil
+				}
+			}
+
+			if tt.name == "invalid:fail_to_get_feed_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, fmt.Errorf("failed to get feed item")
+				}
+			}
+
+			if tt.name == "invalid:fail_to_update_feed_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return nil, fmt.Errorf("failed to publish feed item")
+				}
+			}
+
+			if tt.name == "invalid:fail_to_send_notification" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+						Actions: []base.Action{
+							{
+								ID:             ksuid.New().String(),
+								SequenceNumber: 1,
+								Name:           common.PinItemActionName,
+								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     base.ActionTypeSecondary,
+								Handling:       base.HandlingFullPage,
+								AllowAnonymous: false,
+							},
+						},
+					}, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, nil
+				}
+
+				fakeMessaging.NotifyFn = func(
+					ctx context.Context,
+					topicID string,
+					uid string,
+					flavour base.Flavour,
+					payload base.Element,
+					metadata map[string]interface{},
+				) error {
+					return fmt.Errorf("failed to send notification")
+				}
+			}
+
+			if tt.name == "invalid:nil_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return nil, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return nil, fmt.Errorf("failed to publish nil item")
+				}
+			}
+
+			got, err := i.Feed.PinFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FeedUseCaseImpl.PinFeedItem() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("error expected got %v", err)
+					return
+				}
+			}
+			if !tt.wantErr {
+				if err != nil {
+					t.Errorf("error not expected got %v", err)
+					return
+				}
+
+				if got == nil {
+					t.Errorf("nil item response returned")
+					return
+				}
+			}
+		})
+	}
+}
+
+func TestUnpinFeedItem(t *testing.T) {
+	ctx := context.Background()
+
+	i, err := InitializeFakeEngagementInteractor()
+	if err != nil {
+		t.Errorf("failed to initialize the fake engagement interactor: %v", err)
+		return
+	}
+	uid := ksuid.New().String()
+
+	testItem := getTestItem()
+
+	type args struct {
+		ctx     context.Context
+		uid     string
+		flavour base.Flavour
+		itemID  string
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantPersistent bool
+		wantErr        bool
+	}{
+		{
+			name: "valid:successfully_unpin_feed_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: true,
+			wantErr:        false,
+		},
+		{
+			name: "invalid:fail_to_get_feed_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+		{
+			name: "invalid:fail_to_update_feed_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+		{
+			name: "invalid:fail_to_send_notification",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  testItem.ID,
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+		{
+			name: "invalid:nil_item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: base.FlavourConsumer,
+				itemID:  "",
+			},
+			wantPersistent: false,
+			wantErr:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if tt.name == "valid:successfully_unpin_feed_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+						Actions: []base.Action{
+							{
+								ID:             ksuid.New().String(),
+								SequenceNumber: 1,
+								Name:           common.UnPinItemActionName,
+								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     base.ActionTypeSecondary,
+								Handling:       base.HandlingFullPage,
+								AllowAnonymous: false,
+							},
+						},
+					}, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, nil
+				}
+
+				fakeMessaging.NotifyFn = func(
+					ctx context.Context,
+					topicID string,
+					uid string,
+					flavour base.Flavour,
+					payload base.Element,
+					metadata map[string]interface{},
+				) error {
+					return nil
+				}
+			}
+
+			if tt.name == "invalid:fail_to_get_feed_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, fmt.Errorf("failed to get feed item")
+				}
+			}
+
+			if tt.name == "invalid:fail_to_update_feed_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return nil, fmt.Errorf("failed to publish feed item")
+				}
+			}
+
+			if tt.name == "invalid:fail_to_send_notification" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+						Actions: []base.Action{
+							{
+								ID:             ksuid.New().String(),
+								SequenceNumber: 1,
+								Name:           common.PinItemActionName,
+								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     base.ActionTypeSecondary,
+								Handling:       base.HandlingFullPage,
+								AllowAnonymous: false,
+							},
+						},
+					}, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return &base.Item{
+						ID: uuid.New().String(),
+					}, nil
+				}
+
+				fakeMessaging.NotifyFn = func(
+					ctx context.Context,
+					topicID string,
+					uid string,
+					flavour base.Flavour,
+					payload base.Element,
+					metadata map[string]interface{},
+				) error {
+					return fmt.Errorf("failed to send notification")
+				}
+			}
+
+			if tt.name == "invalid:nil_item" {
+				fakeEngagement.GetFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					itemID string,
+				) (*base.Item, error) {
+					return nil, nil
+				}
+
+				fakeEngagement.UpdateFeedItemFn = func(
+					ctx context.Context,
+					uid string,
+					flavour base.Flavour,
+					item *base.Item,
+				) (*base.Item, error) {
+					return nil, fmt.Errorf("failed to publish nil item")
+				}
+			}
+
+			got, err := i.Feed.UnpinFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FeedUseCaseImpl.UnpinFeedItem() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("error expected got %v", err)
+					return
+				}
+			}
+			if !tt.wantErr {
+				if err != nil {
+					t.Errorf("error not expected got %v", err)
+					return
+				}
+
+				if got == nil {
+					t.Errorf("nil item response returned")
+					return
+				}
+			}
+		})
+	}
+}
