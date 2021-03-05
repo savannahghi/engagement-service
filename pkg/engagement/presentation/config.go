@@ -10,6 +10,7 @@ import (
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
@@ -84,6 +85,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	notification := usecases.NewNotification(fr, fcmNotification, onboarding)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
+	sms := sms.NewService(fr)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
@@ -93,7 +95,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, *mail,
+		feed, notification, uploads, library, sms, *mail,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -310,6 +312,18 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).Path("/send_email").HandlerFunc(
 		h.SendEmail(ctx),
 	).Name("sendEmail")
+
+	isc.Methods(
+		http.MethodPost,
+	).Path("/send_sms").HandlerFunc(
+		h.SendToMany(ctx),
+	).Name("sendToMany")
+
+	isc.Methods(
+		http.MethodPost,
+	).Path("/ait_callback").HandlerFunc(
+		h.GetAITSMSDeliveryCallback(ctx),
+	).Name("AITSendSMSCallback")
 
 	// return the combined router
 	return r, nil

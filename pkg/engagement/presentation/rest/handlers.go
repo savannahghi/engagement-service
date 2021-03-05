@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 
 	"net/http"
 
@@ -17,7 +18,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
 
@@ -135,6 +136,10 @@ type PresentationHandlers interface {
 	FindUpload(ctx context.Context) http.HandlerFunc
 
 	SendEmail(ctx context.Context) http.HandlerFunc
+
+	SendToMany(ctx context.Context) http.HandlerFunc
+
+	GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1059,7 +1064,7 @@ func (p PresentationHandlersImpl) FindUpload(ctx context.Context) http.HandlerFu
 // and returns the status
 func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &domain.EMailMessage{}
+		payload := &resources.EMailMessage{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.Subject == "" {
 			err := fmt.Errorf("blank email subject")
@@ -1094,6 +1099,82 @@ func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFun
 			return
 		}
 
+		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+// SendToMany sends a data message to the specified recipient
+func (p PresentationHandlersImpl) SendToMany(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &resources.SendSMSPayload{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+
+		for _, phoneNo := range payload.To {
+			_, err := base.NormalizeMSISDN(phoneNo)
+			if err != nil {
+				err := fmt.Errorf("can't send sms, expected a valid phone number")
+				respondWithError(w, http.StatusBadRequest, err)
+				return
+			}
+		}
+
+		if payload.Message == "" {
+			err := fmt.Errorf("can't send sms, expected a message")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		_, err := p.interactor.SMS.SendToMany(payload.Message, payload.To)
+		if err != nil {
+			err := fmt.Errorf("sms not sent: %s", err)
+
+			isBadReq := strings.Contains(err.Error(), "http error status: 400")
+
+			if isBadReq {
+				respondWithError(w, http.StatusBadRequest, err)
+				return
+			}
+
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type okResp struct {
+			Status string `json:"status"`
+		}
+
+		marshalled, err := json.Marshal(okResp{Status: "ok"})
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+// GetAITSMSDeliveryCallback generates an SMS Delivery Report by saving the callback data for future analysis.
+func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Parses the request body
+		err := r.ParseForm()
+		if err != nil {
+			log.Printf("unable to parse request data %v", err)
+			return
+		}
+		if r.Form == nil || len(r.Form) == 0 {
+			return
+		}
+
+		err = p.interactor.SMS.SaveAITCallbackResponse(ctx, resources.CallbackData{Values: r.Form})
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		marshalled, err := json.Marshal(resources.CallbackData{Values: r.Form})
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }

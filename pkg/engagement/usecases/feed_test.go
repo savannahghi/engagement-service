@@ -23,6 +23,7 @@ import (
 	mockMessaging "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	mockOnboarding "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding/mock"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -70,11 +71,12 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
+	sms := sms.NewService(r)
 
 	mail := mail.NewService()
 
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, *mail,
+		feed, notification, uploads, library, sms, *mail,
 	)
 
 	if err != nil {

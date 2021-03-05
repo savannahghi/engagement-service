@@ -5,6 +5,7 @@ import (
 
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 )
 
@@ -212,6 +213,11 @@ type FakeEngagementRepository struct {
 		flavour base.Flavour,
 		title string,
 	) (*base.Nudge, error)
+
+	SaveAITCallbackResponseFn func(
+		ctx context.Context,
+		data resources.CallbackData,
+	) error
 }
 
 // GetFeed ...
@@ -478,4 +484,12 @@ func (f *FakeEngagementRepository) GetDefaultNudgeByTitle(
 	title string,
 ) (*base.Nudge, error) {
 	return f.GetDefaultNudgeByTitleFn(ctx, uid, flavour, title)
+}
+
+// SaveAITCallbackResponse saves the callback data for future analysis
+func (f *FakeEngagementRepository) SaveAITCallbackResponse(
+	ctx context.Context,
+	data resources.CallbackData,
+) error {
+	return f.SaveAITCallbackResponseFn(ctx, data)
 }

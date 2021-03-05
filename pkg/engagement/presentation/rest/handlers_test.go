@@ -5387,7 +5387,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 func TestSendEmail(t *testing.T) {
 	headers := getDefaultHeaders(t, baseURL)
 	to := []string{"be.well@bewell.co.ke"}
-	email := domain.EMailMessage{
+	email := resources.EMailMessage{
 		Subject: "Test Subject :)",
 		Text:    "Hello :)",
 		To:      to,

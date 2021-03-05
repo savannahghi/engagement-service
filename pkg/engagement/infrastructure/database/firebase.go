@@ -10,6 +10,7 @@ import (
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -32,6 +33,9 @@ const (
 	messagesSubcollectionName    = "messages"
 	incomingEventsCollectionName = "incoming_events"
 	outgoingEventsCollectionName = "outgoing_events"
+	//AITCallbackCollectionName is the name of a Cloud Firestore collection into which AIT
+	// callback data will be saved for future analysis
+	AITCallbackCollectionName = "ait_callbacks"
 
 	labelsDocID            = "item_labels"
 	unreadInboxCountsDocID = "unread_inbox_counts"
@@ -715,6 +719,11 @@ func (fr Repository) getFeedCollectionName() string {
 	return suffixed
 }
 
+func (fr Repository) getAITCallbackCollectionName() string {
+	suffixed := base.SuffixCollection(AITCallbackCollectionName)
+	return suffixed
+}
+
 func (fr Repository) getUserCollection(
 	uid string,
 	flavour base.Flavour,
@@ -1355,4 +1364,22 @@ func (fr Repository) GetDefaultNudgeByTitle(
 		nudge = nudgeData
 	}
 	return nudge, nil
+}
+
+// SaveAITCallbackResponse saves the callback data for future analysis
+func (fr Repository) SaveAITCallbackResponse(
+	ctx context.Context,
+	data resources.CallbackData,
+) error {
+	if err := fr.checkPreconditions(); err != nil {
+		return fmt.Errorf("repository precondition check failed: %w", err)
+	}
+
+	collectionName := fr.getAITCallbackCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
+	if err != nil {
+		return fmt.Errorf("unable to save callback response")
+	}
+
+	return nil
 }
