@@ -7,6 +7,7 @@ require (
 	cloud.google.com/go/firestore v1.4.0
 	cloud.google.com/go/pubsub v1.9.1
 	cloud.google.com/go/storage v1.12.0
+	firebase.google.com/go v3.13.0+incompatible
 	github.com/99designs/gqlgen v0.13.0
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/aws/aws-sdk-go v1.36.29 // indirect
@@ -18,6 +19,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imroc/req v0.3.0
 	github.com/labstack/gommon v0.3.0
+	github.com/mailgun/mailgun-go/v4 v4.4.1
 	github.com/markbates/pkger v0.17.1
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/rs/xid v1.2.1

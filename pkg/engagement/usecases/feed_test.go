@@ -18,6 +18,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	mockFCM "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 	mockMessaging "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
@@ -70,8 +71,10 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
 
+	mail := mail.NewService()
+
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library,
+		feed, notification, uploads, library, *mail,
 	)
 
 	if err != nil {

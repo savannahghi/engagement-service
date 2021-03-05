@@ -1,0 +1,7 @@
+type Dummy @key(fields: "id") {
+  id: ID
+}
+
+extend type Mutation {
+  simpleEmail(subject: String!, text: String!, to: [String!]!): String!
+}

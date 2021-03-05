@@ -103,8 +103,13 @@ type ComplexityRoot struct {
 		UserID         func(childComplexity int) int
 	}
 
+	Dummy struct {
+		ID func(childComplexity int) int
+	}
+
 	Entity struct {
-		FindFeedByID func(childComplexity int, id string) int
+		FindDummyByID func(childComplexity int, id *string) int
+		FindFeedByID  func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -246,6 +251,7 @@ type ComplexityRoot struct {
 		ResolveFeedItem   func(childComplexity int, flavour base.Flavour, itemID string) int
 		ShowFeedItem      func(childComplexity int, flavour base.Flavour, itemID string) int
 		ShowNudge         func(childComplexity int, flavour base.Flavour, nudgeID string) int
+		SimpleEmail       func(childComplexity int, subject string, text string, to []string) int
 		UnpinFeedItem     func(childComplexity int, flavour base.Flavour, itemID string) int
 		UnresolveFeedItem func(childComplexity int, flavour base.Flavour, itemID string) int
 		Upload            func(childComplexity int, input base.UploadInput) int
@@ -299,6 +305,7 @@ type ComplexityRoot struct {
 }
 
 type EntityResolver interface {
+	FindDummyByID(ctx context.Context, id *string) (*model.Dummy, error)
 	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
 }
 type MutationResolver interface {
@@ -313,6 +320,7 @@ type MutationResolver interface {
 	PostMessage(ctx context.Context, flavour base.Flavour, itemID string, message base.Message) (*base.Message, error)
 	DeleteMessage(ctx context.Context, flavour base.Flavour, itemID string, messageID string) (bool, error)
 	ProcessEvent(ctx context.Context, flavour base.Flavour, event base.Event) (bool, error)
+	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
 	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
 }
 type QueryResolver interface {
@@ -632,6 +640,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Context.UserID(childComplexity), true
+
+	case "Dummy.id":
+		if e.complexity.Dummy.ID == nil {
+			break
+		}
+
+		return e.complexity.Dummy.ID(childComplexity), true
+
+	case "Entity.findDummyByID":
+		if e.complexity.Entity.FindDummyByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findDummyByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindDummyByID(childComplexity, args["id"].(*string)), true
 
 	case "Entity.findFeedByID":
 		if e.complexity.Entity.FindFeedByID == nil {
@@ -1404,6 +1431,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ShowNudge(childComplexity, args["flavour"].(base.Flavour), args["nudgeID"].(string)), true
 
+	case "Mutation.simpleEmail":
+		if e.complexity.Mutation.SimpleEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_simpleEmail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SimpleEmail(childComplexity, args["subject"].(string), args["text"].(string), args["to"].([]string)), true
+
 	case "Mutation.unpinFeedItem":
 		if e.complexity.Mutation.UnpinFeedItem == nil {
 			break
@@ -2106,6 +2145,13 @@ type Query {
   getFaqsContent: [GhostCMSPost!]!
 }
 `, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/mailgun.graphql", Input: `type Dummy @key(fields: "id") {
+  id: ID
+}
+
+extend type Mutation {
+  simpleEmail(subject: String!, text: String!, to: [String!]!): String!
+}`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/uploads.graphql", Input: `
 # this input is used to CREATE a new upload
 input UploadInput {
@@ -2150,11 +2196,12 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Feed
+union _Entity = Dummy | Feed
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
-		findFeedByID(id: String!,): Feed!
+		findDummyByID(id: ID,): Dummy!
+	findFeedByID(id: String!,): Feed!
 
 }
 
@@ -2173,6 +2220,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Entity_findDummyByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -2420,6 +2482,39 @@ func (ec *executionContext) field_Mutation_showNudge_args(ctx context.Context, r
 		}
 	}
 	args["nudgeID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_simpleEmail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["subject"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subject"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["subject"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["text"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["text"] = arg1
+	var arg2 []string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg2, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg2
 	return args, nil
 }
 
@@ -4121,6 +4216,80 @@ func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphq
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.CollectedField, obj *model.Dummy) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Dummy",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Entity_findDummyByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindDummyByID(rctx, args["id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Dummy)
+	fc.Result = res
+	return ec.marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋdomainᚋmodelᚐDummy(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7834,6 +8003,48 @@ func (ec *executionContext) _Mutation_processEvent(ctx context.Context, field gr
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_simpleEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_simpleEmail_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SimpleEmail(rctx, args["subject"].(string), args["text"].(string), args["to"].([]string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -10381,6 +10592,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case model.Dummy:
+		return ec._Dummy(ctx, sel, &obj)
+	case *model.Dummy:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Dummy(ctx, sel, obj)
 	case domain.Feed:
 		return ec._Feed(ctx, sel, &obj)
 	case *domain.Feed:
@@ -10658,6 +10876,30 @@ func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var dummyImplementors = []string{"Dummy", "_Entity"}
+
+func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, obj *model.Dummy) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dummyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Dummy")
+		case "id":
+			out.Values[i] = ec._Dummy_id(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var entityImplementors = []string{"Entity"}
 
 func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -10673,6 +10915,20 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
+		case "findDummyByID":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findDummyByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "findFeedByID":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -11449,6 +11705,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "simpleEmail":
+			out.Values[i] = ec._Mutation_simpleEmail(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "upload":
 			out.Values[i] = ec._Mutation_upload(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -12134,6 +12395,20 @@ func (ec *executionContext) marshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋg
 func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx context.Context, v interface{}) (base.Context, error) {
 	res, err := ec.unmarshalInputContextInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDummy2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋdomainᚋmodelᚐDummy(ctx context.Context, sel ast.SelectionSet, v model.Dummy) graphql.Marshaler {
+	return ec._Dummy(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋdomainᚋmodelᚐDummy(ctx context.Context, sel ast.SelectionSet, v *model.Dummy) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Dummy(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNEventAttachment2ᚕᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttachmentᚄ(ctx context.Context, sel ast.SelectionSet, v []*calendar.EventAttachment) graphql.Marshaler {
@@ -13183,6 +13458,21 @@ func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emr�
 	}
 	res, err := ec.unmarshalInputFilterParamsInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalID(*v)
 }
 
 func (ec *executionContext) marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {

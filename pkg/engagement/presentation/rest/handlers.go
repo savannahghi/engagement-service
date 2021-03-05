@@ -17,6 +17,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
 
@@ -132,6 +133,8 @@ type PresentationHandlers interface {
 	Upload(ctx context.Context) http.HandlerFunc
 
 	FindUpload(ctx context.Context) http.HandlerFunc
+
+	SendEmail(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1043,6 +1046,49 @@ func (p PresentationHandlersImpl) FindUpload(ctx context.Context) http.HandlerFu
 		}
 
 		marshalled, err := json.Marshal(upload)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+// SendEmail sends the specified email to the recipient(s) specified in `to`
+// and returns the status
+func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &domain.EMailMessage{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+		if payload.Subject == "" {
+			err := fmt.Errorf("blank email subject")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		if payload.Text == "" {
+			err := fmt.Errorf("blank email text")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		if len(payload.To) == 0 {
+			err := fmt.Errorf("no destination email supplied")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		resp, _, err := p.interactor.Mail.SendEmail(
+			payload.Subject,
+			payload.Text,
+			payload.To...,
+		)
+		if err != nil {
+			err := fmt.Errorf("email not sent: %s", err)
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		marshalled, err := json.Marshal(resp)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return

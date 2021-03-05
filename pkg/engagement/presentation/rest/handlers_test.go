@@ -5383,3 +5383,108 @@ func TestResolveDefaultNudge(t *testing.T) {
 		})
 	}
 }
+
+func TestSendEmail(t *testing.T) {
+	headers := getDefaultHeaders(t, baseURL)
+	to := []string{"be.well@bewell.co.ke"}
+	email := domain.EMailMessage{
+		Subject: "Test Subject :)",
+		Text:    "Hello :)",
+		To:      to,
+	}
+
+	bs, err := json.Marshal(email)
+	if err != nil {
+		t.Errorf("unable to marshal upload input to JSON: %s", err)
+	}
+	payload := bytes.NewBuffer(bs)
+
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "valid send email",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/send_email", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "nil send email",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/send_email", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       nil,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
+
+			for k, v := range tt.args.headers {
+				r.Header.Add(k, v)
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if resp.StatusCode != tt.wantStatus {
+				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
+				return
+			}
+		})
+	}
+}

@@ -4,6 +4,7 @@ package interactor
 
 import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
 )
@@ -14,6 +15,7 @@ type Interactor struct {
 	Notification usecases.NotificationUsecases
 	Uploads      uploads.ServiceUploads
 	Library      library.ServiceLibrary
+	Mail         mail.ServiceMail
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -22,11 +24,13 @@ func NewEngagementInteractor(
 	notification usecases.NotificationUsecases,
 	uploads uploads.ServiceUploads,
 	library library.ServiceLibrary,
+	mail mail.ServiceMail,
 ) (*Interactor, error) {
 	return &Interactor{
 		Feed:         feed,
 		Notification: notification,
 		Uploads:      uploads,
 		Library:      library,
+		Mail:         mail,
 	}, nil
 }

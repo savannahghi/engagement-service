@@ -61,3 +61,10 @@ func (fe *Feed) ValidateAndUnmarshal(b []byte) error {
 func (fe *Feed) ValidateAndMarshal() ([]byte, error) {
 	return base.ValidateAndMarshal(base.FeedSchemaFile, fe)
 }
+
+// EMailMessage holds data required to send emails
+type EMailMessage struct {
+	Subject string   `json:"subject,omitempty"`
+	Text    string   `json:"text,omitempty"`
+	To      []string `json:"to,omitempty"`
+}

@@ -2,6 +2,12 @@
 
 package model
 
+type Dummy struct {
+	ID *string `json:"id"`
+}
+
+func (Dummy) IsEntity() {}
+
 type FilterParams struct {
 	Labels []*string `json:"labels"`
 }

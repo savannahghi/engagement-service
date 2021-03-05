@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
@@ -88,10 +89,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
 	}
 	feed := usecases.NewFeed(fr, ns)
+	mail := mail.NewService()
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library,
+		feed, notification, uploads, library, *mail,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -302,6 +304,12 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).Path("/upload/").HandlerFunc(
 		h.Upload(ctx),
 	).Name("upload")
+
+	isc.Methods(
+		http.MethodPost,
+	).Path("/send_email").HandlerFunc(
+		h.SendEmail(ctx),
+	).Name("sendEmail")
 
 	// return the combined router
 	return r, nil
