@@ -39,20 +39,6 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 		}
 		switch typeName {
 
-		case "Dummy":
-			id0, err := ec.unmarshalOID2ᚖstring(ctx, rep["id"])
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
-			}
-
-			entity, err := ec.resolvers.Entity().FindDummyByID(ctx,
-				id0)
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, entity)
-
 		case "Feed":
 			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
 			if err != nil {
