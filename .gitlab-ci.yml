@@ -93,6 +93,38 @@ deploy_develop_to_testing:
   tags:
     - healthcloud-multi
 
+deploy_develop_to_e2e:
+  before_script:
+    - /google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
+    - /google-cloud-sdk/bin/gcloud config set project bewell-app
+    - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
+    - export CLOUDSDK_CORE_PROJECT=bewell-app
+  image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
+  stage: deploy
+  only:
+    - develop
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    GATEWAY_RELOAD_ENDPOINT: $TESTING_GATEWAY_RELOAD_ENDPOINT
+  resource_group: testing # control deploy concurrency
+  script:
+    - docker build -q --build-arg CI_JOB_TOKEN=$CI_JOB_TOKEN -f $CI_PROJECT_DIR/Dockerfile . -t eu.gcr.io/bewell-app/engagement-e2e:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - /google-cloud-sdk/bin/gcloud auth configure-docker
+    - docker -- push eu.gcr.io/bewell-app/engagement-e2e:$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - /google-cloud-sdk/bin/gcloud run deploy engagement-e2e --image eu.gcr.io/bewell-app/engagement-e2e:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated --memory 1000M --cpu 2 --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,SCHEMA_HOST=$TESTING_SCHEMA_HOST,ENVIRONMENT=$E2E_ENVIRONMENT,JWT_KEY=$PROD_JWT_KEY,SENTRY_DSN=$PROD_SENTRY_DSN,ROOT_COLLECTION_SUFFIX=$E2E_ROOT_COLLECTION_SUFFIX,FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY,HOST=$CORE_EDI_API_HOST,API_SCHEME=$CORE_EDI_API_SCHEME,TOKEN_URL=$CORE_EDI_API_TOKEN_URL,AUTH_SERVER_DOMAIN=$CORE_EDI_AUTH_SERVER_DOMAIN,GRANT_TYPE=$CORE_EDI_GRANT_TYPE,USERNAME=$CORE_EDI_USERNAME,PASSWORD=$CORE_EDI_PASSWORD,CLIENT_ID=$CORE_EDI_CLIENT_ID,CLIENT_SECRET=$CORE_EDI_CLIENT_SECRET,AUTH_SERVER_INTROSPECTION_URL=$CORE_AUTH_SERVER_INTROSPECTION_URL,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY,GOOGLE_PROJECT_NUMBER=$TESTING_GOOGLE_PROJECT_NUMBER,SERVICE_HOST=$TESTING_SERVICE_HOST,MAILGUN_API_KEY=$TESTING_MAILGUN_API_KEY,MAILGUN_DOMAIN=$TESTING_MAILGUN_DOMAIN,MAILGUN_FROM=$TESTING_MAILGUN_FROM,SEND_IN_BLUE_API_KEY=$SEND_IN_BLUE_API_KEY,SEND_IN_BLUE_ENABLED=$SEND_IN_BLUE_ENABLED,\
+      TWILIO_VIDEO_SID=$TWILIO_VIDEO_SID,TWILIO_VIDEO_SECRET=$TWILIO_VIDEO_SECRET,TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID,\
+      TWILIO_ACCOUNT_AUTH_TOKEN=$TWILIO_ACCOUNT_AUTH_TOKEN,TWILIO_SMS_NUMBER=$TWILIO_SMS_NUMBER,\
+      TWILIO_MESSAGING_USER=$TWILIO_MESSAGING_USER,TWILIO_MESSAGING_SERVICE_SID=$TWILIO_MESSAGING_SERVICE_SID,\
+      TWILIO_MESSAGING_AUTH_TOKEN=$TWILIO_MESSAGING_AUTH_TOKEN,SERVER_PUBLIC_DOMAIN=$PROD_SERVER_PUBLIC_DOMAIN,\
+      AIT_API_KEY=$PROD_AIT_API_KEY,AIT_USERNAME=$PROD_AIT_USERNAME,\
+      AIT_SENDER_ID=$PROD_AIT_SENDER_ID,AIT_ENVIRONMENT=$PROD_AIT_ENVIRONMENT"
+    - /google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker engagement-e2e --quiet
+    - /google-cloud-sdk/bin/gcloud alpha run services update-traffic engagement-e2e --to-latest  --region europe-west1 --platform managed --quiet
+    - bash reload.sh
+  tags:
+    - healthcloud-multi
+
 
 deploy_master_to_demo:
   before_script:
