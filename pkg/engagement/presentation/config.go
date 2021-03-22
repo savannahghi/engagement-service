@@ -119,6 +119,16 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path(base.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
 
+	// Upload route.
+	// The reason for the below endpoint is to help upload base64 data.
+	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
+	// that occurs in https://graph-test.bewell.co.ke/ while trying to upload large sized photos
+	// This patch allows for the upload of a photo of any size.
+	r.Path("/upload").Methods(
+		http.MethodPost,
+		http.MethodOptions,
+	).HandlerFunc(h.Upload(ctx))
+
 	// static files
 	schemaFileHandler, err := rest.SchemaHandler()
 	if err != nil {
