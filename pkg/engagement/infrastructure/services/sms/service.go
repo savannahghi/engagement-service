@@ -19,7 +19,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
-// environment names
+// AIT environment variables names
 const (
 	APIKeyEnvVarName       = "AIT_API_KEY"
 	APIUsernameEnvVarName  = "AIT_USERNAME"
