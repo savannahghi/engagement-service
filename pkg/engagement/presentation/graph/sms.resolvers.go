@@ -5,18 +5,49 @@ package graph
 
 import (
 	"context"
+	"fmt"
+	"time"
 
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 )
 
 func (r *mutationResolver) Send(ctx context.Context, to string, message string) (*resources.SendMessageResponse, error) {
+	startTime := time.Now()
+
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	return r.interactor.SMS.Send(to, message)
+	smsResponse, err := r.interactor.SMS.Send(to, message)
+	if err != nil {
+		return nil, fmt.Errorf("unable send SMS: %v", err)
+	}
+
+	defer base.RecordGraphqlResolverMetrics(
+		ctx,
+		startTime,
+		"send",
+		err,
+	)
+
+	return smsResponse, nil
 }
 
 func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []string) (*resources.SendMessageResponse, error) {
+	startTime := time.Now()
+
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	return r.interactor.SMS.SendToMany(message, to)
+	smsResponse, err := r.interactor.SMS.SendToMany(message, to)
+	if err != nil {
+		return nil, fmt.Errorf("unable to send SMS to many: %v", err)
+	}
+
+	defer base.RecordGraphqlResolverMetrics(
+		ctx,
+		startTime,
+		"sendToMany",
+		err,
+	)
+
+	return smsResponse, nil
 }

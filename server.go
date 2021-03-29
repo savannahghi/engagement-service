@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
+	"go.opencensus.io/stats/view"
 
 	log "github.com/sirupsen/logrus"
 
@@ -22,6 +23,19 @@ func main() {
 	if err != nil {
 		base.LogStartupError(ctx, err)
 	}
+
+	if err := view.Register(base.DefaultServiceViews...); err != nil {
+		base.LogStartupError(ctx, err)
+	}
+
+	deferFunc, err := base.EnableStatsAndTraceExporters(
+		ctx,
+		base.MetricsCollectorService("engagement"),
+	)
+	if err != nil {
+		base.LogStartupError(ctx, err)
+	}
+	defer deferFunc()
 
 	port, err := strconv.Atoi(base.MustGetEnvVar(base.PortEnvVarName))
 	if err != nil {
