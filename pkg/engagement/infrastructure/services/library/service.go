@@ -111,7 +111,7 @@ func (s Service) composeRequest(reqType requestType) string {
 
 func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*GhostCMSPost, error) {
 	s.checkPreconditions()
-	url := s.composeRequest(feedRequest)
+	url := s.composeRequest(requestType)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create action request with error; %v", err)
