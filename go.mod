@@ -18,7 +18,6 @@ require (
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/google/pprof v0.0.0-20210323184331-8eee2492667d // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/handlers v1.5.1
@@ -26,7 +25,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imroc/req v0.3.0
 	github.com/labstack/gommon v0.3.0
-	github.com/magefile/mage v1.11.0 // indirect
 	github.com/mailgun/mailgun-go/v4 v4.4.1
 	github.com/markbates/pkger v0.17.1
 	github.com/mattn/go-colorable v0.1.8 // indirect
@@ -38,7 +36,7 @@ require (
 	github.com/ttacon/libphonenumber v1.2.1 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
-	gitlab.slade360emr.com/go/base v0.0.127
+	gitlab.slade360emr.com/go/base v0.0.128
 	go.opencensus.io v0.23.0
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210331212208-0fccb6fa2b5c // indirect
