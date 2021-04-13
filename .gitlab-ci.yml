@@ -1,4 +1,4 @@
-image: eu.gcr.io/savannah-emr/golang-ci-image:0.0.4
+image: eu.gcr.io/savannah-emr/golang-ci-image:0.0.6
 
 stages:
   - test
@@ -6,6 +6,7 @@ stages:
 
 variables:
   GOOGLE_APPLICATION_CREDENTIALS: $CI_PROJECT_DIR/bewell-app-ci.json
+  BEWELL_CLI_VERSION: v0.0.6 #explicit version -> avoid breakages that might occur with different versions
 
 services:
   - name: docker:dind
@@ -17,14 +18,17 @@ lint_and_test:
   before_script:
     - bash decrypt_service_account.sh
     - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
+    - curl -L -o ./install-misspell.sh https://git.io/misspell && sh ./install-misspell.sh
+    - go install gitlab.slade360emr.com/go/admin/cmd/bewell@$BEWELL_CLI_VERSION
   script:
+    - bewell service validate-schema --name engagement --version $CI_COMMIT_SHA --url https://engagement-testing.healthcloud.co.ke/graphql --registry-url $TEST_SCHEMA_REGISTRY_URL
     - staticcheck -show-ignored ./...
     - go fmt $(go list ./... | grep -v /vendor/)
     - go vet $(go list ./... | grep -v /vendor/)
     - golint -set_exit_status $(go list ./... | grep -v /vendor/)
     - errcheck -ignore 'os:.*,' $(go list ./... | grep -v /vendor/)
     - gosec -exclude=G101 ./...
-    - ineffassign ./*  # identify ineffective assignments
+    # - ineffassign ./*  # identify ineffective assignments
     - "gocyclo -over 5 . || :" # display the most complex functions but do not fail the build because of this
     - go-acc -o coverage.txt --ignore generated,main,model ./... -- -timeout 20m
     - grep -v "generated.go" coverage.txt | grep -v "_gen.go" | grep -v "federation.go" | grep -v "generated.go" | grep -v "resolvers.go" | grep -v "resolver.go" | grep -v "server.go" > coverage.out
@@ -72,6 +76,10 @@ deploy_develop_to_testing:
     - /google-cloud-sdk/bin/gcloud config set project bewell-app
     - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
     - export CLOUDSDK_CORE_PROJECT=bewell-app
+    - apk add go git --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community # has latest version of go
+    - export PATH=$PATH:$(go env GOPATH)/bin
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
+    - go install gitlab.slade360emr.com/go/admin/cmd/bewell@$BEWELL_CLI_VERSION
   image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   stage: deploy
   only:
@@ -88,6 +96,7 @@ deploy_develop_to_testing:
     - /google-cloud-sdk/bin/gcloud run deploy engagement-testing --image eu.gcr.io/bewell-app/engagement-testing:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated --memory 1000M --cpu 2 --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,SCHEMA_HOST=$TESTING_SCHEMA_HOST,ENVIRONMENT=$TESTING_ENVIRONMENT,JWT_KEY=$PROD_JWT_KEY,SENTRY_DSN=$PROD_SENTRY_DSN,ROOT_COLLECTION_SUFFIX=$TESTING_ROOT_COLLECTION_SUFFIX,FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY,HOST=$CORE_EDI_API_HOST,API_SCHEME=$CORE_EDI_API_SCHEME,TOKEN_URL=$CORE_EDI_API_TOKEN_URL,AUTH_SERVER_DOMAIN=$CORE_EDI_AUTH_SERVER_DOMAIN,GRANT_TYPE=$CORE_EDI_GRANT_TYPE,USERNAME=$CORE_EDI_USERNAME,PASSWORD=$CORE_EDI_PASSWORD,CLIENT_ID=$CORE_EDI_CLIENT_ID,CLIENT_SECRET=$CORE_EDI_CLIENT_SECRET,AUTH_SERVER_INTROSPECTION_URL=$CORE_AUTH_SERVER_INTROSPECTION_URL,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY,GOOGLE_PROJECT_NUMBER=$TESTING_GOOGLE_PROJECT_NUMBER,SERVICE_HOST=$TESTING_SERVICE_HOST,MAILGUN_API_KEY=$TESTING_MAILGUN_API_KEY,MAILGUN_DOMAIN=$TESTING_MAILGUN_DOMAIN,MAILGUN_FROM=$TESTING_MAILGUN_FROM,SEND_IN_BLUE_API_KEY=$SEND_IN_BLUE_API_KEY,SEND_IN_BLUE_ENABLED=$SEND_IN_BLUE_ENABLED,TWILIO_VIDEO_SID=$TWILIO_VIDEO_SID,TWILIO_VIDEO_SECRET=$TWILIO_VIDEO_SECRET,TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_AUTH_TOKEN=$TWILIO_ACCOUNT_AUTH_TOKEN,TWILIO_SMS_NUMBER=$TWILIO_SMS_NUMBER, TWILIO_MESSAGING_USER=$TWILIO_MESSAGING_USER,TWILIO_MESSAGING_SERVICE_SID=$TWILIO_MESSAGING_SERVICE_SID, TWILIO_MESSAGING_AUTH_TOKEN=$TWILIO_MESSAGING_AUTH_TOKEN,SERVER_PUBLIC_DOMAIN=$PROD_SERVER_PUBLIC_DOMAIN, AIT_API_KEY=$PROD_AIT_API_KEY,AIT_USERNAME=$PROD_AIT_USERNAME, AIT_SENDER_ID=$PROD_AIT_SENDER_ID,AIT_ENVIRONMENT=$PROD_AIT_ENVIRONMENT"
     - /google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker engagement-testing --quiet
     - /google-cloud-sdk/bin/gcloud alpha run services update-traffic engagement-testing --to-latest  --region europe-west1 --platform managed --quiet
+    - bewell service push-schema --name engagement --version $CI_COMMIT_SHA --url https://engagement-testing.healthcloud.co.ke/graphql --registry-url $TEST_SCHEMA_REGISTRY_URL
     - bash reload.sh
   tags:
     - healthcloud-multi
@@ -133,6 +142,10 @@ deploy_master_to_demo:
     - /google-cloud-sdk/bin/gcloud config set project bewell-app
     - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
     - export CLOUDSDK_CORE_PROJECT=bewell-app
+    - apk add go git --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community # has latest version of go
+    - export PATH=$PATH:$(go env GOPATH)/bin
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
+    - go install gitlab.slade360emr.com/go/admin/cmd/bewell@$BEWELL_CLI_VERSION
   image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   stage: deploy
   only:
@@ -149,6 +162,7 @@ deploy_master_to_demo:
     - /google-cloud-sdk/bin/gcloud run deploy engagement-demo --image eu.gcr.io/bewell-app/engagement-demo:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated --memory 512M --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,SCHEMA_HOST=$PROD_SCHEMA_HOST,ENVIRONMENT=$DEMO_ENVIRONMENT,JWT_KEY=$PROD_JWT_KEY,SENTRY_DSN=$PROD_SENTRY_DSN,ROOT_COLLECTION_SUFFIX=$DEMO_ROOT_COLLECTION_SUFFIX,FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY,HOST=$CORE_EDI_API_HOST,API_SCHEME=$CORE_EDI_API_SCHEME,TOKEN_URL=$CORE_EDI_API_TOKEN_URL,AUTH_SERVER_DOMAIN=$CORE_EDI_AUTH_SERVER_DOMAIN,GRANT_TYPE=$CORE_EDI_GRANT_TYPE,USERNAME=$CORE_EDI_USERNAME,PASSWORD=$CORE_EDI_PASSWORD,CLIENT_ID=$CORE_EDI_CLIENT_ID,CLIENT_SECRET=$CORE_EDI_CLIENT_SECRET,AUTH_SERVER_INTROSPECTION_URL=$CORE_AUTH_SERVER_INTROSPECTION_URL,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY,GOOGLE_PROJECT_NUMBER=$TESTING_GOOGLE_PROJECT_NUMBER,SERVICE_HOST=$DEMO_SERVICE_HOST,MAILGUN_API_KEY=$TESTING_MAILGUN_API_KEY,MAILGUN_DOMAIN=$TESTING_MAILGUN_DOMAIN,MAILGUN_FROM=$TESTING_MAILGUN_FROM,SEND_IN_BLUE_API_KEY=$SEND_IN_BLUE_API_KEY,SEND_IN_BLUE_ENABLED=$SEND_IN_BLUE_ENABLED,TWILIO_VIDEO_SID=$TWILIO_VIDEO_SID,TWILIO_VIDEO_SECRET=$TWILIO_VIDEO_SECRET,TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_AUTH_TOKEN=$TWILIO_ACCOUNT_AUTH_TOKEN,TWILIO_SMS_NUMBER=$TWILIO_SMS_NUMBER, TWILIO_MESSAGING_USER=$TWILIO_MESSAGING_USER,TWILIO_MESSAGING_SERVICE_SID=$TWILIO_MESSAGING_SERVICE_SID, TWILIO_MESSAGING_AUTH_TOKEN=$TWILIO_MESSAGING_AUTH_TOKEN,SERVER_PUBLIC_DOMAIN=$PROD_SERVER_PUBLIC_DOMAIN, AIT_API_KEY=$PROD_AIT_API_KEY,AIT_USERNAME=$PROD_AIT_USERNAME, AIT_SENDER_ID=$PROD_AIT_SENDER_ID,AIT_ENVIRONMENT=$PROD_AIT_ENVIRONMENT"
     - /google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker engagement-demo --quiet
     - /google-cloud-sdk/bin/gcloud alpha run services update-traffic engagement-demo --to-latest  --region europe-west1 --platform managed --quiet
+    - bewell service push-schema --name engagement --version $CI_COMMIT_SHA --url https://engagement-demo.healthcloud.co.ke/graphql --registry-url $DEMO_SCHEMA_REGISTRY_URL
     - bash reload.sh
   tags:
     - healthcloud-multi
@@ -159,6 +173,10 @@ deploy_master_to_prod:
     - /google-cloud-sdk/bin/gcloud config set project bewell-app
     - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_PRODUCTION_SERVICE_ACCOUNT
     - export CLOUDSDK_CORE_PROJECT=bewell-app
+    - apk add go git --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community # has latest version of go
+    - export PATH=$PATH:$(go env GOPATH)/bin
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
+    - go install gitlab.slade360emr.com/go/admin/cmd/bewell@$BEWELL_CLI_VERSION
   image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   stage: deploy
   only:
@@ -175,6 +193,7 @@ deploy_master_to_prod:
     - /google-cloud-sdk/bin/gcloud run deploy engagement-prod --image eu.gcr.io/bewell-app/engagement-prod:$(echo $CI_COMMIT_SHA | cut -c1-8) --region europe-west1 --platform managed --allow-unauthenticated --memory 1000M --cpu 2  --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROD_GOOGLE_CLOUD_PROJECT,SCHEMA_HOST=$PROD_SCHEMA_HOST,ENVIRONMENT=$PROD_ENVIRONMENT,JWT_KEY=$PROD_JWT_KEY,SENTRY_DSN=$PROD_SENTRY_DSN,ROOT_COLLECTION_SUFFIX=$PROD_ROOT_COLLECTION_SUFFIX,FIREBASE_WEB_API_KEY=$PROD_FIREBASE_WEB_API_KEY,HOST=$CORE_EDI_API_HOST,API_SCHEME=$CORE_EDI_API_SCHEME,TOKEN_URL=$CORE_EDI_API_TOKEN_URL,AUTH_SERVER_DOMAIN=$CORE_EDI_AUTH_SERVER_DOMAIN,GRANT_TYPE=$CORE_EDI_GRANT_TYPE,USERNAME=$CORE_EDI_USERNAME,PASSWORD=$CORE_EDI_PASSWORD,CLIENT_ID=$CORE_EDI_CLIENT_ID,CLIENT_SECRET=$CORE_EDI_CLIENT_SECRET,AUTH_SERVER_INTROSPECTION_URL=$CORE_AUTH_SERVER_INTROSPECTION_URL,GHOST_CMS_API_ENDPOINT=$GHOST_CMS_API_ENDPOINT,GHOST_CMS_API_KEY=$GHOST_CMS_API_KEY,GOOGLE_PROJECT_NUMBER=$PROD_GOOGLE_PROJECT_NUMBER,SERVICE_HOST=$PROD_SERVICE_HOST,MAILGUN_API_KEY=$PROD_MAILGUN_API_KEY,MAILGUN_DOMAIN=$PROD_MAILGUN_DOMAIN,MAILGUN_FROM=$PROD_MAILGUN_FROM,SEND_IN_BLUE_API_KEY=$SEND_IN_BLUE_API_KEY,SEND_IN_BLUE_ENABLED=$SEND_IN_BLUE_ENABLED,TWILIO_VIDEO_SID=$TWILIO_VIDEO_SID,TWILIO_VIDEO_SECRET=$TWILIO_VIDEO_SECRET,TWILIO_ACCOUNT_SID=$TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_AUTH_TOKEN=$TWILIO_ACCOUNT_AUTH_TOKEN,TWILIO_SMS_NUMBER=$TWILIO_SMS_NUMBER, TWILIO_MESSAGING_USER=$TWILIO_MESSAGING_USER,TWILIO_MESSAGING_SERVICE_SID=$TWILIO_MESSAGING_SERVICE_SID, TWILIO_MESSAGING_AUTH_TOKEN=$TWILIO_MESSAGING_AUTH_TOKEN,SERVER_PUBLIC_DOMAIN=$PROD_SERVER_PUBLIC_DOMAIN, AIT_API_KEY=$PROD_AIT_API_KEY,AIT_USERNAME=$PROD_AIT_USERNAME, AIT_SENDER_ID=$PROD_AIT_SENDER_ID,AIT_ENVIRONMENT=$PROD_AIT_ENVIRONMENT"
     - /google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker engagement-prod --quiet
     - /google-cloud-sdk/bin/gcloud alpha run services update-traffic engagement-prod --to-latest  --region europe-west1 --platform managed --quiet
+    - bewell service push-schema --name engagement --version $CI_COMMIT_SHA --url https://engagement-prod.healthcloud.co.ke/graphql --registry-url $PROD_SCHEMA_REGISTRY_URL
     - bash reload.sh
   tags:
     - healthcloud-multi
