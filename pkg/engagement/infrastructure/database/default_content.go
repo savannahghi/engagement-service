@@ -1564,34 +1564,10 @@ func getProWelcomeThread(
 func getFeedWelcomeVideos() []base.Link {
 	return []base.Link{
 		base.GetYoutubeVideoLink(
-			"https://youtu.be/gcv2Z2AdpjM",
-			"Be.Well lead",
-			"Introducing Be.Well by Slade 360",
-			common.StaticBase+"/items/videos/thumbs/01_lead.png",
-		),
-		base.GetYoutubeVideoLink(
-			"https://youtu.be/W_daZjDET9Q",
-			"Prescription delivery",
-			"Get your medications delivered on Be.Well",
-			common.StaticBase+"/items/videos/thumbs/02_prescription.png",
-		),
-		base.GetYoutubeVideoLink(
-			"https://youtu.be/IbtVBXNvpSA",
-			"Teleconsults",
-			"Consult a doctor on Be.Well",
-			common.StaticBase+"/items/videos/thumbs/03_teleconsult.png",
-		),
-		base.GetYoutubeVideoLink(
 			"https://youtu.be/mKnlXcS3_Z0",
 			"Slade 360",
 			"Slade 360. HealthCare. Simplified.",
 			common.StaticBase+"/items/videos/thumbs/04_slade.png",
-		),
-		base.GetYoutubeVideoLink(
-			"https://youtu.be/XNDLnPfagLQ",
-			"Mental health",
-			"Mental health",
-			common.StaticBase+"/items/videos/thumbs/05_mental_health.png",
 		),
 	}
 }
