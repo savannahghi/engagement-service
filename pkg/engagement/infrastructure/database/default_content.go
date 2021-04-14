@@ -159,9 +159,9 @@ func defaultConsumerNudges(
 	var nudges []base.Nudge
 	fns := []nudgeGenerator{
 		addInsuranceNudge,
-		addNHIFNudge,
 		verifyEmailNudge,
 	}
+	// TODO: return the descoped NHIF nudge
 	for _, fn := range fns {
 		nudge, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
@@ -433,46 +433,6 @@ func addInsuranceNudge(
 	}
 	actions := []base.Action{
 		*addInsuranceAction,
-	}
-	return createNudge(
-		ctx,
-		uid,
-		flavour,
-		title,
-		text,
-		imgURL,
-		title,
-		text,
-		actions,
-		repository,
-	)
-}
-
-func addNHIFNudge(
-	ctx context.Context,
-	uid string,
-	flavour base.Flavour,
-	repository repository.Repository,
-) (*base.Nudge, error) {
-	title := common.AddNHIFNudgeTitle
-	text := "Link your NHIF cover"
-	imgURL := common.StaticBase + "/nudges/add_insurance.png"
-	addNHIFAction, err := createLocalAction(
-		ctx,
-		uid,
-		false,
-		flavour,
-		addNHIFActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
-		repository,
-	)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't create %s action: %w", addNHIFActionName, err)
-	}
-	actions := []base.Action{
-		*addNHIFAction,
 	}
 	return createNudge(
 		ctx,
