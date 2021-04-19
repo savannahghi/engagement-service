@@ -26,7 +26,6 @@ const (
 	getMedicineActionName         = "GET_MEDICINE"
 	getTestActionName             = "GET_TEST"
 	getInsuranceActionName        = "GET_INSURANCE"
-	getCoachingActionName         = "GET_COACHING"
 	addPatientActionName          = "ADD_PATIENT"
 	searchPatientActionName       = "SEARCH_PATIENT"
 	addInsuranceActionName        = "ADD_INSURANCE"
@@ -202,7 +201,6 @@ func defaultConsumerActions(
 	var actions []base.Action
 	fns := []actionGenerator{
 		defaultHelpAction,
-		defaultCoachingAction,
 		defaultGetInsuranceAction,
 		defaultGetTestAction,
 		defaultBuyMedicineAction,
@@ -320,27 +318,6 @@ func defaultGetInsuranceAction(
 		common.StaticBase+"/actions/svg/buy_cover.svg",
 		"Buy Cover",
 		"Buy medical insurance",
-		repository,
-	)
-}
-
-func defaultCoachingAction(
-	ctx context.Context,
-	uid string,
-	flavour base.Flavour,
-	repository repository.Repository,
-) (*base.Action, error) {
-	return createGlobalAction(
-		ctx,
-		uid,
-		false,
-		flavour,
-		getCoachingActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
-		common.StaticBase+"/actions/svg/fitness.svg",
-		"Coaching",
-		"Get Health Coaching",
 		repository,
 	)
 }
@@ -1304,20 +1281,6 @@ func getConsumerWelcomeThread(
 		return nil, err
 	}
 
-	coachingReply, err := getMessage(
-		ctx,
-		uid,
-		flavour,
-		itemID,
-		"I'm the coaching service. I'll link you up to *awesome* wellness and fitness coaches. 👋!",
-		welcome,
-		"Coaching Service",
-		repository,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	insuranceReply, err := getMessage(
 		ctx,
 		uid,
@@ -1325,7 +1288,7 @@ func getConsumerWelcomeThread(
 		itemID,
 		"I'm the insurance service. I'll get you great quotes for medical cover and assist you when you need to use your insurance. 👋!",
 		welcome,
-		"Coaching Service",
+		"Insurance Service",
 		repository,
 	)
 	if err != nil {
@@ -1355,7 +1318,6 @@ func getConsumerWelcomeThread(
 		*consultationsReply,
 		*teleconsultAssistant,
 		*bookingAssistant,
-		*coachingReply,
 		*insuranceReply,
 		*remindersReply,
 	}, nil
@@ -1478,17 +1440,6 @@ func getProWelcomeThread(
 	if err != nil {
 		return nil, err
 	}
-
-	coachingReply, err := getMessage(
-		ctx,
-		uid,
-		flavour,
-		itemID,
-		"I'm the coaching service. I'll help you deliver your *awesome* coaching services to clients. 👋!",
-		welcome,
-		"Coaching Service",
-		repository,
-	)
 	if err != nil {
 		return nil, err
 	}
@@ -1516,7 +1467,6 @@ func getProWelcomeThread(
 		*consultationsReply,
 		*teleconsultAssistant,
 		*bookingAssistant,
-		*coachingReply,
 		*remindersReply,
 	}, nil
 }
