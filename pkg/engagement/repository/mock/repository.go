@@ -218,6 +218,11 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		data resources.CallbackData,
 	) error
+
+	SaveTwilioResponseFn func(
+		ctx context.Context,
+		data resources.Message,
+	) error
 }
 
 // GetFeed ...
@@ -492,4 +497,12 @@ func (f *FakeEngagementRepository) SaveAITCallbackResponse(
 	data resources.CallbackData,
 ) error {
 	return f.SaveAITCallbackResponseFn(ctx, data)
+}
+
+// SaveTwilioResponse saves the callback data for future analysis
+func (f *FakeEngagementRepository) SaveTwilioResponse(
+	ctx context.Context,
+	data resources.Message,
+) error {
+	return f.SaveTwilioResponseFn(ctx, data)
 }

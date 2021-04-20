@@ -7,6 +7,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
 )
 
@@ -18,6 +19,7 @@ type Interactor struct {
 	Library      library.ServiceLibrary
 	SMS          sms.ServiceSMS
 	Mail         mail.ServiceMail
+	Whatsapp     whatsapp.ServiceWhatsapp
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -28,6 +30,7 @@ func NewEngagementInteractor(
 	library library.ServiceLibrary,
 	sms sms.ServiceSMS,
 	mail mail.ServiceMail,
+	whatsapp whatsapp.ServiceWhatsapp,
 ) (*Interactor, error) {
 	return &Interactor{
 		Feed:         feed,
@@ -36,5 +39,6 @@ func NewEngagementInteractor(
 		Library:      library,
 		SMS:          sms,
 		Mail:         mail,
+		Whatsapp:     whatsapp,
 	}, nil
 }

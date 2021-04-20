@@ -140,6 +140,14 @@ type PresentationHandlers interface {
 	SendToMany(ctx context.Context) http.HandlerFunc
 
 	GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc
+
+	GetNotificationHandler(ctx context.Context) http.HandlerFunc
+
+	GetIncomingMessageHandler(ctx context.Context) http.HandlerFunc
+
+	GetFallbackHandler(ctx context.Context) http.HandlerFunc
+
+	PhoneNumberVerificationCodeHandler(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1176,5 +1184,97 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(ctx context.Context)
 			return
 		}
 		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+// GetNotificationHandler returns a handler that processes an Africa's Talking payment notification
+func (p PresentationHandlersImpl) GetNotificationHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &resources.Message{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+		if payload.AccountSID == "" {
+			err := fmt.Errorf("twilio notification payload not parsed correctly")
+			log.Printf("Twilio callback error: %s", err)
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+		}
+
+		// save Twilio response for audit purposes
+		err := p.interactor.Whatsapp.SaveTwilioCallbackResponse(ctx, *payload)
+		if err != nil {
+			err := fmt.Errorf("twilio notification payload not saved")
+			log.Printf("Twilio callback error: %s", err)
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+		}
+		// TODO Common pathway for saving, returning OK etc
+
+		type okResp struct {
+			Status string `json:"status"`
+		}
+		base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+	}
+}
+
+// GetIncomingMessageHandler returns a handler that processes an Africa's Talking payment notification
+func (p PresentationHandlersImpl) GetIncomingMessageHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &resources.Message{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+		if payload.AccountSID == "" {
+			err := fmt.Errorf("twilio notification payload not parsed correctly")
+			log.Printf("Twilio callback error: %s", err)
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+		}
+
+		// save Twilio response for audit purposes
+		err := p.interactor.Whatsapp.SaveTwilioCallbackResponse(ctx, *payload)
+		if err != nil {
+			err := fmt.Errorf("twilio notification payload not saved")
+			log.Printf("Twilio callback error: %s", err)
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+		}
+		// TODO Common pathway for saving, returning OK etc
+
+		type okResp struct {
+			Status string `json:"status"`
+		}
+		base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+	}
+}
+
+// GetFallbackHandler returns a handler that processes an Africa's Talking payment notification
+func (p PresentationHandlersImpl) GetFallbackHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// TODO ErrorCode and ErrorURL sent here as params
+		// TODO Implement WhatsAPP fallback handler: base.DecodeJSONToTargetStruct(w, r, notificationPayload)
+		// base.ErrorMap(fmt.Errorf("unbound mandatory notification payload fields")),
+		// base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+	}
+}
+
+// PhoneNumberVerificationCodeHandler process ISC request to PhoneNumberVerificationCode
+func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(ctx context.Context) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		type PayloadRequest struct {
+			To               string `json:"to"`
+			Code             string `json:"code"`
+			MarketingMessage string `json:"marketingMessage"`
+		}
+
+		payloadRequest := &PayloadRequest{}
+
+		base.DecodeJSONToTargetStruct(rw, r, payloadRequest)
+
+		ok, err := p.interactor.Whatsapp.PhoneNumberVerificationCode(ctx, payloadRequest.To, payloadRequest.Code, payloadRequest.MarketingMessage)
+		if err != nil {
+			base.RespondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+
+		type PayloadResponse struct {
+			Status bool `json:"status"`
+		}
+
+		response := &PayloadResponse{Status: ok}
+		base.WriteJSONResponse(rw, response, http.StatusOK)
 	}
 }

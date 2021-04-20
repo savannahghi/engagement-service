@@ -11,12 +11,7 @@ import (
 	"gitlab.slade360emr.com/go/base"
 )
 
-func (r *mutationResolver) SimpleEmail(
-	ctx context.Context,
-	subject string,
-	text string,
-	to []string,
-) (string, error) {
+func (r *mutationResolver) SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()

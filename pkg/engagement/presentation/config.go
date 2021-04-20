@@ -11,6 +11,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
@@ -92,10 +93,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	}
 	feed := usecases.NewFeed(fr, ns)
 	mail := mail.NewService()
+	whatsapp := whatsapp.NewService()
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail,
+		feed, notification, uploads, library, sms, *mail, whatsapp,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -338,6 +340,27 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		h.GetAITSMSDeliveryCallback(ctx),
 	).Name("AITSendSMSCallback")
 
+	isc.Methods(
+		http.MethodPost,
+	).Path("/twilio_notification").HandlerFunc(
+		h.GetNotificationHandler(ctx),
+	).Name("getNotification")
+
+	isc.Methods(
+		http.MethodPost,
+	).Path("/twilio_incoming_message").HandlerFunc(
+		h.GetIncomingMessageHandler(ctx),
+	).Name("getMessage")
+
+	isc.Methods(
+		http.MethodPost,
+	).Path("/twilio_fallback").HandlerFunc(
+		h.GetFallbackHandler(ctx),
+	).Name("getFallback")
+
+	isc.Path("/verify_phonenumber").Methods(http.MethodPost).HandlerFunc(
+		h.PhoneNumberVerificationCodeHandler(ctx),
+	)
 	// return the combined router
 	return r, nil
 }

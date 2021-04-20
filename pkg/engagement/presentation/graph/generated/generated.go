@@ -21,6 +21,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain/model"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	calendar "google.golang.org/api/calendar/v3"
 )
@@ -43,6 +44,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Dummy() DummyResolver
 	Entity() EntityResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -101,6 +103,10 @@ type ComplexityRoot struct {
 		OrganizationID func(childComplexity int) int
 		Timestamp      func(childComplexity int) int
 		UserID         func(childComplexity int) int
+	}
+
+	Dummy struct {
+		ID func(childComplexity int) int
 	}
 
 	Entity struct {
@@ -237,21 +243,31 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		DeleteMessage     func(childComplexity int, flavour base.Flavour, itemID string, messageID string) int
-		HideFeedItem      func(childComplexity int, flavour base.Flavour, itemID string) int
-		HideNudge         func(childComplexity int, flavour base.Flavour, nudgeID string) int
-		PinFeedItem       func(childComplexity int, flavour base.Flavour, itemID string) int
-		PostMessage       func(childComplexity int, flavour base.Flavour, itemID string, message base.Message) int
-		ProcessEvent      func(childComplexity int, flavour base.Flavour, event base.Event) int
-		ResolveFeedItem   func(childComplexity int, flavour base.Flavour, itemID string) int
-		Send              func(childComplexity int, to string, message string) int
-		SendToMany        func(childComplexity int, message string, to []string) int
-		ShowFeedItem      func(childComplexity int, flavour base.Flavour, itemID string) int
-		ShowNudge         func(childComplexity int, flavour base.Flavour, nudgeID string) int
-		SimpleEmail       func(childComplexity int, subject string, text string, to []string) int
-		UnpinFeedItem     func(childComplexity int, flavour base.Flavour, itemID string) int
-		UnresolveFeedItem func(childComplexity int, flavour base.Flavour, itemID string) int
-		Upload            func(childComplexity int, input base.UploadInput) int
+		BillNotification                func(childComplexity int, to string, productName string, billingPeriod string, billAmount string, paymentInstruction string, marketingMessage string) int
+		ClaimNotification               func(childComplexity int, to string, claimReference string, claimTypeParenthesized string, provider string, visitType string, claimTime string, marketingMessage string) int
+		DeleteMessage                   func(childComplexity int, flavour base.Flavour, itemID string, messageID string) int
+		HideFeedItem                    func(childComplexity int, flavour base.Flavour, itemID string) int
+		HideNudge                       func(childComplexity int, flavour base.Flavour, nudgeID string) int
+		PhoneNumberVerificationCode     func(childComplexity int, to string, code string, marketingMessage string) int
+		PinFeedItem                     func(childComplexity int, flavour base.Flavour, itemID string) int
+		PostMessage                     func(childComplexity int, flavour base.Flavour, itemID string, message base.Message) int
+		PreauthApproval                 func(childComplexity int, to string, currency string, amount string, benefit string, provider string, member string, careContact string, marketingMessage string) int
+		PreauthRequest                  func(childComplexity int, to string, currency string, amount string, benefit string, provider string, requestTime string, member string, careContact string, marketingMessage string) int
+		ProcessEvent                    func(childComplexity int, flavour base.Flavour, event base.Event) int
+		ResolveFeedItem                 func(childComplexity int, flavour base.Flavour, itemID string) int
+		Send                            func(childComplexity int, to string, message string) int
+		SendToMany                      func(childComplexity int, message string, to []string) int
+		ShowFeedItem                    func(childComplexity int, flavour base.Flavour, itemID string) int
+		ShowNudge                       func(childComplexity int, flavour base.Flavour, nudgeID string) int
+		SimpleEmail                     func(childComplexity int, subject string, text string, to []string) int
+		SladeOtp                        func(childComplexity int, to string, name string, otp string, marketingMessage string) int
+		UnpinFeedItem                   func(childComplexity int, flavour base.Flavour, itemID string) int
+		UnresolveFeedItem               func(childComplexity int, flavour base.Flavour, itemID string) int
+		Upload                          func(childComplexity int, input base.UploadInput) int
+		VirtualCards                    func(childComplexity int, to string, wellnessCardFamily string, virtualCardLink string, marketingMessage string) int
+		VisitStart                      func(childComplexity int, to string, memberName string, benefitName string, locationName string, startTime string, balance string, marketingMessage string) int
+		WellnessCardActivationDependant func(childComplexity int, to string, memberName string, cardName string, marketingMessage string) int
+		WellnessCardActivationPrincipal func(childComplexity int, to string, memberName string, cardName string, minorAgeThreshold string, marketingMessage string) int
 	}
 
 	Nudge struct {
@@ -316,6 +332,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type DummyResolver interface {
+	ID(ctx context.Context, obj *resources.Dummy) (*string, error)
+}
 type EntityResolver interface {
 	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
 }
@@ -335,6 +354,16 @@ type MutationResolver interface {
 	Send(ctx context.Context, to string, message string) (*resources.SendMessageResponse, error)
 	SendToMany(ctx context.Context, message string, to []string) (*resources.SendMessageResponse, error)
 	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
+	PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error)
+	WellnessCardActivationDependant(ctx context.Context, to string, memberName string, cardName string, marketingMessage string) (bool, error)
+	WellnessCardActivationPrincipal(ctx context.Context, to string, memberName string, cardName string, minorAgeThreshold string, marketingMessage string) (bool, error)
+	BillNotification(ctx context.Context, to string, productName string, billingPeriod string, billAmount string, paymentInstruction string, marketingMessage string) (bool, error)
+	VirtualCards(ctx context.Context, to string, wellnessCardFamily string, virtualCardLink string, marketingMessage string) (bool, error)
+	VisitStart(ctx context.Context, to string, memberName string, benefitName string, locationName string, startTime string, balance string, marketingMessage string) (bool, error)
+	ClaimNotification(ctx context.Context, to string, claimReference string, claimTypeParenthesized string, provider string, visitType string, claimTime string, marketingMessage string) (bool, error)
+	PreauthApproval(ctx context.Context, to string, currency string, amount string, benefit string, provider string, member string, careContact string, marketingMessage string) (bool, error)
+	PreauthRequest(ctx context.Context, to string, currency string, amount string, benefit string, provider string, requestTime string, member string, careContact string, marketingMessage string) (bool, error)
+	SladeOtp(ctx context.Context, to string, name string, otp string, marketingMessage string) (bool, error)
 }
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
@@ -653,6 +682,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Context.UserID(childComplexity), true
+
+	case "Dummy.id":
+		if e.complexity.Dummy.ID == nil {
+			break
+		}
+
+		return e.complexity.Dummy.ID(childComplexity), true
 
 	case "Entity.findFeedByID":
 		if e.complexity.Entity.FindFeedByID == nil {
@@ -1317,6 +1353,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Msg.Timestamp(childComplexity), true
 
+	case "Mutation.billNotification":
+		if e.complexity.Mutation.BillNotification == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_billNotification_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.BillNotification(childComplexity, args["to"].(string), args["productName"].(string), args["billingPeriod"].(string), args["billAmount"].(string), args["paymentInstruction"].(string), args["marketingMessage"].(string)), true
+
+	case "Mutation.claimNotification":
+		if e.complexity.Mutation.ClaimNotification == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_claimNotification_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ClaimNotification(childComplexity, args["to"].(string), args["claimReference"].(string), args["claimTypeParenthesized"].(string), args["provider"].(string), args["visitType"].(string), args["claimTime"].(string), args["marketingMessage"].(string)), true
+
 	case "Mutation.deleteMessage":
 		if e.complexity.Mutation.DeleteMessage == nil {
 			break
@@ -1353,6 +1413,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.HideNudge(childComplexity, args["flavour"].(base.Flavour), args["nudgeID"].(string)), true
 
+	case "Mutation.phoneNumberVerificationCode":
+		if e.complexity.Mutation.PhoneNumberVerificationCode == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_phoneNumberVerificationCode_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PhoneNumberVerificationCode(childComplexity, args["to"].(string), args["code"].(string), args["marketingMessage"].(string)), true
+
 	case "Mutation.pinFeedItem":
 		if e.complexity.Mutation.PinFeedItem == nil {
 			break
@@ -1376,6 +1448,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.PostMessage(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string), args["message"].(base.Message)), true
+
+	case "Mutation.preauthApproval":
+		if e.complexity.Mutation.PreauthApproval == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_preauthApproval_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PreauthApproval(childComplexity, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string)), true
+
+	case "Mutation.preauthRequest":
+		if e.complexity.Mutation.PreauthRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_preauthRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PreauthRequest(childComplexity, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["requestTime"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string)), true
 
 	case "Mutation.processEvent":
 		if e.complexity.Mutation.ProcessEvent == nil {
@@ -1461,6 +1557,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SimpleEmail(childComplexity, args["subject"].(string), args["text"].(string), args["to"].([]string)), true
 
+	case "Mutation.sladeOTP":
+		if e.complexity.Mutation.SladeOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sladeOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SladeOtp(childComplexity, args["to"].(string), args["name"].(string), args["otp"].(string), args["marketingMessage"].(string)), true
+
 	case "Mutation.unpinFeedItem":
 		if e.complexity.Mutation.UnpinFeedItem == nil {
 			break
@@ -1496,6 +1604,54 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Upload(childComplexity, args["input"].(base.UploadInput)), true
+
+	case "Mutation.virtualCards":
+		if e.complexity.Mutation.VirtualCards == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_virtualCards_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.VirtualCards(childComplexity, args["to"].(string), args["wellnessCardFamily"].(string), args["virtualCardLink"].(string), args["marketingMessage"].(string)), true
+
+	case "Mutation.visitStart":
+		if e.complexity.Mutation.VisitStart == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_visitStart_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.VisitStart(childComplexity, args["to"].(string), args["memberName"].(string), args["benefitName"].(string), args["locationName"].(string), args["startTime"].(string), args["balance"].(string), args["marketingMessage"].(string)), true
+
+	case "Mutation.wellnessCardActivationDependant":
+		if e.complexity.Mutation.WellnessCardActivationDependant == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_wellnessCardActivationDependant_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.WellnessCardActivationDependant(childComplexity, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["marketingMessage"].(string)), true
+
+	case "Mutation.wellnessCardActivationPrincipal":
+		if e.complexity.Mutation.WellnessCardActivationPrincipal == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_wellnessCardActivationPrincipal_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.WellnessCardActivationPrincipal(childComplexity, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["minorAgeThreshold"].(string), args["marketingMessage"].(string)), true
 
 	case "Nudge.actions":
 		if e.complexity.Nudge.Actions == nil {
@@ -2267,6 +2423,109 @@ extend type Mutation {
   upload(input: UploadInput!): Upload!
 }
 `, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/whatsapp.graphql", Input: `extend type Dummy @key(fields: "id") {
+  id: ID @external
+}
+
+extend type Mutation {
+  # Your phone number verification code is {{1}}
+  phoneNumberVerificationCode(
+    to: String!
+    code: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}}, your {{2}} card has been activated. {{3}}
+  wellnessCardActivationDependant(
+    to: String!
+    memberName: String!
+    cardName: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}}, your {{2}} card has been activated. Cards for minors under {{3}} years have also been activated. {{4}}
+  wellnessCardActivationPrincipal(
+    to: String!
+    memberName: String!
+    cardName: String!
+    minorAgeThreshold: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Hello your {{1}} bill for {{2}} of {{3}} is ready. Make payment via {{4}} to continue enjoying the platform. {{5}}
+  billNotification(
+    to: String!
+    productName: String!
+    billingPeriod: String!
+    billAmount: String!
+    paymentInstruction: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Slade 360 virtual Wellness Cards for {{1}} have been created. You can access the virtual cards at {{2}}. {{3}}
+  virtualCards(
+    to: String!
+    wellnessCardFamily: String!
+    virtualCardLink: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}} {{2}} visit has been started at {{3}} on {{4}}.  Your balance is {{5}}. {{6}}
+  visitStart(
+    to: String!
+    memberName: String!
+    benefitName: String!
+    locationName: String!
+    startTime: String!
+    balance: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # A claim of {{1}} {{2}} was lodged by {{3}} for {{4}} visit on {{5}}. {{6}}
+  claimNotification(
+    to: String!
+    claimReference: String!
+    claimTypeParenthesized: String!
+    provider: String!
+    visitType: String!
+    claimTime: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Preauth approval of {{1}} {{2}} for {{3}} benefit at {{4}} for {{5}} has been granted. Contact your care manager at {{6}} for any queries. {{7}}
+  preauthApproval(
+    to: String!
+    currency: String!
+    amount: String!
+    benefit: String!
+    provider: String!
+    member: String!
+    careContact: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Preauth request of {{1}} {{2}} for {{3}} benefit was lodged by {{4}} on {{5}} for the visit by {{6}}. Contact your care manager at {{7}} for any queries. {{8}}
+  preauthRequest(
+    to: String!
+    currency: String!
+    amount: String!
+    benefit: String!
+    provider: String!
+    requestTime: String!
+    member: String!
+    careContact: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}}, your SladeID OTP is {{2}}. {{3}}
+  sladeOTP(
+    to: String!
+    name: String!
+    otp: String!
+    marketingMessage: String!
+  ): Boolean!
+}
+`, BuiltIn: false},
 	{Name: "federation/directives.graphql", Input: `
 scalar _Any
 scalar _FieldSet
@@ -2279,7 +2538,7 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Feed
+union _Entity = Dummy | Feed
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
@@ -2315,6 +2574,135 @@ func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_billNotification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["productName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("productName"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["productName"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["billingPeriod"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("billingPeriod"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["billingPeriod"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["billAmount"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("billAmount"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["billAmount"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["paymentInstruction"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paymentInstruction"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["paymentInstruction"] = arg4
+	var arg5 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg5, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_claimNotification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["claimReference"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("claimReference"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["claimReference"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["claimTypeParenthesized"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("claimTypeParenthesized"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["claimTypeParenthesized"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["provider"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["provider"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["visitType"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visitType"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["visitType"] = arg4
+	var arg5 string
+	if tmp, ok := rawArgs["claimTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("claimTime"))
+		arg5, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["claimTime"] = arg5
+	var arg6 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg6, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg6
 	return args, nil
 }
 
@@ -2399,6 +2787,39 @@ func (ec *executionContext) field_Mutation_hideNudge_args(ctx context.Context, r
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_phoneNumberVerificationCode_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["code"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_pinFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2453,6 +2874,171 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 		}
 	}
 	args["message"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_preauthApproval_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["currency"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currency"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["currency"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["amount"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["amount"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["benefit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benefit"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["benefit"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["provider"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["provider"] = arg4
+	var arg5 string
+	if tmp, ok := rawArgs["member"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("member"))
+		arg5, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["member"] = arg5
+	var arg6 string
+	if tmp, ok := rawArgs["careContact"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("careContact"))
+		arg6, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["careContact"] = arg6
+	var arg7 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg7, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg7
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_preauthRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["currency"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currency"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["currency"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["amount"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["amount"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["benefit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benefit"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["benefit"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["provider"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("provider"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["provider"] = arg4
+	var arg5 string
+	if tmp, ok := rawArgs["requestTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("requestTime"))
+		arg5, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["requestTime"] = arg5
+	var arg6 string
+	if tmp, ok := rawArgs["member"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("member"))
+		arg6, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["member"] = arg6
+	var arg7 string
+	if tmp, ok := rawArgs["careContact"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("careContact"))
+		arg7, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["careContact"] = arg7
+	var arg8 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg8, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg8
 	return args, nil
 }
 
@@ -2633,6 +3219,48 @@ func (ec *executionContext) field_Mutation_simpleEmail_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_sladeOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["otp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("otp"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["otp"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg3
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_unpinFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2693,6 +3321,210 @@ func (ec *executionContext) field_Mutation_upload_args(ctx context.Context, rawA
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_virtualCards_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["wellnessCardFamily"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("wellnessCardFamily"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["wellnessCardFamily"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["virtualCardLink"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("virtualCardLink"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["virtualCardLink"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_visitStart_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["memberName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberName"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["memberName"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["benefitName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("benefitName"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["benefitName"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["locationName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationName"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["locationName"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["startTime"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startTime"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["startTime"] = arg4
+	var arg5 string
+	if tmp, ok := rawArgs["balance"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("balance"))
+		arg5, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["balance"] = arg5
+	var arg6 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg6, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg6
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_wellnessCardActivationDependant_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["memberName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberName"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["memberName"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["cardName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cardName"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["cardName"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_wellnessCardActivationPrincipal_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["to"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["to"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["memberName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberName"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["memberName"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["cardName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cardName"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["cardName"] = arg2
+	var arg3 string
+	if tmp, ok := rawArgs["minorAgeThreshold"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("minorAgeThreshold"))
+		arg3, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["minorAgeThreshold"] = arg3
+	var arg4 string
+	if tmp, ok := rawArgs["marketingMessage"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("marketingMessage"))
+		arg4, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["marketingMessage"] = arg4
 	return args, nil
 }
 
@@ -4333,6 +5165,38 @@ func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphq
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.CollectedField, obj *resources.Dummy) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Dummy",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dummy().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -5419,7 +6283,7 @@ func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql
 	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FilterParams_labels(ctx context.Context, field graphql.CollectedField, obj *helpers.FilterParams) (ret graphql.Marshaler) {
+func (ec *executionContext) _FilterParams_labels(ctx context.Context, field graphql.CollectedField, obj *model.FilterParams) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5446,9 +6310,9 @@ func (ec *executionContext) _FilterParams_labels(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]string)
+	res := resTmp.([]*string)
 	fc.Result = res
-	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
@@ -8212,6 +9076,426 @@ func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.
 	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_phoneNumberVerificationCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_phoneNumberVerificationCode_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PhoneNumberVerificationCode(rctx, args["to"].(string), args["code"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_wellnessCardActivationDependant(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_wellnessCardActivationDependant_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().WellnessCardActivationDependant(rctx, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_wellnessCardActivationPrincipal(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_wellnessCardActivationPrincipal_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().WellnessCardActivationPrincipal(rctx, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["minorAgeThreshold"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_billNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_billNotification_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().BillNotification(rctx, args["to"].(string), args["productName"].(string), args["billingPeriod"].(string), args["billAmount"].(string), args["paymentInstruction"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_virtualCards(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_virtualCards_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().VirtualCards(rctx, args["to"].(string), args["wellnessCardFamily"].(string), args["virtualCardLink"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_visitStart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_visitStart_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().VisitStart(rctx, args["to"].(string), args["memberName"].(string), args["benefitName"].(string), args["locationName"].(string), args["startTime"].(string), args["balance"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_claimNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_claimNotification_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ClaimNotification(rctx, args["to"].(string), args["claimReference"].(string), args["claimTypeParenthesized"].(string), args["provider"].(string), args["visitType"].(string), args["claimTime"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_preauthApproval(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_preauthApproval_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PreauthApproval(rctx, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_preauthRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_preauthRequest_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PreauthRequest(rctx, args["to"].(string), args["currency"].(string), args["amount"].(string), args["benefit"].(string), args["provider"].(string), args["requestTime"].(string), args["member"].(string), args["careContact"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_sladeOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_sladeOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SladeOtp(rctx, args["to"].(string), args["name"].(string), args["otp"].(string), args["marketingMessage"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -10927,6 +12211,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case resources.Dummy:
+		return ec._Dummy(ctx, sel, &obj)
+	case *resources.Dummy:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Dummy(ctx, sel, obj)
 	case domain.Feed:
 		return ec._Feed(ctx, sel, &obj)
 	case *domain.Feed:
@@ -11193,6 +12484,39 @@ func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var dummyImplementors = []string{"Dummy", "_Entity"}
+
+func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, obj *resources.Dummy) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dummyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Dummy")
+		case "id":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dummy_id(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11500,7 +12824,7 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 
 var filterParamsImplementors = []string{"FilterParams"}
 
-func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.SelectionSet, obj *helpers.FilterParams) graphql.Marshaler {
+func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.SelectionSet, obj *model.FilterParams) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, filterParamsImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -12012,6 +13336,56 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "upload":
 			out.Values[i] = ec._Mutation_upload(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "phoneNumberVerificationCode":
+			out.Values[i] = ec._Mutation_phoneNumberVerificationCode(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "wellnessCardActivationDependant":
+			out.Values[i] = ec._Mutation_wellnessCardActivationDependant(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "wellnessCardActivationPrincipal":
+			out.Values[i] = ec._Mutation_wellnessCardActivationPrincipal(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "billNotification":
+			out.Values[i] = ec._Mutation_billNotification(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "virtualCards":
+			out.Values[i] = ec._Mutation_virtualCards(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "visitStart":
+			out.Values[i] = ec._Mutation_visitStart(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "claimNotification":
+			out.Values[i] = ec._Mutation_claimNotification(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "preauthApproval":
+			out.Values[i] = ec._Mutation_preauthApproval(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "preauthRequest":
+			out.Values[i] = ec._Mutation_preauthRequest(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sladeOTP":
+			out.Values[i] = ec._Mutation_sladeOTP(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -13907,6 +15281,21 @@ func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emr�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalID(*v)
+}
+
 func (ec *executionContext) marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {
 	return ec._Link(ctx, sel, &v)
 }
@@ -14070,6 +15459,42 @@ func (ec *executionContext) marshalOString2ᚕstring(ctx context.Context, sel as
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalOString2string(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret

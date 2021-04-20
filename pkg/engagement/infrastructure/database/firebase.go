@@ -37,6 +37,8 @@ const (
 	// callback data will be saved for future analysis
 	AITCallbackCollectionName = "ait_callbacks"
 
+	twilioCallbackCollectionName = "twilio_callbacks"
+
 	labelsDocID            = "item_labels"
 	unreadInboxCountsDocID = "unread_inbox_counts"
 
@@ -724,6 +726,11 @@ func (fr Repository) getAITCallbackCollectionName() string {
 	return suffixed
 }
 
+func (fr Repository) getTwilioCallbackCollectionName() string {
+	suffixed := base.SuffixCollection(twilioCallbackCollectionName)
+	return suffixed
+}
+
 func (fr Repository) getUserCollection(
 	uid string,
 	flavour base.Flavour,
@@ -1376,6 +1383,24 @@ func (fr Repository) SaveAITCallbackResponse(
 	}
 
 	collectionName := fr.getAITCallbackCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
+	if err != nil {
+		return fmt.Errorf("unable to save callback response")
+	}
+
+	return nil
+}
+
+// SaveTwilioResponse saves the callback data
+func (fr Repository) SaveTwilioResponse(
+	ctx context.Context,
+	data resources.Message,
+) error {
+	if err := fr.checkPreconditions(); err != nil {
+		return fmt.Errorf("repository precondition check failed: %w", err)
+	}
+
+	collectionName := fr.getTwilioCallbackCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
 	if err != nil {
 		return fmt.Errorf("unable to save callback response")

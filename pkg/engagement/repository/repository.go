@@ -221,4 +221,9 @@ type Repository interface {
 		ctx context.Context,
 		data resources.CallbackData,
 	) error
+
+	SaveTwilioResponse(
+		ctx context.Context,
+		data resources.Message,
+	) error
 }

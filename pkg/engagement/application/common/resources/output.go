@@ -36,3 +36,58 @@ type SendMessageResponse struct {
 type CallbackData struct {
 	Values map[string][]string `json:"values,omitempty" firestore:"values,omitempty"`
 }
+
+// Message is a Twilio WhatsApp or SMS message
+type Message struct {
+	ID                  string            `json:"id" firestore:"id"`
+	AccountSID          string            `json:"account_sid" firestore:"account_sid"`
+	APIVersion          string            `json:"api_version" firestore:"api_version"`
+	Body                string            `json:"body" firestore:"body"`
+	DateCreated         string            `json:"date_created" firestore:"date_created"`
+	DateSent            string            `json:"date_sent" firestore:"date_sent"`
+	DateUpdated         string            `json:"date_updated" firestore:"date_updated"`
+	Direction           string            `json:"direction" firestore:"direction"`
+	ErrorCode           *string           `json:"error_code" firestore:"error_code"`
+	ErrorMessage        *string           `json:"error_message" firestore:"error_message"`
+	From                string            `json:"from" firestore:"from"`
+	MessagingServiceSID string            `json:"messaging_service_sid" firestore:"messaging_service_sid"`
+	NumMedia            string            `json:"num_media" firestore:"num_media"`
+	NumSegments         string            `json:"num_segments" firestore:"num_segments"`
+	Price               *string           `json:"price" firestore:"price"`
+	PriceUnit           *string           `json:"price_unit" firestore:"price_unit"`
+	SID                 string            `json:"sid" firestore:"sid"`
+	Status              string            `json:"status" firestore:"status"`
+	SubresourceURLs     map[string]string `json:"subresource_uris" firestore:"subresource_uris"`
+	To                  string            `json:"to" firestore:"to"`
+	URI                 string            `json:"uri" firestore:"uri"`
+}
+
+// IsNode is a "label" that marks this struct (and those that embed it) as
+// implementations of the "Base" interface defined in our GraphQL schema.
+func (c *Message) IsNode() {}
+
+// GetID returns the struct's ID value
+func (c *Message) GetID() base.ID {
+	return base.IDValue(c.ID)
+}
+
+// SetID sets the struct's ID value
+func (c *Message) SetID(id string) {
+	c.ID = id
+}
+
+// Dummy ..
+type Dummy struct {
+	id string
+}
+
+//IsEntity ...
+func (d Dummy) IsEntity() {}
+
+// IsNode ..
+func (d *Dummy) IsNode() {}
+
+// SetID sets the trace's ID
+func (d *Dummy) SetID(id string) {
+	d.id = id
+}
