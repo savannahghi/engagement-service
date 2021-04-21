@@ -9,6 +9,8 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
+
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -148,6 +150,14 @@ type PresentationHandlers interface {
 	GetFallbackHandler(ctx context.Context) http.HandlerFunc
 
 	PhoneNumberVerificationCodeHandler(ctx context.Context) http.HandlerFunc
+
+	SendOTPHandler() http.HandlerFunc
+
+	SendRetryOTPHandler(ctx context.Context) http.HandlerFunc
+
+	VerifyRetryOTPHandler(ctx context.Context) http.HandlerFunc
+
+	VerifyRetryEmailOTPHandler(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1276,5 +1286,88 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(ctx context
 
 		response := &PayloadResponse{Status: ok}
 		base.WriteJSONResponse(rw, response, http.StatusOK)
+	}
+}
+
+// SendOTPHandler is an isc api that generates and sends an otp to an msisdn
+func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s := otp.NewService()
+		msisdn, err := otp.ValidateSendOTPPayload(w, r)
+		if err != nil {
+			base.ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+
+		code, codeErr := s.GenerateAndSendOTP(msisdn)
+		if codeErr != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(fmt.Errorf("unable to generate and send otp: %v", codeErr)), http.StatusInternalServerError)
+		}
+
+		base.WriteJSONResponse(w, code, http.StatusOK)
+	}
+}
+
+// SendRetryOTPHandler is an isc api that generates
+// fallback OTPs when Africa is talking sms fails
+func (p PresentationHandlersImpl) SendRetryOTPHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s := otp.NewService()
+		payload, err := otp.ValidateGenerateRetryOTPPayload(w, r)
+		if err != nil {
+			base.ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+		code, codeErr := s.GenerateRetryOTP(ctx, payload.Msisdn, payload.RetryStep)
+		if codeErr != nil {
+			err := base.ErrorMap(fmt.Errorf("unable to generate and send a fallback OTP: %v", codeErr))
+			base.WriteJSONResponse(w, err, http.StatusInternalServerError)
+		}
+
+		base.WriteJSONResponse(w, code, http.StatusOK)
+	}
+}
+
+// VerifyRetryOTPHandler is an isc api that confirms OTPs earlier sent
+func (p PresentationHandlersImpl) VerifyRetryOTPHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s := otp.NewService()
+		payload, err := otp.ValidateVerifyOTPPayload(w, r, false)
+		if err != nil {
+			base.ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+		isVerified, err := s.VerifyOtp(ctx, payload.Msisdn, payload.VerificationCode)
+		if err != nil {
+			base.ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+		type otpResponse struct {
+			IsVerified bool `json:"IsVerified"`
+		}
+
+		base.WriteJSONResponse(w, otpResponse{IsVerified: isVerified}, http.StatusOK)
+	}
+}
+
+// VerifyRetryEmailOTPHandler is an isc api that confirms OTPs earlier sent via email.
+func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s := otp.NewService()
+		payload, err := otp.ValidateVerifyOTPPayload(w, r, true)
+		if err != nil {
+			base.ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+		isVerified, err := s.VerifyEmailOtp(ctx, payload.Email, payload.VerificationCode)
+		if err != nil {
+			base.ReportErr(w, err, http.StatusBadRequest)
+			return
+		}
+		type otpResponse struct {
+			IsVerified bool `json:"IsVerified"`
+		}
+
+		base.WriteJSONResponse(w, otpResponse{IsVerified: isVerified}, http.StatusOK)
 	}
 }

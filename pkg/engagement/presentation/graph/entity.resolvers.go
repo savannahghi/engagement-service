@@ -9,9 +9,14 @@ import (
 	"strings"
 
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
+
+func (r *entityResolver) FindDummyByID(ctx context.Context, id *string) (*resources.Dummy, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
 func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.Feed, error) {
 	r.checkPreconditions()

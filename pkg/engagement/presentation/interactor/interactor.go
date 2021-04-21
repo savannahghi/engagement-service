@@ -5,6 +5,7 @@ package interactor
 import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
@@ -20,6 +21,7 @@ type Interactor struct {
 	SMS          sms.ServiceSMS
 	Mail         mail.ServiceMail
 	Whatsapp     whatsapp.ServiceWhatsapp
+	OTP          otp.ServiceOTP
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -31,6 +33,7 @@ func NewEngagementInteractor(
 	sms sms.ServiceSMS,
 	mail mail.ServiceMail,
 	whatsapp whatsapp.ServiceWhatsapp,
+	otp otp.ServiceOTP,
 ) (*Interactor, error) {
 	return &Interactor{
 		Feed:         feed,
@@ -40,5 +43,6 @@ func NewEngagementInteractor(
 		SMS:          sms,
 		Mail:         mail,
 		Whatsapp:     whatsapp,
+		OTP:          otp,
 	}, nil
 }

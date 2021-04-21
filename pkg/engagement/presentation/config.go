@@ -10,6 +10,7 @@ import (
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 
@@ -94,10 +95,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	feed := usecases.NewFeed(fr, ns)
 	mail := mail.NewService()
 	whatsapp := whatsapp.NewService()
+	otp := otp.NewService()
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp,
+		feed, notification, uploads, library, sms, *mail, whatsapp, otp,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -361,6 +363,22 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	isc.Path("/verify_phonenumber").Methods(http.MethodPost).HandlerFunc(
 		h.PhoneNumberVerificationCodeHandler(ctx),
 	)
+
+	isc.Path("/send_otp/").Methods(
+		http.MethodPost, http.MethodOptions,
+	).HandlerFunc(h.SendOTPHandler())
+
+	isc.Path("/send_retry_otp/").Methods(
+		http.MethodPost, http.MethodOptions,
+	).HandlerFunc(h.SendRetryOTPHandler(ctx))
+
+	isc.Path("/verify_otp/").Methods(
+		http.MethodPost, http.MethodOptions,
+	).HandlerFunc(h.VerifyRetryOTPHandler(ctx))
+
+	isc.Path("/verify_email_otp/").Methods(
+		http.MethodPost, http.MethodOptions,
+	).HandlerFunc(h.VerifyRetryEmailOTPHandler(ctx))
 	// return the combined router
 	return r, nil
 }

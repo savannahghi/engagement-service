@@ -1,0 +1,18 @@
+type Dummy @key(fields: "id") {
+  id: ID
+}
+
+extend type Query {
+  # the msisdn should be a fully qualified phone number
+  # e.g +254723002959
+  generateOTP(msisdn: String!): String!
+  generateAndEmailOTP(msisdn: String!, email: String): String!
+  generateRetryOTP(msisdn: String!, retryStep: Int!): String!
+  emailVerificationOTP(email: String!): String!
+}
+
+extend type Mutation {
+  verifyOTP(msisdn: String!, otp: String!): Boolean!
+  verifyEmailOTP(email: String!, otp: String!): Boolean!
+}
+

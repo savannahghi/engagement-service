@@ -109,7 +109,8 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindFeedByID func(childComplexity int, id string) int
+		FindDummyByID func(childComplexity int, id *string) int
+		FindFeedByID  func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -263,6 +264,8 @@ type ComplexityRoot struct {
 		UnpinFeedItem                   func(childComplexity int, flavour base.Flavour, itemID string) int
 		UnresolveFeedItem               func(childComplexity int, flavour base.Flavour, itemID string) int
 		Upload                          func(childComplexity int, input base.UploadInput) int
+		VerifyEmailOtp                  func(childComplexity int, email string, otp string) int
+		VerifyOtp                       func(childComplexity int, msisdn string, otp string) int
 		VirtualCards                    func(childComplexity int, to string, wellnessCardFamily string, virtualCardLink string, marketingMessage string) int
 		VisitStart                      func(childComplexity int, to string, memberName string, benefitName string, locationName string, startTime string, balance string, marketingMessage string) int
 		WellnessCardActivationDependant func(childComplexity int, to string, memberName string, cardName string, marketingMessage string) int
@@ -289,7 +292,11 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		EmailVerificationOtp  func(childComplexity int, email string) int
 		FindUploadByID        func(childComplexity int, id string) int
+		GenerateAndEmailOtp   func(childComplexity int, msisdn string, email *string) int
+		GenerateOtp           func(childComplexity int, msisdn string) int
+		GenerateRetryOtp      func(childComplexity int, msisdn string, retryStep int) int
 		GetFaqsContent        func(childComplexity int) int
 		GetFeed               func(childComplexity int, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
@@ -335,6 +342,7 @@ type DummyResolver interface {
 	ID(ctx context.Context, obj *resources.Dummy) (*string, error)
 }
 type EntityResolver interface {
+	FindDummyByID(ctx context.Context, id *string) (*resources.Dummy, error)
 	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
 }
 type MutationResolver interface {
@@ -350,6 +358,8 @@ type MutationResolver interface {
 	DeleteMessage(ctx context.Context, flavour base.Flavour, itemID string, messageID string) (bool, error)
 	ProcessEvent(ctx context.Context, flavour base.Flavour, event base.Event) (bool, error)
 	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
+	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
+	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
 	Send(ctx context.Context, to string, message string) (*resources.SendMessageResponse, error)
 	SendToMany(ctx context.Context, message string, to []string) (*resources.SendMessageResponse, error)
 	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
@@ -370,6 +380,10 @@ type QueryResolver interface {
 	GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour base.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour base.Flavour) (int, error)
+	GenerateOtp(ctx context.Context, msisdn string) (string, error)
+	GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string) (string, error)
+	GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int) (string, error)
+	EmailVerificationOtp(ctx context.Context, email string) (string, error)
 	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
 
@@ -688,6 +702,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Dummy.ID(childComplexity), true
+
+	case "Entity.findDummyByID":
+		if e.complexity.Entity.FindDummyByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findDummyByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindDummyByID(childComplexity, args["id"].(*string)), true
 
 	case "Entity.findFeedByID":
 		if e.complexity.Entity.FindFeedByID == nil {
@@ -1604,6 +1630,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Upload(childComplexity, args["input"].(base.UploadInput)), true
 
+	case "Mutation.verifyEmailOTP":
+		if e.complexity.Mutation.VerifyEmailOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_verifyEmailOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.VerifyEmailOtp(childComplexity, args["email"].(string), args["otp"].(string)), true
+
+	case "Mutation.verifyOTP":
+		if e.complexity.Mutation.VerifyOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_verifyOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.VerifyOtp(childComplexity, args["msisdn"].(string), args["otp"].(string)), true
+
 	case "Mutation.virtualCards":
 		if e.complexity.Mutation.VirtualCards == nil {
 			break
@@ -1743,6 +1793,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Payload.Data(childComplexity), true
 
+	case "Query.emailVerificationOTP":
+		if e.complexity.Query.EmailVerificationOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Query_emailVerificationOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.EmailVerificationOtp(childComplexity, args["email"].(string)), true
+
 	case "Query.findUploadByID":
 		if e.complexity.Query.FindUploadByID == nil {
 			break
@@ -1754,6 +1816,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.FindUploadByID(childComplexity, args["id"].(string)), true
+
+	case "Query.generateAndEmailOTP":
+		if e.complexity.Query.GenerateAndEmailOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Query_generateAndEmailOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GenerateAndEmailOtp(childComplexity, args["msisdn"].(string), args["email"].(*string)), true
+
+	case "Query.generateOTP":
+		if e.complexity.Query.GenerateOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Query_generateOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GenerateOtp(childComplexity, args["msisdn"].(string)), true
+
+	case "Query.generateRetryOTP":
+		if e.complexity.Query.GenerateRetryOtp == nil {
+			break
+		}
+
+		args, err := ec.field_Query_generateRetryOTP_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GenerateRetryOtp(childComplexity, args["msisdn"].(string), args["retryStep"].(int)), true
 
 	case "Query.getFaqsContent":
 		if e.complexity.Query.GetFaqsContent == nil {
@@ -2364,6 +2462,25 @@ type Query {
 	{Name: "pkg/engagement/presentation/graph/mailgun.graphql", Input: `extend type Mutation {
   simpleEmail(subject: String!, text: String!, to: [String!]!): String!
 }`, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/otp.graphql", Input: `type Dummy @key(fields: "id") {
+  id: ID
+}
+
+extend type Query {
+  # the msisdn should be a fully qualified phone number
+  # e.g +254723002959
+  generateOTP(msisdn: String!): String!
+  generateAndEmailOTP(msisdn: String!, email: String): String!
+  generateRetryOTP(msisdn: String!, retryStep: Int!): String!
+  emailVerificationOTP(email: String!): String!
+}
+
+extend type Mutation {
+  verifyOTP(msisdn: String!, otp: String!): Boolean!
+  verifyEmailOTP(email: String!, otp: String!): Boolean!
+}
+
+`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/sms.graphql", Input: `extend type Mutation {
     send(
         to: String!
@@ -2423,11 +2540,7 @@ extend type Mutation {
   upload(input: UploadInput!): Upload!
 }
 `, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/whatsapp.graphql", Input: `extend type Dummy @key(fields: "id") {
-  id: ID @external
-}
-
-extend type Mutation {
+	{Name: "pkg/engagement/presentation/graph/whatsapp.graphql", Input: `extend type Mutation {
   # Your phone number verification code is {{1}}
   phoneNumberVerificationCode(
     to: String!
@@ -2542,7 +2655,8 @@ union _Entity = Dummy | Feed
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
-		findFeedByID(id: String!,): Feed!
+		findDummyByID(id: ID,): Dummy!
+	findFeedByID(id: String!,): Feed!
 
 }
 
@@ -2561,6 +2675,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Entity_findDummyByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -3324,6 +3453,54 @@ func (ec *executionContext) field_Mutation_upload_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_verifyEmailOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["email"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["otp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("otp"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["otp"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_verifyOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["msisdn"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("msisdn"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["msisdn"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["otp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("otp"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["otp"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_virtualCards_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3558,6 +3735,21 @@ func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_emailVerificationOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["email"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_findUploadByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3570,6 +3762,69 @@ func (ec *executionContext) field_Query_findUploadByID_args(ctx context.Context,
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_generateAndEmailOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["msisdn"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("msisdn"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["msisdn"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["email"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_generateOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["msisdn"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("msisdn"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["msisdn"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_generateRetryOTP_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["msisdn"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("msisdn"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["msisdn"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["retryStep"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("retryStep"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["retryStep"] = arg1
 	return args, nil
 }
 
@@ -5195,6 +5450,48 @@ func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.Collect
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Entity_findDummyByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindDummyByID(rctx, args["id"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*resources.Dummy)
+	fc.Result = res
+	return ec.marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐDummy(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -8950,6 +9247,90 @@ func (ec *executionContext) _Mutation_simpleEmail(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_verifyOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_verifyOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().VerifyOtp(rctx, args["msisdn"].(string), args["otp"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_verifyEmailOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_verifyEmailOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().VerifyEmailOtp(rctx, args["email"].(string), args["otp"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_send(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -10127,6 +10508,174 @@ func (ec *executionContext) _Query_unreadPersistentItems(ctx context.Context, fi
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_generateOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_generateOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GenerateOtp(rctx, args["msisdn"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_generateAndEmailOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_generateAndEmailOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GenerateAndEmailOtp(rctx, args["msisdn"].(string), args["email"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_generateRetryOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_generateRetryOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GenerateRetryOtp(rctx, args["msisdn"].(string), args["retryStep"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_emailVerificationOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_emailVerificationOTP_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().EmailVerificationOtp(rctx, args["email"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_findUploadByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -12543,6 +13092,20 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
+		case "findDummyByID":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findDummyByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "findFeedByID":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -13324,6 +13887,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "verifyOTP":
+			out.Values[i] = ec._Mutation_verifyOTP(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "verifyEmailOTP":
+			out.Values[i] = ec._Mutation_verifyEmailOTP(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "send":
 			out.Values[i] = ec._Mutation_send(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -13571,6 +14144,62 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_unreadPersistentItems(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "generateOTP":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_generateOTP(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "generateAndEmailOTP":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_generateAndEmailOTP(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "generateRetryOTP":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_generateRetryOTP(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "emailVerificationOTP":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_emailVerificationOTP(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -14165,6 +14794,20 @@ func (ec *executionContext) marshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋg
 func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx context.Context, v interface{}) (base.Context, error) {
 	res, err := ec.unmarshalInputContextInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDummy2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐDummy(ctx context.Context, sel ast.SelectionSet, v resources.Dummy) graphql.Marshaler {
+	return ec._Dummy(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐDummy(ctx context.Context, sel ast.SelectionSet, v *resources.Dummy) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Dummy(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNEventAttachment2ᚕᚖgoogleᚗgolangᚗorgᚋapiᚋcalendarᚋv3ᚐEventAttachmentᚄ(ctx context.Context, sel ast.SelectionSet, v []*calendar.EventAttachment) graphql.Marshaler {

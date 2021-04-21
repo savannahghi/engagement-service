@@ -23,6 +23,7 @@ import (
 	mockMessaging "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	mockOnboarding "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding/mock"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
@@ -78,8 +79,10 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 
 	whatsapp := whatsapp.NewService()
 
+	otp := otp.NewService()
+
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp,
+		feed, notification, uploads, library, sms, *mail, whatsapp, otp,
 	)
 
 	if err != nil {

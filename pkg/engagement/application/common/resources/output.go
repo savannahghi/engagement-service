@@ -1,6 +1,10 @@
 package resources
 
-import "gitlab.slade360emr.com/go/base"
+import (
+	"time"
+
+	"gitlab.slade360emr.com/go/base"
+)
 
 // NotificationEnvelope is used to "wrap" elements with context and metadata
 // before they are sent as notifications.
@@ -90,4 +94,34 @@ func (d *Dummy) IsNode() {}
 // SetID sets the trace's ID
 func (d *Dummy) SetID(id string) {
 	d.id = id
+}
+
+// OTP is used to persist and verify authorization codes
+// (single use 'One Time PIN's)
+type OTP struct {
+	MSISDN            string    `json:"msisdn,omitempty" firestore:"msisdn"`
+	Message           string    `json:"message,omitempty" firestore:"message"`
+	AuthorizationCode string    `json:"authorizationCode,omitempty" firestore:"authorizationCode"`
+	Timestamp         time.Time `json:"timestamp,omitempty" firestore:"timestamp"`
+	IsValid           bool      `json:"isValid,omitempty" firestore:"isValid"`
+	Email             string    `json:"email,omitempty" firestore:"email"`
+}
+
+// Msisdn is an input struct for a generating and sending an otp request
+type Msisdn struct {
+	Msisdn string `json:"msisdn"`
+}
+
+// GenerateRetryOTP is an input struct for generating and
+// sending fallback otp
+type GenerateRetryOTP struct {
+	Msisdn    *string `json:"msisdn"`
+	RetryStep int     `json:"retryStep"`
+}
+
+// VerifyOTP is an input struct for confirming an otp
+type VerifyOTP struct {
+	Msisdn           *string `json:"msisdn"`
+	Email            *string `json:"email"`
+	VerificationCode *string `json:"verificationCode"`
 }
