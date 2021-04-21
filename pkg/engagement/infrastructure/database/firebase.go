@@ -165,7 +165,17 @@ func (fr Repository) GetFeed(
 		// this recursion is potentially dangerous but there's an integration test
 		// that exercises this and reduces the risk of infinite recursion
 		// we need to do this in order to have confidence that the initialization succeeded
-		return fr.GetFeed(ctx, uid, isAnonymous, flavour, persistent, status, visibility, expired, filterParams)
+		return fr.GetFeed(
+			ctx,
+			uid,
+			isAnonymous,
+			flavour,
+			persistent,
+			status,
+			visibility,
+			expired,
+			filterParams,
+		)
 	}
 
 	feed := &domain.Feed{

@@ -366,7 +366,7 @@ func (p PresentationHandlersImpl) GetFeed(
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
-		marshalled, err := json.Marshal(feed)
+		marshalled, err := feed.ValidateAndMarshal()
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return

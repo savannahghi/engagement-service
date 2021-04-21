@@ -1205,16 +1205,29 @@ func feedItemFromCMSPost(post library.GhostCMSPost) base.Item {
 
 func getLinks(post library.GhostCMSPost) []base.Link {
 	featureImageLink := post.FeatureImage
+	defaultLinkTitle := "CMS Item default Icon"
 	if strings.HasSuffix(featureImageLink, ".png") {
 		return []base.Link{
 			{
-				ID:       ksuid.New().String(),
-				URL:      featureImageLink,
-				LinkType: base.LinkTypePngImage,
+				ID:          ksuid.New().String(),
+				URL:         featureImageLink,
+				LinkType:    base.LinkTypePngImage,
+				Title:       defaultLinkTitle,
+				Description: defaultLinkTitle,
+				Thumbnail:   featureImageLink,
 			},
 		}
 	}
-	return []base.Link{}
+	return []base.Link{
+		{
+			ID:          ksuid.New().String(),
+			URL:         common.DefaultIconPath,
+			LinkType:    base.LinkTypePngImage,
+			Title:       defaultLinkTitle,
+			Description: defaultLinkTitle,
+			Thumbnail:   common.DefaultIconPath,
+		},
+	}
 }
 
 // TruncateStringWithEllipses truncates a string at the indicated length and adds trailing ellipses
