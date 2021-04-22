@@ -20,7 +20,7 @@ const (
 	includeTags             = "&include=tags"
 	includeAuthors          = "&include=authors"
 	formats                 = "&formats=html,plaintext"
-	allowedFeedTagFilter    = "&filter=tag:welcome&filter=tag:how-to&filter=tag:what-is&filter=tag:getting-started"
+	allowedFeedTagFilter    = "&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
 	allowedFAQsTagFilter    = "&filter=tag:faqs&filter=tag:how-to"
 	allowedLibraryTagFilter = "&filter=tag:diet&filter=tag:health-tips"
 )
