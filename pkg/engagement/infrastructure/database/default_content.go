@@ -31,7 +31,6 @@ const (
 	addInsuranceActionName        = "ADD_INSURANCE"
 	addNHIFActionName             = "ADD_NHIF"
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
-	helpActionName                = "GET_HELP"
 	verifyEmailActionName         = "VERIFY_EMAIL"
 
 	defaultOrg        = "default-org-id-please-change"
@@ -208,7 +207,6 @@ func defaultConsumerActions(
 ) ([]base.Action, error) {
 	var actions []base.Action
 	fns := []actionGenerator{
-		defaultHelpAction,
 		defaultGetInsuranceAction,
 		defaultGetTestAction,
 		defaultBuyMedicineAction,
@@ -233,7 +231,6 @@ func defaultProActions(
 	var actions []base.Action
 	fns := []actionGenerator{
 		defaultAddPatientAction,
-		defaultHelpAction,
 		defaultSearchPatientAction,
 	}
 	for _, fn := range fns {
@@ -326,27 +323,6 @@ func defaultGetInsuranceAction(
 		common.StaticBase+"/actions/svg/buy_cover.svg",
 		"Buy Cover",
 		"Buy medical insurance",
-		repository,
-	)
-}
-
-func defaultHelpAction(
-	ctx context.Context,
-	uid string,
-	flavour base.Flavour,
-	repository repository.Repository,
-) (*base.Action, error) {
-	return createGlobalAction(
-		ctx,
-		uid,
-		true,
-		flavour,
-		helpActionName,
-		base.ActionTypeFloating,
-		base.HandlingFullPage,
-		common.StaticBase+"/actions/svg/help.svg",
-		"Help",
-		"Get Help",
 		repository,
 	)
 }
