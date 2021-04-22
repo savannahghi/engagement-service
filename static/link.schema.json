@@ -20,7 +20,8 @@
                         "YOUTUBE_VIDEO",
                         "PNG_IMAGE",
                         "PDF_DOCUMENT",
-                        "SVG_IMAGE"
+                        "SVG_IMAGE",
+                        "DEFAULT"
                     ]
                 },
                 "title": {

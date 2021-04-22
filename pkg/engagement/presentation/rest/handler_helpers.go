@@ -248,7 +248,7 @@ func getStringVar(r *http.Request, varName string) (string, error) {
 
 // SchemaHandler ...
 func SchemaHandler() (http.Handler, error) {
-	f, err := pkger.Open(StaticDir)
+	f, err := pkger.Open("gitlab.slade360emr.com/go/engagement:/static/")
 	if err != nil {
 		return nil, fmt.Errorf("can't open pkger schema dir: %w", err)
 	}

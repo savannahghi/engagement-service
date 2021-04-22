@@ -55,6 +55,7 @@ enum LinkType {
   PNG_IMAGE
   PDF_DOCUMENT
   SVG_IMAGE
+  DEFAULT
 }
 
 enum TextType {
@@ -72,7 +73,7 @@ type Feed @key(fields: "id") {
   actions: [Action!]!
   nudges: [Nudge!]!
   items: [Item!]!
-  isAnonymous:Boolean!
+  isAnonymous: Boolean!
 }
 
 type Nudge {
@@ -199,7 +200,7 @@ input FilterParamsInput {
 extend type Query {
   getFeed(
     flavour: Flavour!
-    isAnonymous:Boolean!
+    isAnonymous: Boolean!
     persistent: BooleanFilter!
     status: Status
     visibility: Visibility
@@ -208,7 +209,7 @@ extend type Query {
   ): Feed!
 
   labels(flavour: Flavour!): [String!]!
-  unreadPersistentItems(flavour:Flavour!): Int!
+  unreadPersistentItems(flavour: Flavour!): Int!
 }
 
 extend type Mutation {

@@ -1222,7 +1222,7 @@ func getLinks(post library.GhostCMSPost) []base.Link {
 		{
 			ID:          ksuid.New().String(),
 			URL:         common.DefaultIconPath,
-			LinkType:    base.LinkTypePngImage,
+			LinkType:    base.LinkTypeDefault,
 			Title:       defaultLinkTitle,
 			Description: defaultLinkTitle,
 			Thumbnail:   common.DefaultIconPath,

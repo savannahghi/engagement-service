@@ -21,7 +21,6 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain/model"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	calendar "google.golang.org/api/calendar/v3"
 )
@@ -2142,6 +2141,7 @@ enum LinkType {
   PNG_IMAGE
   PDF_DOCUMENT
   SVG_IMAGE
+  DEFAULT
 }
 
 enum TextType {
@@ -2159,7 +2159,7 @@ type Feed @key(fields: "id") {
   actions: [Action!]!
   nudges: [Nudge!]!
   items: [Item!]!
-  isAnonymous:Boolean!
+  isAnonymous: Boolean!
 }
 
 type Nudge {
@@ -2286,7 +2286,7 @@ input FilterParamsInput {
 extend type Query {
   getFeed(
     flavour: Flavour!
-    isAnonymous:Boolean!
+    isAnonymous: Boolean!
     persistent: BooleanFilter!
     status: Status
     visibility: Visibility
@@ -2295,7 +2295,7 @@ extend type Query {
   ): Feed!
 
   labels(flavour: Flavour!): [String!]!
-  unreadPersistentItems(flavour:Flavour!): Int!
+  unreadPersistentItems(flavour: Flavour!): Int!
 }
 
 extend type Mutation {
@@ -6283,7 +6283,7 @@ func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql
 	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FilterParams_labels(ctx context.Context, field graphql.CollectedField, obj *model.FilterParams) (ret graphql.Marshaler) {
+func (ec *executionContext) _FilterParams_labels(ctx context.Context, field graphql.CollectedField, obj *helpers.FilterParams) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6310,9 +6310,9 @@ func (ec *executionContext) _FilterParams_labels(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
@@ -12824,7 +12824,7 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 
 var filterParamsImplementors = []string{"FilterParams"}
 
-func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.SelectionSet, obj *model.FilterParams) graphql.Marshaler {
+func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.SelectionSet, obj *helpers.FilterParams) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, filterParamsImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -15459,42 +15459,6 @@ func (ec *executionContext) marshalOString2ᚕstring(ctx context.Context, sel as
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalOString2string(ctx, sel, v[i])
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret

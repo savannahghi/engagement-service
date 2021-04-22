@@ -13,6 +13,10 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
+func (r *dummyResolver) ID(ctx context.Context, obj *resources.Dummy) (*string, error) {
+	return nil, nil
+}
+
 func (r *mutationResolver) PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error) {
 	startTime := time.Now()
 
@@ -294,10 +298,6 @@ func (r *mutationResolver) SladeOtp(ctx context.Context, to string, name string,
 	)
 
 	return sladeOTP, nil
-}
-
-func (r *dummyResolver) ID(ctx context.Context, obj *resources.Dummy) (*string, error) {
-	return nil, nil
 }
 
 // Dummy returns generated.DummyResolver implementation.
