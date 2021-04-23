@@ -1,0 +1,14 @@
+"""
+AccessToken is used to return the credentials that are needed in order
+to access a Twilio video room.
+"""
+type AccessToken @key(fields: "jwt") @key(fields: "uniqueName") {
+  jwt: String!
+  uniqueName: String!
+  sid: String!
+  dateUpdated: Time!
+  status: String!
+  type: String!
+  maxParticipants: Int!
+  duration: Int
+}

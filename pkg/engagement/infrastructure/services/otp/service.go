@@ -3,8 +3,6 @@ package otp
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/http/httputil"
 	"os"
 	"time"
 
@@ -17,6 +15,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
@@ -27,18 +26,6 @@ const (
 	subject      = "Be.Well Verification Code"
 	whatsappStep = 1
 	twilioStep   = 2
-)
-
-// dependencies names. Should match the names in the yaml file
-const (
-	smsService    = "sms"
-	twilioService = "twilio"
-)
-
-// specific endpoint paths for ISC
-const (
-	// twilio isc paths
-	sendTwilioSMS = "internal/send_sms"
 )
 
 // These constants are here to support Integration Testing
@@ -64,10 +51,10 @@ type ServiceOTP interface {
 
 // Service is an OTP generation and validation service
 type Service struct {
-	twilio   *base.InterServiceClient
 	whatsapp whatsapp.ServiceWhatsapp
 	mail     mail.ServiceMail
 	sms      sms.ServiceSMS
+	twilio   twilio.ServiceTwilio
 
 	totpOpts             totp.GenerateOpts
 	firestoreClient      *firestore.Client
@@ -81,17 +68,13 @@ type Service struct {
 func NewService() *Service {
 	var repository repository.Repository
 
-	config, err := base.LoadDepsFromYAML()
-	if err != nil {
-		log.Panicf("failed to load dependencies from yaml: %v", err)
-		os.Exit(1)
-	}
-
 	whatsapp := whatsapp.NewService()
 
 	mail := mail.NewService()
 
 	sms := sms.NewService(repository)
+
+	twilio := twilio.NewService()
 
 	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
@@ -110,14 +93,7 @@ func NewService() *Service {
 		os.Exit(1)
 	}
 
-	twilioClient, err := base.SetupISCclient(*config, twilioService)
-	if err != nil {
-		log.Panicf("unable to initialize inter service client for service %v : %v", twilioService, err)
-		os.Exit(1)
-	}
-
 	return &Service{
-		twilio: twilioClient,
 		totpOpts: totp.GenerateOpts{
 			Issuer:      issuer,
 			AccountName: accountName,
@@ -127,6 +103,7 @@ func NewService() *Service {
 		whatsapp:             whatsapp,
 		mail:                 mail,
 		sms:                  sms,
+		twilio:               twilio,
 	}
 }
 
@@ -149,25 +126,6 @@ func cleanITPhoneNumber() (*string, error) {
 	return base.NormalizeMSISDN(ITPhoneNumber)
 }
 
-func makeRequest(phoneNumbers []string, message, EndPoint string, client base.InterServiceClient) error {
-	payload := map[string]interface{}{
-		"to":      phoneNumbers,
-		"message": message,
-	}
-	resp, err := client.MakeRequest(http.MethodPost, EndPoint, payload)
-	if err != nil {
-		return err
-	}
-	if base.IsDebug() {
-		b, _ := httputil.DumpResponse(resp, true)
-		log.Println(string(b))
-	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unable to send SMS : %w, with status code %v", err, resp.StatusCode)
-	}
-	return nil
-}
-
 // SendOTP sends otp code message to specified number
 func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code string) (string, error) {
 	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
@@ -178,13 +136,8 @@ func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code
 			return "", fmt.Errorf("failed to send OTP verification message to recipient")
 		}
 	} else {
-		twilioISC := base.SmsISC{
-			Isc:      s.twilio,
-			EndPoint: sendTwilioSMS,
-		}
-
 		// Make request to twilio
-		err := makeRequest([]string{normalizedPhoneNumber}, msg, twilioISC.EndPoint, *twilioISC.Isc)
+		err := s.twilio.SendSMS(ctx, normalizedPhoneNumber, msg)
 		if err != nil {
 			return "", fmt.Errorf("sms not sent: %v", err)
 		}
@@ -428,24 +381,13 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 
 	} else if retryStep == twilioStep {
 
-		body := map[string]interface{}{
-			"to":      []string{*cleanNo},
-			"message": msg,
-		}
-
-		resp, err := s.twilio.MakeRequest(http.MethodPost, sendTwilioSMS, body)
-
+		sent, err := s.whatsapp.PhoneNumberVerificationCode(ctx, otp.MSISDN, otp.AuthorizationCode, otp.Message)
 		if err != nil {
 			return code, fmt.Errorf("otp send retry failed: %w", err)
 		}
 
-		if base.IsDebug() {
-			b, _ := httputil.DumpResponse(resp, true)
-			log.Println(string(b))
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			return code, fmt.Errorf("otp send retry failed: with status code %v", resp.StatusCode)
+		if !sent {
+			return "", fmt.Errorf("unable to send OTP whatsapp message : %w", err)
 		}
 
 		return code, nil

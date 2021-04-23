@@ -11,7 +11,7 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/agnivade/levenshtein v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
-	github.com/aws/aws-sdk-go v1.38.23 // indirect
+	github.com/aws/aws-sdk-go v1.38.24 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/google/pprof v0.0.0-20210413054141-7c2eacd09c8d // indirect
@@ -20,6 +20,9 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imroc/req v0.3.0
+	github.com/kevinburke/go-types v0.0.0-20201208005256-aee49f568a20 // indirect
+	github.com/kevinburke/rest v0.0.0-20210222204520-f7a2e216372f // indirect
+	github.com/kevinburke/twilio-go v0.0.0-20210327194925-1623146bcf73
 	github.com/labstack/gommon v0.3.0
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/markbates/pkger v0.17.1
@@ -37,9 +40,10 @@ require (
 	go.opencensus.io v0.23.0
 	golang.org/x/net v0.0.0-20210421230115-4e50805a0758 // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
-	golang.org/x/sys v0.0.0-20210421221651-33663a62ff08 // indirect
+	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
 	google.golang.org/api v0.45.0
-	google.golang.org/genproto v0.0.0-20210421164718-3947dc264843 // indirect
+	google.golang.org/genproto v0.0.0-20210422153429-2279cbceda62 // indirect
 	google.golang.org/grpc v1.37.0
 	gopkg.in/yaml.v2 v2.4.0
+	moul.io/http2curl v1.0.0
 )

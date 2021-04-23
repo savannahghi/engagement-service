@@ -53,6 +53,17 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AccessToken struct {
+		DateUpdated     func(childComplexity int) int
+		Duration        func(childComplexity int) int
+		JWT             func(childComplexity int) int
+		MaxParticipants func(childComplexity int) int
+		SID             func(childComplexity int) int
+		Status          func(childComplexity int) int
+		Type            func(childComplexity int) int
+		UniqueName      func(childComplexity int) int
+	}
+
 	Action struct {
 		ActionType     func(childComplexity int) int
 		AllowAnonymous func(childComplexity int) int
@@ -109,8 +120,9 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindDummyByID func(childComplexity int, id *string) int
-		FindFeedByID  func(childComplexity int, id string) int
+		FindAccessTokenByJwt func(childComplexity int, jwt string) int
+		FindDummyByID        func(childComplexity int, id *string) int
+		FindFeedByID         func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -301,6 +313,7 @@ type ComplexityRoot struct {
 		GetFeed               func(childComplexity int, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
 		Labels                func(childComplexity int, flavour base.Flavour) int
+		TwilioAccessToken     func(childComplexity int) int
 		UnreadPersistentItems func(childComplexity int, flavour base.Flavour) int
 		__resolve__service    func(childComplexity int) int
 		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
@@ -342,6 +355,7 @@ type DummyResolver interface {
 	ID(ctx context.Context, obj *resources.Dummy) (*string, error)
 }
 type EntityResolver interface {
+	FindAccessTokenByJwt(ctx context.Context, jwt string) (*resources.AccessToken, error)
 	FindDummyByID(ctx context.Context, id *string) (*resources.Dummy, error)
 	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
 }
@@ -384,6 +398,7 @@ type QueryResolver interface {
 	GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string) (string, error)
 	GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int) (string, error)
 	EmailVerificationOtp(ctx context.Context, email string) (string, error)
+	TwilioAccessToken(ctx context.Context) (*resources.AccessToken, error)
 	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
 
@@ -401,6 +416,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AccessToken.dateUpdated":
+		if e.complexity.AccessToken.DateUpdated == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.DateUpdated(childComplexity), true
+
+	case "AccessToken.duration":
+		if e.complexity.AccessToken.Duration == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.Duration(childComplexity), true
+
+	case "AccessToken.jwt":
+		if e.complexity.AccessToken.JWT == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.JWT(childComplexity), true
+
+	case "AccessToken.maxParticipants":
+		if e.complexity.AccessToken.MaxParticipants == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.MaxParticipants(childComplexity), true
+
+	case "AccessToken.sid":
+		if e.complexity.AccessToken.SID == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.SID(childComplexity), true
+
+	case "AccessToken.status":
+		if e.complexity.AccessToken.Status == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.Status(childComplexity), true
+
+	case "AccessToken.type":
+		if e.complexity.AccessToken.Type == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.Type(childComplexity), true
+
+	case "AccessToken.uniqueName":
+		if e.complexity.AccessToken.UniqueName == nil {
+			break
+		}
+
+		return e.complexity.AccessToken.UniqueName(childComplexity), true
 
 	case "Action.actionType":
 		if e.complexity.Action.ActionType == nil {
@@ -702,6 +773,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Dummy.ID(childComplexity), true
+
+	case "Entity.findAccessTokenByJwt":
+		if e.complexity.Entity.FindAccessTokenByJwt == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findAccessTokenByJwt_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindAccessTokenByJwt(childComplexity, args["jwt"].(string)), true
 
 	case "Entity.findDummyByID":
 		if e.complexity.Entity.FindDummyByID == nil {
@@ -1891,6 +1974,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Labels(childComplexity, args["flavour"].(base.Flavour)), true
 
+	case "Query.twilioAccessToken":
+		if e.complexity.Query.TwilioAccessToken == nil {
+			break
+		}
+
+		return e.complexity.Query.TwilioAccessToken(childComplexity), true
+
 	case "Query.unreadPersistentItems":
 		if e.complexity.Query.UnreadPersistentItems == nil {
 			break
@@ -2508,6 +2598,29 @@ type SendMessageResponse {
     SMSMessageData: SMS!
 }
 `, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/twilio.graphql", Input: `extend type Query {
+  """
+  twilioAccessToken requests for the creation of a Twilio room and the
+  issuance of an access token that is linked to that room.
+  """
+  twilioAccessToken: AccessToken!
+}
+`, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/types.graphql", Input: `"""
+AccessToken is used to return the credentials that are needed in order
+to access a Twilio video room.
+"""
+type AccessToken @key(fields: "jwt") @key(fields: "uniqueName") {
+  jwt: String!
+  uniqueName: String!
+  sid: String!
+  dateUpdated: Time!
+  status: String!
+  type: String!
+  maxParticipants: Int!
+  duration: Int
+}
+`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/uploads.graphql", Input: `
 # this input is used to CREATE a new upload
 input UploadInput {
@@ -2651,11 +2764,12 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Dummy | Feed
+union _Entity = AccessToken | Dummy | Feed
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
-		findDummyByID(id: ID,): Dummy!
+		findAccessTokenByJwt(jwt: String!,): AccessToken!
+	findDummyByID(id: ID,): Dummy!
 	findFeedByID(id: String!,): Feed!
 
 }
@@ -2675,6 +2789,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Entity_findAccessTokenByJwt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["jwt"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwt"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["jwt"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Entity_findDummyByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -3964,6 +4093,283 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AccessToken_jwt(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.JWT, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AccessToken_uniqueName(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UniqueName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AccessToken_sid(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AccessToken_dateUpdated(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateUpdated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AccessToken_status(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AccessToken_type(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AccessToken_maxParticipants(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MaxParticipants, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AccessToken_duration(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "AccessToken",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Action_id(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
 	defer func() {
@@ -5450,6 +5856,48 @@ func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.Collect
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Entity_findAccessTokenByJwt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Entity_findAccessTokenByJwt_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindAccessTokenByJwt(rctx, args["jwt"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*resources.AccessToken)
+	fc.Result = res
+	return ec.marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10678,6 +11126,41 @@ func (ec *executionContext) _Query_emailVerificationOTP(ctx context.Context, fie
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_twilioAccessToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TwilioAccessToken(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*resources.AccessToken)
+	fc.Result = res
+	return ec.marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_findUploadByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -12760,6 +13243,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case resources.AccessToken:
+		return ec._AccessToken(ctx, sel, &obj)
+	case *resources.AccessToken:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AccessToken(ctx, sel, obj)
 	case resources.Dummy:
 		return ec._Dummy(ctx, sel, &obj)
 	case *resources.Dummy:
@@ -12782,6 +13272,65 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var accessTokenImplementors = []string{"AccessToken", "_Entity"}
+
+func (ec *executionContext) _AccessToken(ctx context.Context, sel ast.SelectionSet, obj *resources.AccessToken) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, accessTokenImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AccessToken")
+		case "jwt":
+			out.Values[i] = ec._AccessToken_jwt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "uniqueName":
+			out.Values[i] = ec._AccessToken_uniqueName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sid":
+			out.Values[i] = ec._AccessToken_sid(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "dateUpdated":
+			out.Values[i] = ec._AccessToken_dateUpdated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "status":
+			out.Values[i] = ec._AccessToken_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "type":
+			out.Values[i] = ec._AccessToken_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "maxParticipants":
+			out.Values[i] = ec._AccessToken_maxParticipants(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "duration":
+			out.Values[i] = ec._AccessToken_duration(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var actionImplementors = []string{"Action"}
 
@@ -13092,6 +13641,20 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
+		case "findAccessTokenByJwt":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findAccessTokenByJwt(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "findDummyByID":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -14205,6 +14768,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "twilioAccessToken":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_twilioAccessToken(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "findUploadByID":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -14693,6 +15270,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAccessToken2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx context.Context, sel ast.SelectionSet, v resources.AccessToken) graphql.Marshaler {
+	return ec._AccessToken(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx context.Context, sel ast.SelectionSet, v *resources.AccessToken) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._AccessToken(ctx, sel, v)
+}
 
 func (ec *executionContext) marshalNAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx context.Context, sel ast.SelectionSet, v base.Action) graphql.Marshaler {
 	return ec._Action(ctx, sel, &v)
@@ -15937,6 +16528,21 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	return graphql.MarshalID(*v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt(*v)
 }
 
 func (ec *executionContext) marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {

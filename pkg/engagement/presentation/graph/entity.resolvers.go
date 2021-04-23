@@ -14,6 +14,10 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
+func (r *entityResolver) FindAccessTokenByJwt(ctx context.Context, jwt string) (*resources.AccessToken, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *entityResolver) FindDummyByID(ctx context.Context, id *string) (*resources.Dummy, error) {
 	panic(fmt.Errorf("not implemented"))
 }

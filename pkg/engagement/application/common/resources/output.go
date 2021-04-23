@@ -125,3 +125,50 @@ type VerifyOTP struct {
 	Email            *string `json:"email"`
 	VerificationCode *string `json:"verificationCode"`
 }
+
+// Room is used to serialize details of Twilio meeting rooms that are
+// created via the Twilio Video REST API
+type Room struct {
+	SID                         string            `json:"sid"`
+	Status                      string            `json:"status"`
+	DateCreated                 time.Time         `json:"date_created"`
+	DateUpdated                 time.Time         `json:"date_updated"`
+	AccountSID                  string            `json:"account_sid"`
+	EnableTurn                  bool              `json:"enable_turn"`
+	UniqueName                  string            `json:"unique_name"`
+	StatusCallbackMethod        string            `json:"status_callback_method"`
+	Type                        string            `json:"type"`
+	MaxParticipants             int               `json:"max_participants"`
+	RecordParticipantsOnConnect bool              `json:"record_participants_on_connect"`
+	VideoCodecs                 []string          `json:"video_codecs"`
+	MediaRegion                 string            `json:"media_region"`
+	URL                         string            `json:"url"`
+	Links                       map[string]string `json:"links"`
+	StatusCallback              *string           `json:"status_callback,omitempty"`
+	Duration                    *int              `json:"duration,omitempty"`
+	EndTime                     *time.Time        `json:"end_time,omitempty"`
+}
+
+// AccessToken is used to return the results of requesting an access token.
+//
+// In addition to the JWT, this includes the details that are needed in order to
+// connect to the room on the client side
+type AccessToken struct {
+	JWT             string    `json:"jwt,omitempty"`
+	UniqueName      string    `json:"uniqueName,omitempty"`
+	SID             string    `json:"sid,omitempty"`
+	DateUpdated     time.Time `json:"dateUpdated,omitempty"`
+	Status          string    `json:"status,omitempty"`
+	Type            string    `json:"type,omitempty"`
+	MaxParticipants int       `json:"maxParticipants,omitempty"`
+	Duration        *int      `json:"duration,omitempty"`
+}
+
+// IsEntity ...
+func (a AccessToken) IsEntity() {}
+
+// SMSPayload is used to serialise an SMS sent through the twilio service REST API
+type SMSPayload struct {
+	To      []string `json:"to"`
+	Message string   `json:"message"`
+}

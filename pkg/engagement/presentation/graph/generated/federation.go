@@ -39,6 +39,20 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 		}
 		switch typeName {
 
+		case "AccessToken":
+			id0, err := ec.unmarshalNString2string(ctx, rep["jwt"])
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "jwt"))
+			}
+
+			entity, err := ec.resolvers.Entity().FindAccessTokenByJwt(ctx,
+				id0)
+			if err != nil {
+				return nil, err
+			}
+
+			list = append(list, entity)
+
 		case "Dummy":
 			id0, err := ec.unmarshalOID2ᚖstring(ctx, rep["id"])
 			if err != nil {
