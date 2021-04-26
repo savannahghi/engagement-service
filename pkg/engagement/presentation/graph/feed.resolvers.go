@@ -11,7 +11,6 @@ import (
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
 func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
@@ -261,8 +260,3 @@ func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour base.
 
 	return count, nil
 }
-
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
-
-type mutationResolver struct{ *Resolver }

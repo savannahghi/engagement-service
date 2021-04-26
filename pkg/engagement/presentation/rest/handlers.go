@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
 
 	"net/http"
@@ -158,6 +159,8 @@ type PresentationHandlers interface {
 	VerifyRetryOTPHandler(ctx context.Context) http.HandlerFunc
 
 	VerifyRetryEmailOTPHandler(ctx context.Context) http.HandlerFunc
+
+	SendNotificationHandler(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1369,5 +1372,36 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(ctx context.Context
 		}
 
 		base.WriteJSONResponse(w, otpResponse{IsVerified: isVerified}, http.StatusOK)
+	}
+}
+
+// SendNotificationHandler sends a data message to the specified registration tokens.
+func (p PresentationHandlersImpl) SendNotificationHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload, payloadErr := fcm.ValidateSendNotificationPayload(w, r)
+		if payloadErr != nil {
+			base.ReportErr(w, payloadErr, http.StatusBadRequest)
+			return
+		}
+
+		_, err := p.interactor.FCM.SendNotification(ctx, payload.RegistrationTokens, payload.Data, payload.Notification, payload.Android, payload.Ios, payload.Web)
+		if err != nil {
+			err := fmt.Errorf("notification not sent: %s", err)
+
+			isBadReq := strings.Contains(err.Error(), "http error status: 400")
+
+			if isBadReq {
+				base.ReportErr(w, err, http.StatusBadRequest)
+				return
+			}
+
+			base.ReportErr(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		type okResp struct {
+			Status string `json:"status"`
+		}
+		base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
 	}
 }

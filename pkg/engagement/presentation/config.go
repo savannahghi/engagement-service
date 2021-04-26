@@ -98,10 +98,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()
 	twilio := twilio.NewService()
+	fcm := fcm.NewService(fr)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio,
+		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -381,6 +382,10 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	isc.Path("/verify_email_otp/").Methods(
 		http.MethodPost, http.MethodOptions,
 	).HandlerFunc(h.VerifyRetryEmailOTPHandler(ctx))
+
+	isc.Path("/send_notification").Methods(
+		http.MethodPost, http.MethodOptions,
+	).HandlerFunc(h.SendNotificationHandler(ctx))
 	// return the combined router
 	return r, nil
 }

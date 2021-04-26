@@ -2,7 +2,9 @@ package mock
 
 import (
 	"context"
+	"time"
 
+	"cloud.google.com/go/firestore"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
@@ -223,6 +225,20 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		data resources.Message,
 	) error
+
+	SaveNotificationFn func(
+		ctx context.Context,
+		firestoreClient *firestore.Client,
+		notification resources.SavedNotification,
+	) error
+
+	RetrieveNotificationFn func(
+		ctx context.Context,
+		firestoreClient *firestore.Client,
+		registrationToken string,
+		newerThan time.Time,
+		limit int,
+	) ([]*resources.SavedNotification, error)
 }
 
 // GetFeed ...
@@ -505,4 +521,24 @@ func (f *FakeEngagementRepository) SaveTwilioResponse(
 	data resources.Message,
 ) error {
 	return f.SaveTwilioResponseFn(ctx, data)
+}
+
+// SaveNotification saves a notification
+func (f *FakeEngagementRepository) SaveNotification(
+	ctx context.Context,
+	firestoreClient *firestore.Client,
+	notification resources.SavedNotification,
+) error {
+	return f.SaveNotificationFn(ctx, firestoreClient, notification)
+}
+
+// RetrieveNotification retrieves a notification
+func (f *FakeEngagementRepository) RetrieveNotification(
+	ctx context.Context,
+	firestoreClient *firestore.Client,
+	registrationToken string,
+	newerThan time.Time,
+	limit int,
+) ([]*resources.SavedNotification, error) {
+	return f.RetrieveNotificationFn(ctx, firestoreClient, registrationToken, newerThan, limit)
 }

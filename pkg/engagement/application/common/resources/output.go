@@ -172,3 +172,50 @@ type SMSPayload struct {
 	To      []string `json:"to"`
 	Message string   `json:"message"`
 }
+
+// SavedNotification is used to serialize and save successful FCM notifications.
+//
+// It's the basis for a primitive "inbox" - a mechanism by which an app can
+// request it's messages in bulk.
+type SavedNotification struct {
+	ID                string                      `json:"id,omitempty"`
+	RegistrationToken string                      `json:"registrationToken,omitempty"`
+	MessageID         string                      `json:"messageID,omitempty"`
+	Timestamp         time.Time                   `json:"timestamp,omitempty"`
+	Data              map[string]interface{}      `json:"data,omitempty"`
+	Notification      *FirebaseSimpleNotification `json:"notification,omitempty"`
+	AndroidConfig     *FirebaseAndroidConfig      `json:"androidConfig,omitempty"`
+	WebpushConfig     *FirebaseWebpushConfig      `json:"webpushConfig,omitempty"`
+	APNSConfig        *FirebaseAPNSConfig         `json:"apnsConfig,omitempty"`
+}
+
+// IsEntity ...
+func (u SavedNotification) IsEntity() {}
+
+// FirebaseSimpleNotification is used to serialize simple FCM notification.
+// It is a mirror of Firebase messaging.Notification
+type FirebaseSimpleNotification struct {
+	Title    string                 `json:"title"`
+	Body     string                 `json:"body"`
+	ImageURL *string                `json:"imageURL"`
+	Data     map[string]interface{} `json:"data"`
+}
+
+// FirebaseAPNSConfig is a mirror of Firebase messaging.APNSConfig
+type FirebaseAPNSConfig struct {
+	Headers map[string]interface{} `json:"headers"`
+}
+
+// FirebaseWebpushConfig is a mirror of Firebase messaging.WebpushConfig
+type FirebaseWebpushConfig struct {
+	Headers map[string]interface{} `json:"headers"`
+	Data    map[string]interface{} `json:"data"`
+}
+
+// FirebaseAndroidConfig is a mirror of Firebase messaging.AndroidConfig
+type FirebaseAndroidConfig struct {
+	Priority              string                 `json:"priority"` // one of "normal" or "high"
+	CollapseKey           *string                `json:"collapseKey"`
+	RestrictedPackageName *string                `json:"restrictedPackageName"`
+	Data                  map[string]interface{} `json:"data"` // if specified, overrides the Data field on Message type
+}

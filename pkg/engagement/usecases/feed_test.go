@@ -79,9 +79,10 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()
 	twilio := twilio.NewService()
+	fcm := fcm.NewService(r)
 
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio,
+		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm,
 	)
 
 	if err != nil {

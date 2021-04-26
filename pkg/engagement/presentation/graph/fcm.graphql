@@ -1,0 +1,18 @@
+extend type Mutation {
+    sendNotification(
+        registrationTokens: [String!]!,
+        data: Map!,
+        notification: FirebaseSimpleNotificationInput!,
+        android: FirebaseAndroidConfigInput,
+        ios: FirebaseAPNSConfigInput,
+        web: FirebaseWebpushConfigInput
+    ): Boolean!
+}
+
+extend type Query {
+    notifications(
+        registrationToken: String!
+        newerThan: Time!
+        limit: Int!
+    ): [SavedNotification!]!
+}

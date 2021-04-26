@@ -49,6 +49,10 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.F
 	)
 }
 
+func (r *entityResolver) FindSavedNotificationByID(ctx context.Context, id string) (*resources.SavedNotification, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Entity returns generated.EntityResolver implementation.
 func (r *Resolver) Entity() generated.EntityResolver { return &entityResolver{r} }
 

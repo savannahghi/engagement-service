@@ -120,9 +120,10 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindAccessTokenByJwt func(childComplexity int, jwt string) int
-		FindDummyByID        func(childComplexity int, id *string) int
-		FindFeedByID         func(childComplexity int, id string) int
+		FindAccessTokenByJwt      func(childComplexity int, jwt string) int
+		FindDummyByID             func(childComplexity int, id *string) int
+		FindFeedByID              func(childComplexity int, id string) int
+		FindSavedNotificationByID func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -172,6 +173,29 @@ type ComplexityRoot struct {
 
 	FilterParams struct {
 		Labels func(childComplexity int) int
+	}
+
+	FirebaseAPNSConfig struct {
+		Headers func(childComplexity int) int
+	}
+
+	FirebaseAndroidConfig struct {
+		CollapseKey           func(childComplexity int) int
+		Data                  func(childComplexity int) int
+		Priority              func(childComplexity int) int
+		RestrictedPackageName func(childComplexity int) int
+	}
+
+	FirebaseSimpleNotification struct {
+		Body     func(childComplexity int) int
+		Data     func(childComplexity int) int
+		ImageURL func(childComplexity int) int
+		Title    func(childComplexity int) int
+	}
+
+	FirebaseWebpushConfig struct {
+		Data    func(childComplexity int) int
+		Headers func(childComplexity int) int
 	}
 
 	GhostCMSAuthor struct {
@@ -268,6 +292,7 @@ type ComplexityRoot struct {
 		ProcessEvent                    func(childComplexity int, flavour base.Flavour, event base.Event) int
 		ResolveFeedItem                 func(childComplexity int, flavour base.Flavour, itemID string) int
 		Send                            func(childComplexity int, to string, message string) int
+		SendNotification                func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) int
 		SendToMany                      func(childComplexity int, message string, to []string) int
 		ShowFeedItem                    func(childComplexity int, flavour base.Flavour, itemID string) int
 		ShowNudge                       func(childComplexity int, flavour base.Flavour, nudgeID string) int
@@ -313,6 +338,7 @@ type ComplexityRoot struct {
 		GetFeed               func(childComplexity int, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
 		Labels                func(childComplexity int, flavour base.Flavour) int
+		Notifications         func(childComplexity int, registrationToken string, newerThan time.Time, limit int) int
 		TwilioAccessToken     func(childComplexity int) int
 		UnreadPersistentItems func(childComplexity int, flavour base.Flavour) int
 		__resolve__service    func(childComplexity int) int
@@ -328,6 +354,18 @@ type ComplexityRoot struct {
 
 	Sms struct {
 		Recipients func(childComplexity int) int
+	}
+
+	SavedNotification struct {
+		APNSConfig        func(childComplexity int) int
+		AndroidConfig     func(childComplexity int) int
+		Data              func(childComplexity int) int
+		ID                func(childComplexity int) int
+		MessageID         func(childComplexity int) int
+		Notification      func(childComplexity int) int
+		RegistrationToken func(childComplexity int) int
+		Timestamp         func(childComplexity int) int
+		WebpushConfig     func(childComplexity int) int
 	}
 
 	SendMessageResponse struct {
@@ -358,8 +396,10 @@ type EntityResolver interface {
 	FindAccessTokenByJwt(ctx context.Context, jwt string) (*resources.AccessToken, error)
 	FindDummyByID(ctx context.Context, id *string) (*resources.Dummy, error)
 	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
+	FindSavedNotificationByID(ctx context.Context, id string) (*resources.SavedNotification, error)
 }
 type MutationResolver interface {
+	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) (bool, error)
 	ResolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
 	UnresolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
 	PinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
@@ -391,6 +431,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context) ([]*library.GhostCMSPost, error)
+	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*resources.SavedNotification, error)
 	GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour base.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour base.Flavour) (int, error)
@@ -810,6 +851,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Entity.FindFeedByID(childComplexity, args["id"].(string)), true
 
+	case "Entity.findSavedNotificationByID":
+		if e.complexity.Entity.FindSavedNotificationByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findSavedNotificationByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindSavedNotificationByID(childComplexity, args["id"].(string)), true
+
 	case "Event.context":
 		if e.complexity.Event.Context == nil {
 			break
@@ -1026,6 +1079,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.FilterParams.Labels(childComplexity), true
+
+	case "FirebaseAPNSConfig.headers":
+		if e.complexity.FirebaseAPNSConfig.Headers == nil {
+			break
+		}
+
+		return e.complexity.FirebaseAPNSConfig.Headers(childComplexity), true
+
+	case "FirebaseAndroidConfig.collapseKey":
+		if e.complexity.FirebaseAndroidConfig.CollapseKey == nil {
+			break
+		}
+
+		return e.complexity.FirebaseAndroidConfig.CollapseKey(childComplexity), true
+
+	case "FirebaseAndroidConfig.data":
+		if e.complexity.FirebaseAndroidConfig.Data == nil {
+			break
+		}
+
+		return e.complexity.FirebaseAndroidConfig.Data(childComplexity), true
+
+	case "FirebaseAndroidConfig.priority":
+		if e.complexity.FirebaseAndroidConfig.Priority == nil {
+			break
+		}
+
+		return e.complexity.FirebaseAndroidConfig.Priority(childComplexity), true
+
+	case "FirebaseAndroidConfig.restrictedPackageName":
+		if e.complexity.FirebaseAndroidConfig.RestrictedPackageName == nil {
+			break
+		}
+
+		return e.complexity.FirebaseAndroidConfig.RestrictedPackageName(childComplexity), true
+
+	case "FirebaseSimpleNotification.body":
+		if e.complexity.FirebaseSimpleNotification.Body == nil {
+			break
+		}
+
+		return e.complexity.FirebaseSimpleNotification.Body(childComplexity), true
+
+	case "FirebaseSimpleNotification.data":
+		if e.complexity.FirebaseSimpleNotification.Data == nil {
+			break
+		}
+
+		return e.complexity.FirebaseSimpleNotification.Data(childComplexity), true
+
+	case "FirebaseSimpleNotification.imageURL":
+		if e.complexity.FirebaseSimpleNotification.ImageURL == nil {
+			break
+		}
+
+		return e.complexity.FirebaseSimpleNotification.ImageURL(childComplexity), true
+
+	case "FirebaseSimpleNotification.title":
+		if e.complexity.FirebaseSimpleNotification.Title == nil {
+			break
+		}
+
+		return e.complexity.FirebaseSimpleNotification.Title(childComplexity), true
+
+	case "FirebaseWebpushConfig.data":
+		if e.complexity.FirebaseWebpushConfig.Data == nil {
+			break
+		}
+
+		return e.complexity.FirebaseWebpushConfig.Data(childComplexity), true
+
+	case "FirebaseWebpushConfig.headers":
+		if e.complexity.FirebaseWebpushConfig.Headers == nil {
+			break
+		}
+
+		return e.complexity.FirebaseWebpushConfig.Headers(childComplexity), true
 
 	case "GhostCMSAuthor.facebook":
 		if e.complexity.GhostCMSAuthor.Facebook == nil {
@@ -1617,6 +1747,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Send(childComplexity, args["to"].(string), args["message"].(string)), true
 
+	case "Mutation.sendNotification":
+		if e.complexity.Mutation.SendNotification == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendNotification_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendNotification(childComplexity, args["registrationTokens"].([]string), args["data"].(map[string]interface{}), args["notification"].(base.FirebaseSimpleNotificationInput), args["android"].(*base.FirebaseAndroidConfigInput), args["ios"].(*base.FirebaseAPNSConfigInput), args["web"].(*base.FirebaseWebpushConfigInput)), true
+
 	case "Mutation.sendToMany":
 		if e.complexity.Mutation.SendToMany == nil {
 			break
@@ -1974,6 +2116,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Labels(childComplexity, args["flavour"].(base.Flavour)), true
 
+	case "Query.notifications":
+		if e.complexity.Query.Notifications == nil {
+			break
+		}
+
+		args, err := ec.field_Query_notifications_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Notifications(childComplexity, args["registrationToken"].(string), args["newerThan"].(time.Time), args["limit"].(int)), true
+
 	case "Query.twilioAccessToken":
 		if e.complexity.Query.TwilioAccessToken == nil {
 			break
@@ -2046,6 +2200,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Sms.Recipients(childComplexity), true
+
+	case "SavedNotification.apnsConfig":
+		if e.complexity.SavedNotification.APNSConfig == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.APNSConfig(childComplexity), true
+
+	case "SavedNotification.androidConfig":
+		if e.complexity.SavedNotification.AndroidConfig == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.AndroidConfig(childComplexity), true
+
+	case "SavedNotification.data":
+		if e.complexity.SavedNotification.Data == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.Data(childComplexity), true
+
+	case "SavedNotification.id":
+		if e.complexity.SavedNotification.ID == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.ID(childComplexity), true
+
+	case "SavedNotification.messageID":
+		if e.complexity.SavedNotification.MessageID == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.MessageID(childComplexity), true
+
+	case "SavedNotification.notification":
+		if e.complexity.SavedNotification.Notification == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.Notification(childComplexity), true
+
+	case "SavedNotification.registrationToken":
+		if e.complexity.SavedNotification.RegistrationToken == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.RegistrationToken(childComplexity), true
+
+	case "SavedNotification.timestamp":
+		if e.complexity.SavedNotification.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.Timestamp(childComplexity), true
+
+	case "SavedNotification.webpushConfig":
+		if e.complexity.SavedNotification.WebpushConfig == nil {
+			break
+		}
+
+		return e.complexity.SavedNotification.WebpushConfig(childComplexity), true
 
 	case "SendMessageResponse.SMSMessageData":
 		if e.complexity.SendMessageResponse.SMSMessageData == nil {
@@ -2270,6 +2487,25 @@ type CalendarEvent {
     transparency: String!
     updated: String!
     visibility: String!
+}
+`, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/fcm.graphql", Input: `extend type Mutation {
+    sendNotification(
+        registrationTokens: [String!]!,
+        data: Map!,
+        notification: FirebaseSimpleNotificationInput!,
+        android: FirebaseAndroidConfigInput,
+        ios: FirebaseAPNSConfigInput,
+        web: FirebaseWebpushConfigInput
+    ): Boolean!
+}
+
+extend type Query {
+    notifications(
+        registrationToken: String!
+        newerThan: Time!
+        limit: Int!
+    ): [SavedNotification!]!
 }
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/feed.graphql", Input: `scalar Time
@@ -2504,6 +2740,29 @@ extend type Mutation {
   processEvent(flavour: Flavour!, event: EventInput!): Boolean!
 }
 `, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/inputs.graphql", Input: `
+input FirebaseSimpleNotificationInput {
+    title: String!
+    body: String!
+    imageURL: String!
+    data: Map
+}
+
+input FirebaseAndroidConfigInput {
+    priority: String!
+    collapseKey: String
+    restrictedPackageName: String
+    data: Map
+}
+
+input FirebaseWebpushConfigInput {
+    headers: Map
+    data: Map
+}
+
+input FirebaseAPNSConfigInput {
+    headers: Map
+}`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/library.graphql", Input: `scalar Date
 
 type GhostCMSPost {
@@ -2619,6 +2878,41 @@ type AccessToken @key(fields: "jwt") @key(fields: "uniqueName") {
   type: String!
   maxParticipants: Int!
   duration: Int
+}
+
+type FirebaseSimpleNotification {
+  title: String!
+  body: String!
+  imageURL: String
+  data: Map
+}
+
+type FirebaseAndroidConfig {
+  collapseKey: String!
+  priority: String!
+  restrictedPackageName: String!
+  data: Map
+}
+
+type FirebaseWebpushConfig {
+  headers: Map
+  data: Map
+}
+
+type FirebaseAPNSConfig {
+  headers: Map
+}
+
+type SavedNotification @key(fields: "id") {
+  id: String!
+  registrationToken: String!
+  messageID: String!
+  timestamp: Time!
+  data: Map
+  notification: FirebaseSimpleNotification
+  androidConfig: FirebaseAndroidConfig
+  webpushConfig: FirebaseWebpushConfig
+  apnsConfig: FirebaseAPNSConfig
 }
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/uploads.graphql", Input: `
@@ -2764,13 +3058,14 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = AccessToken | Dummy | Feed
+union _Entity = AccessToken | Dummy | Feed | SavedNotification
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findAccessTokenByJwt(jwt: String!,): AccessToken!
 	findDummyByID(id: ID,): Dummy!
 	findFeedByID(id: String!,): Feed!
+	findSavedNotificationByID(id: String!,): SavedNotification!
 
 }
 
@@ -2821,6 +3116,21 @@ func (ec *executionContext) field_Entity_findDummyByID_args(ctx context.Context,
 }
 
 func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findSavedNotificationByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -3345,6 +3655,66 @@ func (ec *executionContext) field_Mutation_resolveFeedItem_args(ctx context.Cont
 		}
 	}
 	args["itemID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_sendNotification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["registrationTokens"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("registrationTokens"))
+		arg0, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["registrationTokens"] = arg0
+	var arg1 map[string]interface{}
+	if tmp, ok := rawArgs["data"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+		arg1, err = ec.unmarshalNMap2map(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg1
+	var arg2 base.FirebaseSimpleNotificationInput
+	if tmp, ok := rawArgs["notification"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notification"))
+		arg2, err = ec.unmarshalNFirebaseSimpleNotificationInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseSimpleNotificationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["notification"] = arg2
+	var arg3 *base.FirebaseAndroidConfigInput
+	if tmp, ok := rawArgs["android"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("android"))
+		arg3, err = ec.unmarshalOFirebaseAndroidConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAndroidConfigInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["android"] = arg3
+	var arg4 *base.FirebaseAPNSConfigInput
+	if tmp, ok := rawArgs["ios"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ios"))
+		arg4, err = ec.unmarshalOFirebaseAPNSConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAPNSConfigInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["ios"] = arg4
+	var arg5 *base.FirebaseWebpushConfigInput
+	if tmp, ok := rawArgs["web"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("web"))
+		arg5, err = ec.unmarshalOFirebaseWebpushConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseWebpushConfigInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["web"] = arg5
 	return args, nil
 }
 
@@ -4038,6 +4408,39 @@ func (ec *executionContext) field_Query_labels_args(ctx context.Context, rawArgs
 		}
 	}
 	args["flavour"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_notifications_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["registrationToken"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("registrationToken"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["registrationToken"] = arg0
+	var arg1 time.Time
+	if tmp, ok := rawArgs["newerThan"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newerThan"))
+		arg1, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["newerThan"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg2
 	return args, nil
 }
 
@@ -5984,6 +6387,48 @@ func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field grap
 	return ec.marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋdomainᚐFeed(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Entity_findSavedNotificationByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Entity_findSavedNotificationByID_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindSavedNotificationByID(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*resources.SavedNotification)
+	fc.Result = res
+	return ec.marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7058,6 +7503,373 @@ func (ec *executionContext) _FilterParams_labels(ctx context.Context, field grap
 	res := resTmp.([]string)
 	fc.Result = res
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseAPNSConfig_headers(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAPNSConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseAPNSConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Headers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseAndroidConfig_collapseKey(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseAndroidConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CollapseKey, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseAndroidConfig_priority(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseAndroidConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Priority, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseAndroidConfig_restrictedPackageName(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseAndroidConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RestrictedPackageName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseAndroidConfig_data(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseAndroidConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseSimpleNotification_title(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseSimpleNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseSimpleNotification_body(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseSimpleNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Body, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseSimpleNotification_imageURL(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseSimpleNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseSimpleNotification_data(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseSimpleNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseWebpushConfig_headers(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseWebpushConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseWebpushConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Headers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _FirebaseWebpushConfig_data(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseWebpushConfig) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "FirebaseWebpushConfig",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _GhostCMSAuthor_id(ctx context.Context, field graphql.CollectedField, obj *library.GhostCMSAuthor) (ret graphql.Marshaler) {
@@ -9191,6 +10003,48 @@ func (ec *executionContext) _Msg_timestamp(ctx context.Context, field graphql.Co
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_sendNotification_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendNotification(rctx, args["registrationTokens"].([]string), args["data"].(map[string]interface{}), args["notification"].(base.FirebaseSimpleNotificationInput), args["android"].(*base.FirebaseAndroidConfigInput), args["ios"].(*base.FirebaseAPNSConfigInput), args["web"].(*base.FirebaseWebpushConfigInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_resolveFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -10832,6 +11686,48 @@ func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field gra
 	return ec.marshalNGhostCMSPost2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋinfrastructureᚋservicesᚋlibraryᚐGhostCMSPostᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_notifications(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_notifications_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Notifications(rctx, args["registrationToken"].(string), args["newerThan"].(time.Time), args["limit"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*resources.SavedNotification)
+	fc.Result = res
+	return ec.marshalNSavedNotification2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotificationᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11524,6 +12420,306 @@ func (ec *executionContext) _SMS_recipients(ctx context.Context, field graphql.C
 	res := resTmp.([]resources.Recipient)
 	fc.Result = res
 	return ec.marshalNRecipient2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐRecipientᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_id(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_registrationToken(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RegistrationToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_messageID(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MessageID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_timestamp(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_data(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_notification(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Notification, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*resources.FirebaseSimpleNotification)
+	fc.Result = res
+	return ec.marshalOFirebaseSimpleNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseSimpleNotification(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_androidConfig(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AndroidConfig, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*resources.FirebaseAndroidConfig)
+	fc.Result = res
+	return ec.marshalOFirebaseAndroidConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAndroidConfig(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_webpushConfig(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WebpushConfig, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*resources.FirebaseWebpushConfig)
+	fc.Result = res
+	return ec.marshalOFirebaseWebpushConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseWebpushConfig(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _SavedNotification_apnsConfig(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "SavedNotification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.APNSConfig, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*resources.FirebaseAPNSConfig)
+	fc.Result = res
+	return ec.marshalOFirebaseAPNSConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAPNSConfig(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SendMessageResponse_SMSMessageData(ctx context.Context, field graphql.CollectedField, obj *resources.SendMessageResponse) (ret graphql.Marshaler) {
@@ -13095,6 +14291,142 @@ func (ec *executionContext) unmarshalInputFilterParamsInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputFirebaseAPNSConfigInput(ctx context.Context, obj interface{}) (base.FirebaseAPNSConfigInput, error) {
+	var it base.FirebaseAPNSConfigInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "headers":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("headers"))
+			it.Headers, err = ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFirebaseAndroidConfigInput(ctx context.Context, obj interface{}) (base.FirebaseAndroidConfigInput, error) {
+	var it base.FirebaseAndroidConfigInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "priority":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
+			it.Priority, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "collapseKey":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("collapseKey"))
+			it.CollapseKey, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "restrictedPackageName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("restrictedPackageName"))
+			it.RestrictedPackageName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "data":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+			it.Data, err = ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFirebaseSimpleNotificationInput(ctx context.Context, obj interface{}) (base.FirebaseSimpleNotificationInput, error) {
+	var it base.FirebaseSimpleNotificationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "body":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
+			it.Body, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageURL":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageURL"))
+			it.ImageURL, err = ec.unmarshalNString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "data":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+			it.Data, err = ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFirebaseWebpushConfigInput(ctx context.Context, obj interface{}) (base.FirebaseWebpushConfigInput, error) {
+	var it base.FirebaseWebpushConfigInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "headers":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("headers"))
+			it.Headers, err = ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "data":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+			it.Data, err = ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj interface{}) (base.Message, error) {
 	var it base.Message
 	var asMap = obj.(map[string]interface{})
@@ -13264,6 +14596,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Feed(ctx, sel, obj)
+	case resources.SavedNotification:
+		return ec._SavedNotification(ctx, sel, &obj)
+	case *resources.SavedNotification:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._SavedNotification(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -13683,6 +15022,20 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 				}
 				return res
 			})
+		case "findSavedNotificationByID":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findSavedNotificationByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13961,6 +15314,131 @@ func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.Selection
 			out.Values[i] = graphql.MarshalString("FilterParams")
 		case "labels":
 			out.Values[i] = ec._FilterParams_labels(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var firebaseAPNSConfigImplementors = []string{"FirebaseAPNSConfig"}
+
+func (ec *executionContext) _FirebaseAPNSConfig(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseAPNSConfig) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseAPNSConfigImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FirebaseAPNSConfig")
+		case "headers":
+			out.Values[i] = ec._FirebaseAPNSConfig_headers(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var firebaseAndroidConfigImplementors = []string{"FirebaseAndroidConfig"}
+
+func (ec *executionContext) _FirebaseAndroidConfig(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseAndroidConfig) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseAndroidConfigImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FirebaseAndroidConfig")
+		case "collapseKey":
+			out.Values[i] = ec._FirebaseAndroidConfig_collapseKey(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "priority":
+			out.Values[i] = ec._FirebaseAndroidConfig_priority(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "restrictedPackageName":
+			out.Values[i] = ec._FirebaseAndroidConfig_restrictedPackageName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "data":
+			out.Values[i] = ec._FirebaseAndroidConfig_data(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var firebaseSimpleNotificationImplementors = []string{"FirebaseSimpleNotification"}
+
+func (ec *executionContext) _FirebaseSimpleNotification(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseSimpleNotification) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseSimpleNotificationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FirebaseSimpleNotification")
+		case "title":
+			out.Values[i] = ec._FirebaseSimpleNotification_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "body":
+			out.Values[i] = ec._FirebaseSimpleNotification_body(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "imageURL":
+			out.Values[i] = ec._FirebaseSimpleNotification_imageURL(ctx, field, obj)
+		case "data":
+			out.Values[i] = ec._FirebaseSimpleNotification_data(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var firebaseWebpushConfigImplementors = []string{"FirebaseWebpushConfig"}
+
+func (ec *executionContext) _FirebaseWebpushConfig(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseWebpushConfig) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseWebpushConfigImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FirebaseWebpushConfig")
+		case "headers":
+			out.Values[i] = ec._FirebaseWebpushConfig_headers(ctx, field, obj)
+		case "data":
+			out.Values[i] = ec._FirebaseWebpushConfig_data(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14390,6 +15868,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "sendNotification":
+			out.Values[i] = ec._Mutation_sendNotification(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "resolveFeedItem":
 			out.Values[i] = ec._Mutation_resolveFeedItem(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -14670,6 +16153,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "notifications":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_notifications(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "getFeed":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -14897,6 +16394,58 @@ func (ec *executionContext) _SMS(ctx context.Context, sel ast.SelectionSet, obj 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var savedNotificationImplementors = []string{"SavedNotification", "_Entity"}
+
+func (ec *executionContext) _SavedNotification(ctx context.Context, sel ast.SelectionSet, obj *resources.SavedNotification) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, savedNotificationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SavedNotification")
+		case "id":
+			out.Values[i] = ec._SavedNotification_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "registrationToken":
+			out.Values[i] = ec._SavedNotification_registrationToken(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "messageID":
+			out.Values[i] = ec._SavedNotification_messageID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "timestamp":
+			out.Values[i] = ec._SavedNotification_timestamp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "data":
+			out.Values[i] = ec._SavedNotification_data(ctx, field, obj)
+		case "notification":
+			out.Values[i] = ec._SavedNotification_notification(ctx, field, obj)
+		case "androidConfig":
+			out.Values[i] = ec._SavedNotification_androidConfig(ctx, field, obj)
+		case "webpushConfig":
+			out.Values[i] = ec._SavedNotification_webpushConfig(ctx, field, obj)
+		case "apnsConfig":
+			out.Values[i] = ec._SavedNotification_apnsConfig(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15514,6 +17063,11 @@ func (ec *executionContext) marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋen
 	return ec._Feed(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNFirebaseSimpleNotificationInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseSimpleNotificationInput(ctx context.Context, v interface{}) (base.FirebaseSimpleNotificationInput, error) {
+	res, err := ec.unmarshalInputFirebaseSimpleNotificationInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx context.Context, v interface{}) (base.Flavour, error) {
 	var res base.Flavour
 	err := res.UnmarshalGQL(v)
@@ -15879,6 +17433,57 @@ func (ec *executionContext) marshalNSMS2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋeng
 	return ec._SMS(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNSavedNotification2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v resources.SavedNotification) graphql.Marshaler {
+	return ec._SavedNotification(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSavedNotification2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*resources.SavedNotification) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v *resources.SavedNotification) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SavedNotification(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNSendMessageResponse2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSendMessageResponse(ctx context.Context, sel ast.SelectionSet, v resources.SendMessageResponse) graphql.Marshaler {
 	return ec._SendMessageResponse(ctx, sel, &v)
 }
@@ -15946,6 +17551,27 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNString2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalString(*v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐTextType(ctx context.Context, v interface{}) (base.TextType, error) {
@@ -16512,6 +18138,58 @@ func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emr�
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputFilterParamsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFirebaseAPNSConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAPNSConfig(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseAPNSConfig) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FirebaseAPNSConfig(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFirebaseAPNSConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAPNSConfigInput(ctx context.Context, v interface{}) (*base.FirebaseAPNSConfigInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFirebaseAPNSConfigInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFirebaseAndroidConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAndroidConfig(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseAndroidConfig) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FirebaseAndroidConfig(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFirebaseAndroidConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAndroidConfigInput(ctx context.Context, v interface{}) (*base.FirebaseAndroidConfigInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFirebaseAndroidConfigInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFirebaseSimpleNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseSimpleNotification(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseSimpleNotification) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FirebaseSimpleNotification(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOFirebaseWebpushConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseWebpushConfig(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseWebpushConfig) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FirebaseWebpushConfig(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFirebaseWebpushConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseWebpushConfigInput(ctx context.Context, v interface{}) (*base.FirebaseWebpushConfigInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFirebaseWebpushConfigInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"time"
 
+	"cloud.google.com/go/firestore"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -226,4 +228,18 @@ type Repository interface {
 		ctx context.Context,
 		data resources.Message,
 	) error
+
+	SaveNotification(
+		ctx context.Context,
+		firestoreClient *firestore.Client,
+		notification resources.SavedNotification,
+	) error
+
+	RetrieveNotification(
+		ctx context.Context,
+		firestoreClient *firestore.Client,
+		registrationToken string,
+		newerThan time.Time,
+		limit int,
+	) ([]*resources.SavedNotification, error)
 }

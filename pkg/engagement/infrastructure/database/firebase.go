@@ -39,6 +39,8 @@ const (
 
 	twilioCallbackCollectionName = "twilio_callbacks"
 
+	notificationCollectionName = "notifications"
+
 	labelsDocID            = "item_labels"
 	unreadInboxCountsDocID = "unread_inbox_counts"
 
@@ -736,6 +738,11 @@ func (fr Repository) getAITCallbackCollectionName() string {
 	return suffixed
 }
 
+func (fr Repository) getNotificationCollectionName() string {
+	suffixed := base.SuffixCollection(notificationCollectionName)
+	return suffixed
+}
+
 func (fr Repository) getTwilioCallbackCollectionName() string {
 	suffixed := base.SuffixCollection(twilioCallbackCollectionName)
 	return suffixed
@@ -1417,4 +1424,50 @@ func (fr Repository) SaveTwilioResponse(
 	}
 
 	return nil
+}
+
+// SaveNotification saves a notification
+func (fr Repository) SaveNotification(
+	ctx context.Context,
+	firestoreClient *firestore.Client,
+	notification resources.SavedNotification,
+) error {
+	collectionName := fr.getNotificationCollectionName()
+	_, _, err := firestoreClient.Collection(collectionName).Add(ctx, notification)
+	if err != nil {
+		return fmt.Errorf("can't save notification: %w", err)
+	}
+	return nil
+}
+
+// RetrieveNotification retrieves a notification
+func (fr Repository) RetrieveNotification(
+	ctx context.Context,
+	firestoreClient *firestore.Client,
+	registrationToken string,
+	newerThan time.Time,
+	limit int,
+) ([]*resources.SavedNotification, error) {
+	collectionName := fr.getNotificationCollectionName()
+
+	docs, err := firestoreClient.Collection(
+		collectionName,
+	).Where(
+		"RegistrationToken", "==", registrationToken,
+	).Where(
+		"Timestamp", ">=", newerThan,
+	).Limit(limit).Documents(ctx).GetAll()
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve notifications: %w", err)
+	}
+	notifications := []*resources.SavedNotification{}
+	for _, doc := range docs {
+		var notification resources.SavedNotification
+		err = doc.DataTo(&notification)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshalling saved notification: %w", err)
+		}
+		notifications = append(notifications, &notification)
+	}
+	return notifications, nil
 }

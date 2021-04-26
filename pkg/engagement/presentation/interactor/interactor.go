@@ -3,6 +3,7 @@
 package interactor
 
 import (
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
@@ -24,6 +25,7 @@ type Interactor struct {
 	Whatsapp     whatsapp.ServiceWhatsapp
 	OTP          otp.ServiceOTP
 	Twilio       twilio.ServiceTwilio
+	FCM          fcm.ServiceFCM
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -37,6 +39,7 @@ func NewEngagementInteractor(
 	whatsapp whatsapp.ServiceWhatsapp,
 	otp otp.ServiceOTP,
 	twilio twilio.ServiceTwilio,
+	fcm fcm.ServiceFCM,
 ) (*Interactor, error) {
 	return &Interactor{
 		Feed:         feed,
@@ -48,5 +51,6 @@ func NewEngagementInteractor(
 		Whatsapp:     whatsapp,
 		OTP:          otp,
 		Twilio:       twilio,
+		FCM:          fcm,
 	}, nil
 }
