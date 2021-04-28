@@ -170,6 +170,11 @@ type NotificationUsecases interface {
 		pl resources.NotificationEnvelope,
 		notification *base.FirebaseSimpleNotificationInput,
 	) error
+
+	HandleSendNotification(
+		ctx context.Context,
+		m *base.PubSubPayload,
+	) error
 }
 
 // HandlePubsubPayload defines the signature of a function that handles
@@ -179,20 +184,23 @@ type HandlePubsubPayload func(ctx context.Context, m *base.PubSubPayload) error
 // NotificationImpl represents the notification usecase implementation
 type NotificationImpl struct {
 	repository repository.Repository
-	fcm        fcm.PushService
+	push       fcm.PushService
 	onboarding onboarding.ProfileService
+	fcm        fcm.ServiceFCM
 }
 
 // NewNotification initializes a notification usecase
 func NewNotification(
 	repository repository.Repository,
-	fcm fcm.PushService,
+	push fcm.PushService,
 	onboarding onboarding.ProfileService,
+	fcm fcm.ServiceFCM,
 ) *NotificationImpl {
 	return &NotificationImpl{
 		repository: repository,
-		fcm:        fcm,
+		push:       push,
 		onboarding: onboarding,
+		fcm:        fcm,
 	}
 }
 
@@ -449,6 +457,35 @@ func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *base.PubSu
 	return nil
 }
 
+// HandleSendNotification responds to send notification messages
+func (n NotificationImpl) HandleSendNotification(ctx context.Context, m *base.PubSubPayload) error {
+	if m == nil {
+		return fmt.Errorf("nil pub sub payload")
+	}
+
+	payload := &base.SendNotificationPayload{}
+	err := json.Unmarshal(m.Message.Data, payload)
+	if err != nil {
+		return fmt.Errorf(
+			"can't unmarshal notification notification from pubsub data: %w", err)
+	}
+
+	_, err = n.fcm.SendNotification(
+		ctx,
+		payload.RegistrationTokens,
+		payload.Data,
+		payload.Notification,
+		payload.Android,
+		payload.Ios,
+		payload.Web,
+	)
+	if err != nil {
+		return fmt.Errorf("can't send notification: %v", err)
+	}
+
+	return nil
+}
+
 // NotifyItemUpdate sends a Firebase Cloud Messaging notification
 func (n NotificationImpl) NotifyItemUpdate(
 	ctx context.Context,
@@ -640,7 +677,7 @@ func (n NotificationImpl) SendNotificationViaFCM(
 	if notification != nil {
 		payload.Notification = notification
 	}
-	err = n.fcm.Push(ctx, sender, payload)
+	err = n.push.Push(ctx, sender, payload)
 	if err != nil {
 		return fmt.Errorf("can't send element over FCM: %w", err)
 	}

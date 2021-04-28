@@ -60,7 +60,8 @@ func InitializeTestNewNotification(ctx context.Context) (*usecases.NotificationI
 	}
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding)
+	fcm := fcm.NewService(fr)
+	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm)
 	return notification, nil
 }
 

@@ -303,6 +303,12 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(w http.ResponseWriter
 			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 			return
 		}
+	case helpers.AddPubSubNamespace(common.FcmPublishTopic):
+		err = p.interactor.Notification.HandleSendNotification(ctx, m)
+		if err != nil {
+			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			return
+		}
 	default:
 		// the topic should be anticipated/handled here
 		errMsg := fmt.Sprintf(

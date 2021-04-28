@@ -85,7 +85,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Initialize new instances of the infrastructure services
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding)
+	fcm := fcm.NewService(fr)
+	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
 	sms := sms.NewService(fr)
@@ -98,7 +99,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()
 	twilio := twilio.NewService()
-	fcm := fcm.NewService(fr)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(

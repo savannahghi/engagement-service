@@ -8,12 +8,13 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 const (
-	fcmPublishTopic = "fcm.send_notification"
-	fcmServiceName  = "fcm"
-	fcmVersion      = ""
+	fcmServiceName = "fcm"
+	fcmVersion     = ""
 )
 
 // PushService defines the behavior of our FCM push implementation
@@ -79,7 +80,7 @@ func (rfs RemotePushService) Push(
 	err = base.PublishToPubsub(
 		ctx,
 		rfs.pubsubClient,
-		fcmPublishTopic,
+		helpers.AddPubSubNamespace(common.FcmPublishTopic),
 		env,
 		fcmServiceName,
 		fcmVersion,
