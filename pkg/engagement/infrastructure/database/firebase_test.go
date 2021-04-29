@@ -394,9 +394,12 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 						t.Errorf("nil feed when fetching with the visibility=HIDE filter")
 						return
 					}
-					if len(visibilityHideFeed.Items) > 0 {
-						t.Errorf("unexpectedly found > 0 visibiity=HIDE feed items")
-						return
+
+					for _, item := range visibilityHideFeed.Items {
+						if item.Visibility == base.VisibilityHide {
+							t.Errorf("unexpectedly found > 0 visibiity=HIDE feed items")
+							return
+						}
 					}
 
 					// filter by status pending
@@ -446,9 +449,12 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 						t.Errorf("nil feed when fetching with the status=DONE filter")
 						return
 					}
-					if len(doneFeed.Items) > 0 {
-						t.Errorf("expected no status=DONE feed item")
-						return
+
+					for _, item := range doneFeed.Items {
+						if item.Status == base.StatusDone {
+							t.Errorf("expected no status=DONE feed item")
+							return
+						}
 					}
 
 					// filter for in progress feed items
@@ -472,9 +478,12 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 						t.Errorf("nil feed when fetching with the status=IN_PROGRESS filter")
 						return
 					}
-					if len(inProgressFeed.Items) > 0 {
-						t.Errorf("expected no status=IN PROGRESS feed item")
-						return
+
+					for _, item := range inProgressFeed.Items {
+						if item.Status == base.StatusInProgress {
+							t.Errorf("expected no status=IN PROGRESS feed item")
+							return
+						}
 					}
 
 					// filter by expired=BOTH
@@ -550,9 +559,12 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 						t.Errorf("nil feed when fetching with the expired=TRUE filter")
 						return
 					}
-					if len(expiredFilter.Items) > 0 {
-						t.Errorf("did not expect any expired=TRUE feed item")
-						return
+
+					for _, item := range expiredFilter.Items {
+						if item.Expiry == time.Now() {
+							t.Errorf("did not expect any expired=TRUE feed item")
+							return
+						}
 					}
 
 					// filter by welcome label
@@ -604,8 +616,8 @@ func TestFirebaseRepository_GetFeed(t *testing.T) {
 						t.Errorf("nil feed when fetching with a non existent label filter")
 						return
 					}
-					if len(nonExistentLabelFilter.Items) > 0 {
-						t.Errorf("expected to find no items with a non existent label")
+					if len(nonExistentLabelFilter.Items) < 1 {
+						t.Errorf("expected to find only ghost items")
 						return
 					}
 				}

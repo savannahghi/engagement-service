@@ -141,18 +141,6 @@ func SetDefaultItems(
 		items = proItems
 	}
 
-	// fetch CMS items from the CMS feed tag
-	cmsItems := feedItemsFromCMSFeedTag(ctx)
-	for _, cmsItem := range cmsItems {
-		_, err := repository.SaveFeedItem(ctx, uid, flavour, &cmsItem)
-		if err != nil {
-			return nil, fmt.Errorf("unable to CMS save item: %w", err)
-		}
-
-	}
-
-	items = append(items, cmsItems...)
-
 	return items, nil
 }
 
