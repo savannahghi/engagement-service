@@ -150,6 +150,7 @@ type NotificationUsecases interface {
 		ctx context.Context,
 		sender string,
 		m *base.PubSubPayload,
+		notificationBody string,
 	) error
 
 	NotifyInboxCountUpdate(
@@ -321,7 +322,8 @@ func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *base.PubSub
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgePublishSender, m)
+	notificationBody := "%s nudge has been added to your feed. Complete the task."
+	err := n.NotifyNudgeUpdate(ctx, nudgePublishSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -335,7 +337,8 @@ func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *base.PubSubP
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeDeleteSender, m)
+	notificationBody := "%s nudge has been removed from your feed."
+	err := n.NotifyNudgeUpdate(ctx, nudgeDeleteSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -349,7 +352,8 @@ func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *base.PubSub
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeResolveSender, m)
+	notificationBody := "%s nudge task has been completed."
+	err := n.NotifyNudgeUpdate(ctx, nudgeResolveSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -363,7 +367,8 @@ func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *base.PubS
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeUnresolveSender, m)
+	notificationBody := "%s nudge task has been uncompleted."
+	err := n.NotifyNudgeUpdate(ctx, nudgeUnresolveSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -377,7 +382,8 @@ func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *base.PubSubPay
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeHideSender, m)
+	notificationBody := "%s nudge has been hidden from your feed."
+	err := n.NotifyNudgeUpdate(ctx, nudgeHideSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -391,7 +397,8 @@ func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *base.PubSubPay
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeShowSender, m)
+	notificationBody := "%s nudge will appear on your feed."
+	err := n.NotifyNudgeUpdate(ctx, nudgeShowSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -516,11 +523,11 @@ func (n NotificationImpl) NotifyItemUpdate(
 			Body:     item.Summary,
 			ImageURL: &iconURL,
 		}
-	}
 
-	err = n.SendNotificationViaFCM(ctx, item.Users, sender, envelope, notification)
-	if err != nil {
-		return fmt.Errorf("unable to notify item: %w", err)
+		err = n.SendNotificationViaFCM(ctx, item.Users, sender, envelope, notification)
+		if err != nil {
+			return fmt.Errorf("unable to notify item: %w", err)
+		}
 	}
 
 	// TODO Send email notifications
@@ -566,15 +573,18 @@ func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour b
 		return fmt.Errorf("can't update inbox count: %w", err)
 	}
 
-	unread, err := n.repository.UnreadPersistentItems(ctx, uid, flavour)
+	_, err = n.repository.UnreadPersistentItems(ctx, uid, flavour)
 	if err != nil {
 		return fmt.Errorf("can't get inbox count: %w", err)
 	}
 
-	err = n.NotifyInboxCountUpdate(ctx, uid, flavour, unread)
-	if err != nil {
-		return fmt.Errorf("can't notify inbox count: %w", err)
-	}
+	// The inbox has been descoped for this milestone
+	// Does not make sense to send notification updates to our users
+	// TODO: Restore after the milestone @mathenge
+	// err = n.NotifyInboxCountUpdate(ctx, uid, flavour, unread)
+	// if err != nil {
+	// 	return fmt.Errorf("can't notify inbox count: %w", err)
+	// }
 
 	return nil
 }
@@ -584,6 +594,7 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 	ctx context.Context,
 	sender string,
 	m *base.PubSubPayload,
+	notificationBody string,
 ) error {
 	var envelope resources.NotificationEnvelope
 	err := json.Unmarshal(m.Message.Data, &envelope)
@@ -597,7 +608,14 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		return fmt.Errorf("can't unmarshal nudge from pubsub data: %w", err)
 	}
 
-	err = n.SendNotificationViaFCM(ctx, nudge.Users, sender, envelope, nil)
+	iconURL := common.DefaultIconPath
+	notification := &base.FirebaseSimpleNotificationInput{
+		Title:    nudge.Title,
+		Body:     fmt.Sprintf(notificationBody, nudge.Title),
+		ImageURL: &iconURL,
+	}
+
+	err = n.SendNotificationViaFCM(ctx, nudge.Users, sender, envelope, notification)
 	if err != nil {
 		return fmt.Errorf("unable to notify nudge: %w", err)
 	}
@@ -623,9 +641,14 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 		},
 	}
 
+	notification := &base.FirebaseSimpleNotificationInput{
+		Title: "Be.Well Inbox",
+		Body:  fmt.Sprintf("You have %v unread notification(s).", count),
+	}
+
 	notifyUIDs := []string{uid}
 	err := n.SendNotificationViaFCM(
-		ctx, notifyUIDs, feedUpdate, notificationEnvelope, nil)
+		ctx, notifyUIDs, feedUpdate, notificationEnvelope, notification)
 	if err != nil {
 		return fmt.Errorf("unable to notify thin feed: %w", err)
 	}
@@ -656,6 +679,10 @@ func (n NotificationImpl) SendNotificationViaFCM(
 	pl resources.NotificationEnvelope,
 	notification *base.FirebaseSimpleNotificationInput,
 ) error {
+	if notification == nil {
+		return fmt.Errorf("nil notification")
+	}
+
 	tokens, err := n.GetUserTokens(uids)
 	if err != nil {
 		return fmt.Errorf("can't get user tokens: %w", err)
@@ -673,10 +700,14 @@ func (n NotificationImpl) SendNotificationViaFCM(
 		Data: map[string]string{
 			sender: string(marshalled),
 		},
+		Notification: &base.FirebaseSimpleNotificationInput{
+			Title:    notification.Title,
+			Body:     notification.Body,
+			Data:     notification.Data,
+			ImageURL: notification.ImageURL,
+		},
 	}
-	if notification != nil {
-		payload.Notification = notification
-	}
+
 	err = n.push.Push(ctx, sender, payload)
 	if err != nil {
 		return fmt.Errorf("can't send element over FCM: %w", err)
