@@ -72,11 +72,11 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 
 	feed := usecases.NewFeed(r, messagingSvc)
 	fcm := fcm.NewService(r)
-	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm)
+	mail := mail.NewService()
+	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
 	sms := sms.NewService(r)
-	mail := mail.NewService()
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()
 	twilio := twilio.NewService()

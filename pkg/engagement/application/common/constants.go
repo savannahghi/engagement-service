@@ -23,6 +23,7 @@ const (
 	MessageDeleteTopic  = "message.delete"
 	IncomingEventTopic  = "incoming.event"
 	FcmPublishTopic     = "fcm.send_notification"
+	SentEmailTopic      = "mails.inbox"
 
 	// DefaultLabel is the label used for welcome content
 	DefaultLabel = "WELCOME"

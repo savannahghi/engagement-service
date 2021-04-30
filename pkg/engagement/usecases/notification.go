@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 
 	"gitlab.slade360emr.com/go/base"
@@ -176,6 +177,11 @@ type NotificationUsecases interface {
 		ctx context.Context,
 		m *base.PubSubPayload,
 	) error
+
+	SendEmail(
+		ctx context.Context,
+		m *base.PubSubPayload,
+	) error
 }
 
 // HandlePubsubPayload defines the signature of a function that handles
@@ -188,6 +194,7 @@ type NotificationImpl struct {
 	push       fcm.PushService
 	onboarding onboarding.ProfileService
 	fcm        fcm.ServiceFCM
+	mail       mail.ServiceMail
 }
 
 // NewNotification initializes a notification usecase
@@ -196,12 +203,14 @@ func NewNotification(
 	push fcm.PushService,
 	onboarding onboarding.ProfileService,
 	fcm fcm.ServiceFCM,
+	mail mail.ServiceMail,
 ) *NotificationImpl {
 	return &NotificationImpl{
 		repository: repository,
 		push:       push,
 		onboarding: onboarding,
 		fcm:        fcm,
+		mail:       mail,
 	}
 }
 
@@ -709,6 +718,36 @@ func (n NotificationImpl) SendNotificationViaFCM(
 	err = n.push.Push(ctx, sender, payload)
 	if err != nil {
 		return fmt.Errorf("can't send element over FCM: %w", err)
+	}
+	return nil
+}
+
+// SendEmail sends an email
+func (n NotificationImpl) SendEmail(ctx context.Context, m *base.PubSubPayload) error {
+	if m == nil {
+		return fmt.Errorf("nil pub sub payload")
+	}
+
+	var body map[string]interface{}
+
+	err := json.Unmarshal(m.Message.Data, &body)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal data: %v", err)
+	}
+
+	to := body["to"]
+	text := body["text"]
+	subject := body["subject"]
+
+	// Send the email to the destination
+	_, _, err = n.mail.SendEmail(
+		fmt.Sprintf("%v", subject),
+		fmt.Sprintf("%v", text),
+		fmt.Sprintf("%v", to),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to send email: %v", err)
+
 	}
 	return nil
 }

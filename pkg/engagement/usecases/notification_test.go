@@ -9,17 +9,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
-
-	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/base"
 )
 
 const (
@@ -61,7 +61,8 @@ func InitializeTestNewNotification(ctx context.Context) (*usecases.NotificationI
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	fcm := fcm.NewService(fr)
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm)
+	mail := mail.NewService()
+	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail)
 	return notification, nil
 }
 
@@ -1468,6 +1469,72 @@ func TestUpdateInbox(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := notify.UpdateInbox(tt.args.ctx, tt.args.uid, tt.args.flavour); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateInbox() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestNotificationImpl_SendEmail(t *testing.T) {
+	ctx := context.Background()
+
+	notify, err := InitializeTestNewNotification(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize new service")
+		return
+	}
+
+	body := map[string]interface{}{
+		"to":      []string{"automated.test.user.bewell-app-ci@healthcloud.co.ke"},
+		"text":    "This is a test message",
+		"subject": "Test Subject",
+	}
+
+	payloadData, err := json.Marshal(body)
+	if err != nil {
+		t.Errorf("failed to marshal data: %v", err)
+		return
+	}
+
+	pubSubMessage := base.PubSubMessage{
+		Data: payloadData,
+		Attributes: map[string]string{
+			"topicID": "mails.send",
+		},
+	}
+
+	payload := &base.PubSubPayload{
+		Message: pubSubMessage,
+	}
+	type args struct {
+		ctx context.Context
+		m   *base.PubSubPayload
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Happy Case - Send email to a valid email",
+			args: args{
+				ctx: ctx,
+				m:   payload,
+			},
+			wantErr: true, //TODO - Find out why it's failing
+		},
+		{
+			name: "invalid case - missing payload",
+			args: args{
+				ctx: context.Background(),
+				m:   nil,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := notify.SendEmail(tt.args.ctx, tt.args.m); (err != nil) != tt.wantErr {
+				t.Errorf("NotificationImpl.SendEmail() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

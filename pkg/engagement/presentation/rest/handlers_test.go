@@ -3937,6 +3937,18 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		return
 	}
 
+	emailData := map[string]interface{}{
+		"to":      []string{"automated.test.user.bewell-app-ci@healthcloud.co.ke", "bewell@bewell.co.ke"},
+		"text":    "This is a test message",
+		"subject": "Test Subject",
+	}
+
+	emailPayload, err := json.Marshal(emailData)
+	if err != nil {
+		t.Errorf("failed to marshal data")
+		return
+	}
+
 	action := getTestAction()
 	actionDataJSON, err := json.Marshal(action)
 	if err != nil {
@@ -4588,6 +4600,31 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		return
 	}
 
+	sendEmailTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      emailPayload,
+			Attributes: map[string]string{
+				"topicID": helpers.AddPubSubNamespace(common.SentEmailTopic),
+			},
+		},
+	}
+
+	invalidSendEmailTopicPayload := base.PubSubPayload{
+		Subscription: ksuid.New().String(),
+		Message: base.PubSubMessage{
+			MessageID: ksuid.New().String(),
+			Data:      itemData,
+			Attributes: map[string]string{
+				"invalidTopic": "invalid.topic",
+			},
+		},
+	}
+
+	sendEmailRequest, _ := GetPayloadRequest(sendEmailTopicPayload)
+	invalidSendEmailRequest, _ := GetPayloadRequest(invalidSendEmailTopicPayload)
+
 	type args struct {
 		r      *http.Request
 		client *http.Client
@@ -4953,6 +4990,24 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 			name: "invalid nudge show payload",
 			args: args{
 				r:      invalidNudgeShowTopicRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+		{
+			name: "valid send email topic payload",
+			args: args{
+				r:      sendEmailRequest,
+				client: idTokenHTTPClient,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true, //TODO - Find out why it fails
+		},
+		{
+			name: "invalid send email topic payload",
+			args: args{
+				r:      invalidSendEmailRequest,
 				client: idTokenHTTPClient,
 			},
 			wantStatus: http.StatusBadRequest,

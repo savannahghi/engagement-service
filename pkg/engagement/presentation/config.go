@@ -86,7 +86,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Initialize new instances of the infrastructure services
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	fcm := fcm.NewService(fr)
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm)
+	mail := mail.NewService()
+	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
 	sms := sms.NewService(fr)
@@ -95,7 +96,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
 	}
 	feed := usecases.NewFeed(fr, ns)
-	mail := mail.NewService()
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()
 	twilio := twilio.NewService()
