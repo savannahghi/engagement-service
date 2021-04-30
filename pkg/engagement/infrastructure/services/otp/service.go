@@ -380,16 +380,10 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 		return code, nil
 
 	} else if retryStep == twilioStep {
-
-		sent, err := s.whatsapp.PhoneNumberVerificationCode(ctx, otp.MSISDN, otp.AuthorizationCode, otp.Message)
+		err := s.twilio.SendSMS(ctx, otp.MSISDN, otp.Message)
 		if err != nil {
 			return code, fmt.Errorf("otp send retry failed: %w", err)
 		}
-
-		if !sent {
-			return "", fmt.Errorf("unable to send OTP whatsapp message : %w", err)
-		}
-
 		return code, nil
 
 	} else {
