@@ -322,7 +322,7 @@ func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *base.PubSub
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "%s nudge has been added to your feed. Complete the task."
+	notificationBody := "A task has been added to your Feed."
 	err := n.NotifyNudgeUpdate(ctx, nudgePublishSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
@@ -337,7 +337,7 @@ func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *base.PubSubP
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "%s nudge has been removed from your feed."
+	notificationBody := "You have deleted the task from your Feed."
 	err := n.NotifyNudgeUpdate(ctx, nudgeDeleteSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
@@ -352,7 +352,7 @@ func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *base.PubSub
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "%s nudge task has been completed."
+	notificationBody := "You have completed the task."
 	err := n.NotifyNudgeUpdate(ctx, nudgeResolveSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
@@ -367,7 +367,7 @@ func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *base.PubS
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "%s nudge task has been uncompleted."
+	notificationBody := "You have marked the task as pending."
 	err := n.NotifyNudgeUpdate(ctx, nudgeUnresolveSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
@@ -382,7 +382,7 @@ func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *base.PubSubPay
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "%s nudge has been hidden from your feed."
+	notificationBody := "You have hidden the task from your feed."
 	err := n.NotifyNudgeUpdate(ctx, nudgeHideSender, m, notificationBody)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
@@ -608,11 +608,9 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		return fmt.Errorf("can't unmarshal nudge from pubsub data: %w", err)
 	}
 
-	iconURL := common.DefaultIconPath
 	notification := &base.FirebaseSimpleNotificationInput{
-		Title:    nudge.Title,
-		Body:     fmt.Sprintf(notificationBody, nudge.Title),
-		ImageURL: &iconURL,
+		Title: nudge.Title,
+		Body:  notificationBody,
 	}
 
 	err = n.SendNotificationViaFCM(ctx, nudge.Users, sender, envelope, notification)
