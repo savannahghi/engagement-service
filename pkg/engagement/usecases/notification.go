@@ -151,7 +151,6 @@ type NotificationUsecases interface {
 		ctx context.Context,
 		sender string,
 		m *base.PubSubPayload,
-		notificationBody string,
 	) error
 
 	NotifyInboxCountUpdate(
@@ -331,8 +330,7 @@ func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *base.PubSub
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "A task has been added to your Feed."
-	err := n.NotifyNudgeUpdate(ctx, nudgePublishSender, m, notificationBody)
+	err := n.NotifyNudgeUpdate(ctx, nudgePublishSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -346,8 +344,7 @@ func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *base.PubSubP
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "You have deleted the task from your Feed."
-	err := n.NotifyNudgeUpdate(ctx, nudgeDeleteSender, m, notificationBody)
+	err := n.NotifyNudgeUpdate(ctx, nudgeDeleteSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -361,8 +358,7 @@ func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *base.PubSub
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "You have completed the task."
-	err := n.NotifyNudgeUpdate(ctx, nudgeResolveSender, m, notificationBody)
+	err := n.NotifyNudgeUpdate(ctx, nudgeResolveSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -376,8 +372,7 @@ func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *base.PubS
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "You have marked the task as pending."
-	err := n.NotifyNudgeUpdate(ctx, nudgeUnresolveSender, m, notificationBody)
+	err := n.NotifyNudgeUpdate(ctx, nudgeUnresolveSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -391,8 +386,7 @@ func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *base.PubSubPay
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "You have hidden the task from your feed."
-	err := n.NotifyNudgeUpdate(ctx, nudgeHideSender, m, notificationBody)
+	err := n.NotifyNudgeUpdate(ctx, nudgeHideSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -406,8 +400,7 @@ func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *base.PubSubPay
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	notificationBody := "%s nudge will appear on your feed."
-	err := n.NotifyNudgeUpdate(ctx, nudgeShowSender, m, notificationBody)
+	err := n.NotifyNudgeUpdate(ctx, nudgeShowSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -603,7 +596,6 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 	ctx context.Context,
 	sender string,
 	m *base.PubSubPayload,
-	notificationBody string,
 ) error {
 	var envelope resources.NotificationEnvelope
 	err := json.Unmarshal(m.Message.Data, &envelope)
@@ -617,9 +609,38 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		return fmt.Errorf("can't unmarshal nudge from pubsub data: %w", err)
 	}
 
-	notification := &base.FirebaseSimpleNotificationInput{
-		Title: nudge.Title,
-		Body:  notificationBody,
+	links := nudge.Links
+	var imageURL string
+	for _, link := range links {
+		imageURL = link.Thumbnail
+	}
+
+	var notification *base.FirebaseSimpleNotificationInput
+
+	switch sender {
+	case nudgePublishSender:
+		notification = &base.FirebaseSimpleNotificationInput{
+			Title:    nudge.Title,
+			Body:     nudge.NotificationBody.PublishMessage,
+			ImageURL: &imageURL,
+		}
+
+	case nudgeResolveSender:
+		notification = &base.FirebaseSimpleNotificationInput{
+			Title:    nudge.Title,
+			Body:     nudge.NotificationBody.ResolveMessage,
+			ImageURL: &imageURL,
+		}
+
+	case nudgeDeleteSender,
+		nudgeUnresolveSender,
+		nudgeShowSender,
+		nudgeHideSender:
+		// Do nothing..our scope for nudges does not contain these
+		return nil
+
+	default:
+		return fmt.Errorf("unexpected nudge sender: %s", sender)
 	}
 
 	err = n.SendNotificationViaFCM(ctx, nudge.Users, sender, envelope, notification)

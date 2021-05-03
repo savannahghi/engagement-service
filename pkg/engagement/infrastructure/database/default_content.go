@@ -383,6 +383,9 @@ func addInsuranceNudge(
 	actions := []base.Action{
 		*addInsuranceAction,
 	}
+	notificationBody := base.NotificationBody{
+		ResolveMessage: "Thank you for adding your insurance cover.",
+	}
 	return createNudge(
 		ctx,
 		uid,
@@ -394,6 +397,7 @@ func addInsuranceNudge(
 		text,
 		actions,
 		repository,
+		notificationBody,
 	)
 }
 
@@ -423,6 +427,9 @@ func partnerAccountSetupNudge(
 	actions := []base.Action{
 		*partnerAccountSetupAction,
 	}
+	notificationBody := base.NotificationBody{
+		ResolveMessage: "Thank you for setting up your partner set up account.",
+	}
 	return createNudge(
 		ctx,
 		uid,
@@ -434,6 +441,7 @@ func partnerAccountSetupNudge(
 		text,
 		actions,
 		repository,
+		notificationBody,
 	)
 }
 
@@ -463,6 +471,9 @@ func verifyEmailNudge(
 	actions := []base.Action{
 		*verifyEmailAction,
 	}
+	notificationBody := base.NotificationBody{
+		ResolveMessage: "Thank you for adding your primary email address.",
+	}
 	return createNudge(
 		ctx,
 		uid,
@@ -474,6 +485,7 @@ func verifyEmailNudge(
 		text,
 		actions,
 		repository,
+		notificationBody,
 	)
 }
 
@@ -488,6 +500,7 @@ func createNudge(
 	imageDescription string,
 	actions []base.Action,
 	repository repository.Repository,
+	notificationBody base.NotificationBody,
 ) (*base.Nudge, error) {
 	future := time.Now().Add(time.Hour * futureHours)
 	nudge := &base.Nudge{
@@ -506,6 +519,7 @@ func createNudge(
 		Groups:               []string{},
 		Users:                []string{uid},
 		NotificationChannels: []base.Channel{},
+		NotificationBody:     notificationBody,
 	}
 	_, err := nudge.ValidateAndMarshal()
 	if err != nil {

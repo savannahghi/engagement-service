@@ -1376,7 +1376,6 @@ func TestNotifyNudgeUpdate(t *testing.T) {
 		ctx    context.Context
 		sender string
 		m      *base.PubSubPayload
-		action string
 	}
 	tests := []struct {
 		name    string
@@ -1387,9 +1386,8 @@ func TestNotifyNudgeUpdate(t *testing.T) {
 			name: "Successful nudge update notification",
 			args: args{
 				ctx:    ctx,
-				sender: "Be Well",
+				sender: "NUDGE_PUBLISHED",
 				m:      getTestPubsubPayload(t, nudge),
-				action: "some-action-name",
 			},
 			wantErr: false,
 		},
@@ -1399,14 +1397,22 @@ func TestNotifyNudgeUpdate(t *testing.T) {
 				ctx:    ctx,
 				sender: "Be Well",
 				m:      getTestPubsubPayload(t, &action),
-				action: "some-action-name",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Fail to notify nudge update - unknown sender",
+			args: args{
+				ctx:    ctx,
+				sender: "Be Well",
+				m:      getTestPubsubPayload(t, nudge),
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := notify.NotifyNudgeUpdate(tt.args.ctx, tt.args.sender, tt.args.m, tt.args.action)
+			err := notify.NotifyNudgeUpdate(tt.args.ctx, tt.args.sender, tt.args.m)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NotifyNudgeUpdate() error = %v, wantErr %v", err, tt.wantErr)
 			}

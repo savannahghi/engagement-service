@@ -77,6 +77,10 @@
                         "$ref": "https://schema.healthcloud.co.ke/channels.schema.json#/definitions/channel"
                     },
                     "uniqueItems": true
+                },
+                "notificationBody": {
+                    "$ref": "https://schema.healthcloud.co.ke/notificationbody.schema.json#/definitions/notificationBody",
+                    "description": "Notification messages body tied to Feed actions."
                 }
             },
             "required": [

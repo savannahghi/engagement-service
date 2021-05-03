@@ -36,7 +36,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
-	gitlab.slade360emr.com/go/base v0.0.136
+	gitlab.slade360emr.com/go/base v0.0.139
 	go.opencensus.io v0.23.0
 	golang.org/x/net v0.0.0-20210421230115-4e50805a0758 // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78

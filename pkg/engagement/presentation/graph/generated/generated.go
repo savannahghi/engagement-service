@@ -309,12 +309,22 @@ type ComplexityRoot struct {
 		WellnessCardActivationPrincipal func(childComplexity int, to string, memberName string, cardName string, minorAgeThreshold string, marketingMessage string) int
 	}
 
+	NotificationBody struct {
+		DeleteMessage    func(childComplexity int) int
+		HideMessage      func(childComplexity int) int
+		PublishMessage   func(childComplexity int) int
+		ResolveMessage   func(childComplexity int) int
+		ShowMessage      func(childComplexity int) int
+		UnresolveMessage func(childComplexity int) int
+	}
+
 	Nudge struct {
 		Actions              func(childComplexity int) int
 		Expiry               func(childComplexity int) int
 		Groups               func(childComplexity int) int
 		ID                   func(childComplexity int) int
 		Links                func(childComplexity int) int
+		NotificationBody     func(childComplexity int) int
 		NotificationChannels func(childComplexity int) int
 		SequenceNumber       func(childComplexity int) int
 		Status               func(childComplexity int) int
@@ -1927,6 +1937,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.WellnessCardActivationPrincipal(childComplexity, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["minorAgeThreshold"].(string), args["marketingMessage"].(string)), true
 
+	case "NotificationBody.deleteMessage":
+		if e.complexity.NotificationBody.DeleteMessage == nil {
+			break
+		}
+
+		return e.complexity.NotificationBody.DeleteMessage(childComplexity), true
+
+	case "NotificationBody.hideMessage":
+		if e.complexity.NotificationBody.HideMessage == nil {
+			break
+		}
+
+		return e.complexity.NotificationBody.HideMessage(childComplexity), true
+
+	case "NotificationBody.publishMessage":
+		if e.complexity.NotificationBody.PublishMessage == nil {
+			break
+		}
+
+		return e.complexity.NotificationBody.PublishMessage(childComplexity), true
+
+	case "NotificationBody.resolveMessage":
+		if e.complexity.NotificationBody.ResolveMessage == nil {
+			break
+		}
+
+		return e.complexity.NotificationBody.ResolveMessage(childComplexity), true
+
+	case "NotificationBody.showMessage":
+		if e.complexity.NotificationBody.ShowMessage == nil {
+			break
+		}
+
+		return e.complexity.NotificationBody.ShowMessage(childComplexity), true
+
+	case "NotificationBody.unresolveMessage":
+		if e.complexity.NotificationBody.UnresolveMessage == nil {
+			break
+		}
+
+		return e.complexity.NotificationBody.UnresolveMessage(childComplexity), true
+
 	case "Nudge.actions":
 		if e.complexity.Nudge.Actions == nil {
 			break
@@ -1961,6 +2013,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Nudge.Links(childComplexity), true
+
+	case "Nudge.notificationBody":
+		if e.complexity.Nudge.NotificationBody == nil {
+			break
+		}
+
+		return e.complexity.Nudge.NotificationBody(childComplexity), true
 
 	case "Nudge.notificationChannels":
 		if e.complexity.Nudge.NotificationChannels == nil {
@@ -2599,6 +2658,7 @@ type Nudge {
   users: [String]
   links: [Link]
   notificationChannels: [Channel]
+  notificationBody: NotificationBody
 }
 
 type Item {
@@ -2701,6 +2761,15 @@ type Link {
 
 type FilterParams {
   labels: [String]
+}
+
+type NotificationBody {
+  publishMessage: String!
+  deleteMessage: String!
+  resolveMessage: String!
+  unresolveMessage: String!
+  showMessage: String!
+  hideMessage: String!
 }
 
 input FilterParamsInput {
@@ -11179,6 +11248,216 @@ func (ec *executionContext) _Mutation_sladeOTP(ctx context.Context, field graphq
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _NotificationBody_publishMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NotificationBody",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PublishMessage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NotificationBody_deleteMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NotificationBody",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeleteMessage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NotificationBody_resolveMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NotificationBody",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ResolveMessage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NotificationBody_unresolveMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NotificationBody",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UnresolveMessage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NotificationBody_showMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NotificationBody",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ShowMessage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NotificationBody_hideMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NotificationBody",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HideMessage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11582,6 +11861,38 @@ func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, fie
 	res := resTmp.([]base.Channel)
 	fc.Result = res
 	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Nudge_notificationBody(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Nudge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NotificationBody, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(base.NotificationBody)
+	fc.Result = res
+	return ec.marshalONotificationBody2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNotificationBody(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Payload_data(ctx context.Context, field graphql.CollectedField, obj *base.Payload) (ret graphql.Marshaler) {
@@ -16019,6 +16330,58 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var notificationBodyImplementors = []string{"NotificationBody"}
+
+func (ec *executionContext) _NotificationBody(ctx context.Context, sel ast.SelectionSet, obj *base.NotificationBody) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, notificationBodyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("NotificationBody")
+		case "publishMessage":
+			out.Values[i] = ec._NotificationBody_publishMessage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteMessage":
+			out.Values[i] = ec._NotificationBody_deleteMessage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "resolveMessage":
+			out.Values[i] = ec._NotificationBody_resolveMessage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "unresolveMessage":
+			out.Values[i] = ec._NotificationBody_unresolveMessage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "showMessage":
+			out.Values[i] = ec._NotificationBody_showMessage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hideMessage":
+			out.Values[i] = ec._NotificationBody_hideMessage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var nudgeImplementors = []string{"Nudge"}
 
 func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, obj *base.Nudge) graphql.Marshaler {
@@ -16075,6 +16438,8 @@ func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Nudge_links(ctx, field, obj)
 		case "notificationChannels":
 			out.Values[i] = ec._Nudge_notificationChannels(ctx, field, obj)
+		case "notificationBody":
+			out.Values[i] = ec._Nudge_notificationBody(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18324,6 +18689,10 @@ func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbas
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalONotificationBody2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNotificationBody(ctx context.Context, sel ast.SelectionSet, v base.NotificationBody) graphql.Marshaler {
+	return ec._NotificationBody(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx context.Context, sel ast.SelectionSet, v base.Payload) graphql.Marshaler {

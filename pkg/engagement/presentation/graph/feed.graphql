@@ -89,6 +89,7 @@ type Nudge {
   users: [String]
   links: [Link]
   notificationChannels: [Channel]
+  notificationBody: NotificationBody
 }
 
 type Item {
@@ -191,6 +192,15 @@ type Link {
 
 type FilterParams {
   labels: [String]
+}
+
+type NotificationBody {
+  publishMessage: String!
+  deleteMessage: String!
+  resolveMessage: String!
+  unresolveMessage: String!
+  showMessage: String!
+  hideMessage: String!
 }
 
 input FilterParamsInput {
