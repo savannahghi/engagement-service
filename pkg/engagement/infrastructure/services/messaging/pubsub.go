@@ -184,6 +184,7 @@ func (ps PubSubNotificationService) TopicIDs() []string {
 		helpers.AddPubSubNamespace(common.MessagePostTopic),
 		helpers.AddPubSubNamespace(common.MessageDeleteTopic),
 		helpers.AddPubSubNamespace(common.IncomingEventTopic),
+		helpers.AddPubSubNamespace(common.SentEmailTopic),
 	}
 }
 
