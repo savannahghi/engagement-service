@@ -728,26 +728,20 @@ func (n NotificationImpl) SendEmail(ctx context.Context, m *base.PubSubPayload) 
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	var body map[string]interface{}
-
-	err := json.Unmarshal(m.Message.Data, &body)
+	payload := &resources.EMailMessage{}
+	err := json.Unmarshal(m.Message.Data, &payload)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal data: %v", err)
 	}
 
-	to := body["to"]
-	text := body["text"]
-	subject := body["subject"]
-
-	// Send the email to the destination
 	_, _, err = n.mail.SendEmail(
-		fmt.Sprintf("%v", subject),
-		fmt.Sprintf("%v", text),
-		fmt.Sprintf("%v", to),
+		payload.Subject,
+		payload.Text,
+		payload.To...,
 	)
+
 	if err != nil {
 		return fmt.Errorf("unable to send email: %v", err)
-
 	}
 	return nil
 }

@@ -1520,7 +1520,7 @@ func TestNotificationImpl_SendEmail(t *testing.T) {
 				ctx: ctx,
 				m:   payload,
 			},
-			wantErr: true, //TODO - Find out why it's failing
+			wantErr: false,
 		},
 		{
 			name: "invalid case - missing payload",
@@ -1533,8 +1533,22 @@ func TestNotificationImpl_SendEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := notify.SendEmail(tt.args.ctx, tt.args.m); (err != nil) != tt.wantErr {
+			err := notify.SendEmail(tt.args.ctx, tt.args.m)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("NotificationImpl.SendEmail() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("error expected got: %v", err)
+					return
+				}
+			}
+			if !tt.wantErr {
+				if err != nil {
+					t.Errorf("error not expected got: %v", err)
+					return
+				}
 			}
 		})
 	}
