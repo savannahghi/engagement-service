@@ -219,3 +219,29 @@ type FirebaseAndroidConfig struct {
 	RestrictedPackageName *string                `json:"restrictedPackageName"`
 	Data                  map[string]interface{} `json:"data"` // if specified, overrides the Data field on Message type
 }
+
+// NPSResponse represents a single user feedback
+type NPSResponse struct {
+	ID        string     `json:"id" firestore:"id"`
+	Name      string     `json:"name" firestore:"name"`
+	Score     int        `json:"score" firestore:"score"`
+	SladeCode string     `json:"sladeCode" firestore:"sladeCode"`
+	Email     *string    `json:"email" firestore:"email"`
+	MSISDN    *string    `json:"msisdn" firestore:"msisdn"`
+	Feedback  []Feedback `json:"feedback" firestore:"feedback"`
+	Timestamp time.Time  `json:"timestamp,omitempty" firestore:"timestamp,omitempty"`
+}
+
+// IsNode is a "label" that marks this struct (and those that embed it) as
+// implementations of the "Base" interface defined in our GraphQL schema.
+func (e *NPSResponse) IsNode() {}
+
+// GetID returns the struct's ID value
+func (e *NPSResponse) GetID() base.ID {
+	return base.IDValue(e.ID)
+}
+
+// SetID sets the struct's ID value
+func (e *NPSResponse) SetID(id string) {
+	e.ID = id
+}

@@ -239,6 +239,11 @@ type FakeEngagementRepository struct {
 		newerThan time.Time,
 		limit int,
 	) ([]*resources.SavedNotification, error)
+
+	SaveNPSResponseFn func(
+		ctx context.Context,
+		response *resources.NPSResponse,
+	) error
 }
 
 // GetFeed ...
@@ -541,4 +546,12 @@ func (f *FakeEngagementRepository) RetrieveNotification(
 	limit int,
 ) ([]*resources.SavedNotification, error) {
 	return f.RetrieveNotificationFn(ctx, firestoreClient, registrationToken, newerThan, limit)
+}
+
+// SaveNPSResponse saves a NPS response
+func (f *FakeEngagementRepository) SaveNPSResponse(
+	ctx context.Context,
+	response *resources.NPSResponse,
+) error {
+	return f.SaveNPSResponseFn(ctx, response)
 }

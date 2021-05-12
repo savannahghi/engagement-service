@@ -171,6 +171,11 @@ type ComplexityRoot struct {
 		UID            func(childComplexity int) int
 	}
 
+	Feedback struct {
+		Answer   func(childComplexity int) int
+		Question func(childComplexity int) int
+	}
+
 	FilterParams struct {
 		Labels func(childComplexity int) int
 	}
@@ -290,6 +295,7 @@ type ComplexityRoot struct {
 		PreauthApproval                 func(childComplexity int, to string, currency string, amount string, benefit string, provider string, member string, careContact string, marketingMessage string) int
 		PreauthRequest                  func(childComplexity int, to string, currency string, amount string, benefit string, provider string, requestTime string, member string, careContact string, marketingMessage string) int
 		ProcessEvent                    func(childComplexity int, flavour base.Flavour, event base.Event) int
+		RecordNPSResponse               func(childComplexity int, input resources.NPSInput) int
 		ResolveFeedItem                 func(childComplexity int, flavour base.Flavour, itemID string) int
 		Send                            func(childComplexity int, to string, message string) int
 		SendNotification                func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) int
@@ -307,6 +313,16 @@ type ComplexityRoot struct {
 		VisitStart                      func(childComplexity int, to string, memberName string, benefitName string, locationName string, startTime string, balance string, marketingMessage string) int
 		WellnessCardActivationDependant func(childComplexity int, to string, memberName string, cardName string, marketingMessage string) int
 		WellnessCardActivationPrincipal func(childComplexity int, to string, memberName string, cardName string, minorAgeThreshold string, marketingMessage string) int
+	}
+
+	NPSResponse struct {
+		Email     func(childComplexity int) int
+		Feedback  func(childComplexity int) int
+		ID        func(childComplexity int) int
+		MSISDN    func(childComplexity int) int
+		Name      func(childComplexity int) int
+		Score     func(childComplexity int) int
+		SladeCode func(childComplexity int) int
 	}
 
 	NotificationBody struct {
@@ -348,6 +364,7 @@ type ComplexityRoot struct {
 		GetFeed               func(childComplexity int, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
 		Labels                func(childComplexity int, flavour base.Flavour) int
+		ListNPSResponse       func(childComplexity int) int
 		Notifications         func(childComplexity int, registrationToken string, newerThan time.Time, limit int) int
 		TwilioAccessToken     func(childComplexity int) int
 		UnreadPersistentItems func(childComplexity int, flavour base.Flavour) int
@@ -426,6 +443,7 @@ type MutationResolver interface {
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
 	Send(ctx context.Context, to string, message string) (*resources.SendMessageResponse, error)
 	SendToMany(ctx context.Context, message string, to []string) (*resources.SendMessageResponse, error)
+	RecordNPSResponse(ctx context.Context, input resources.NPSInput) (bool, error)
 	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
 	PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error)
 	WellnessCardActivationDependant(ctx context.Context, to string, memberName string, cardName string, marketingMessage string) (bool, error)
@@ -449,6 +467,7 @@ type QueryResolver interface {
 	GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string) (string, error)
 	GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int) (string, error)
 	EmailVerificationOtp(ctx context.Context, email string) (string, error)
+	ListNPSResponse(ctx context.Context) ([]*resources.NPSResponse, error)
 	TwilioAccessToken(ctx context.Context) (*resources.AccessToken, error)
 	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
@@ -1082,6 +1101,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Feed.UID(childComplexity), true
+
+	case "Feedback.answer":
+		if e.complexity.Feedback.Answer == nil {
+			break
+		}
+
+		return e.complexity.Feedback.Answer(childComplexity), true
+
+	case "Feedback.question":
+		if e.complexity.Feedback.Question == nil {
+			break
+		}
+
+		return e.complexity.Feedback.Question(childComplexity), true
 
 	case "FilterParams.labels":
 		if e.complexity.FilterParams.Labels == nil {
@@ -1733,6 +1766,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ProcessEvent(childComplexity, args["flavour"].(base.Flavour), args["event"].(base.Event)), true
 
+	case "Mutation.recordNPSResponse":
+		if e.complexity.Mutation.RecordNPSResponse == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_recordNPSResponse_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RecordNPSResponse(childComplexity, args["input"].(resources.NPSInput)), true
+
 	case "Mutation.resolveFeedItem":
 		if e.complexity.Mutation.ResolveFeedItem == nil {
 			break
@@ -1936,6 +1981,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.WellnessCardActivationPrincipal(childComplexity, args["to"].(string), args["memberName"].(string), args["cardName"].(string), args["minorAgeThreshold"].(string), args["marketingMessage"].(string)), true
+
+	case "NPSResponse.email":
+		if e.complexity.NPSResponse.Email == nil {
+			break
+		}
+
+		return e.complexity.NPSResponse.Email(childComplexity), true
+
+	case "NPSResponse.feedback":
+		if e.complexity.NPSResponse.Feedback == nil {
+			break
+		}
+
+		return e.complexity.NPSResponse.Feedback(childComplexity), true
+
+	case "NPSResponse.id":
+		if e.complexity.NPSResponse.ID == nil {
+			break
+		}
+
+		return e.complexity.NPSResponse.ID(childComplexity), true
+
+	case "NPSResponse.msisdn":
+		if e.complexity.NPSResponse.MSISDN == nil {
+			break
+		}
+
+		return e.complexity.NPSResponse.MSISDN(childComplexity), true
+
+	case "NPSResponse.name":
+		if e.complexity.NPSResponse.Name == nil {
+			break
+		}
+
+		return e.complexity.NPSResponse.Name(childComplexity), true
+
+	case "NPSResponse.score":
+		if e.complexity.NPSResponse.Score == nil {
+			break
+		}
+
+		return e.complexity.NPSResponse.Score(childComplexity), true
+
+	case "NPSResponse.sladeCode":
+		if e.complexity.NPSResponse.SladeCode == nil {
+			break
+		}
+
+		return e.complexity.NPSResponse.SladeCode(childComplexity), true
 
 	case "NotificationBody.deleteMessage":
 		if e.complexity.NotificationBody.DeleteMessage == nil {
@@ -2174,6 +2268,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Labels(childComplexity, args["flavour"].(base.Flavour)), true
+
+	case "Query.listNPSResponse":
+		if e.complexity.Query.ListNPSResponse == nil {
+			break
+		}
+
+		return e.complexity.Query.ListNPSResponse(childComplexity), true
 
 	case "Query.notifications":
 		if e.complexity.Query.Notifications == nil {
@@ -2926,6 +3027,43 @@ type SendMessageResponse {
     SMSMessageData: SMS!
 }
 `, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/surveys.graphql", Input: `input FeedbackInput {
+    question: String!
+    answer: String!
+}
+
+type Feedback {
+    question: String!
+    answer: String!
+}
+
+input NPSInput {
+    name: String!
+    score: Int!
+    sladeCode: String!
+
+    email: String
+    phoneNumber: String
+    feedback: [FeedbackInput]
+}
+
+type NPSResponse {
+	id: String!
+	name: String!
+	score: Int!
+	sladeCode: String!
+	email: String
+	msisdn: String
+	feedback: [Feedback]
+}
+
+extend type Mutation {
+    recordNPSResponse(input: NPSInput!): Boolean!
+}
+
+extend type Query {
+    listNPSResponse:[NPSResponse!]!
+}`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/twilio.graphql", Input: `extend type Query {
   """
   twilioAccessToken requests for the creation of a Twilio room and the
@@ -3700,6 +3838,21 @@ func (ec *executionContext) field_Mutation_processEvent_args(ctx context.Context
 		}
 	}
 	args["event"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_recordNPSResponse_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 resources.NPSInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNPSInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -7542,6 +7695,76 @@ func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql
 	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Feedback_question(ctx context.Context, field graphql.CollectedField, obj *resources.Feedback) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Feedback",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Question, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Feedback_answer(ctx context.Context, field graphql.CollectedField, obj *resources.Feedback) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Feedback",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Answer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _FilterParams_labels(ctx context.Context, field graphql.CollectedField, obj *helpers.FilterParams) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -10786,6 +11009,48 @@ func (ec *executionContext) _Mutation_sendToMany(ctx context.Context, field grap
 	return ec.marshalNSendMessageResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSendMessageResponse(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_recordNPSResponse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_recordNPSResponse_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RecordNPSResponse(rctx, args["input"].(resources.NPSInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11246,6 +11511,242 @@ func (ec *executionContext) _Mutation_sladeOTP(ctx context.Context, field graphq
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NPSResponse_id(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NPSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NPSResponse_name(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NPSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NPSResponse_score(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NPSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Score, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NPSResponse_sladeCode(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NPSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SladeCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NPSResponse_email(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NPSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Email, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NPSResponse_msisdn(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NPSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MSISDN, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _NPSResponse_feedback(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "NPSResponse",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Feedback, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]resources.Feedback)
+	fc.Result = res
+	return ec.marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _NotificationBody_publishMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
@@ -12331,6 +12832,41 @@ func (ec *executionContext) _Query_emailVerificationOTP(ctx context.Context, fie
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_listNPSResponse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListNPSResponse(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*resources.NPSResponse)
+	fc.Result = res
+	return ec.marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponseᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_twilioAccessToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -14582,6 +15118,34 @@ func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputFeedbackInput(ctx context.Context, obj interface{}) (resources.FeedbackInput, error) {
+	var it resources.FeedbackInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "question":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("question"))
+			it.Question, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "answer":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answer"))
+			it.Answer, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFilterParamsInput(ctx context.Context, obj interface{}) (helpers.FilterParams, error) {
 	var it helpers.FilterParams
 	var asMap = obj.(map[string]interface{})
@@ -14797,6 +15361,66 @@ func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj inte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
 			it.Timestamp, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputNPSInput(ctx context.Context, obj interface{}) (resources.NPSInput, error) {
+	var it resources.NPSInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "score":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("score"))
+			it.Score, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sladeCode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sladeCode"))
+			it.SladeCode, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "phoneNumber":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phoneNumber"))
+			it.PhoneNumber, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "feedback":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("feedback"))
+			it.Feedback, err = ec.unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15612,6 +16236,38 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
+var feedbackImplementors = []string{"Feedback"}
+
+func (ec *executionContext) _Feedback(ctx context.Context, sel ast.SelectionSet, obj *resources.Feedback) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, feedbackImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Feedback")
+		case "question":
+			out.Values[i] = ec._Feedback_question(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "answer":
+			out.Values[i] = ec._Feedback_answer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var filterParamsImplementors = []string{"FilterParams"}
 
 func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.SelectionSet, obj *helpers.FilterParams) graphql.Marshaler {
@@ -16264,6 +16920,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "recordNPSResponse":
+			out.Values[i] = ec._Mutation_recordNPSResponse(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "upload":
 			out.Values[i] = ec._Mutation_upload(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -16319,6 +16980,54 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var nPSResponseImplementors = []string{"NPSResponse"}
+
+func (ec *executionContext) _NPSResponse(ctx context.Context, sel ast.SelectionSet, obj *resources.NPSResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, nPSResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("NPSResponse")
+		case "id":
+			out.Values[i] = ec._NPSResponse_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._NPSResponse_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "score":
+			out.Values[i] = ec._NPSResponse_score(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sladeCode":
+			out.Values[i] = ec._NPSResponse_sladeCode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "email":
+			out.Values[i] = ec._NPSResponse_email(ctx, field, obj)
+		case "msisdn":
+			out.Values[i] = ec._NPSResponse_msisdn(ctx, field, obj)
+		case "feedback":
+			out.Values[i] = ec._NPSResponse_feedback(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -16625,6 +17334,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_emailVerificationOTP(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "listNPSResponse":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listNPSResponse(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -17691,6 +18414,58 @@ func (ec *executionContext) unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgo�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNNPSInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSInput(ctx context.Context, v interface{}) (resources.NPSInput, error) {
+	res, err := ec.unmarshalInputNPSInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponseᚄ(ctx context.Context, sel ast.SelectionSet, v []*resources.NPSResponse) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNNPSResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponse(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNNPSResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponse(ctx context.Context, sel ast.SelectionSet, v *resources.NPSResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._NPSResponse(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNNudge2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx context.Context, sel ast.SelectionSet, v base.Nudge) graphql.Marshaler {
 	return ec._Nudge(ctx, sel, &v)
 }
@@ -18496,6 +19271,82 @@ func (ec *executionContext) marshalOEventDateTime2ᚖgoogleᚗgolangᚗorgᚋapi
 		return graphql.Null
 	}
 	return ec._EventDateTime(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOFeedback2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx context.Context, sel ast.SelectionSet, v resources.Feedback) graphql.Marshaler {
+	return ec._Feedback(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx context.Context, sel ast.SelectionSet, v []resources.Feedback) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOFeedback2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx context.Context, v interface{}) ([]*resources.FeedbackInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*resources.FeedbackInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOFeedbackInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOFeedbackInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx context.Context, v interface{}) (*resources.FeedbackInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFeedbackInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋhelpersᚐFilterParams(ctx context.Context, v interface{}) (*helpers.FilterParams, error) {

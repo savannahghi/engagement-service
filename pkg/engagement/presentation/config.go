@@ -12,6 +12,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/surveys"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 
@@ -99,10 +100,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()
 	twilio := twilio.NewService()
+	surveys := surveys.NewService(fr)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm,
+		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm, surveys,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)

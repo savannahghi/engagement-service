@@ -37,6 +37,9 @@ const (
 	// callback data will be saved for future analysis
 	AITCallbackCollectionName = "ait_callbacks"
 
+	// NPSResponseCollectionName firestore collection name where nps responses are stored
+	NPSResponseCollectionName = "nps_response"
+
 	twilioCallbackCollectionName = "twilio_callbacks"
 
 	notificationCollectionName = "notifications"
@@ -740,6 +743,11 @@ func (fr Repository) getAITCallbackCollectionName() string {
 
 func (fr Repository) getNotificationCollectionName() string {
 	suffixed := base.SuffixCollection(notificationCollectionName)
+	return suffixed
+}
+
+func (fr Repository) getNPSResponseCollectionName() string {
+	suffixed := base.SuffixCollection(NPSResponseCollectionName)
 	return suffixed
 }
 
@@ -1470,4 +1478,17 @@ func (fr Repository) RetrieveNotification(
 		notifications = append(notifications, &notification)
 	}
 	return notifications, nil
+}
+
+// SaveNPSResponse  stores the nps responses
+func (fr Repository) SaveNPSResponse(
+	ctx context.Context,
+	response *resources.NPSResponse,
+) error {
+	collection := fr.getNPSResponseCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, response)
+	if err != nil {
+		return fmt.Errorf("can't save nps response: %w", err)
+	}
+	return nil
 }

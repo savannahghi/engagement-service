@@ -8,6 +8,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/surveys"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
@@ -26,6 +27,7 @@ type Interactor struct {
 	OTP          otp.ServiceOTP
 	Twilio       twilio.ServiceTwilio
 	FCM          fcm.ServiceFCM
+	Surveys      surveys.ServiceSurveys
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -40,6 +42,7 @@ func NewEngagementInteractor(
 	otp otp.ServiceOTP,
 	twilio twilio.ServiceTwilio,
 	fcm fcm.ServiceFCM,
+	surveys surveys.ServiceSurveys,
 ) (*Interactor, error) {
 	return &Interactor{
 		Feed:         feed,
@@ -52,5 +55,6 @@ func NewEngagementInteractor(
 		OTP:          otp,
 		Twilio:       twilio,
 		FCM:          fcm,
+		Surveys:      surveys,
 	}, nil
 }

@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-
+	"github.com/google/uuid"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
-
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 )
 
@@ -2008,6 +2008,66 @@ func TestRepository_GetItems(t *testing.T) {
 			if !tt.wantErr && items == nil {
 				t.Errorf("nudge was expected since no error occured: %v", err)
 				return
+			}
+		})
+	}
+}
+
+func TestRepository_SaveNPSResponse(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	assert.Nil(t, err)
+	assert.NotNil(t, fr)
+
+	type args struct {
+		ctx      context.Context
+		response *resources.NPSResponse
+	}
+
+	feedback := &resources.Feedback{
+		Question: "How is it",
+		Answer:   "It is what it is",
+	}
+	email := base.TestUserEmail
+	phoneNumber := base.TestUserPhoneNumber
+
+	response := &resources.NPSResponse{
+		ID:        uuid.New().String(),
+		Name:      "Test User",
+		Score:     8,
+		SladeCode: "123456723",
+		Email:     &email,
+		MSISDN:    &phoneNumber,
+		Feedback:  []resources.Feedback{*feedback},
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy case",
+			args: args{
+				ctx:      ctx,
+				response: response,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Sad case",
+			args: args{
+				ctx:      ctx,
+				response: nil,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := fr.SaveNPSResponse(tt.args.ctx, tt.args.response)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.SaveNPSResponse() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

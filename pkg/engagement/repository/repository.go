@@ -242,4 +242,9 @@ type Repository interface {
 		newerThan time.Time,
 		limit int,
 	) ([]*resources.SavedNotification, error)
+
+	SaveNPSResponse(
+		ctx context.Context,
+		response *resources.NPSResponse,
+	) error
 }
