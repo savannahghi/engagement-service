@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
+
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
@@ -257,6 +260,18 @@ func (fe FeedUseCaseImpl) GetFeed(
 	expired *base.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.FeedView)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	feed, err := fe.Repository.GetFeed(
 		ctx,
 		uid,
@@ -290,6 +305,18 @@ func (fe FeedUseCaseImpl) GetThinFeed(
 	isAnonymous *bool,
 	flavour base.Flavour,
 ) (*domain.Feed, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ThinFeedView)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	feed := &domain.Feed{
 		UID:         *uid,
 		Flavour:     flavour,
@@ -313,6 +340,18 @@ func (fe FeedUseCaseImpl) GetFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.FeedItemView)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -333,6 +372,17 @@ func (fe FeedUseCaseImpl) GetNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.NudgeView)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve nudge %s: %w", nudgeID, err)
@@ -352,6 +402,18 @@ func (fe FeedUseCaseImpl) GetAction(
 	flavour base.Flavour,
 	actionID string,
 ) (*base.Action, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ActionView)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	action, err := fe.Repository.GetAction(ctx, uid, flavour, actionID)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -372,6 +434,18 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 	flavour base.Flavour,
 	item *base.Item,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if item == nil {
 		return nil, fmt.Errorf("can't publish nil feed item")
 	}
@@ -380,7 +454,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 		item.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err := helpers.ValidateElement(item)
+	err = helpers.ValidateElement(item)
 	if err != nil {
 		return nil, fmt.Errorf("invalid item: %w", err)
 	}
@@ -420,6 +494,18 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	item, err := fe.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil || item == nil {
 		// fails to error because it should be safe to retry deletes
@@ -454,6 +540,17 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
@@ -503,6 +600,18 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PinItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -551,6 +660,18 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UnpinItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -599,6 +720,18 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -647,6 +780,18 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
@@ -688,13 +833,24 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 	return item, nil
 }
 
-// ShowFeedItem hides a feed item from a specific user's feed
+// ShowFeedItem shows a feed item on a specific user's feed
 func (fe FeedUseCaseImpl) ShowFeedItem(
 	ctx context.Context,
 	uid string,
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
@@ -742,6 +898,18 @@ func (fe FeedUseCaseImpl) Labels(
 	ctx context.Context,
 	uid string, flavour base.Flavour,
 ) ([]string, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.GetLabel)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	return fe.Repository.Labels(ctx, uid, flavour)
 }
 
@@ -752,6 +920,17 @@ func (fe FeedUseCaseImpl) SaveLabel(
 	flavour base.Flavour,
 	label string,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.CreateLabel)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
 
 	return fe.Repository.SaveLabel(ctx, uid, flavour, label)
 }
@@ -762,6 +941,18 @@ func (fe FeedUseCaseImpl) UnreadPersistentItems(
 	uid string,
 	flavour base.Flavour,
 ) (int, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UnreadPersistentItems)
+	if err != nil {
+		return 0, err
+	}
+	if !isAuthorized {
+		return 0, fmt.Errorf("user not authorized to access this resource")
+	}
+
 	return fe.Repository.UnreadPersistentItems(ctx, uid, flavour)
 }
 
@@ -771,6 +962,17 @@ func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
 	uid string,
 	flavour base.Flavour,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UpdateUnreadPersistentItems)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
 	return fe.Repository.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
 }
 
@@ -794,6 +996,17 @@ func (fe FeedUseCaseImpl) PublishNudge(
 	flavour base.Flavour,
 	nudge *base.Nudge,
 ) (*base.Nudge, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	if nudge == nil {
 		return nil, fmt.Errorf("can't publish nil nudge")
@@ -803,7 +1016,7 @@ func (fe FeedUseCaseImpl) PublishNudge(
 		nudge.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err := helpers.ValidateElement(nudge)
+	err = helpers.ValidateElement(nudge)
 	if err != nil {
 		return nil, fmt.Errorf("invalid nudge: %w", err)
 	}
@@ -842,6 +1055,17 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
@@ -890,6 +1114,17 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
@@ -938,6 +1173,17 @@ func (fe FeedUseCaseImpl) HideNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
@@ -985,6 +1231,17 @@ func (fe FeedUseCaseImpl) ShowNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
@@ -1033,6 +1290,17 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
 
 	nudge, err := fe.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil || nudge == nil {
@@ -1081,6 +1349,17 @@ func (fe FeedUseCaseImpl) PublishAction(
 	flavour base.Flavour,
 	action *base.Action,
 ) (*base.Action, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	if action == nil {
 		return nil, fmt.Errorf("can't publish nil nudge")
@@ -1090,7 +1369,7 @@ func (fe FeedUseCaseImpl) PublishAction(
 		action.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err := helpers.ValidateElement(action)
+	err = helpers.ValidateElement(action)
 	if err != nil {
 		return nil, fmt.Errorf("invalid action: %w", err)
 	}
@@ -1124,6 +1403,17 @@ func (fe FeedUseCaseImpl) DeleteAction(
 	flavour base.Flavour,
 	actionID string,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
 
 	action, err := fe.GetAction(ctx, uid, flavour, actionID)
 	if err != nil || action == nil {
@@ -1159,6 +1449,17 @@ func (fe FeedUseCaseImpl) PostMessage(
 	itemID string,
 	message *base.Message,
 ) (*base.Message, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PostMessage)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	if message == nil {
 		return nil, fmt.Errorf("can't post nil message")
@@ -1172,7 +1473,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 		message.SequenceNumber = int(time.Now().Unix())
 	}
 
-	err := helpers.ValidateElement(message)
+	err = helpers.ValidateElement(message)
 	if err != nil {
 		return nil, fmt.Errorf("invalid message: %w", err)
 	}
@@ -1213,6 +1514,18 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 	itemID string,
 	messageID string,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteMessage)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	message, err := fe.Repository.GetMessage(
 		ctx,
 		uid,
@@ -1267,6 +1580,17 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 	flavour base.Flavour,
 	event *base.Event,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ProcessEvent)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
 
 	if event == nil {
 		return fmt.Errorf("can't process nil event")
@@ -1284,7 +1608,7 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 		event.Context.UserID = uid
 	}
 
-	err := helpers.ValidateElement(event)
+	err = helpers.ValidateElement(event)
 	if err != nil {
 		return fmt.Errorf("invalid event: %w", err)
 	}
@@ -1326,6 +1650,17 @@ func (fe FeedUseCaseImpl) GetDefaultNudgeByTitle(
 	flavour base.Flavour,
 	title string,
 ) (*base.Nudge, error) {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.NudgeView)
+	if err != nil {
+		return nil, err
+	}
+	if !isAuthorized {
+		return nil, fmt.Errorf("user not authorized to access this resource")
+	}
 
 	nudge, err := fe.Repository.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
 	if err != nil {

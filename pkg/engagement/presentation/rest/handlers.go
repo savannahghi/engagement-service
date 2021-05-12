@@ -186,7 +186,15 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(w http.ResponseWriter
 		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
-	ctx := r.Context()
+
+	// get the UID frrom the payload
+	var envelope resources.NotificationEnvelope
+	err = json.Unmarshal(m.Message.Data, &envelope)
+	if err != nil {
+		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+		return
+	}
+	ctx := addUIDToContext(envelope.UID)
 
 	switch topicID {
 	case helpers.AddPubSubNamespace(common.ItemPublishTopic):
@@ -377,7 +385,7 @@ func (p PresentationHandlersImpl) GetFeed(
 		}
 
 		feed, err := p.interactor.Feed.GetFeed(
-			ctx,
+			addUIDToContext(*uid),
 			uid,
 			anonymous,
 			*flavour,
@@ -418,7 +426,7 @@ func (p PresentationHandlersImpl) GetFeedItem(
 			return
 		}
 
-		item, err := p.interactor.Feed.GetFeedItem(ctx, *uid, *flavour, itemID)
+		item, err := p.interactor.Feed.GetFeedItem(addUIDToContext(*uid), *uid, *flavour, itemID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -455,7 +463,8 @@ func (p PresentationHandlersImpl) GetNudge(
 			return
 		}
 
-		nudge, err := p.interactor.Feed.GetNudge(ctx, *uid, *flavour, nudgeID)
+		ctx = addUIDToContext(*uid)
+		nudge, err := p.interactor.Feed.GetNudge(addUIDToContext(*uid), *uid, *flavour, nudgeID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -492,7 +501,7 @@ func (p PresentationHandlersImpl) GetAction(
 			return
 		}
 
-		action, err := p.interactor.Feed.GetAction(ctx, *uid, *flavour, actionID)
+		action, err := p.interactor.Feed.GetAction(addUIDToContext(*uid), *uid, *flavour, actionID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -544,7 +553,12 @@ func (p PresentationHandlersImpl) PublishFeedItem(
 			return
 		}
 
-		publishedItem, err := p.interactor.Feed.PublishFeedItem(ctx, *uid, *flavour, item)
+		publishedItem, err := p.interactor.Feed.PublishFeedItem(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			item,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -577,7 +591,7 @@ func (p PresentationHandlersImpl) DeleteFeedItem(
 			return
 		}
 
-		err = p.interactor.Feed.DeleteFeedItem(ctx, *uid, *flavour, itemID)
+		err = p.interactor.Feed.DeleteFeedItem(addUIDToContext(*uid), *uid, *flavour, itemID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -672,7 +686,12 @@ func (p PresentationHandlersImpl) PublishNudge(
 			return
 		}
 
-		publishedNudge, err := p.interactor.Feed.PublishNudge(ctx, *uid, *flavour, nudge)
+		publishedNudge, err := p.interactor.Feed.PublishNudge(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			nudge,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -715,7 +734,12 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge(
 			return
 		}
 
-		nudge, err := p.interactor.Feed.GetDefaultNudgeByTitle(ctx, *uid, *flavour, title)
+		nudge, err := p.interactor.Feed.GetDefaultNudgeByTitle(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			title,
+		)
 		if err != nil {
 			if errors.Is(err, exceptions.ErrNilNudge) {
 				respondWithError(w, http.StatusNotFound, err)
@@ -736,7 +760,7 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge(
 			respondWithJSON(w, http.StatusOK, marshalled)
 		}
 
-		_, err = p.interactor.Feed.ResolveNudge(ctx, *uid, *flavour, nudge.ID)
+		_, err = p.interactor.Feed.ResolveNudge(addUIDToContext(*uid), *uid, *flavour, nudge.ID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -790,7 +814,7 @@ func (p PresentationHandlersImpl) DeleteNudge(
 			return
 		}
 
-		err = p.interactor.Feed.DeleteNudge(ctx, *uid, *flavour, nudgeID)
+		err = p.interactor.Feed.DeleteNudge(addUIDToContext(*uid), *uid, *flavour, nudgeID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -831,7 +855,12 @@ func (p PresentationHandlersImpl) PublishAction(
 			return
 		}
 
-		publishedAction, err := p.interactor.Feed.PublishAction(ctx, *uid, *flavour, action)
+		publishedAction, err := p.interactor.Feed.PublishAction(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			action,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -864,7 +893,7 @@ func (p PresentationHandlersImpl) DeleteAction(
 			return
 		}
 
-		err = p.interactor.Feed.DeleteAction(ctx, *uid, *flavour, actionID)
+		err = p.interactor.Feed.DeleteAction(addUIDToContext(*uid), *uid, *flavour, actionID)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -911,7 +940,13 @@ func (p PresentationHandlersImpl) PostMessage(
 			return
 		}
 
-		postedMessage, err := p.interactor.Feed.PostMessage(ctx, *uid, *flavour, itemID, message)
+		postedMessage, err := p.interactor.Feed.PostMessage(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			itemID,
+			message,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -950,7 +985,13 @@ func (p PresentationHandlersImpl) DeleteMessage(
 			return
 		}
 
-		err = p.interactor.Feed.DeleteMessage(ctx, *uid, *flavour, itemID, messageID)
+		err = p.interactor.Feed.DeleteMessage(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			itemID,
+			messageID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -991,7 +1032,7 @@ func (p PresentationHandlersImpl) ProcessEvent(
 			return
 		}
 
-		err = p.interactor.Feed.ProcessEvent(ctx, *uid, *flavour, event)
+		err = p.interactor.Feed.ProcessEvent(addUIDToContext(*uid), *uid, *flavour, event)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1277,7 +1318,9 @@ func (p PresentationHandlersImpl) GetFallbackHandler(ctx context.Context) http.H
 }
 
 // PhoneNumberVerificationCodeHandler process ISC request to PhoneNumberVerificationCode
-func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		type PayloadRequest struct {
 			To               string `json:"to"`
@@ -1289,7 +1332,12 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(ctx context
 
 		base.DecodeJSONToTargetStruct(rw, r, payloadRequest)
 
-		ok, err := p.interactor.Whatsapp.PhoneNumberVerificationCode(ctx, payloadRequest.To, payloadRequest.Code, payloadRequest.MarketingMessage)
+		ok, err := p.interactor.Whatsapp.PhoneNumberVerificationCode(
+			ctx,
+			payloadRequest.To,
+			payloadRequest.Code,
+			payloadRequest.MarketingMessage,
+		)
 		if err != nil {
 			base.RespondWithError(rw, http.StatusInternalServerError, err)
 			return
@@ -1316,7 +1364,11 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 
 		code, codeErr := s.GenerateAndSendOTP(msisdn)
 		if codeErr != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(fmt.Errorf("unable to generate and send otp: %v", codeErr)), http.StatusInternalServerError)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(fmt.Errorf("unable to generate and send otp: %v", codeErr)),
+				http.StatusInternalServerError,
+			)
 		}
 
 		base.WriteJSONResponse(w, code, http.StatusOK)
@@ -1335,7 +1387,9 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler(ctx context.Context) http.
 		}
 		code, codeErr := s.GenerateRetryOTP(ctx, payload.Msisdn, payload.RetryStep)
 		if codeErr != nil {
-			err := base.ErrorMap(fmt.Errorf("unable to generate and send a fallback OTP: %v", codeErr))
+			err := base.ErrorMap(
+				fmt.Errorf("unable to generate and send a fallback OTP: %v", codeErr),
+			)
 			base.WriteJSONResponse(w, err, http.StatusInternalServerError)
 		}
 
@@ -1396,7 +1450,15 @@ func (p PresentationHandlersImpl) SendNotificationHandler(ctx context.Context) h
 			return
 		}
 
-		_, err := p.interactor.FCM.SendNotification(ctx, payload.RegistrationTokens, payload.Data, payload.Notification, payload.Android, payload.Ios, payload.Web)
+		_, err := p.interactor.FCM.SendNotification(
+			ctx,
+			payload.RegistrationTokens,
+			payload.Data,
+			payload.Notification,
+			payload.Android,
+			payload.Ios,
+			payload.Web,
+		)
 		if err != nil {
 			err := fmt.Errorf("notification not sent: %s", err)
 

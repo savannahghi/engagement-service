@@ -1628,7 +1628,7 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 }
 
 func TestFeed_GetItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -1696,7 +1696,7 @@ func TestFeed_GetItem(t *testing.T) {
 }
 
 func TestFeed_GetNudge(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -1763,7 +1763,7 @@ func TestFeed_GetNudge(t *testing.T) {
 }
 
 func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	if err != nil {
 		t.Errorf("failed to initialize a new feed")
@@ -1826,7 +1826,7 @@ func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 	}
 }
 func TestFeed_GetAction(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -1892,7 +1892,7 @@ func TestFeed_GetAction(t *testing.T) {
 
 func TestFeed_PublishFeedItem(t *testing.T) {
 
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -1963,7 +1963,7 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 }
 
 func TestFeed_DeleteFeedItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2024,7 +2024,7 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 }
 
 func TestFeed_ResolveFeedItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2082,7 +2082,7 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 }
 
 func TestFeed_UnresolveFeedItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2140,7 +2140,7 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 }
 
 func TestFeed_PinFeedItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2198,7 +2198,7 @@ func TestFeed_PinFeedItem(t *testing.T) {
 }
 
 func TestFeed_UnpinFeedItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2256,7 +2256,7 @@ func TestFeed_UnpinFeedItem(t *testing.T) {
 }
 
 func TestFeed_HideFeedItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2314,7 +2314,7 @@ func TestFeed_HideFeedItem(t *testing.T) {
 }
 
 func TestFeed_ShowFeedItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2372,7 +2372,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 }
 
 func TestFeed_PublishNudge(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2430,7 +2430,7 @@ func TestFeed_PublishNudge(t *testing.T) {
 }
 
 func TestFeed_DeleteNudge(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2488,7 +2488,7 @@ func TestFeed_DeleteNudge(t *testing.T) {
 }
 
 func TestFeed_ResolveNudge(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2543,7 +2543,7 @@ func TestFeed_ResolveNudge(t *testing.T) {
 }
 
 func TestFeed_UnresolveNudge(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2598,7 +2598,7 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 }
 
 func TestFeed_HideNudge(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2653,7 +2653,7 @@ func TestFeed_HideNudge(t *testing.T) {
 }
 
 func TestFeed_ShowNudge(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2708,7 +2708,7 @@ func TestFeed_ShowNudge(t *testing.T) {
 }
 
 func TestFeed_PublishAction(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2768,7 +2768,7 @@ func TestFeed_PublishAction(t *testing.T) {
 }
 
 func TestFeed_DeleteAction(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2825,7 +2825,7 @@ func TestFeed_DeleteAction(t *testing.T) {
 }
 
 func TestFeed_PostMessage(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2916,7 +2916,7 @@ func TestFeed_PostMessage(t *testing.T) {
 }
 
 func TestFeed_DeleteMessage(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -2984,7 +2984,7 @@ func TestFeed_DeleteMessage(t *testing.T) {
 }
 
 func TestFeed_ProcessEvent(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -3367,7 +3367,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 }
 
 func TestFeed_Labels(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -3415,7 +3415,7 @@ func TestFeed_Labels(t *testing.T) {
 }
 
 func TestFeed_SaveLabel(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -3458,7 +3458,7 @@ func TestFeed_SaveLabel(t *testing.T) {
 }
 
 func TestFeed_UnreadPersistentItems(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer
@@ -3506,7 +3506,7 @@ func TestFeed_UnreadPersistentItems(t *testing.T) {
 }
 
 func TestFeed_UpdateUnreadPersistentItemsCount(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := base.FlavourConsumer

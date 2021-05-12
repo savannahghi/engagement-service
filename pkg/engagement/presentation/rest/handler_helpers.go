@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"firebase.google.com/go/auth"
 	"github.com/gorilla/mux"
 	"github.com/markbates/pkger"
 	log "github.com/sirupsen/logrus"
@@ -92,7 +93,7 @@ func patchItem(
 		return
 	}
 
-	item, err := patchFunc(ctx, *uid, *flavour, itemID)
+	item, err := patchFunc(addUIDToContext(*uid), *uid, *flavour, itemID)
 	if err != nil {
 		if errors.Is(err, exceptions.ErrNilFeedItem) {
 			respondWithError(w, http.StatusNotFound, err)
@@ -132,7 +133,7 @@ func patchNudge(
 		return
 	}
 
-	element, err := patchFunc(ctx, *uid, *flavour, nudgeID)
+	element, err := patchFunc(addUIDToContext(*uid), *uid, *flavour, nudgeID)
 	if err != nil {
 		if errors.Is(err, exceptions.ErrNilNudge) {
 			respondWithError(w, http.StatusNotFound, err)
@@ -152,7 +153,10 @@ func patchNudge(
 	respondWithJSON(w, http.StatusOK, marshalled)
 }
 
-func getOptionalBooleanFilterQueryParam(r *http.Request, paramName string) (*base.BooleanFilter, error) {
+func getOptionalBooleanFilterQueryParam(
+	r *http.Request,
+	paramName string,
+) (*base.BooleanFilter, error) {
 	val := r.FormValue(paramName)
 	if val == "" {
 		return nil, nil // optional
@@ -166,7 +170,10 @@ func getOptionalBooleanFilterQueryParam(r *http.Request, paramName string) (*bas
 	return &boolFilter, nil
 }
 
-func getRequiredBooleanFilterQueryParam(r *http.Request, paramName string) (base.BooleanFilter, error) {
+func getRequiredBooleanFilterQueryParam(
+	r *http.Request,
+	paramName string,
+) (base.BooleanFilter, error) {
 	val := r.FormValue(paramName)
 	if val == "" {
 		return "", fmt.Errorf("required BooleanFilter `%s` not set", paramName)
@@ -228,7 +235,9 @@ func getOptionalFilterParamsQueryParam(
 	err = json.Unmarshal([]byte(val), filterParams)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"filter params should be a valid JSON representation of `helpers.FilterParams`. `%s` is not", val)
+			"filter params should be a valid JSON representation of `helpers.FilterParams`. `%s` is not",
+			val,
+		)
 	}
 
 	return filterParams, nil
@@ -255,4 +264,12 @@ func SchemaHandler() (http.Handler, error) {
 	defer f.Close()
 
 	return http.StripPrefix("/schema", http.FileServer(f)), nil
+}
+
+func addUIDToContext(uid string) context.Context {
+	return context.WithValue(
+		context.Background(),
+		base.AuthTokenContextKey,
+		&auth.Token{UID: uid},
+	)
 }

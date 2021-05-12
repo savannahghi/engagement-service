@@ -27,8 +27,8 @@ import (
 
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
-	"github.com/rs/xid"
 	"github.com/segmentio/ksuid"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -161,7 +161,7 @@ func TestRouter(t *testing.T) {
 		{
 			name: "default case - should succeed",
 			args: args{
-				ctx: context.Background(),
+				ctx: base.GetAuthenticatedContext(t),
 			},
 			wantErr: false,
 		},
@@ -208,12 +208,20 @@ func TestHealthStatusCheck(t *testing.T) {
 }
 
 func TestRoutes(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	router, err := presentation.Router(ctx)
 	assert.Nil(t, err)
 	assert.NotNil(t, router)
 
-	uid := xid.New().String()
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	itemID := ksuid.New().String()
 	nudgeID := ksuid.New().String()
@@ -611,7 +619,15 @@ func TestGetFeed(t *testing.T) {
 		return
 	}
 
-	uid := xid.New().String()
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	consumer := base.FlavourConsumer
 	invalidConsumer := "invalidConsumer"
 	client := http.Client{
@@ -824,11 +840,18 @@ func TestGetFeed(t *testing.T) {
 }
 
 func TestGetFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -946,11 +969,18 @@ func TestGetFeedItem(t *testing.T) {
 }
 
 func TestGetNudge(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testNudge := testNudge(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -1068,11 +1098,18 @@ func TestGetNudge(t *testing.T) {
 }
 
 func TestGetAction(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testAction := getTestAction()
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -1190,7 +1227,15 @@ func TestGetAction(t *testing.T) {
 }
 
 func TestPublishFeedItem(t *testing.T) {
-	uid := xid.New().String()
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	headers := getDefaultHeaders(t, baseURL)
 	testItem := getTestItem(t)
@@ -1302,11 +1347,18 @@ func TestPublishFeedItem(t *testing.T) {
 }
 
 func TestDeleteFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -1424,11 +1476,18 @@ func TestDeleteFeedItem(t *testing.T) {
 }
 
 func TestDeleteNudge(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testNudge := testNudge(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -1546,11 +1605,18 @@ func TestDeleteNudge(t *testing.T) {
 }
 
 func TestDeleteAction(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testAction := getTestAction()
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -1668,11 +1734,18 @@ func TestDeleteAction(t *testing.T) {
 }
 
 func TestPostMessage(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -1799,11 +1872,18 @@ func TestPostMessage(t *testing.T) {
 }
 
 func TestDeleteMessage(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -1939,7 +2019,15 @@ func TestDeleteMessage(t *testing.T) {
 }
 
 func TestProcessEvent(t *testing.T) {
-	uid := xid.New().String()
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	headers := getDefaultHeaders(t, baseURL)
 	event := getTestEvent()
@@ -2051,7 +2139,15 @@ func TestProcessEvent(t *testing.T) {
 }
 
 func TestPublishNudge(t *testing.T) {
-	uid := xid.New().String()
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	headers := getDefaultHeaders(t, baseURL)
 	nudge := testNudge(t)
@@ -2163,11 +2259,18 @@ func TestPublishNudge(t *testing.T) {
 }
 
 func TestResolveNudge(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testNudge := testNudge(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -2273,6 +2376,7 @@ func TestResolveNudge(t *testing.T) {
 				t.Errorf("nil response data")
 				return
 			}
+			logrus.Print(string(data))
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
@@ -2285,11 +2389,18 @@ func TestResolveNudge(t *testing.T) {
 }
 
 func TestUnresolveNudge(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testNudge := testNudge(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -2407,11 +2518,18 @@ func TestUnresolveNudge(t *testing.T) {
 }
 
 func TestShowNudge(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testNudge := testNudge(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -2529,11 +2647,18 @@ func TestShowNudge(t *testing.T) {
 }
 
 func TestHideNudge(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testNudge := testNudge(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -2651,7 +2776,15 @@ func TestHideNudge(t *testing.T) {
 }
 
 func TestPublishAction(t *testing.T) {
-	uid := xid.New().String()
+	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	headers := getDefaultHeaders(t, baseURL)
 	action := getTestAction()
@@ -2763,11 +2896,18 @@ func TestPublishAction(t *testing.T) {
 }
 
 func TestResolveFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -2885,11 +3025,18 @@ func TestResolveFeedItem(t *testing.T) {
 }
 
 func TestUnresolveFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -3007,11 +3154,18 @@ func TestUnresolveFeedItem(t *testing.T) {
 }
 
 func TestPinFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -3129,11 +3283,18 @@ func TestPinFeedItem(t *testing.T) {
 }
 
 func TestUnpinFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -3251,11 +3412,18 @@ func TestUnpinFeedItem(t *testing.T) {
 }
 
 func TestHideFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -3373,11 +3541,18 @@ func TestHideFeedItem(t *testing.T) {
 }
 
 func TestShowFeedItem(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	testItem := getTestItem(t)
-	err := postElement(
+	err = postElement(
 		ctx,
 		t,
 		uid,
@@ -3955,11 +4130,31 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		t.Errorf("failed to marshal data")
 		return
 	}
+	actionNotification := resources.NotificationEnvelope{
+		UID:     token.UID,
+		Flavour: base.FlavourConsumer,
+		Payload: actionDataJSON,
+	}
+	actionData, err := json.Marshal(actionNotification)
+	if err != nil {
+		t.Errorf("failed to marshall data")
+		return
+	}
 
 	message := getTestMessage()
 	messageDataJSON, err := json.Marshal(message)
 	if err != nil {
 		t.Errorf("failed to marshal data")
+		return
+	}
+	messageNotification := resources.NotificationEnvelope{
+		UID:     token.UID,
+		Flavour: base.FlavourConsumer,
+		Payload: messageDataJSON,
+	}
+	messageData, err := json.Marshal(messageNotification)
+	if err != nil {
+		t.Errorf("failed to marshall data")
 		return
 	}
 
@@ -3969,6 +4164,16 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		t.Errorf("failed to marshal data")
 		return
 	}
+	eventNotification := resources.NotificationEnvelope{
+		UID:     token.UID,
+		Flavour: base.FlavourConsumer,
+		Payload: eventDataJSON,
+	}
+	eventData, err := json.Marshal(eventNotification)
+	if err != nil {
+		t.Errorf("failed to marshall data")
+		return
+	}
 
 	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
 
@@ -3976,7 +4181,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		Subscription: ksuid.New().String(),
 		Message: base.PubSubMessage{
 			MessageID: ksuid.New().String(),
-			Data:      actionDataJSON,
+			Data:      actionData,
 			Attributes: map[string]string{
 				"topicID": helpers.AddPubSubNamespace(common.ActionPublishTopic),
 			},
@@ -4002,7 +4207,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		Subscription: ksuid.New().String(),
 		Message: base.PubSubMessage{
 			MessageID: ksuid.New().String(),
-			Data:      actionDataJSON,
+			Data:      actionData,
 			Attributes: map[string]string{
 				"topicID": helpers.AddPubSubNamespace(common.ActionDeleteTopic),
 			},
@@ -4028,7 +4233,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		Subscription: ksuid.New().String(),
 		Message: base.PubSubMessage{
 			MessageID: ksuid.New().String(),
-			Data:      messageDataJSON,
+			Data:      messageData,
 			Attributes: map[string]string{
 				"topicID": helpers.AddPubSubNamespace(common.MessagePostTopic),
 			},
@@ -4061,7 +4266,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		Subscription: ksuid.New().String(),
 		Message: base.PubSubMessage{
 			MessageID: ksuid.New().String(),
-			Data:      messageDataJSON,
+			Data:      messageData,
 			Attributes: map[string]string{
 				"topicID": helpers.AddPubSubNamespace(common.MessageDeleteTopic),
 			},
@@ -4093,7 +4298,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		Subscription: ksuid.New().String(),
 		Message: base.PubSubMessage{
 			MessageID: ksuid.New().String(),
-			Data:      eventDataJSON,
+			Data:      eventData,
 			Attributes: map[string]string{
 				"topicID": helpers.AddPubSubNamespace(common.IncomingEventTopic),
 			},
@@ -5272,8 +5477,15 @@ func resolveTestNudge(
 }
 
 func TestResolveDefaultNudge(t *testing.T) {
-	ctx := context.Background()
-	uid := xid.New().String()
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	uid := token.UID
 	fl := base.FlavourConsumer
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {

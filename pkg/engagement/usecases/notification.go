@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
@@ -215,10 +217,22 @@ func NewNotification(
 
 // HandleItemPublish responds to item publish messages
 func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
-	err := n.NotifyItemUpdate(ctx, itemPublishSender, true, m)
+	err = n.NotifyItemUpdate(ctx, itemPublishSender, true, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -228,11 +242,23 @@ func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *base.PubSubP
 
 // HandleItemDelete responds to item delete messages
 func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyItemUpdate(ctx, itemDeleteSender, false, m)
+	err = n.NotifyItemUpdate(ctx, itemDeleteSender, false, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -242,11 +268,23 @@ func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *base.PubSubPa
 
 // HandleItemResolve responds to item resolve messages
 func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyItemUpdate(ctx, itemResolveSender, false, m)
+	err = n.NotifyItemUpdate(ctx, itemResolveSender, false, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -256,11 +294,23 @@ func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *base.PubSubP
 
 // HandleItemUnresolve responds to item unresolve messages
 func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyItemUpdate(ctx, itemUnresolveSender, false, m)
+	err = n.NotifyItemUpdate(ctx, itemUnresolveSender, false, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -270,11 +320,23 @@ func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *base.PubSu
 
 // HandleItemHide responds to item hide messages
 func (n NotificationImpl) HandleItemHide(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyItemUpdate(ctx, itemHideSender, false, m)
+	err = n.NotifyItemUpdate(ctx, itemHideSender, false, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -284,11 +346,23 @@ func (n NotificationImpl) HandleItemHide(ctx context.Context, m *base.PubSubPayl
 
 // HandleItemShow responds to item show messages
 func (n NotificationImpl) HandleItemShow(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyItemUpdate(ctx, itemShowSender, false, m)
+	err = n.NotifyItemUpdate(ctx, itemShowSender, false, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -298,11 +372,23 @@ func (n NotificationImpl) HandleItemShow(ctx context.Context, m *base.PubSubPayl
 
 // HandleItemPin responds to item pin messages
 func (n NotificationImpl) HandleItemPin(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PinItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyItemUpdate(ctx, itemPinSender, false, m)
+	err = n.NotifyItemUpdate(ctx, itemPinSender, false, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -312,11 +398,23 @@ func (n NotificationImpl) HandleItemPin(ctx context.Context, m *base.PubSubPaylo
 
 // HandleItemUnpin responds to item unpin messages
 func (n NotificationImpl) HandleItemUnpin(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UnpinItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyItemUpdate(ctx, itemUnpinSender, false, m)
+	err = n.NotifyItemUpdate(ctx, itemUnpinSender, false, m)
 	if err != nil {
 		return fmt.Errorf("can't notify item update over FCM: %w", err)
 	}
@@ -326,11 +424,23 @@ func (n NotificationImpl) HandleItemUnpin(ctx context.Context, m *base.PubSubPay
 
 // HandleNudgePublish responds to nudge publish messages
 func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgePublishSender, m)
+	err = n.NotifyNudgeUpdate(ctx, nudgePublishSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -340,11 +450,23 @@ func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *base.PubSub
 
 // HandleNudgeDelete responds to nudge delete messages
 func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeDeleteSender, m)
+	err = n.NotifyNudgeUpdate(ctx, nudgeDeleteSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -354,11 +476,23 @@ func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *base.PubSubP
 
 // HandleNudgeResolve responds to nudge resolve messages
 func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeResolveSender, m)
+	err = n.NotifyNudgeUpdate(ctx, nudgeResolveSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -368,11 +502,23 @@ func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *base.PubSub
 
 // HandleNudgeUnresolve responds to nudge unresolve messages
 func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeUnresolveSender, m)
+	err = n.NotifyNudgeUpdate(ctx, nudgeUnresolveSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -382,11 +528,23 @@ func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *base.PubS
 
 // HandleNudgeHide responds to nudge hide messages
 func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeHideSender, m)
+	err = n.NotifyNudgeUpdate(ctx, nudgeHideSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -396,11 +554,23 @@ func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *base.PubSubPay
 
 // HandleNudgeShow responds to nudge hide messages
 func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	err := n.NotifyNudgeUpdate(ctx, nudgeShowSender, m)
+	err = n.NotifyNudgeUpdate(ctx, nudgeShowSender, m)
 	if err != nil {
 		return fmt.Errorf("can't notify nudge update over FCM: %w", err)
 	}
@@ -410,6 +580,18 @@ func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *base.PubSubPay
 
 // HandleActionPublish responds to action publish messages
 func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -421,6 +603,18 @@ func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *base.PubSu
 
 // HandleActionDelete responds to action publish messages
 func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -432,6 +626,18 @@ func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *base.PubSub
 
 // HandleMessagePost responds to message post pubsub messages
 func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.PostMessage)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -443,6 +649,18 @@ func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *base.PubSubP
 
 // HandleMessageDelete responds to message delete pubsub messages
 func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteMessage)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -454,6 +672,18 @@ func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *base.PubSu
 
 // HandleIncomingEvent responds to message delete pubsub messages
 func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ProcessEvent)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
@@ -468,12 +698,24 @@ func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *base.PubSu
 
 // HandleSendNotification responds to send notification messages
 func (n NotificationImpl) HandleSendNotification(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.SendMessage)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
 	payload := &base.SendNotificationPayload{}
-	err := json.Unmarshal(m.Message.Data, payload)
+	err = json.Unmarshal(m.Message.Data, payload)
 	if err != nil {
 		return fmt.Errorf(
 			"can't unmarshal notification notification from pubsub data: %w", err)
@@ -502,9 +744,20 @@ func (n NotificationImpl) NotifyItemUpdate(
 	includeNotification bool, // whether to show a tray notification
 	m *base.PubSubPayload,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
 
 	var envelope resources.NotificationEnvelope
-	err := json.Unmarshal(m.Message.Data, &envelope)
+	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
 		return fmt.Errorf(
 			"can't unmarshal notification envelope from pubsub data: %w", err)
@@ -570,7 +823,19 @@ func (n NotificationImpl) NotifyItemUpdate(
 
 // UpdateInbox recalculates the inbox count and notifies the client over FCM
 func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour base.Flavour) error {
-	err := n.repository.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
+	err = n.repository.UpdateUnreadPersistentItemsCount(ctx, uid, flavour)
 	if err != nil {
 		return fmt.Errorf("can't update inbox count: %w", err)
 	}
@@ -597,8 +862,20 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 	sender string,
 	m *base.PubSubPayload,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	var envelope resources.NotificationEnvelope
-	err := json.Unmarshal(m.Message.Data, &envelope)
+	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
 		return fmt.Errorf("can't unmarshal notification envelope from pubsub data: %w", err)
 	}
@@ -659,6 +936,18 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 	flavour base.Flavour,
 	count int,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	notificationEnvelope := resources.NotificationEnvelope{
 		UID:     uid,
 		Flavour: flavour,
@@ -675,7 +964,7 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 	}
 
 	notifyUIDs := []string{uid}
-	err := n.SendNotificationViaFCM(
+	err = n.SendNotificationViaFCM(
 		ctx, notifyUIDs, feedUpdate, notificationEnvelope, notification)
 	if err != nil {
 		return fmt.Errorf("unable to notify thin feed: %w", err)
@@ -707,6 +996,18 @@ func (n NotificationImpl) SendNotificationViaFCM(
 	pl resources.NotificationEnvelope,
 	notification *base.FirebaseSimpleNotificationInput,
 ) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.SendMessage)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if notification == nil {
 		return fmt.Errorf("nil notification")
 	}
@@ -745,12 +1046,24 @@ func (n NotificationImpl) SendNotificationViaFCM(
 
 // SendEmail sends an email
 func (n NotificationImpl) SendEmail(ctx context.Context, m *base.PubSubPayload) error {
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get user: %w", err)
+	}
+	isAuthorized, err := authorization.IsAuthorized(user, permission.SendMessage)
+	if err != nil {
+		return err
+	}
+	if !isAuthorized {
+		return fmt.Errorf("user not authorized to access this resource")
+	}
+
 	if m == nil {
 		return fmt.Errorf("nil pub sub payload")
 	}
 
 	payload := &resources.EMailMessage{}
-	err := json.Unmarshal(m.Message.Data, &payload)
+	err = json.Unmarshal(m.Message.Data, &payload)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal data: %v", err)
 	}

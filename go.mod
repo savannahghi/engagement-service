@@ -13,6 +13,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go v1.38.24 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
+	github.com/casbin/casbin/v2 v2.30.0
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/google/pprof v0.0.0-20210413054141-7c2eacd09c8d // indirect
 	github.com/google/uuid v1.2.0
@@ -36,7 +37,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
-	gitlab.slade360emr.com/go/base v0.0.139
+	gitlab.slade360emr.com/go/base v0.0.143
 	go.opencensus.io v0.23.0
 	golang.org/x/net v0.0.0-20210421230115-4e50805a0758 // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78

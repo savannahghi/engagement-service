@@ -310,7 +310,7 @@ func aTestNudge(t *testing.T) *base.Nudge {
 
 func TestHandleItemPublish(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -347,7 +347,7 @@ func TestHandleItemPublish(t *testing.T) {
 
 func TestHandleItemDelete(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -384,7 +384,7 @@ func TestHandleItemDelete(t *testing.T) {
 
 func TestHandleItemResolve(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -421,7 +421,7 @@ func TestHandleItemResolve(t *testing.T) {
 
 func TestHandleItemUnresolve(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -458,7 +458,7 @@ func TestHandleItemUnresolve(t *testing.T) {
 
 func TestHandleItemHide(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -495,7 +495,7 @@ func TestHandleItemHide(t *testing.T) {
 
 func TestHandleItemShow(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -532,7 +532,7 @@ func TestHandleItemShow(t *testing.T) {
 
 func TestHandleItemPin(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -569,7 +569,7 @@ func TestHandleItemPin(t *testing.T) {
 
 func TestHandleItemUnpin(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -606,7 +606,7 @@ func TestHandleItemUnpin(t *testing.T) {
 
 func TestHandleNudgePublish(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -643,7 +643,7 @@ func TestHandleNudgePublish(t *testing.T) {
 
 func TestHandleNudgeDelete(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -680,7 +680,7 @@ func TestHandleNudgeDelete(t *testing.T) {
 
 func TestHandleNudgeResolve(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -717,7 +717,7 @@ func TestHandleNudgeResolve(t *testing.T) {
 
 func TestHandleNudgeUnresolve(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -754,7 +754,7 @@ func TestHandleNudgeUnresolve(t *testing.T) {
 
 func TestHandleNudgeHide(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -791,7 +791,7 @@ func TestHandleNudgeHide(t *testing.T) {
 
 func TestHandleNudgeShow(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -828,7 +828,7 @@ func TestHandleNudgeShow(t *testing.T) {
 
 func TestHandleActionPublish(t *testing.T) {
 	action := getATestAction()
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -865,7 +865,7 @@ func TestHandleActionPublish(t *testing.T) {
 
 func TestHandleActionDelete(t *testing.T) {
 	action := getATestAction()
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -902,7 +902,7 @@ func TestHandleActionDelete(t *testing.T) {
 
 func TestHandleMessagePost(t *testing.T) {
 	message := getATestMessage()
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -939,7 +939,7 @@ func TestHandleMessagePost(t *testing.T) {
 
 func TestHandleMessageDelete(t *testing.T) {
 	message := getATestMessage()
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -976,7 +976,7 @@ func TestHandleMessageDelete(t *testing.T) {
 
 func TestHandleIncomingEvent(t *testing.T) {
 	event := getATestEvent()
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1481,7 +1481,7 @@ func TestUpdateInbox(t *testing.T) {
 }
 
 func TestNotificationImpl_SendEmail(t *testing.T) {
-	ctx := context.Background()
+	ctx := base.GetAuthenticatedContext(t)
 
 	notify, err := InitializeTestNewNotification(ctx)
 	if err != nil {
