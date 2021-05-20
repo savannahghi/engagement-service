@@ -40,5 +40,5 @@ type GhostCMSAuthor {
 
 type Query {
   getLibraryContent: [GhostCMSPost!]!
-  getFaqsContent: [GhostCMSPost!]!
+  getFaqsContent(flavour: Flavour!): [GhostCMSPost!]!
 }

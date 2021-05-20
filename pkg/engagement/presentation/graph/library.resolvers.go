@@ -26,10 +26,10 @@ func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*library.Ghost
 	return ghostCMSPost, nil
 }
 
-func (r *queryResolver) GetFaqsContent(ctx context.Context) ([]*library.GhostCMSPost, error) {
+func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*library.GhostCMSPost, error) {
 	startTime := time.Now()
 
-	faqs, err := r.interactor.Library.GetFaqsContent(ctx)
+	faqs, err := r.interactor.Library.GetFaqsContent(ctx, flavour)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get FAQs content: %v", err)
 	}

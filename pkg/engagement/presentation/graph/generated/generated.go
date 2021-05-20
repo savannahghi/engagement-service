@@ -360,7 +360,7 @@ type ComplexityRoot struct {
 		GenerateAndEmailOtp   func(childComplexity int, msisdn string, email *string) int
 		GenerateOtp           func(childComplexity int, msisdn string) int
 		GenerateRetryOtp      func(childComplexity int, msisdn string, retryStep int) int
-		GetFaqsContent        func(childComplexity int) int
+		GetFaqsContent        func(childComplexity int, flavour base.Flavour) int
 		GetFeed               func(childComplexity int, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
 		Labels                func(childComplexity int, flavour base.Flavour) int
@@ -458,7 +458,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
-	GetFaqsContent(ctx context.Context) ([]*library.GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*library.GhostCMSPost, error)
 	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*resources.SavedNotification, error)
 	GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour base.Flavour) ([]string, error)
@@ -2236,7 +2236,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.GetFaqsContent(childComplexity), true
+		args, err := ec.field_Query_getFaqsContent_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetFaqsContent(childComplexity, args["flavour"].(base.Flavour)), true
 
 	case "Query.getFeed":
 		if e.complexity.Query.GetFeed == nil {
@@ -2975,7 +2980,7 @@ type GhostCMSAuthor {
 
 type Query {
   getLibraryContent: [GhostCMSPost!]!
-  getFaqsContent: [GhostCMSPost!]!
+  getFaqsContent(flavour: Flavour!): [GhostCMSPost!]!
 }
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/mailgun.graphql", Input: `extend type Mutation {
@@ -4546,6 +4551,21 @@ func (ec *executionContext) field_Query_generateRetryOTP_args(ctx context.Contex
 		}
 	}
 	args["retryStep"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getFaqsContent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 base.Flavour
+	if tmp, ok := rawArgs["flavour"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
+		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["flavour"] = arg0
 	return args, nil
 }
 
@@ -12479,9 +12499,16 @@ func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field gra
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getFaqsContent_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFaqsContent(rctx)
+		return ec.resolvers.Query().GetFaqsContent(rctx, args["flavour"].(base.Flavour))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

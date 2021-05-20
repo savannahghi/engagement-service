@@ -31,7 +31,6 @@ func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input resource
 	)
 
 	return response, nil
-
 }
 
 func (r *queryResolver) ListNPSResponse(ctx context.Context) ([]*resources.NPSResponse, error) {

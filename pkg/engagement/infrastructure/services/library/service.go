@@ -14,21 +14,22 @@ import (
 
 // Library service constants
 const (
-	ghostCMSAPIEndpoint     = "GHOST_CMS_API_ENDPOINT"
-	ghostCMSAPIKey          = "GHOST_CMS_API_KEY"
-	apiRoot                 = "/ghost/api/v3/content/posts/?"
-	includeTags             = "&include=tags"
-	includeAuthors          = "&include=authors"
-	formats                 = "&formats=html,plaintext"
-	allowedFeedTagFilter    = "&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
-	allowedFAQsTagFilter    = "&filter=tag:faqs&filter=tag:how-to"
-	allowedLibraryTagFilter = "&filter=tag:diet&filter=tag:health-tips"
+	ghostCMSAPIEndpoint          = "GHOST_CMS_API_ENDPOINT"
+	ghostCMSAPIKey               = "GHOST_CMS_API_KEY"
+	apiRoot                      = "/ghost/api/v3/content/posts/?"
+	includeTags                  = "&include=tags"
+	includeAuthors               = "&include=authors"
+	formats                      = "&formats=html,plaintext"
+	allowedFeedTagFilter         = "&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
+	allowedPROFAQsTagFilter      = "&filter=tag:faqs-pro&filter=tag:how-to"
+	allowedConsumerFAQsTagFilter = "&filter=tag:faqs-consumer&filter=tag:how-to"
+	allowedLibraryTagFilter      = "&filter=tag:diet&filter=tag:health-tips"
 )
 
 // ServiceLibrary ...
 type ServiceLibrary interface {
 	GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error)
-	GetFaqsContent(ctx context.Context) ([]*GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error)
 	GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error)
 }
 
@@ -36,7 +37,8 @@ type requestType int
 
 const (
 	feedRequest requestType = iota + 1
-	faqsRequest
+	faqsRequestConsumer
+	faqsRequestPro
 	libraryRequest
 )
 
@@ -87,12 +89,21 @@ func (s Service) composeRequest(reqType requestType) string {
 			includeAuthors,
 			formats,
 		)
-	case faqsRequest:
+	case faqsRequestConsumer:
 		urlRequest = fmt.Sprintf(
 			"%v%v%v%v%v",
 			s.PostsAPIRoot,
 			includeTags,
-			allowedFAQsTagFilter,
+			allowedConsumerFAQsTagFilter,
+			includeAuthors,
+			formats,
+		)
+	case faqsRequestPro:
+		urlRequest = fmt.Sprintf(
+			"%v%v%v%v%v",
+			s.PostsAPIRoot,
+			includeTags,
+			allowedPROFAQsTagFilter,
 			includeAuthors,
 			formats,
 		)
@@ -137,8 +148,12 @@ func (s Service) GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error) {
 }
 
 // GetFaqsContent fetches posts tagged as FAQs.
-func (s Service) GetFaqsContent(ctx context.Context) ([]*GhostCMSPost, error) {
-	return s.getCMSPosts(ctx, faqsRequest)
+func (s Service) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error) {
+	if flavour == base.FlavourConsumer {
+		return s.getCMSPosts(ctx, faqsRequestConsumer)
+	}
+
+	return s.getCMSPosts(ctx, faqsRequestPro)
 }
 
 // GetLibraryContent gets library content to be show under libary section of the app.

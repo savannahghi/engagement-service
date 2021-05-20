@@ -2085,8 +2085,8 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 	graphQLURL := fmt.Sprintf("%s/%s", baseURL, "graphql")
 	headers := getGraphQLHeaders(t)
 
-	graphqlQuery := `query {
-		getFaqsContent {
+	graphqlQuery := `query getFaqsContent($flavour: Flavour!) {
+		getFaqsContent(flavour: $flavour) {
 		  id
 		  slug
 		  uuid
@@ -2109,7 +2109,7 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 		  updatedAt
 		  commentID
 		}
-	  }
+	}	  
 	`
 
 	type args struct {
@@ -2123,10 +2123,26 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "valid query",
+			name: "valid query - Consumer",
 			args: args{
 				query: map[string]interface{}{
 					"query": graphqlQuery,
+					"variables": map[string]interface{}{
+						"flavour": base.FlavourConsumer,
+					},
+				},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "valid query - Pro",
+			args: args{
+				query: map[string]interface{}{
+					"query": graphqlQuery,
+					"variables": map[string]interface{}{
+						"flavour": base.FlavourPro,
+					},
 				},
 			},
 			wantStatus: http.StatusOK,

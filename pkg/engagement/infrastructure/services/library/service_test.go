@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 )
 
@@ -52,7 +53,8 @@ func TestService_GetFeedContent(t *testing.T) {
 func TestService_GetFaqsContent(t *testing.T) {
 	s := library.NewLibraryService()
 	type args struct {
-		ctx context.Context
+		ctx     context.Context
+		flavour base.Flavour
 	}
 	tests := []struct {
 		name        string
@@ -63,7 +65,8 @@ func TestService_GetFaqsContent(t *testing.T) {
 		{
 			name: "default case",
 			args: args{
-				ctx: context.Background(),
+				ctx:     context.Background(),
+				flavour: "PRO",
 			},
 			wantNonZero: true,
 			wantErr:     false,
@@ -71,7 +74,7 @@ func TestService_GetFaqsContent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := s.GetFaqsContent(tt.args.ctx)
+			got, err := s.GetFaqsContent(tt.args.ctx, tt.args.flavour)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.GetFaqsContent() error = %v, wantErr %v", err, tt.wantErr)
 				return
