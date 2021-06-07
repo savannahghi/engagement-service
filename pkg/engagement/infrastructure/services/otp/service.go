@@ -12,7 +12,7 @@ import (
 	"github.com/pquerna/otp/totp"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
@@ -41,7 +41,7 @@ const (
 type ServiceOTP interface {
 	GenerateAndSendOTP(msisdn string) (string, error)
 	SendOTPToEmail(ctx context.Context, msisdn, email *string) (string, error)
-	SaveOTPToFirestore(otp resources.OTP) error
+	SaveOTPToFirestore(otp dto.OTP) error
 	VerifyOtp(ctx context.Context, msisdn, verificationCode *string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email, verificationCode *string) (bool, error)
 	GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int) (string, error)
@@ -173,7 +173,7 @@ func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
 	}
 
 	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
-	otp := resources.OTP{
+	otp := dto.OTP{
 		MSISDN:            msisdn,
 		Message:           msg,
 		AuthorizationCode: code,
@@ -229,7 +229,7 @@ func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string) (str
 }
 
 // SaveOTPToFirestore persists the supplied OTP
-func (s Service) SaveOTPToFirestore(otp resources.OTP) error {
+func (s Service) SaveOTPToFirestore(otp dto.OTP) error {
 	ctx := context.Background()
 	_, _, err := s.firestoreClient.Collection(s.getOTPCollectionName()).Add(ctx, otp)
 	return err
@@ -353,7 +353,7 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 
 	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
 
-	otp := resources.OTP{
+	otp := dto.OTP{
 		MSISDN:            *msisdn,
 		Message:           msg,
 		AuthorizationCode: code,
@@ -412,7 +412,7 @@ func (s Service) EmailVerificationOtp(ctx context.Context, email *string) (strin
 
 	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
 
-	otp := resources.OTP{
+	otp := dto.OTP{
 		Email:             *email,
 		Message:           msg,
 		AuthorizationCode: code,

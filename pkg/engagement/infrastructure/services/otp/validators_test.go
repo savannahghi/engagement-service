@@ -11,11 +11,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
 func TestValidateSendOTPPayload(t *testing.T) {
-	goodData := &resources.Msisdn{
+	goodData := &dto.Msisdn{
 		Msisdn: "+254723002959",
 	}
 	goodDataJSONBytes, err := json.Marshal(goodData)
@@ -73,7 +73,7 @@ func TestValidateSendOTPPayload(t *testing.T) {
 
 func TestValidateGenerateRetryOTPPayload(t *testing.T) {
 	phoneNumber := base.TestUserPhoneNumber
-	goodData := &resources.GenerateRetryOTP{
+	goodData := &dto.GenerateRetryOTP{
 		Msisdn:    &phoneNumber,
 		RetryStep: 2,
 	}
@@ -94,7 +94,7 @@ func TestValidateGenerateRetryOTPPayload(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *resources.GenerateRetryOTP
+		want    *dto.GenerateRetryOTP
 		wantErr bool
 	}{
 		{
@@ -103,7 +103,7 @@ func TestValidateGenerateRetryOTPPayload(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: validRequest,
 			},
-			want: &resources.GenerateRetryOTP{
+			want: &dto.GenerateRetryOTP{
 				Msisdn:    &phoneNumber,
 				RetryStep: 2,
 			},
@@ -137,7 +137,7 @@ func TestValidateVerifyOTPPayload_Phone(t *testing.T) {
 	phoneNumber := base.TestUserPhoneNumber
 	verificationCode := "45225"
 
-	goodData := &resources.VerifyOTP{
+	goodData := &dto.VerifyOTP{
 		Msisdn:           &phoneNumber,
 		VerificationCode: &verificationCode,
 	}
@@ -158,7 +158,7 @@ func TestValidateVerifyOTPPayload_Phone(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *resources.VerifyOTP
+		want    *dto.VerifyOTP
 		wantErr bool
 	}{
 		{
@@ -167,7 +167,7 @@ func TestValidateVerifyOTPPayload_Phone(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: validRequest,
 			},
-			want: &resources.VerifyOTP{
+			want: &dto.VerifyOTP{
 				Msisdn:           &phoneNumber,
 				VerificationCode: &verificationCode,
 			},
@@ -203,7 +203,7 @@ func TestValidateVerifyOTPPayload_Email(t *testing.T) {
 	email := base.TestUserEmail
 	verificationCode := "45225"
 
-	goodData := &resources.VerifyOTP{
+	goodData := &dto.VerifyOTP{
 		Email:            &email,
 		VerificationCode: &verificationCode,
 	}
@@ -217,7 +217,7 @@ func TestValidateVerifyOTPPayload_Email(t *testing.T) {
 	emptyDataRequest := httptest.NewRequest(http.MethodGet, "/", nil)
 	emptyDataRequest.Body = ioutil.NopCloser(bytes.NewReader([]byte{}))
 
-	invalidData := &resources.VerifyOTP{
+	invalidData := &dto.VerifyOTP{
 		Msisdn:           &phoneNumber,
 		VerificationCode: &verificationCode,
 	}
@@ -235,7 +235,7 @@ func TestValidateVerifyOTPPayload_Email(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *resources.VerifyOTP
+		want    *dto.VerifyOTP
 		wantErr bool
 	}{
 		{
@@ -244,7 +244,7 @@ func TestValidateVerifyOTPPayload_Email(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: validRequest,
 			},
-			want: &resources.VerifyOTP{
+			want: &dto.VerifyOTP{
 				Email:            &email,
 				VerificationCode: &verificationCode,
 			},

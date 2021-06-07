@@ -31,8 +31,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 )
 
 const (
@@ -4081,7 +4081,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		return
 	}
 
-	notification := resources.NotificationEnvelope{
+	notification := dto.NotificationEnvelope{
 		UID:     token.UID,
 		Flavour: base.FlavourConsumer,
 		Payload: itemData,
@@ -4100,7 +4100,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		return
 	}
 
-	nudgeNotification := resources.NotificationEnvelope{
+	nudgeNotification := dto.NotificationEnvelope{
 		UID:     token.UID,
 		Flavour: base.FlavourConsumer,
 		Payload: nudgeDataJSON,
@@ -4130,7 +4130,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		t.Errorf("failed to marshal data")
 		return
 	}
-	actionNotification := resources.NotificationEnvelope{
+	actionNotification := dto.NotificationEnvelope{
 		UID:     token.UID,
 		Flavour: base.FlavourConsumer,
 		Payload: actionDataJSON,
@@ -4147,7 +4147,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		t.Errorf("failed to marshal data")
 		return
 	}
-	messageNotification := resources.NotificationEnvelope{
+	messageNotification := dto.NotificationEnvelope{
 		UID:     token.UID,
 		Flavour: base.FlavourConsumer,
 		Payload: messageDataJSON,
@@ -4164,7 +4164,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		t.Errorf("failed to marshal data")
 		return
 	}
-	eventNotification := resources.NotificationEnvelope{
+	eventNotification := dto.NotificationEnvelope{
 		UID:     token.UID,
 		Flavour: base.FlavourConsumer,
 		Payload: eventDataJSON,
@@ -5654,7 +5654,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 func TestSendEmail(t *testing.T) {
 	headers := getDefaultHeaders(t, baseURL)
 	to := []string{"be.well@bewell.co.ke"}
-	email := resources.EMailMessage{
+	email := dto.EMailMessage{
 		Subject: "Test Subject :)",
 		Text:    "Hello :)",
 		To:      to,

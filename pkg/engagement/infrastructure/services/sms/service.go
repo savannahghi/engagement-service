@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
@@ -33,9 +33,9 @@ const (
 
 // ServiceSMS defines the interactions with sms service
 type ServiceSMS interface {
-	SendToMany(message string, to []string) (*resources.SendMessageResponse, error)
-	Send(to, message string) (*resources.SendMessageResponse, error)
-	SaveAITCallbackResponse(ctx context.Context, data resources.CallbackData) error
+	SendToMany(message string, to []string) (*dto.SendMessageResponse, error)
+	Send(to, message string) (*dto.SendMessageResponse, error)
+	SaveAITCallbackResponse(ctx context.Context, data dto.CallbackData) error
 }
 
 // Service defines a sms service struct
@@ -75,18 +75,18 @@ func NewService(repository repository.Repository) *Service {
 }
 
 // SaveAITCallbackResponse saves the callback data for future analysis
-func (s Service) SaveAITCallbackResponse(ctx context.Context, data resources.CallbackData) error {
+func (s Service) SaveAITCallbackResponse(ctx context.Context, data dto.CallbackData) error {
 	return s.Repository.SaveAITCallbackResponse(ctx, data)
 }
 
 // SendToMany is a utility method to send to many recipients at the same time
-func (s Service) SendToMany(message string, to []string) (*resources.SendMessageResponse, error) {
+func (s Service) SendToMany(message string, to []string) (*dto.SendMessageResponse, error) {
 	recipients := strings.Join(to, ",")
 	return s.Send(recipients, message)
 }
 
 // Send is a method used to send to a single recipient
-func (s Service) Send(to, message string) (*resources.SendMessageResponse, error) {
+func (s Service) Send(to, message string) (*dto.SendMessageResponse, error) {
 	values := url.Values{}
 	values.Set("username", s.Username)
 	values.Set("to", to)
@@ -111,7 +111,7 @@ func (s Service) Send(to, message string) (*resources.SendMessageResponse, error
 		return nil, err
 	}
 
-	smsMessageResponse := &resources.SendMessageResponse{}
+	smsMessageResponse := &dto.SendMessageResponse{}
 
 	bodyAsString := string(bodyBytes)
 	if strings.Contains(bodyAsString, AITAuthenticationError) {

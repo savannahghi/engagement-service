@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
-func (r *mutationResolver) Send(ctx context.Context, to string, message string) (*resources.SendMessageResponse, error) {
+func (r *mutationResolver) Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
@@ -32,7 +32,7 @@ func (r *mutationResolver) Send(ctx context.Context, to string, message string) 
 	return smsResponse, nil
 }
 
-func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []string) (*resources.SendMessageResponse, error) {
+func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()

@@ -1,4 +1,4 @@
-package resources
+package dto
 
 // SendSMSPayload is used to serialise an SMS sent through the twilio service REST API
 type SendSMSPayload struct {

@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
-func (r *queryResolver) TwilioAccessToken(ctx context.Context) (*resources.AccessToken, error) {
+func (r *queryResolver) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()

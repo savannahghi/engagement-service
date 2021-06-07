@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
@@ -47,7 +47,7 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 	return sent, nil
 }
 
-func (r *queryResolver) Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*resources.SavedNotification, error) {
+func (r *queryResolver) Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()

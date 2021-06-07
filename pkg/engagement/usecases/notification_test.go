@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
@@ -243,7 +243,7 @@ func getTestPubsubPayload(t *testing.T, el base.Element) *base.PubSubPayload {
 		return nil
 	}
 
-	envelope := resources.NotificationEnvelope{
+	envelope := dto.NotificationEnvelope{
 		UID:     token.UID,
 		Flavour: base.FlavourConsumer,
 		Payload: elData,
@@ -1142,7 +1142,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 		ctx          context.Context
 		uids         []string
 		sender       string
-		pl           resources.NotificationEnvelope
+		pl           dto.NotificationEnvelope
 		notification *base.FirebaseSimpleNotificationInput
 	}
 	tests := []struct {
@@ -1156,7 +1156,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 				ctx:    ctx,
 				uids:   []string{token.UID},
 				sender: "Be.Well",
-				pl: resources.NotificationEnvelope{
+				pl: dto.NotificationEnvelope{
 					UID:     token.UID,
 					Flavour: base.FlavourConsumer,
 					Payload: []byte("payload"),
@@ -1181,7 +1181,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 				ctx:    ctx,
 				uids:   []string{""},
 				sender: "Be.Well",
-				pl: resources.NotificationEnvelope{
+				pl: dto.NotificationEnvelope{
 					UID:     "",
 					Flavour: base.FlavourConsumer,
 					Payload: []byte("payload"),
@@ -1206,7 +1206,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 				ctx:    context.Background(),
 				uids:   []string{"f4f39af7-5b64-4c2f-91bd-42b3af315a4e"},
 				sender: "Be.Well",
-				pl: resources.NotificationEnvelope{
+				pl: dto.NotificationEnvelope{
 					UID:     "",
 					Flavour: base.FlavourConsumer,
 					Payload: []byte("payload"),

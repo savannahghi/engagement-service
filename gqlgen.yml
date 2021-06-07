@@ -23,7 +23,7 @@ autobind:
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/scheduling"
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
-  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
   - "gitlab.slade360emr.com/go/base"
   - "google.golang.org/api/calendar/v3"

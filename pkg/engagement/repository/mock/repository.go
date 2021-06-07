@@ -6,8 +6,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 )
 
@@ -218,18 +218,18 @@ type FakeEngagementRepository struct {
 
 	SaveAITCallbackResponseFn func(
 		ctx context.Context,
-		data resources.CallbackData,
+		data dto.CallbackData,
 	) error
 
 	SaveTwilioResponseFn func(
 		ctx context.Context,
-		data resources.Message,
+		data dto.Message,
 	) error
 
 	SaveNotificationFn func(
 		ctx context.Context,
 		firestoreClient *firestore.Client,
-		notification resources.SavedNotification,
+		notification dto.SavedNotification,
 	) error
 
 	RetrieveNotificationFn func(
@@ -238,11 +238,11 @@ type FakeEngagementRepository struct {
 		registrationToken string,
 		newerThan time.Time,
 		limit int,
-	) ([]*resources.SavedNotification, error)
+	) ([]*dto.SavedNotification, error)
 
 	SaveNPSResponseFn func(
 		ctx context.Context,
-		response *resources.NPSResponse,
+		response *dto.NPSResponse,
 	) error
 }
 
@@ -515,7 +515,7 @@ func (f *FakeEngagementRepository) GetDefaultNudgeByTitle(
 // SaveAITCallbackResponse saves the callback data for future analysis
 func (f *FakeEngagementRepository) SaveAITCallbackResponse(
 	ctx context.Context,
-	data resources.CallbackData,
+	data dto.CallbackData,
 ) error {
 	return f.SaveAITCallbackResponseFn(ctx, data)
 }
@@ -523,7 +523,7 @@ func (f *FakeEngagementRepository) SaveAITCallbackResponse(
 // SaveTwilioResponse saves the callback data for future analysis
 func (f *FakeEngagementRepository) SaveTwilioResponse(
 	ctx context.Context,
-	data resources.Message,
+	data dto.Message,
 ) error {
 	return f.SaveTwilioResponseFn(ctx, data)
 }
@@ -532,7 +532,7 @@ func (f *FakeEngagementRepository) SaveTwilioResponse(
 func (f *FakeEngagementRepository) SaveNotification(
 	ctx context.Context,
 	firestoreClient *firestore.Client,
-	notification resources.SavedNotification,
+	notification dto.SavedNotification,
 ) error {
 	return f.SaveNotificationFn(ctx, firestoreClient, notification)
 }
@@ -544,14 +544,14 @@ func (f *FakeEngagementRepository) RetrieveNotification(
 	registrationToken string,
 	newerThan time.Time,
 	limit int,
-) ([]*resources.SavedNotification, error) {
+) ([]*dto.SavedNotification, error) {
 	return f.RetrieveNotificationFn(ctx, firestoreClient, registrationToken, newerThan, limit)
 }
 
 // SaveNPSResponse saves a NPS response
 func (f *FakeEngagementRepository) SaveNPSResponse(
 	ctx context.Context,
-	response *resources.NPSResponse,
+	response *dto.NPSResponse,
 ) error {
 	return f.SaveNPSResponseFn(ctx, response)
 }

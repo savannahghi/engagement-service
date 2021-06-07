@@ -9,16 +9,16 @@ import (
 	"strings"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
-func (r *entityResolver) FindAccessTokenByJwt(ctx context.Context, jwt string) (*resources.AccessToken, error) {
+func (r *entityResolver) FindAccessTokenByJwt(ctx context.Context, jwt string) (*dto.AccessToken, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *entityResolver) FindDummyByID(ctx context.Context, id *string) (*resources.Dummy, error) {
+func (r *entityResolver) FindDummyByID(ctx context.Context, id *string) (*dto.Dummy, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -49,7 +49,7 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.F
 	)
 }
 
-func (r *entityResolver) FindSavedNotificationByID(ctx context.Context, id string) (*resources.SavedNotification, error) {
+func (r *entityResolver) FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

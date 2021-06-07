@@ -19,9 +19,9 @@ import (
 	"gitlab.slade360emr.com/go/base"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
 
@@ -188,7 +188,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(w http.ResponseWriter
 	}
 
 	// get the UID frrom the payload
-	var envelope resources.NotificationEnvelope
+	var envelope dto.NotificationEnvelope
 	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
 		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
@@ -1138,7 +1138,7 @@ func (p PresentationHandlersImpl) FindUpload(ctx context.Context) http.HandlerFu
 // and returns the status
 func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &resources.EMailMessage{}
+		payload := &dto.EMailMessage{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.Subject == "" {
 			err := fmt.Errorf("blank email subject")
@@ -1180,7 +1180,7 @@ func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFun
 // SendToMany sends a data message to the specified recipient
 func (p PresentationHandlersImpl) SendToMany(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &resources.SendSMSPayload{}
+		payload := &dto.SendSMSPayload{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 
 		for _, phoneNo := range payload.To {
@@ -1239,12 +1239,12 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(ctx context.Context)
 			return
 		}
 
-		err = p.interactor.SMS.SaveAITCallbackResponse(ctx, resources.CallbackData{Values: r.Form})
+		err = p.interactor.SMS.SaveAITCallbackResponse(ctx, dto.CallbackData{Values: r.Form})
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		marshalled, err := json.Marshal(resources.CallbackData{Values: r.Form})
+		marshalled, err := json.Marshal(dto.CallbackData{Values: r.Form})
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1256,7 +1256,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(ctx context.Context)
 // GetNotificationHandler returns a handler that processes an Africa's Talking payment notification
 func (p PresentationHandlersImpl) GetNotificationHandler(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &resources.Message{}
+		payload := &dto.Message{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
 			err := fmt.Errorf("twilio notification payload not parsed correctly")
@@ -1283,7 +1283,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler(ctx context.Context) ht
 // GetIncomingMessageHandler returns a handler that processes an Africa's Talking payment notification
 func (p PresentationHandlersImpl) GetIncomingMessageHandler(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &resources.Message{}
+		payload := &dto.Message{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
 			err := fmt.Errorf("twilio notification payload not parsed correctly")

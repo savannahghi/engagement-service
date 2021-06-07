@@ -18,8 +18,8 @@ import (
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	calendar "google.golang.org/api/calendar/v3"
@@ -295,7 +295,7 @@ type ComplexityRoot struct {
 		PreauthApproval                 func(childComplexity int, to string, currency string, amount string, benefit string, provider string, member string, careContact string, marketingMessage string) int
 		PreauthRequest                  func(childComplexity int, to string, currency string, amount string, benefit string, provider string, requestTime string, member string, careContact string, marketingMessage string) int
 		ProcessEvent                    func(childComplexity int, flavour base.Flavour, event base.Event) int
-		RecordNPSResponse               func(childComplexity int, input resources.NPSInput) int
+		RecordNPSResponse               func(childComplexity int, input dto.NPSInput) int
 		ResolveFeedItem                 func(childComplexity int, flavour base.Flavour, itemID string) int
 		Send                            func(childComplexity int, to string, message string) int
 		SendNotification                func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) int
@@ -417,13 +417,13 @@ type ComplexityRoot struct {
 }
 
 type DummyResolver interface {
-	ID(ctx context.Context, obj *resources.Dummy) (*string, error)
+	ID(ctx context.Context, obj *dto.Dummy) (*string, error)
 }
 type EntityResolver interface {
-	FindAccessTokenByJwt(ctx context.Context, jwt string) (*resources.AccessToken, error)
-	FindDummyByID(ctx context.Context, id *string) (*resources.Dummy, error)
+	FindAccessTokenByJwt(ctx context.Context, jwt string) (*dto.AccessToken, error)
+	FindDummyByID(ctx context.Context, id *string) (*dto.Dummy, error)
 	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
-	FindSavedNotificationByID(ctx context.Context, id string) (*resources.SavedNotification, error)
+	FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error)
 }
 type MutationResolver interface {
 	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) (bool, error)
@@ -441,9 +441,9 @@ type MutationResolver interface {
 	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
 	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
-	Send(ctx context.Context, to string, message string) (*resources.SendMessageResponse, error)
-	SendToMany(ctx context.Context, message string, to []string) (*resources.SendMessageResponse, error)
-	RecordNPSResponse(ctx context.Context, input resources.NPSInput) (bool, error)
+	Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error)
+	SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error)
+	RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error)
 	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
 	PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error)
 	WellnessCardActivationDependant(ctx context.Context, to string, memberName string, cardName string, marketingMessage string) (bool, error)
@@ -459,7 +459,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*library.GhostCMSPost, error)
-	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*resources.SavedNotification, error)
+	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error)
 	GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour base.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour base.Flavour) (int, error)
@@ -467,8 +467,8 @@ type QueryResolver interface {
 	GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string) (string, error)
 	GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int) (string, error)
 	EmailVerificationOtp(ctx context.Context, email string) (string, error)
-	ListNPSResponse(ctx context.Context) ([]*resources.NPSResponse, error)
-	TwilioAccessToken(ctx context.Context) (*resources.AccessToken, error)
+	ListNPSResponse(ctx context.Context) ([]*dto.NPSResponse, error)
+	TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error)
 	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
 }
 
@@ -1776,7 +1776,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.RecordNPSResponse(childComplexity, args["input"].(resources.NPSInput)), true
+		return e.complexity.Mutation.RecordNPSResponse(childComplexity, args["input"].(dto.NPSInput)), true
 
 	case "Mutation.resolveFeedItem":
 		if e.complexity.Mutation.ResolveFeedItem == nil {
@@ -3849,10 +3849,10 @@ func (ec *executionContext) field_Mutation_processEvent_args(ctx context.Context
 func (ec *executionContext) field_Mutation_recordNPSResponse_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 resources.NPSInput
+	var arg0 dto.NPSInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNPSInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSInput(ctx, tmp)
+		arg0, err = ec.unmarshalNNPSInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐNPSInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4739,7 +4739,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _AccessToken_jwt(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_jwt(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4774,7 +4774,7 @@ func (ec *executionContext) _AccessToken_jwt(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AccessToken_uniqueName(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_uniqueName(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4809,7 +4809,7 @@ func (ec *executionContext) _AccessToken_uniqueName(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AccessToken_sid(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_sid(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4844,7 +4844,7 @@ func (ec *executionContext) _AccessToken_sid(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AccessToken_dateUpdated(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_dateUpdated(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4879,7 +4879,7 @@ func (ec *executionContext) _AccessToken_dateUpdated(ctx context.Context, field 
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AccessToken_status(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_status(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4914,7 +4914,7 @@ func (ec *executionContext) _AccessToken_status(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AccessToken_type(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_type(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4949,7 +4949,7 @@ func (ec *executionContext) _AccessToken_type(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AccessToken_maxParticipants(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_maxParticipants(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4984,7 +4984,7 @@ func (ec *executionContext) _AccessToken_maxParticipants(ctx context.Context, fi
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _AccessToken_duration(ctx context.Context, field graphql.CollectedField, obj *resources.AccessToken) (ret graphql.Marshaler) {
+func (ec *executionContext) _AccessToken_duration(ctx context.Context, field graphql.CollectedField, obj *dto.AccessToken) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6471,7 +6471,7 @@ func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphq
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.CollectedField, obj *resources.Dummy) (ret graphql.Marshaler) {
+func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.CollectedField, obj *dto.Dummy) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6540,9 +6540,9 @@ func (ec *executionContext) _Entity_findAccessTokenByJwt(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*resources.AccessToken)
+	res := resTmp.(*dto.AccessToken)
 	fc.Result = res
-	return ec.marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx, field.Selections, res)
+	return ec.marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐAccessToken(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6582,9 +6582,9 @@ func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*resources.Dummy)
+	res := resTmp.(*dto.Dummy)
 	fc.Result = res
-	return ec.marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐDummy(ctx, field.Selections, res)
+	return ec.marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6666,9 +6666,9 @@ func (ec *executionContext) _Entity_findSavedNotificationByID(ctx context.Contex
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*resources.SavedNotification)
+	res := resTmp.(*dto.SavedNotification)
 	fc.Result = res
-	return ec.marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx, field.Selections, res)
+	return ec.marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
@@ -7715,7 +7715,7 @@ func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql
 	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Feedback_question(ctx context.Context, field graphql.CollectedField, obj *resources.Feedback) (ret graphql.Marshaler) {
+func (ec *executionContext) _Feedback_question(ctx context.Context, field graphql.CollectedField, obj *dto.Feedback) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7750,7 +7750,7 @@ func (ec *executionContext) _Feedback_question(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Feedback_answer(ctx context.Context, field graphql.CollectedField, obj *resources.Feedback) (ret graphql.Marshaler) {
+func (ec *executionContext) _Feedback_answer(ctx context.Context, field graphql.CollectedField, obj *dto.Feedback) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7817,7 +7817,7 @@ func (ec *executionContext) _FilterParams_labels(ctx context.Context, field grap
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseAPNSConfig_headers(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAPNSConfig) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseAPNSConfig_headers(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseAPNSConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7849,7 +7849,7 @@ func (ec *executionContext) _FirebaseAPNSConfig_headers(ctx context.Context, fie
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseAndroidConfig_collapseKey(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseAndroidConfig_collapseKey(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseAndroidConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7884,7 +7884,7 @@ func (ec *executionContext) _FirebaseAndroidConfig_collapseKey(ctx context.Conte
 	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseAndroidConfig_priority(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseAndroidConfig_priority(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseAndroidConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7919,7 +7919,7 @@ func (ec *executionContext) _FirebaseAndroidConfig_priority(ctx context.Context,
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseAndroidConfig_restrictedPackageName(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseAndroidConfig_restrictedPackageName(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseAndroidConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7954,7 +7954,7 @@ func (ec *executionContext) _FirebaseAndroidConfig_restrictedPackageName(ctx con
 	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseAndroidConfig_data(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseAndroidConfig) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseAndroidConfig_data(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseAndroidConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7986,7 +7986,7 @@ func (ec *executionContext) _FirebaseAndroidConfig_data(ctx context.Context, fie
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseSimpleNotification_title(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseSimpleNotification_title(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseSimpleNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8021,7 +8021,7 @@ func (ec *executionContext) _FirebaseSimpleNotification_title(ctx context.Contex
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseSimpleNotification_body(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseSimpleNotification_body(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseSimpleNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8056,7 +8056,7 @@ func (ec *executionContext) _FirebaseSimpleNotification_body(ctx context.Context
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseSimpleNotification_imageURL(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseSimpleNotification_imageURL(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseSimpleNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8088,7 +8088,7 @@ func (ec *executionContext) _FirebaseSimpleNotification_imageURL(ctx context.Con
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseSimpleNotification_data(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseSimpleNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseSimpleNotification_data(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseSimpleNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8120,7 +8120,7 @@ func (ec *executionContext) _FirebaseSimpleNotification_data(ctx context.Context
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseWebpushConfig_headers(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseWebpushConfig) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseWebpushConfig_headers(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseWebpushConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8152,7 +8152,7 @@ func (ec *executionContext) _FirebaseWebpushConfig_headers(ctx context.Context, 
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _FirebaseWebpushConfig_data(ctx context.Context, field graphql.CollectedField, obj *resources.FirebaseWebpushConfig) (ret graphql.Marshaler) {
+func (ec *executionContext) _FirebaseWebpushConfig_data(ctx context.Context, field graphql.CollectedField, obj *dto.FirebaseWebpushConfig) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10982,9 +10982,9 @@ func (ec *executionContext) _Mutation_send(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*resources.SendMessageResponse)
+	res := resTmp.(*dto.SendMessageResponse)
 	fc.Result = res
-	return ec.marshalNSendMessageResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSendMessageResponse(ctx, field.Selections, res)
+	return ec.marshalNSendMessageResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_sendToMany(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -11024,9 +11024,9 @@ func (ec *executionContext) _Mutation_sendToMany(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*resources.SendMessageResponse)
+	res := resTmp.(*dto.SendMessageResponse)
 	fc.Result = res
-	return ec.marshalNSendMessageResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSendMessageResponse(ctx, field.Selections, res)
+	return ec.marshalNSendMessageResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_recordNPSResponse(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -11054,7 +11054,7 @@ func (ec *executionContext) _Mutation_recordNPSResponse(ctx context.Context, fie
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RecordNPSResponse(rctx, args["input"].(resources.NPSInput))
+		return ec.resolvers.Mutation().RecordNPSResponse(rctx, args["input"].(dto.NPSInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11533,7 +11533,7 @@ func (ec *executionContext) _Mutation_sladeOTP(ctx context.Context, field graphq
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NPSResponse_id(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _NPSResponse_id(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11568,7 +11568,7 @@ func (ec *executionContext) _NPSResponse_id(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NPSResponse_name(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _NPSResponse_name(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11603,7 +11603,7 @@ func (ec *executionContext) _NPSResponse_name(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NPSResponse_score(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _NPSResponse_score(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11638,7 +11638,7 @@ func (ec *executionContext) _NPSResponse_score(ctx context.Context, field graphq
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NPSResponse_sladeCode(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _NPSResponse_sladeCode(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11673,7 +11673,7 @@ func (ec *executionContext) _NPSResponse_sladeCode(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NPSResponse_email(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _NPSResponse_email(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11705,7 +11705,7 @@ func (ec *executionContext) _NPSResponse_email(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NPSResponse_msisdn(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _NPSResponse_msisdn(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11737,7 +11737,7 @@ func (ec *executionContext) _NPSResponse_msisdn(ctx context.Context, field graph
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NPSResponse_feedback(ctx context.Context, field graphql.CollectedField, obj *resources.NPSResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _NPSResponse_feedback(ctx context.Context, field graphql.CollectedField, obj *dto.NPSResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11764,9 +11764,9 @@ func (ec *executionContext) _NPSResponse_feedback(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]resources.Feedback)
+	res := resTmp.([]dto.Feedback)
 	fc.Result = res
-	return ec.marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx, field.Selections, res)
+	return ec.marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedback(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _NotificationBody_publishMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
@@ -12562,9 +12562,9 @@ func (ec *executionContext) _Query_notifications(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*resources.SavedNotification)
+	res := resTmp.([]*dto.SavedNotification)
 	fc.Result = res
-	return ec.marshalNSavedNotification2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotificationᚄ(ctx, field.Selections, res)
+	return ec.marshalNSavedNotification2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -12891,9 +12891,9 @@ func (ec *executionContext) _Query_listNPSResponse(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*resources.NPSResponse)
+	res := resTmp.([]*dto.NPSResponse)
 	fc.Result = res
-	return ec.marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponseᚄ(ctx, field.Selections, res)
+	return ec.marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐNPSResponseᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_twilioAccessToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -12926,9 +12926,9 @@ func (ec *executionContext) _Query_twilioAccessToken(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*resources.AccessToken)
+	res := resTmp.(*dto.AccessToken)
 	fc.Result = res
-	return ec.marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx, field.Selections, res)
+	return ec.marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐAccessToken(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_findUploadByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -13121,7 +13121,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Recipient_number(ctx context.Context, field graphql.CollectedField, obj *resources.Recipient) (ret graphql.Marshaler) {
+func (ec *executionContext) _Recipient_number(ctx context.Context, field graphql.CollectedField, obj *dto.Recipient) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13156,7 +13156,7 @@ func (ec *executionContext) _Recipient_number(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Recipient_cost(ctx context.Context, field graphql.CollectedField, obj *resources.Recipient) (ret graphql.Marshaler) {
+func (ec *executionContext) _Recipient_cost(ctx context.Context, field graphql.CollectedField, obj *dto.Recipient) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13191,7 +13191,7 @@ func (ec *executionContext) _Recipient_cost(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Recipient_status(ctx context.Context, field graphql.CollectedField, obj *resources.Recipient) (ret graphql.Marshaler) {
+func (ec *executionContext) _Recipient_status(ctx context.Context, field graphql.CollectedField, obj *dto.Recipient) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13226,7 +13226,7 @@ func (ec *executionContext) _Recipient_status(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Recipient_messageID(ctx context.Context, field graphql.CollectedField, obj *resources.Recipient) (ret graphql.Marshaler) {
+func (ec *executionContext) _Recipient_messageID(ctx context.Context, field graphql.CollectedField, obj *dto.Recipient) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13261,7 +13261,7 @@ func (ec *executionContext) _Recipient_messageID(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SMS_recipients(ctx context.Context, field graphql.CollectedField, obj *resources.SMS) (ret graphql.Marshaler) {
+func (ec *executionContext) _SMS_recipients(ctx context.Context, field graphql.CollectedField, obj *dto.SMS) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13291,12 +13291,12 @@ func (ec *executionContext) _SMS_recipients(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]resources.Recipient)
+	res := resTmp.([]dto.Recipient)
 	fc.Result = res
-	return ec.marshalNRecipient2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐRecipientᚄ(ctx, field.Selections, res)
+	return ec.marshalNRecipient2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐRecipientᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_id(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_id(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13331,7 +13331,7 @@ func (ec *executionContext) _SavedNotification_id(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_registrationToken(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_registrationToken(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13366,7 +13366,7 @@ func (ec *executionContext) _SavedNotification_registrationToken(ctx context.Con
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_messageID(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_messageID(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13401,7 +13401,7 @@ func (ec *executionContext) _SavedNotification_messageID(ctx context.Context, fi
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_timestamp(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_timestamp(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13436,7 +13436,7 @@ func (ec *executionContext) _SavedNotification_timestamp(ctx context.Context, fi
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_data(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_data(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13468,7 +13468,7 @@ func (ec *executionContext) _SavedNotification_data(ctx context.Context, field g
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_notification(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_notification(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13495,12 +13495,12 @@ func (ec *executionContext) _SavedNotification_notification(ctx context.Context,
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*resources.FirebaseSimpleNotification)
+	res := resTmp.(*dto.FirebaseSimpleNotification)
 	fc.Result = res
-	return ec.marshalOFirebaseSimpleNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseSimpleNotification(ctx, field.Selections, res)
+	return ec.marshalOFirebaseSimpleNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseSimpleNotification(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_androidConfig(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_androidConfig(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13527,12 +13527,12 @@ func (ec *executionContext) _SavedNotification_androidConfig(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*resources.FirebaseAndroidConfig)
+	res := resTmp.(*dto.FirebaseAndroidConfig)
 	fc.Result = res
-	return ec.marshalOFirebaseAndroidConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAndroidConfig(ctx, field.Selections, res)
+	return ec.marshalOFirebaseAndroidConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseAndroidConfig(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_webpushConfig(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_webpushConfig(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13559,12 +13559,12 @@ func (ec *executionContext) _SavedNotification_webpushConfig(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*resources.FirebaseWebpushConfig)
+	res := resTmp.(*dto.FirebaseWebpushConfig)
 	fc.Result = res
-	return ec.marshalOFirebaseWebpushConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseWebpushConfig(ctx, field.Selections, res)
+	return ec.marshalOFirebaseWebpushConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseWebpushConfig(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SavedNotification_apnsConfig(ctx context.Context, field graphql.CollectedField, obj *resources.SavedNotification) (ret graphql.Marshaler) {
+func (ec *executionContext) _SavedNotification_apnsConfig(ctx context.Context, field graphql.CollectedField, obj *dto.SavedNotification) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13591,12 +13591,12 @@ func (ec *executionContext) _SavedNotification_apnsConfig(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*resources.FirebaseAPNSConfig)
+	res := resTmp.(*dto.FirebaseAPNSConfig)
 	fc.Result = res
-	return ec.marshalOFirebaseAPNSConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAPNSConfig(ctx, field.Selections, res)
+	return ec.marshalOFirebaseAPNSConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseAPNSConfig(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _SendMessageResponse_SMSMessageData(ctx context.Context, field graphql.CollectedField, obj *resources.SendMessageResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _SendMessageResponse_SMSMessageData(ctx context.Context, field graphql.CollectedField, obj *dto.SendMessageResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13626,9 +13626,9 @@ func (ec *executionContext) _SendMessageResponse_SMSMessageData(ctx context.Cont
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*resources.SMS)
+	res := resTmp.(*dto.SMS)
 	fc.Result = res
-	return ec.marshalNSMS2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSMS(ctx, field.Selections, res)
+	return ec.marshalNSMS2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSMS(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
@@ -15145,8 +15145,8 @@ func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj in
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputFeedbackInput(ctx context.Context, obj interface{}) (resources.FeedbackInput, error) {
-	var it resources.FeedbackInput
+func (ec *executionContext) unmarshalInputFeedbackInput(ctx context.Context, obj interface{}) (dto.FeedbackInput, error) {
+	var it dto.FeedbackInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15397,8 +15397,8 @@ func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj inte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputNPSInput(ctx context.Context, obj interface{}) (resources.NPSInput, error) {
-	var it resources.NPSInput
+func (ec *executionContext) unmarshalInputNPSInput(ctx context.Context, obj interface{}) (dto.NPSInput, error) {
+	var it dto.NPSInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15447,7 +15447,7 @@ func (ec *executionContext) unmarshalInputNPSInput(ctx context.Context, obj inte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("feedback"))
-			it.Feedback, err = ec.unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx, v)
+			it.Feedback, err = ec.unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedbackInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15537,16 +15537,16 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case resources.AccessToken:
+	case dto.AccessToken:
 		return ec._AccessToken(ctx, sel, &obj)
-	case *resources.AccessToken:
+	case *dto.AccessToken:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._AccessToken(ctx, sel, obj)
-	case resources.Dummy:
+	case dto.Dummy:
 		return ec._Dummy(ctx, sel, &obj)
-	case *resources.Dummy:
+	case *dto.Dummy:
 		if obj == nil {
 			return graphql.Null
 		}
@@ -15558,9 +15558,9 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Feed(ctx, sel, obj)
-	case resources.SavedNotification:
+	case dto.SavedNotification:
 		return ec._SavedNotification(ctx, sel, &obj)
-	case *resources.SavedNotification:
+	case *dto.SavedNotification:
 		if obj == nil {
 			return graphql.Null
 		}
@@ -15576,7 +15576,7 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 
 var accessTokenImplementors = []string{"AccessToken", "_Entity"}
 
-func (ec *executionContext) _AccessToken(ctx context.Context, sel ast.SelectionSet, obj *resources.AccessToken) graphql.Marshaler {
+func (ec *executionContext) _AccessToken(ctx context.Context, sel ast.SelectionSet, obj *dto.AccessToken) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, accessTokenImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -15896,7 +15896,7 @@ func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, 
 
 var dummyImplementors = []string{"Dummy", "_Entity"}
 
-func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, obj *resources.Dummy) graphql.Marshaler {
+func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, obj *dto.Dummy) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, dummyImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16265,7 +16265,7 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 
 var feedbackImplementors = []string{"Feedback"}
 
-func (ec *executionContext) _Feedback(ctx context.Context, sel ast.SelectionSet, obj *resources.Feedback) graphql.Marshaler {
+func (ec *executionContext) _Feedback(ctx context.Context, sel ast.SelectionSet, obj *dto.Feedback) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, feedbackImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16321,7 +16321,7 @@ func (ec *executionContext) _FilterParams(ctx context.Context, sel ast.Selection
 
 var firebaseAPNSConfigImplementors = []string{"FirebaseAPNSConfig"}
 
-func (ec *executionContext) _FirebaseAPNSConfig(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseAPNSConfig) graphql.Marshaler {
+func (ec *executionContext) _FirebaseAPNSConfig(ctx context.Context, sel ast.SelectionSet, obj *dto.FirebaseAPNSConfig) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseAPNSConfigImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16345,7 +16345,7 @@ func (ec *executionContext) _FirebaseAPNSConfig(ctx context.Context, sel ast.Sel
 
 var firebaseAndroidConfigImplementors = []string{"FirebaseAndroidConfig"}
 
-func (ec *executionContext) _FirebaseAndroidConfig(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseAndroidConfig) graphql.Marshaler {
+func (ec *executionContext) _FirebaseAndroidConfig(ctx context.Context, sel ast.SelectionSet, obj *dto.FirebaseAndroidConfig) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseAndroidConfigImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16384,7 +16384,7 @@ func (ec *executionContext) _FirebaseAndroidConfig(ctx context.Context, sel ast.
 
 var firebaseSimpleNotificationImplementors = []string{"FirebaseSimpleNotification"}
 
-func (ec *executionContext) _FirebaseSimpleNotification(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseSimpleNotification) graphql.Marshaler {
+func (ec *executionContext) _FirebaseSimpleNotification(ctx context.Context, sel ast.SelectionSet, obj *dto.FirebaseSimpleNotification) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseSimpleNotificationImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16420,7 +16420,7 @@ func (ec *executionContext) _FirebaseSimpleNotification(ctx context.Context, sel
 
 var firebaseWebpushConfigImplementors = []string{"FirebaseWebpushConfig"}
 
-func (ec *executionContext) _FirebaseWebpushConfig(ctx context.Context, sel ast.SelectionSet, obj *resources.FirebaseWebpushConfig) graphql.Marshaler {
+func (ec *executionContext) _FirebaseWebpushConfig(ctx context.Context, sel ast.SelectionSet, obj *dto.FirebaseWebpushConfig) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, firebaseWebpushConfigImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17020,7 +17020,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 var nPSResponseImplementors = []string{"NPSResponse"}
 
-func (ec *executionContext) _NPSResponse(ctx context.Context, sel ast.SelectionSet, obj *resources.NPSResponse) graphql.Marshaler {
+func (ec *executionContext) _NPSResponse(ctx context.Context, sel ast.SelectionSet, obj *dto.NPSResponse) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, nPSResponseImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17453,7 +17453,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 
 var recipientImplementors = []string{"Recipient"}
 
-func (ec *executionContext) _Recipient(ctx context.Context, sel ast.SelectionSet, obj *resources.Recipient) graphql.Marshaler {
+func (ec *executionContext) _Recipient(ctx context.Context, sel ast.SelectionSet, obj *dto.Recipient) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, recipientImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17495,7 +17495,7 @@ func (ec *executionContext) _Recipient(ctx context.Context, sel ast.SelectionSet
 
 var sMSImplementors = []string{"SMS"}
 
-func (ec *executionContext) _SMS(ctx context.Context, sel ast.SelectionSet, obj *resources.SMS) graphql.Marshaler {
+func (ec *executionContext) _SMS(ctx context.Context, sel ast.SelectionSet, obj *dto.SMS) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, sMSImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17522,7 +17522,7 @@ func (ec *executionContext) _SMS(ctx context.Context, sel ast.SelectionSet, obj 
 
 var savedNotificationImplementors = []string{"SavedNotification", "_Entity"}
 
-func (ec *executionContext) _SavedNotification(ctx context.Context, sel ast.SelectionSet, obj *resources.SavedNotification) graphql.Marshaler {
+func (ec *executionContext) _SavedNotification(ctx context.Context, sel ast.SelectionSet, obj *dto.SavedNotification) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, savedNotificationImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17574,7 +17574,7 @@ func (ec *executionContext) _SavedNotification(ctx context.Context, sel ast.Sele
 
 var sendMessageResponseImplementors = []string{"SendMessageResponse"}
 
-func (ec *executionContext) _SendMessageResponse(ctx context.Context, sel ast.SelectionSet, obj *resources.SendMessageResponse) graphql.Marshaler {
+func (ec *executionContext) _SendMessageResponse(ctx context.Context, sel ast.SelectionSet, obj *dto.SendMessageResponse) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, sendMessageResponseImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17935,11 +17935,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAccessToken2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx context.Context, sel ast.SelectionSet, v resources.AccessToken) graphql.Marshaler {
+func (ec *executionContext) marshalNAccessToken2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐAccessToken(ctx context.Context, sel ast.SelectionSet, v dto.AccessToken) graphql.Marshaler {
 	return ec._AccessToken(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐAccessToken(ctx context.Context, sel ast.SelectionSet, v *resources.AccessToken) graphql.Marshaler {
+func (ec *executionContext) marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐAccessToken(ctx context.Context, sel ast.SelectionSet, v *dto.AccessToken) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18051,11 +18051,11 @@ func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDummy2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐDummy(ctx context.Context, sel ast.SelectionSet, v resources.Dummy) graphql.Marshaler {
+func (ec *executionContext) marshalNDummy2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx context.Context, sel ast.SelectionSet, v dto.Dummy) graphql.Marshaler {
 	return ec._Dummy(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐDummy(ctx context.Context, sel ast.SelectionSet, v *resources.Dummy) graphql.Marshaler {
+func (ec *executionContext) marshalNDummy2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx context.Context, sel ast.SelectionSet, v *dto.Dummy) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18441,12 +18441,12 @@ func (ec *executionContext) unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgo�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNNPSInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSInput(ctx context.Context, v interface{}) (resources.NPSInput, error) {
+func (ec *executionContext) unmarshalNNPSInput2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐNPSInput(ctx context.Context, v interface{}) (dto.NPSInput, error) {
 	res, err := ec.unmarshalInputNPSInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponseᚄ(ctx context.Context, sel ast.SelectionSet, v []*resources.NPSResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐNPSResponseᚄ(ctx context.Context, sel ast.SelectionSet, v []*dto.NPSResponse) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18470,7 +18470,7 @@ func (ec *executionContext) marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcom
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNNPSResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponse(ctx, sel, v[i])
+			ret[i] = ec.marshalNNPSResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐNPSResponse(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18483,7 +18483,7 @@ func (ec *executionContext) marshalNNPSResponse2ᚕᚖgitlabᚗslade360emrᚗcom
 	return ret
 }
 
-func (ec *executionContext) marshalNNPSResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐNPSResponse(ctx context.Context, sel ast.SelectionSet, v *resources.NPSResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNNPSResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐNPSResponse(ctx context.Context, sel ast.SelectionSet, v *dto.NPSResponse) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18549,11 +18549,11 @@ func (ec *executionContext) unmarshalNPayloadInput2gitlabᚗslade360emrᚗcomᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNRecipient2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐRecipient(ctx context.Context, sel ast.SelectionSet, v resources.Recipient) graphql.Marshaler {
+func (ec *executionContext) marshalNRecipient2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐRecipient(ctx context.Context, sel ast.SelectionSet, v dto.Recipient) graphql.Marshaler {
 	return ec._Recipient(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRecipient2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐRecipientᚄ(ctx context.Context, sel ast.SelectionSet, v []resources.Recipient) graphql.Marshaler {
+func (ec *executionContext) marshalNRecipient2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐRecipientᚄ(ctx context.Context, sel ast.SelectionSet, v []dto.Recipient) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18577,7 +18577,7 @@ func (ec *executionContext) marshalNRecipient2ᚕgitlabᚗslade360emrᚗcomᚋgo
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNRecipient2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐRecipient(ctx, sel, v[i])
+			ret[i] = ec.marshalNRecipient2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐRecipient(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18590,7 +18590,7 @@ func (ec *executionContext) marshalNRecipient2ᚕgitlabᚗslade360emrᚗcomᚋgo
 	return ret
 }
 
-func (ec *executionContext) marshalNSMS2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSMS(ctx context.Context, sel ast.SelectionSet, v *resources.SMS) graphql.Marshaler {
+func (ec *executionContext) marshalNSMS2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSMS(ctx context.Context, sel ast.SelectionSet, v *dto.SMS) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18600,11 +18600,11 @@ func (ec *executionContext) marshalNSMS2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋeng
 	return ec._SMS(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSavedNotification2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v resources.SavedNotification) graphql.Marshaler {
+func (ec *executionContext) marshalNSavedNotification2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v dto.SavedNotification) graphql.Marshaler {
 	return ec._SavedNotification(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSavedNotification2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*resources.SavedNotification) graphql.Marshaler {
+func (ec *executionContext) marshalNSavedNotification2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*dto.SavedNotification) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18628,7 +18628,7 @@ func (ec *executionContext) marshalNSavedNotification2ᚕᚖgitlabᚗslade360emr
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx, sel, v[i])
+			ret[i] = ec.marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18641,7 +18641,7 @@ func (ec *executionContext) marshalNSavedNotification2ᚕᚖgitlabᚗslade360emr
 	return ret
 }
 
-func (ec *executionContext) marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v *resources.SavedNotification) graphql.Marshaler {
+func (ec *executionContext) marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v *dto.SavedNotification) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18651,11 +18651,11 @@ func (ec *executionContext) marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗ
 	return ec._SavedNotification(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSendMessageResponse2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSendMessageResponse(ctx context.Context, sel ast.SelectionSet, v resources.SendMessageResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNSendMessageResponse2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx context.Context, sel ast.SelectionSet, v dto.SendMessageResponse) graphql.Marshaler {
 	return ec._SendMessageResponse(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSendMessageResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐSendMessageResponse(ctx context.Context, sel ast.SelectionSet, v *resources.SendMessageResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNSendMessageResponse2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSendMessageResponse(ctx context.Context, sel ast.SelectionSet, v *dto.SendMessageResponse) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -19300,11 +19300,11 @@ func (ec *executionContext) marshalOEventDateTime2ᚖgoogleᚗgolangᚗorgᚋapi
 	return ec._EventDateTime(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOFeedback2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx context.Context, sel ast.SelectionSet, v resources.Feedback) graphql.Marshaler {
+func (ec *executionContext) marshalOFeedback2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedback(ctx context.Context, sel ast.SelectionSet, v dto.Feedback) graphql.Marshaler {
 	return ec._Feedback(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx context.Context, sel ast.SelectionSet, v []resources.Feedback) graphql.Marshaler {
+func (ec *executionContext) marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedback(ctx context.Context, sel ast.SelectionSet, v []dto.Feedback) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19331,7 +19331,7 @@ func (ec *executionContext) marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOFeedback2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedback(ctx, sel, v[i])
+			ret[i] = ec.marshalOFeedback2gitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedback(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19344,7 +19344,7 @@ func (ec *executionContext) marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx context.Context, v interface{}) ([]*resources.FeedbackInput, error) {
+func (ec *executionContext) unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedbackInput(ctx context.Context, v interface{}) ([]*dto.FeedbackInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19357,10 +19357,10 @@ func (ec *executionContext) unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emr�
 		}
 	}
 	var err error
-	res := make([]*resources.FeedbackInput, len(vSlice))
+	res := make([]*dto.FeedbackInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOFeedbackInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalOFeedbackInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedbackInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19368,7 +19368,7 @@ func (ec *executionContext) unmarshalOFeedbackInput2ᚕᚖgitlabᚗslade360emr�
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOFeedbackInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFeedbackInput(ctx context.Context, v interface{}) (*resources.FeedbackInput, error) {
+func (ec *executionContext) unmarshalOFeedbackInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedbackInput(ctx context.Context, v interface{}) (*dto.FeedbackInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19384,7 +19384,7 @@ func (ec *executionContext) unmarshalOFilterParamsInput2ᚖgitlabᚗslade360emr�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFirebaseAPNSConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAPNSConfig(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseAPNSConfig) graphql.Marshaler {
+func (ec *executionContext) marshalOFirebaseAPNSConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseAPNSConfig(ctx context.Context, sel ast.SelectionSet, v *dto.FirebaseAPNSConfig) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19399,7 +19399,7 @@ func (ec *executionContext) unmarshalOFirebaseAPNSConfigInput2ᚖgitlabᚗslade3
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFirebaseAndroidConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseAndroidConfig(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseAndroidConfig) graphql.Marshaler {
+func (ec *executionContext) marshalOFirebaseAndroidConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseAndroidConfig(ctx context.Context, sel ast.SelectionSet, v *dto.FirebaseAndroidConfig) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19414,14 +19414,14 @@ func (ec *executionContext) unmarshalOFirebaseAndroidConfigInput2ᚖgitlabᚗsla
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFirebaseSimpleNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseSimpleNotification(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseSimpleNotification) graphql.Marshaler {
+func (ec *executionContext) marshalOFirebaseSimpleNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseSimpleNotification(ctx context.Context, sel ast.SelectionSet, v *dto.FirebaseSimpleNotification) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._FirebaseSimpleNotification(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOFirebaseWebpushConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋresourcesᚐFirebaseWebpushConfig(ctx context.Context, sel ast.SelectionSet, v *resources.FirebaseWebpushConfig) graphql.Marshaler {
+func (ec *executionContext) marshalOFirebaseWebpushConfig2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFirebaseWebpushConfig(ctx context.Context, sel ast.SelectionSet, v *dto.FirebaseWebpushConfig) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

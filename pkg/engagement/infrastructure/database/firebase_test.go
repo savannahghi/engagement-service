@@ -12,8 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 )
 
@@ -2021,24 +2021,24 @@ func TestRepository_SaveNPSResponse(t *testing.T) {
 
 	type args struct {
 		ctx      context.Context
-		response *resources.NPSResponse
+		response *dto.NPSResponse
 	}
 
-	feedback := &resources.Feedback{
+	feedback := &dto.Feedback{
 		Question: "How is it",
 		Answer:   "It is what it is",
 	}
 	email := base.TestUserEmail
 	phoneNumber := base.TestUserPhoneNumber
 
-	response := &resources.NPSResponse{
+	response := &dto.NPSResponse{
 		ID:        uuid.New().String(),
 		Name:      "Test User",
 		Score:     8,
 		SladeCode: "123456723",
 		Email:     &email,
 		MSISDN:    &phoneNumber,
-		Feedback:  []resources.Feedback{*feedback},
+		Feedback:  []dto.Feedback{*feedback},
 	}
 
 	tests := []struct {

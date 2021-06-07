@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -1401,7 +1401,7 @@ func (fr Repository) GetDefaultNudgeByTitle(
 // SaveAITCallbackResponse saves the callback data for future analysis
 func (fr Repository) SaveAITCallbackResponse(
 	ctx context.Context,
-	data resources.CallbackData,
+	data dto.CallbackData,
 ) error {
 	if err := fr.checkPreconditions(); err != nil {
 		return fmt.Errorf("repository precondition check failed: %w", err)
@@ -1419,7 +1419,7 @@ func (fr Repository) SaveAITCallbackResponse(
 // SaveTwilioResponse saves the callback data
 func (fr Repository) SaveTwilioResponse(
 	ctx context.Context,
-	data resources.Message,
+	data dto.Message,
 ) error {
 	if err := fr.checkPreconditions(); err != nil {
 		return fmt.Errorf("repository precondition check failed: %w", err)
@@ -1438,7 +1438,7 @@ func (fr Repository) SaveTwilioResponse(
 func (fr Repository) SaveNotification(
 	ctx context.Context,
 	firestoreClient *firestore.Client,
-	notification resources.SavedNotification,
+	notification dto.SavedNotification,
 ) error {
 	collectionName := fr.getNotificationCollectionName()
 	_, _, err := firestoreClient.Collection(collectionName).Add(ctx, notification)
@@ -1455,7 +1455,7 @@ func (fr Repository) RetrieveNotification(
 	registrationToken string,
 	newerThan time.Time,
 	limit int,
-) ([]*resources.SavedNotification, error) {
+) ([]*dto.SavedNotification, error) {
 	collectionName := fr.getNotificationCollectionName()
 
 	docs, err := firestoreClient.Collection(
@@ -1468,9 +1468,9 @@ func (fr Repository) RetrieveNotification(
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve notifications: %w", err)
 	}
-	notifications := []*resources.SavedNotification{}
+	notifications := []*dto.SavedNotification{}
 	for _, doc := range docs {
-		var notification resources.SavedNotification
+		var notification dto.SavedNotification
 		err = doc.DataTo(&notification)
 		if err != nil {
 			return nil, fmt.Errorf("error unmarshalling saved notification: %w", err)
@@ -1483,7 +1483,7 @@ func (fr Repository) RetrieveNotification(
 // SaveNPSResponse  stores the nps responses
 func (fr Repository) SaveNPSResponse(
 	ctx context.Context,
-	response *resources.NPSResponse,
+	response *dto.NPSResponse,
 ) error {
 	collection := fr.getNPSResponseCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, response)

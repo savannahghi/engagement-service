@@ -11,7 +11,7 @@ import (
 	"firebase.google.com/go/messaging"
 	"github.com/google/uuid"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
@@ -70,7 +70,7 @@ type ServiceFCM interface {
 		registrationToken string,
 		newerThan time.Time,
 		limit int,
-	) ([]*resources.SavedNotification, error)
+	) ([]*dto.SavedNotification, error)
 }
 
 // NewService initializes a service to interact with Firebase Cloud Messaging
@@ -206,14 +206,14 @@ func (s Service) SendNotification(
 			errorMessages = append(errorMessages, msg)
 		}
 		if notification != nil {
-			savedNotification := resources.SavedNotification{
+			savedNotification := dto.SavedNotification{
 				ID:                uuid.New().String(),
 				RegistrationToken: registrationTokens[idx],
 				MessageID:         resp.MessageID,
 				Timestamp:         time.Now(),
 			}
 			if notification != nil {
-				savedNotification.Notification = &resources.FirebaseSimpleNotification{
+				savedNotification.Notification = &dto.FirebaseSimpleNotification{
 					Title:    notification.Title,
 					Body:     notification.Body,
 					ImageURL: notification.ImageURL,
@@ -223,20 +223,20 @@ func (s Service) SendNotification(
 				savedNotification.Data = base.ConvertStringMap(data)
 			}
 			if android != nil {
-				savedNotification.AndroidConfig = &resources.FirebaseAndroidConfig{
+				savedNotification.AndroidConfig = &dto.FirebaseAndroidConfig{
 					CollapseKey: android.CollapseKey,
 					Priority:    android.Priority,
 					Data:        android.Data,
 				}
 			}
 			if web != nil {
-				savedNotification.WebpushConfig = &resources.FirebaseWebpushConfig{
+				savedNotification.WebpushConfig = &dto.FirebaseWebpushConfig{
 					Headers: web.Headers,
 					Data:    web.Data,
 				}
 			}
 			if ios != nil {
-				savedNotification.APNSConfig = &resources.FirebaseAPNSConfig{
+				savedNotification.APNSConfig = &dto.FirebaseAPNSConfig{
 					Headers: ios.Headers,
 				}
 			}
@@ -258,7 +258,7 @@ func (s Service) Notifications(
 	registrationToken string,
 	newerThan time.Time,
 	limit int,
-) ([]*resources.SavedNotification, error) {
+) ([]*dto.SavedNotification, error) {
 	s.checkPreconditions()
 	return s.Repository.RetrieveNotification(ctx, s.firestoreClient, registrationToken, newerThan, limit)
 }

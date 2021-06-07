@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
@@ -149,7 +149,7 @@ type ServiceWhatsapp interface {
 
 	SaveTwilioCallbackResponse(
 		ctx context.Context,
-		data resources.Message,
+		data dto.Message,
 	) error
 }
 
@@ -256,7 +256,7 @@ func (s Service) PhoneNumberVerificationCode(
 	payload.Add("Body", msg)
 	payload.Add("To", msgTo)
 
-	target := resources.Message{}
+	target := dto.Message{}
 	path := fmt.Sprintf("%s/Messages.json", s.AccountSID)
 	err = s.MakeTwilioRequest(
 		http.MethodPost,
@@ -419,7 +419,7 @@ func (s Service) SladeOTP(
 // analysis
 func (s Service) SaveTwilioCallbackResponse(
 	ctx context.Context,
-	data resources.Message,
+	data dto.Message,
 ) error {
 	return s.Repository.SaveTwilioResponse(ctx, data)
 }

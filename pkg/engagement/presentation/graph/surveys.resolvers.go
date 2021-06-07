@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
-func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input resources.NPSInput) (bool, error) {
+func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
@@ -33,7 +33,7 @@ func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input resource
 	return response, nil
 }
 
-func (r *queryResolver) ListNPSResponse(ctx context.Context) ([]*resources.NPSResponse, error) {
+func (r *queryResolver) ListNPSResponse(ctx context.Context) ([]*dto.NPSResponse, error) {
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 

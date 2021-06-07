@@ -17,7 +17,7 @@ import (
 	"github.com/kevinburke/twilio-go/token"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"moul.io/http2curl"
@@ -49,9 +49,9 @@ type ServiceTwilio interface {
 		target interface{},
 	) error
 
-	Room(ctx context.Context) (*resources.Room, error)
+	Room(ctx context.Context) (*dto.Room, error)
 
-	TwilioAccessToken(ctx context.Context) (*resources.AccessToken, error)
+	TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error)
 
 	SendSMS(ctx context.Context, to string, msg string) error
 }
@@ -229,7 +229,7 @@ func (s Service) MakeTwilioRequest(
 //
 // Because of confidentiality issues in healthcare, we do not enable recording
 // for these meetings.
-func (s Service) Room(ctx context.Context) (*resources.Room, error) {
+func (s Service) Room(ctx context.Context) (*dto.Room, error) {
 	s.checkPreconditions()
 
 	roomReqData := url.Values{}
@@ -239,7 +239,7 @@ func (s Service) Room(ctx context.Context) (*resources.Room, error) {
 	roomReqData.Set("StatusCallback", s.callbackURL)
 	roomReqData.Set("EnableTurn", strconv.FormatBool(true))
 
-	var room resources.Room
+	var room dto.Room
 	err := s.MakeTwilioRequest("POST", "/v1/Rooms", roomReqData, &room)
 	if err != nil {
 		return nil, fmt.Errorf("twilio room API call error: %w", err)
@@ -256,7 +256,7 @@ func (s Service) Room(ctx context.Context) (*resources.Room, error) {
 // to connect only to the room specified in the token.
 //
 // Access tokens are JSON Web Tokens (JWTs).
-func (s Service) TwilioAccessToken(ctx context.Context) (*resources.AccessToken, error) {
+func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
 	s.checkPreconditions()
 
 	uid, err := base.GetLoggedInUserUID(ctx)
@@ -278,7 +278,7 @@ func (s Service) TwilioAccessToken(ctx context.Context) (*resources.AccessToken,
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate JWT for Twilio access token: %w", err)
 	}
-	payload := resources.AccessToken{
+	payload := dto.AccessToken{
 		JWT:             jwt,
 		UniqueName:      room.UniqueName,
 		SID:             room.SID,

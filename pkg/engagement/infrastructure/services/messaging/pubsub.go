@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 
@@ -139,7 +139,7 @@ func (ps PubSubNotificationService) Notify(
 		return fmt.Errorf("validation of element failed: %w", err)
 	}
 
-	envelope := resources.NotificationEnvelope{
+	envelope := dto.NotificationEnvelope{
 		UID:      uid,
 		Flavour:  flavour,
 		Payload:  payload,

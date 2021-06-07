@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 
 	"gitlab.slade360emr.com/go/base"
@@ -221,18 +221,18 @@ type Repository interface {
 
 	SaveAITCallbackResponse(
 		ctx context.Context,
-		data resources.CallbackData,
+		data dto.CallbackData,
 	) error
 
 	SaveTwilioResponse(
 		ctx context.Context,
-		data resources.Message,
+		data dto.Message,
 	) error
 
 	SaveNotification(
 		ctx context.Context,
 		firestoreClient *firestore.Client,
-		notification resources.SavedNotification,
+		notification dto.SavedNotification,
 	) error
 
 	RetrieveNotification(
@@ -241,10 +241,10 @@ type Repository interface {
 		registrationToken string,
 		newerThan time.Time,
 		limit int,
-	) ([]*resources.SavedNotification, error)
+	) ([]*dto.SavedNotification, error)
 
 	SaveNPSResponse(
 		ctx context.Context,
-		response *resources.NPSResponse,
+		response *dto.NPSResponse,
 	) error
 }

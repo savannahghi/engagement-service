@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
-func (r *dummyResolver) ID(ctx context.Context, obj *resources.Dummy) (*string, error) {
+func (r *dummyResolver) ID(ctx context.Context, obj *dto.Dummy) (*string, error) {
 	return nil, nil
 }
 

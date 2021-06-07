@@ -7,7 +7,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/surveys"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
 func TestService_RecordNPSResponse(t *testing.T) {
@@ -20,9 +20,9 @@ func TestService_RecordNPSResponse(t *testing.T) {
 	service := surveys.NewService(fr)
 	type args struct {
 		ctx   context.Context
-		input resources.NPSInput
+		input dto.NPSInput
 	}
-	// feedback := &resources.FeedbackInput{
+	// feedback := &dto.FeedbackInput{
 	// 	Question: "How is it",
 	// 	Answer:   "It is what it is",
 	// }
@@ -39,13 +39,13 @@ func TestService_RecordNPSResponse(t *testing.T) {
 		// {
 		// 	name: "Successful save nps response",
 		// 	args: args{
-		// 		input: resources.NPSInput{
+		// 		input: dto.NPSInput{
 		// 			Name:        "Seleman Bungara",
 		// 			Score:       8,
 		// 			SladeCode:   "50",
 		// 			Email:       &email,
 		// 			PhoneNumber: &phoneNumber,
-		// 			Feedback:    []*resources.FeedbackInput{feedback},
+		// 			Feedback:    []*dto.FeedbackInput{feedback},
 		// 		},
 		// 	},
 		// 	want:    true,

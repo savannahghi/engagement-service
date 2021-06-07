@@ -13,7 +13,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
@@ -170,7 +170,7 @@ type NotificationUsecases interface {
 		ctx context.Context,
 		uids []string,
 		sender string,
-		pl resources.NotificationEnvelope,
+		pl dto.NotificationEnvelope,
 		notification *base.FirebaseSimpleNotificationInput,
 	) error
 
@@ -756,7 +756,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 		return fmt.Errorf("user not authorized to access this resource")
 	}
 
-	var envelope resources.NotificationEnvelope
+	var envelope dto.NotificationEnvelope
 	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
 		return fmt.Errorf(
@@ -874,7 +874,7 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		return fmt.Errorf("user not authorized to access this resource")
 	}
 
-	var envelope resources.NotificationEnvelope
+	var envelope dto.NotificationEnvelope
 	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
 		return fmt.Errorf("can't unmarshal notification envelope from pubsub data: %w", err)
@@ -948,7 +948,7 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 		return fmt.Errorf("user not authorized to access this resource")
 	}
 
-	notificationEnvelope := resources.NotificationEnvelope{
+	notificationEnvelope := dto.NotificationEnvelope{
 		UID:     uid,
 		Flavour: flavour,
 		Payload: []byte(fmt.Sprintf("%d", count)),
@@ -993,7 +993,7 @@ func (n NotificationImpl) SendNotificationViaFCM(
 	ctx context.Context,
 	uids []string,
 	sender string,
-	pl resources.NotificationEnvelope,
+	pl dto.NotificationEnvelope,
 	notification *base.FirebaseSimpleNotificationInput,
 ) error {
 	user, err := base.GetLoggedInUser(ctx)
@@ -1062,7 +1062,7 @@ func (n NotificationImpl) SendEmail(ctx context.Context, m *base.PubSubPayload) 
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	payload := &resources.EMailMessage{}
+	payload := &dto.EMailMessage{}
 	err = json.Unmarshal(m.Message.Data, &payload)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal data: %v", err)

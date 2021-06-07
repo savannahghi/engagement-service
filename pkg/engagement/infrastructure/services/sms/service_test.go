@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 )
@@ -32,7 +32,7 @@ func TestSendToMany(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *resources.SendMessageResponse
+		want    *dto.SendMessageResponse
 		wantErr bool
 	}{
 		{
@@ -91,7 +91,7 @@ func TestSend(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *resources.SendMessageResponse
+		want    *dto.SendMessageResponse
 		wantErr bool
 	}{
 		{

@@ -9,7 +9,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/resources"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
@@ -18,7 +18,7 @@ const NPSResponseCollectionName = "nps_response"
 
 // ServiceSurveys defines the interactions with the surveys service
 type ServiceSurveys interface {
-	RecordNPSResponse(ctx context.Context, input resources.NPSInput) (bool, error)
+	RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error)
 }
 
 // NewService initializes a surveys service
@@ -56,9 +56,9 @@ type Service struct {
 }
 
 // RecordNPSResponse ...
-func (s Service) RecordNPSResponse(ctx context.Context, input resources.NPSInput) (bool, error) {
+func (s Service) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
 	s.checkPreconditions()
-	response := &resources.NPSResponse{
+	response := &dto.NPSResponse{
 		Name:      input.Name,
 		Score:     input.Score,
 		SladeCode: input.SladeCode,
@@ -74,11 +74,11 @@ func (s Service) RecordNPSResponse(ctx context.Context, input resources.NPSInput
 		response.MSISDN = input.PhoneNumber
 	}
 
-	feedbacks := []resources.Feedback{}
+	feedbacks := []dto.Feedback{}
 	if input.Feedback != nil {
 
 		for _, input := range input.Feedback {
-			feedback := resources.Feedback{
+			feedback := dto.Feedback{
 				Question: input.Question,
 				Answer:   input.Answer,
 			}
