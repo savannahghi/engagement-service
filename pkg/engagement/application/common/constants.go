@@ -42,9 +42,6 @@ const (
 	// that adds and verifies a primary email address
 	AddPrimaryEmailNudgeTitle = "Add Primary Email Address"
 
-	// AddInsuranceNudgeTitle defines the title for add insurance nudge
-	AddInsuranceNudgeTitle = "Add Insurance"
-
 	// AddNHIFNudgeTitle defines the title for add NHIF nudge
 	AddNHIFNudgeTitle = "Add NHIF"
 

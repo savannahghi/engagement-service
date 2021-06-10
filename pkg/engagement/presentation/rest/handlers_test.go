@@ -5507,7 +5507,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 	}
 
 	for _, nudge := range defaultNudges {
-		if nudge.Title == common.AddInsuranceNudgeTitle {
+		if nudge.Title == common.AddPrimaryEmailNudgeTitle {
 			err := resolveTestNudge(
 				ctx,
 				uid,
@@ -5568,7 +5568,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 					uid,
 					fl.String(),
 					false,
-					common.AddInsuranceNudgeTitle,
+					common.AddPrimaryEmailNudgeTitle,
 				),
 				httpMethod: http.MethodPatch,
 				headers:    headers,

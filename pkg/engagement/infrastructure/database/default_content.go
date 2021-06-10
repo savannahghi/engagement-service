@@ -28,7 +28,6 @@ const (
 	getInsuranceActionName        = "GET_INSURANCE"
 	addPatientActionName          = "ADD_PATIENT"
 	searchPatientActionName       = "SEARCH_PATIENT"
-	addInsuranceActionName        = "ADD_INSURANCE"
 	addNHIFActionName             = "ADD_NHIF"
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
 	verifyEmailActionName         = "VERIFY_EMAIL"
@@ -152,10 +151,8 @@ func defaultConsumerNudges(
 ) ([]base.Nudge, error) {
 	var nudges []base.Nudge
 	fns := []nudgeGenerator{
-		addInsuranceNudge,
 		verifyEmailNudge,
 	}
-	// TODO: return the descoped NHIF nudge
 	for _, fn := range fns {
 		nudge, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
@@ -354,50 +351,6 @@ func defaultAddPatientAction(
 		"Register patient",
 		"Register a patient",
 		repository,
-	)
-}
-
-func addInsuranceNudge(
-	ctx context.Context,
-	uid string,
-	flavour base.Flavour,
-	repository repository.Repository,
-) (*base.Nudge, error) {
-	title := common.AddInsuranceNudgeTitle
-	text := "Link your existing medical cover"
-	imgURL := common.StaticBase + "/nudges/add_insurance.png"
-	addInsuranceAction, err := createLocalAction(
-		ctx,
-		uid,
-		false,
-		flavour,
-		addInsuranceActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
-		repository,
-	)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't create %s action: %w", addInsuranceActionName, err)
-	}
-	actions := []base.Action{
-		*addInsuranceAction,
-	}
-	notificationBody := base.NotificationBody{
-		ResolveMessage: "Thank you for adding your insurance cover.",
-	}
-	return createNudge(
-		ctx,
-		uid,
-		flavour,
-		title,
-		text,
-		imgURL,
-		title,
-		text,
-		actions,
-		repository,
-		notificationBody,
 	)
 }
 
