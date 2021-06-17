@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net"
 	"net/http"
@@ -18,21 +17,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/imroc/req"
+	"github.com/markbates/pkger"
+	"github.com/segmentio/ksuid"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/rest"
 	"google.golang.org/api/idtoken"
-
-	"github.com/imroc/req"
-	"github.com/markbates/pkger"
-	"github.com/segmentio/ksuid"
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 const (
@@ -2376,7 +2374,7 @@ func TestResolveNudge(t *testing.T) {
 				t.Errorf("nil response data")
 				return
 			}
-			logrus.Print(string(data))
+			log.Print(string(data))
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)

@@ -1,9 +1,15 @@
 package dto
 
-// SendSMSPayload is used to serialise an SMS sent through the twilio service REST API
-type SendSMSPayload struct {
+// SendMultipleRecipientSMSPayload is used to serialise an SMS sent through the AIT service REST API
+type SendMultipleRecipientSMSPayload struct {
 	To      []string `json:"to"`
 	Message string   `json:"message"`
+}
+
+// SendSingleRecipientSMSPayload is used to serialise an SMS sent through the AIT service REST API
+type SendSingleRecipientSMSPayload struct {
+	To      string `json:"to"`
+	Message string `json:"message"`
 }
 
 // EMailMessage holds data required to send emails

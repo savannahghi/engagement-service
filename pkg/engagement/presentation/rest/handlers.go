@@ -142,6 +142,8 @@ type PresentationHandlers interface {
 
 	SendToMany(ctx context.Context) http.HandlerFunc
 
+	Send(ctx context.Context) http.HandlerFunc
+
 	GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc
 
 	GetNotificationHandler(ctx context.Context) http.HandlerFunc
@@ -1180,7 +1182,7 @@ func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFun
 // SendToMany sends a data message to the specified recipient
 func (p PresentationHandlersImpl) SendToMany(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &dto.SendSMSPayload{}
+		payload := &dto.SendMultipleRecipientSMSPayload{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 
 		for _, phoneNo := range payload.To {
@@ -1200,6 +1202,52 @@ func (p PresentationHandlersImpl) SendToMany(ctx context.Context) http.HandlerFu
 
 		_, err := p.interactor.SMS.SendToMany(payload.Message, payload.To)
 		if err != nil {
+			err := fmt.Errorf("sms not sent: %s", err)
+
+			isBadReq := strings.Contains(err.Error(), "http error status: 400")
+
+			if isBadReq {
+				respondWithError(w, http.StatusBadRequest, err)
+				return
+			}
+
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		type okResp struct {
+			Status string `json:"status"`
+		}
+
+		marshalled, err := json.Marshal(okResp{Status: "ok"})
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+// Send sends a data message to the specified recipient
+func (p PresentationHandlersImpl) Send(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &dto.SendSingleRecipientSMSPayload{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+
+		_, err := base.NormalizeMSISDN(payload.To)
+		if err != nil {
+			err := fmt.Errorf("can't send sms, expected a valid phone number")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if payload.Message == "" {
+			err := fmt.Errorf("can't send sms, expected a message")
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if _, err := p.interactor.SMS.Send(payload.To, payload.Message); err != nil {
 			err := fmt.Errorf("sms not sent: %s", err)
 
 			isBadReq := strings.Contains(err.Error(), "http error status: 400")

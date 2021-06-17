@@ -343,6 +343,12 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	isc.Methods(
 		http.MethodPost,
+	).Path("/send_single_recipient_sms").HandlerFunc(
+		h.Send(ctx),
+	).Name("send")
+
+	isc.Methods(
+		http.MethodPost,
 	).Path("/ait_callback").HandlerFunc(
 		h.GetAITSMSDeliveryCallback(ctx),
 	).Name("AITSendSMSCallback")

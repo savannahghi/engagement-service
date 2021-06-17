@@ -116,7 +116,7 @@ func TestSend(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := service.Send(tt.args.to, tt.args.message)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("SendToMany() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Send error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
