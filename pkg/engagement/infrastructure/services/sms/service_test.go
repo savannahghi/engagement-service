@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -27,6 +28,7 @@ func TestSendToMany(t *testing.T) {
 	type args struct {
 		message string
 		to      []string
+		sender  base.SenderID
 	}
 
 	tests := []struct {
@@ -36,10 +38,20 @@ func TestSendToMany(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid:successfully send to many",
+			name: "valid:successfully send to many using BeWell",
 			args: args{
 				message: "This is a test",
 				to:      []string{"+254711223344", "+254700990099"},
+				sender:  base.SenderIDBewell,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid:successfully send to many using Slade260",
+			args: args{
+				message: "This is a test",
+				to:      []string{"+254711223344", "+254700990099"},
+				sender:  base.SenderIDSLADE360,
 			},
 			wantErr: false,
 		},
@@ -47,7 +59,7 @@ func TestSendToMany(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.SendToMany(tt.args.message, tt.args.to)
+			got, err := service.SendToMany(tt.args.message, tt.args.to, base.SenderIDBewell)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SendToMany() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -86,6 +98,7 @@ func TestSend(t *testing.T) {
 	type args struct {
 		to      string
 		message string
+		sender  base.SenderID
 	}
 
 	tests := []struct {
@@ -99,6 +112,7 @@ func TestSend(t *testing.T) {
 			args: args{
 				message: "This is a test",
 				to:      "+254711223344",
+				sender:  base.SenderIDSLADE360,
 			},
 			wantErr: false,
 		},
@@ -107,6 +121,16 @@ func TestSend(t *testing.T) {
 			args: args{
 				message: "",
 				to:      "+",
+				sender:  base.SenderIDSLADE360,
+			},
+			wantErr: true,
+		},
+		{
+			name: "send from an unknown sender",
+			args: args{
+				message: "This is a test",
+				to:      "+254711223344",
+				sender:  "na-kitambi-utaezana",
 			},
 			wantErr: true,
 		},
@@ -114,7 +138,7 @@ func TestSend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.Send(tt.args.to, tt.args.message)
+			got, err := service.Send(tt.args.to, tt.args.message, tt.args.sender)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Send error = %v, wantErr %v", err, tt.wantErr)
 				return

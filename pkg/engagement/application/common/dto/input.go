@@ -1,15 +1,12 @@
 package dto
 
-// SendMultipleRecipientSMSPayload is used to serialise an SMS sent through the AIT service REST API
-type SendMultipleRecipientSMSPayload struct {
-	To      []string `json:"to"`
-	Message string   `json:"message"`
-}
+import "gitlab.slade360emr.com/go/base"
 
-// SendSingleRecipientSMSPayload is used to serialise an SMS sent through the AIT service REST API
-type SendSingleRecipientSMSPayload struct {
-	To      string `json:"to"`
-	Message string `json:"message"`
+// SendSMSPayload is used to serialise an SMS sent through the AIT service REST API
+type SendSMSPayload struct {
+	To      []string      `json:"to"`
+	Message string        `json:"message"`
+	Sender  base.SenderID `json:"sender"`
 }
 
 // EMailMessage holds data required to send emails

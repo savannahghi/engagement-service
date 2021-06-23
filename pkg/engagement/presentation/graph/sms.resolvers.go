@@ -17,7 +17,7 @@ func (r *mutationResolver) Send(ctx context.Context, to string, message string) 
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	smsResponse, err := r.interactor.SMS.Send(to, message)
+	smsResponse, err := r.interactor.SMS.Send(to, message, base.SenderIDBewell)
 	if err != nil {
 		return nil, fmt.Errorf("unable send SMS: %v", err)
 	}
@@ -37,7 +37,7 @@ func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	smsResponse, err := r.interactor.SMS.SendToMany(message, to)
+	smsResponse, err := r.interactor.SMS.SendToMany(message, to, base.SenderIDBewell)
 	if err != nil {
 		return nil, fmt.Errorf("unable to send SMS to many: %v", err)
 	}

@@ -142,8 +142,6 @@ type PresentationHandlers interface {
 
 	SendToMany(ctx context.Context) http.HandlerFunc
 
-	Send(ctx context.Context) http.HandlerFunc
-
 	GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc
 
 	GetNotificationHandler(ctx context.Context) http.HandlerFunc
@@ -176,7 +174,10 @@ func NewPresentationHandlers(i *interactor.Interactor) PresentationHandlers {
 }
 
 // GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
-func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request) {
+func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	m, err := base.VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
 		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
@@ -202,127 +203,211 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(w http.ResponseWriter
 	case helpers.AddPubSubNamespace(common.ItemPublishTopic):
 		err = p.interactor.Notification.HandleItemPublish(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemDeleteTopic):
 		err = p.interactor.Notification.HandleItemDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemResolveTopic):
 		err = p.interactor.Notification.HandleItemResolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemUnresolveTopic):
 		err = p.interactor.Notification.HandleItemUnresolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemHideTopic):
 		err = p.interactor.Notification.HandleItemHide(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemShowTopic):
 		err = p.interactor.Notification.HandleItemShow(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemPinTopic):
 		err = p.interactor.Notification.HandleItemPin(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ItemUnpinTopic):
 		err = p.interactor.Notification.HandleItemUnpin(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgePublishTopic):
 		err = p.interactor.Notification.HandleNudgePublish(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeDeleteTopic):
 		err = p.interactor.Notification.HandleNudgeDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeResolveTopic):
 		err = p.interactor.Notification.HandleNudgeResolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeUnresolveTopic):
 		err = p.interactor.Notification.HandleNudgeUnresolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeHideTopic):
 		err = p.interactor.Notification.HandleNudgeHide(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.NudgeShowTopic):
 		err = p.interactor.Notification.HandleNudgeShow(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ActionPublishTopic):
 		err = p.interactor.Notification.HandleActionPublish(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.ActionDeleteTopic):
 		err = p.interactor.Notification.HandleActionDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.MessagePostTopic):
 		err = p.interactor.Notification.HandleMessagePost(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.MessageDeleteTopic):
 		err = p.interactor.Notification.HandleMessageDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.IncomingEventTopic):
 		err = p.interactor.Notification.HandleIncomingEvent(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.FcmPublishTopic):
 		err = p.interactor.Notification.HandleSendNotification(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	case helpers.AddPubSubNamespace(common.SentEmailTopic):
 		err = p.interactor.Notification.SendEmail(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
 			return
 		}
 	default:
@@ -380,7 +465,10 @@ func (p PresentationHandlersImpl) GetFeed(
 			return
 		}
 
-		filterParams, err := getOptionalFilterParamsQueryParam(r, "filterParams")
+		filterParams, err := getOptionalFilterParamsQueryParam(
+			r,
+			"filterParams",
+		)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -428,7 +516,12 @@ func (p PresentationHandlersImpl) GetFeedItem(
 			return
 		}
 
-		item, err := p.interactor.Feed.GetFeedItem(addUIDToContext(*uid), *uid, *flavour, itemID)
+		item, err := p.interactor.Feed.GetFeedItem(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			itemID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -466,7 +559,12 @@ func (p PresentationHandlersImpl) GetNudge(
 		}
 
 		ctx = addUIDToContext(*uid)
-		nudge, err := p.interactor.Feed.GetNudge(addUIDToContext(*uid), *uid, *flavour, nudgeID)
+		nudge, err := p.interactor.Feed.GetNudge(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			nudgeID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -503,7 +601,12 @@ func (p PresentationHandlersImpl) GetAction(
 			return
 		}
 
-		action, err := p.interactor.Feed.GetAction(addUIDToContext(*uid), *uid, *flavour, actionID)
+		action, err := p.interactor.Feed.GetAction(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			actionID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -593,7 +696,12 @@ func (p PresentationHandlersImpl) DeleteFeedItem(
 			return
 		}
 
-		err = p.interactor.Feed.DeleteFeedItem(addUIDToContext(*uid), *uid, *flavour, itemID)
+		err = p.interactor.Feed.DeleteFeedItem(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			itemID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -762,7 +870,12 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge(
 			respondWithJSON(w, http.StatusOK, marshalled)
 		}
 
-		_, err = p.interactor.Feed.ResolveNudge(addUIDToContext(*uid), *uid, *flavour, nudge.ID)
+		_, err = p.interactor.Feed.ResolveNudge(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			nudge.ID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -816,7 +929,12 @@ func (p PresentationHandlersImpl) DeleteNudge(
 			return
 		}
 
-		err = p.interactor.Feed.DeleteNudge(addUIDToContext(*uid), *uid, *flavour, nudgeID)
+		err = p.interactor.Feed.DeleteNudge(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			nudgeID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -895,7 +1013,12 @@ func (p PresentationHandlersImpl) DeleteAction(
 			return
 		}
 
-		err = p.interactor.Feed.DeleteAction(addUIDToContext(*uid), *uid, *flavour, actionID)
+		err = p.interactor.Feed.DeleteAction(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			actionID,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1034,7 +1157,12 @@ func (p PresentationHandlersImpl) ProcessEvent(
 			return
 		}
 
-		err = p.interactor.Feed.ProcessEvent(addUIDToContext(*uid), *uid, *flavour, event)
+		err = p.interactor.Feed.ProcessEvent(
+			addUIDToContext(*uid),
+			*uid,
+			*flavour,
+			event,
+		)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1052,7 +1180,9 @@ func (p PresentationHandlersImpl) ProcessEvent(
 }
 
 // Upload saves an upload in cloud storage
-func (p PresentationHandlersImpl) Upload(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) Upload(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data, err := readBody(r)
 		if err != nil {
@@ -1107,7 +1237,9 @@ func (p PresentationHandlersImpl) Upload(ctx context.Context) http.HandlerFunc {
 }
 
 // FindUpload retrieves an upload by it's ID
-func (p PresentationHandlersImpl) FindUpload(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) FindUpload(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		uploadID, err := getStringVar(r, "uploadID")
 		if err != nil {
@@ -1138,7 +1270,9 @@ func (p PresentationHandlersImpl) FindUpload(ctx context.Context) http.HandlerFu
 
 // SendEmail sends the specified email to the recipient(s) specified in `to`
 // and returns the status
-func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendEmail(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.EMailMessage{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
@@ -1180,15 +1314,19 @@ func (p PresentationHandlersImpl) SendEmail(ctx context.Context) http.HandlerFun
 }
 
 // SendToMany sends a data message to the specified recipient
-func (p PresentationHandlersImpl) SendToMany(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendToMany(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &dto.SendMultipleRecipientSMSPayload{}
+		payload := &dto.SendSMSPayload{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 
 		for _, phoneNo := range payload.To {
 			_, err := base.NormalizeMSISDN(phoneNo)
 			if err != nil {
-				err := fmt.Errorf("can't send sms, expected a valid phone number")
+				err := fmt.Errorf(
+					"can't send sms, expected a valid phone number",
+				)
 				respondWithError(w, http.StatusBadRequest, err)
 				return
 			}
@@ -1200,54 +1338,12 @@ func (p PresentationHandlersImpl) SendToMany(ctx context.Context) http.HandlerFu
 			return
 		}
 
-		_, err := p.interactor.SMS.SendToMany(payload.Message, payload.To)
+		_, err := p.interactor.SMS.SendToMany(
+			payload.Message,
+			payload.To,
+			payload.Sender,
+		)
 		if err != nil {
-			err := fmt.Errorf("sms not sent: %s", err)
-
-			isBadReq := strings.Contains(err.Error(), "http error status: 400")
-
-			if isBadReq {
-				respondWithError(w, http.StatusBadRequest, err)
-				return
-			}
-
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		type okResp struct {
-			Status string `json:"status"`
-		}
-
-		marshalled, err := json.Marshal(okResp{Status: "ok"})
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
-// Send sends a data message to the specified recipient
-func (p PresentationHandlersImpl) Send(ctx context.Context) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		payload := &dto.SendSingleRecipientSMSPayload{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
-
-		_, err := base.NormalizeMSISDN(payload.To)
-		if err != nil {
-			err := fmt.Errorf("can't send sms, expected a valid phone number")
-			respondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		if payload.Message == "" {
-			err := fmt.Errorf("can't send sms, expected a message")
-			respondWithError(w, http.StatusBadRequest, err)
-			return
-		}
-
-		if _, err := p.interactor.SMS.Send(payload.To, payload.Message); err != nil {
 			err := fmt.Errorf("sms not sent: %s", err)
 
 			isBadReq := strings.Contains(err.Error(), "http error status: 400")
@@ -1275,7 +1371,9 @@ func (p PresentationHandlersImpl) Send(ctx context.Context) http.HandlerFunc {
 }
 
 // GetAITSMSDeliveryCallback generates an SMS Delivery Report by saving the callback data for future analysis.
-func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parses the request body
 		err := r.ParseForm()
@@ -1287,7 +1385,10 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(ctx context.Context)
 			return
 		}
 
-		err = p.interactor.SMS.SaveAITCallbackResponse(ctx, dto.CallbackData{Values: r.Form})
+		err = p.interactor.SMS.SaveAITCallbackResponse(
+			ctx,
+			dto.CallbackData{Values: r.Form},
+		)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
@@ -1302,14 +1403,22 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(ctx context.Context)
 }
 
 // GetNotificationHandler returns a handler that processes an Africa's Talking payment notification
-func (p PresentationHandlersImpl) GetNotificationHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetNotificationHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.Message{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
-			err := fmt.Errorf("twilio notification payload not parsed correctly")
+			err := fmt.Errorf(
+				"twilio notification payload not parsed correctly",
+			)
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusInternalServerError,
+			)
 		}
 
 		// save Twilio response for audit purposes
@@ -1317,7 +1426,11 @@ func (p PresentationHandlersImpl) GetNotificationHandler(ctx context.Context) ht
 		if err != nil {
 			err := fmt.Errorf("twilio notification payload not saved")
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusInternalServerError,
+			)
 		}
 		// TODO Common pathway for saving, returning OK etc
 
@@ -1329,14 +1442,22 @@ func (p PresentationHandlersImpl) GetNotificationHandler(ctx context.Context) ht
 }
 
 // GetIncomingMessageHandler returns a handler that processes an Africa's Talking payment notification
-func (p PresentationHandlersImpl) GetIncomingMessageHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetIncomingMessageHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.Message{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
-			err := fmt.Errorf("twilio notification payload not parsed correctly")
+			err := fmt.Errorf(
+				"twilio notification payload not parsed correctly",
+			)
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusInternalServerError,
+			)
 		}
 
 		// save Twilio response for audit purposes
@@ -1344,7 +1465,11 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(ctx context.Context)
 		if err != nil {
 			err := fmt.Errorf("twilio notification payload not saved")
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusInternalServerError)
+			base.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusInternalServerError,
+			)
 		}
 		// TODO Common pathway for saving, returning OK etc
 
@@ -1356,7 +1481,9 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(ctx context.Context)
 }
 
 // GetFallbackHandler returns a handler that processes an Africa's Talking payment notification
-func (p PresentationHandlersImpl) GetFallbackHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetFallbackHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO ErrorCode and ErrorURL sent here as params
 		// TODO Implement WhatsAPP fallback handler: base.DecodeJSONToTargetStruct(w, r, notificationPayload)
@@ -1414,7 +1541,9 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 		if codeErr != nil {
 			base.WriteJSONResponse(
 				w,
-				base.ErrorMap(fmt.Errorf("unable to generate and send otp: %v", codeErr)),
+				base.ErrorMap(
+					fmt.Errorf("unable to generate and send otp: %v", codeErr),
+				),
 				http.StatusInternalServerError,
 			)
 		}
@@ -1425,7 +1554,9 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 
 // SendRetryOTPHandler is an isc api that generates
 // fallback OTPs when Africa is talking sms fails
-func (p PresentationHandlersImpl) SendRetryOTPHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendRetryOTPHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := otp.NewService()
 		payload, err := otp.ValidateGenerateRetryOTPPayload(w, r)
@@ -1433,10 +1564,17 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler(ctx context.Context) http.
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		code, codeErr := s.GenerateRetryOTP(ctx, payload.Msisdn, payload.RetryStep)
+		code, codeErr := s.GenerateRetryOTP(
+			ctx,
+			payload.Msisdn,
+			payload.RetryStep,
+		)
 		if codeErr != nil {
 			err := base.ErrorMap(
-				fmt.Errorf("unable to generate and send a fallback OTP: %v", codeErr),
+				fmt.Errorf(
+					"unable to generate and send a fallback OTP: %v",
+					codeErr,
+				),
 			)
 			base.WriteJSONResponse(w, err, http.StatusInternalServerError)
 		}
@@ -1446,7 +1584,9 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler(ctx context.Context) http.
 }
 
 // VerifyRetryOTPHandler is an isc api that confirms OTPs earlier sent
-func (p PresentationHandlersImpl) VerifyRetryOTPHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) VerifyRetryOTPHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := otp.NewService()
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, false)
@@ -1454,7 +1594,11 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler(ctx context.Context) htt
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := s.VerifyOtp(ctx, payload.Msisdn, payload.VerificationCode)
+		isVerified, err := s.VerifyOtp(
+			ctx,
+			payload.Msisdn,
+			payload.VerificationCode,
+		)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
@@ -1463,12 +1607,18 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler(ctx context.Context) htt
 			IsVerified bool `json:"IsVerified"`
 		}
 
-		base.WriteJSONResponse(w, otpResponse{IsVerified: isVerified}, http.StatusOK)
+		base.WriteJSONResponse(
+			w,
+			otpResponse{IsVerified: isVerified},
+			http.StatusOK,
+		)
 	}
 }
 
 // VerifyRetryEmailOTPHandler is an isc api that confirms OTPs earlier sent via email.
-func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := otp.NewService()
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, true)
@@ -1476,7 +1626,11 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(ctx context.Context
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := s.VerifyEmailOtp(ctx, payload.Email, payload.VerificationCode)
+		isVerified, err := s.VerifyEmailOtp(
+			ctx,
+			payload.Email,
+			payload.VerificationCode,
+		)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
@@ -1485,12 +1639,18 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(ctx context.Context
 			IsVerified bool `json:"IsVerified"`
 		}
 
-		base.WriteJSONResponse(w, otpResponse{IsVerified: isVerified}, http.StatusOK)
+		base.WriteJSONResponse(
+			w,
+			otpResponse{IsVerified: isVerified},
+			http.StatusOK,
+		)
 	}
 }
 
 // SendNotificationHandler sends a data message to the specified registration tokens.
-func (p PresentationHandlersImpl) SendNotificationHandler(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendNotificationHandler(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, payloadErr := fcm.ValidateSendNotificationPayload(w, r)
 		if payloadErr != nil {

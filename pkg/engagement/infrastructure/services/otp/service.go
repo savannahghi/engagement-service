@@ -131,7 +131,7 @@ func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code
 	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
 
 	if base.IsKenyanNumber(normalizedPhoneNumber) {
-		_, err := s.sms.Send(normalizedPhoneNumber, msg)
+		_, err := s.sms.Send(normalizedPhoneNumber, msg, base.SenderIDBewell)
 		if err != nil {
 			return "", fmt.Errorf("failed to send OTP verification message to recipient")
 		}

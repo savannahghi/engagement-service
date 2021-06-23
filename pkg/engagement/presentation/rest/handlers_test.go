@@ -2374,7 +2374,6 @@ func TestResolveNudge(t *testing.T) {
 				t.Errorf("nil response data")
 				return
 			}
-			log.Print(string(data))
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)

@@ -25,7 +25,11 @@ const (
 	APIUsernameEnvVarName  = "AIT_USERNAME"
 	APISenderIDEnvVarName  = "AIT_SENDER_ID"
 	AITEnvVarName          = "AIT_ENVIRONMENT"
+	BeWellAITAPIKey        = "AIT_BEWELL_API_KEY"
+	BeWellAITUsername      = "AIT_BEWELL_USERNAME"
+	BeWellAITSenderID      = "AIT_BEWELL_SENDER_ID"
 	AITAuthenticationError = "The supplied authentication is invalid"
+
 	//AITCallbackCollectionName is the name of a Cloud Firestore collection into which AIT
 	// callback data will be saved for future analysis
 	AITCallbackCollectionName = "ait_callbacks"
@@ -33,17 +37,14 @@ const (
 
 // ServiceSMS defines the interactions with sms service
 type ServiceSMS interface {
-	SendToMany(message string, to []string) (*dto.SendMessageResponse, error)
-	Send(to, message string) (*dto.SendMessageResponse, error)
+	SendToMany(message string, to []string, from base.SenderID) (*dto.SendMessageResponse, error)
+	Send(to, message string, from base.SenderID) (*dto.SendMessageResponse, error)
 	SaveAITCallbackResponse(ctx context.Context, data dto.CallbackData) error
 }
 
 // Service defines a sms service struct
 type Service struct {
-	Username   string
-	APIKey     string
 	Env        string
-	From       string
 	Repository repository.Repository
 }
 
@@ -67,11 +68,8 @@ func getHost(env, service string) string {
 
 // NewService returns a new service
 func NewService(repository repository.Repository) *Service {
-	username := base.MustGetEnvVar(APIUsernameEnvVarName)
-	apiKey := base.MustGetEnvVar(APIKeyEnvVarName)
-	from := base.MustGetEnvVar(APISenderIDEnvVarName)
 	env := base.MustGetEnvVar(AITEnvVarName)
-	return &Service{username, apiKey, env, from, repository}
+	return &Service{env, repository}
 }
 
 // SaveAITCallbackResponse saves the callback data for future analysis
@@ -80,24 +78,56 @@ func (s Service) SaveAITCallbackResponse(ctx context.Context, data dto.CallbackD
 }
 
 // SendToMany is a utility method to send to many recipients at the same time
-func (s Service) SendToMany(message string, to []string) (*dto.SendMessageResponse, error) {
+func (s Service) SendToMany(
+	message string,
+	to []string,
+	from base.SenderID,
+) (*dto.SendMessageResponse, error) {
 	recipients := strings.Join(to, ",")
-	return s.Send(recipients, message)
+	return s.Send(recipients, message, from)
 }
 
 // Send is a method used to send to a single recipient
-func (s Service) Send(to, message string) (*dto.SendMessageResponse, error) {
+func (s Service) Send(to, message string, from base.SenderID) (*dto.SendMessageResponse, error) {
+	switch from {
+	case base.SenderIDSLADE360:
+		return s.SendSMS(
+			to,
+			message,
+			base.MustGetEnvVar(APISenderIDEnvVarName),
+			base.MustGetEnvVar(APIUsernameEnvVarName),
+			base.MustGetEnvVar(APIKeyEnvVarName),
+		)
+	case base.SenderIDBewell:
+		return s.SendSMS(
+			to,
+			message,
+			base.MustGetEnvVar(BeWellAITSenderID),
+			base.MustGetEnvVar(BeWellAITUsername),
+			base.MustGetEnvVar(BeWellAITAPIKey),
+		)
+	}
+	return nil, fmt.Errorf("unknown AIT sender")
+}
+
+// SendSMS is a method used to send SMS
+func (s Service) SendSMS(
+	to, message string,
+	from string,
+	username string,
+	key string,
+) (*dto.SendMessageResponse, error) {
 	values := url.Values{}
-	values.Set("username", s.Username)
+	values.Set("username", username)
 	values.Set("to", to)
 	values.Set("message", message)
-	values.Set("from", s.From)
+	values.Set("from", from)
 
 	smsURL := GetSmsURL(s.Env)
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/x-www-form-urlencoded"
 
-	res, err := s.newPostRequest(smsURL, values, headers)
+	res, err := s.newPostRequest(smsURL, values, headers, key)
 	if err != nil {
 		return nil, err
 	}
@@ -125,13 +155,20 @@ func (s Service) Send(to, message string) (*dto.SendMessageResponse, error) {
 	res.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	if err := json.NewDecoder(res.Body).Decode(smsMessageResponse); err != nil {
-		return nil, errors.New(fmt.Errorf("SMS Error : unable to parse sms response ; %v", err).Error())
+		return nil, errors.New(
+			fmt.Errorf("SMS Error : unable to parse sms response ; %v", err).Error(),
+		)
 	}
 
 	return smsMessageResponse, nil
 }
 
-func (s Service) newPostRequest(url string, values url.Values, headers map[string]string) (*http.Response, error) {
+func (s Service) newPostRequest(
+	url string,
+	values url.Values,
+	headers map[string]string,
+	key string,
+) (*http.Response, error) {
 	reader := strings.NewReader(values.Encode())
 
 	req, err := http.NewRequest(http.MethodPost, url, reader)
@@ -143,7 +180,7 @@ func (s Service) newPostRequest(url string, values url.Values, headers map[strin
 		req.Header.Set(key, value)
 	}
 	req.Header.Set("Content-Length", strconv.Itoa(reader.Len()))
-	req.Header.Set("apikey", s.APIKey)
+	req.Header.Set("apikey", key)
 	req.Header.Set("Accept", "application/json")
 
 	client := &http.Client{Timeout: 10 * time.Second}

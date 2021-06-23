@@ -3006,30 +3006,29 @@ extend type Mutation {
 
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/sms.graphql", Input: `extend type Mutation {
-    send(
-        to: String!
-        message: String!
-    ): SendMessageResponse!
+  send(to: String!, message: String!): SendMessageResponse!
 
-    sendToMany(
-        message: String!
-        to: [String!]!
-    ): SendMessageResponse!
+  sendToMany(message: String!, to: [String!]!): SendMessageResponse!
 }
 
 type Recipient {
-    number: String!
-    cost: String!
-    status: String!
-    messageID: String!
+  number: String!
+  cost: String!
+  status: String!
+  messageID: String!
 }
 
 type SMS {
-    recipients: [Recipient!]!
+  recipients: [Recipient!]!
 }
 
 type SendMessageResponse {
-    SMSMessageData: SMS!
+  SMSMessageData: SMS!
+}
+
+enum SenderID {
+  SLADE360
+  BEWELL
 }
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/surveys.graphql", Input: `input FeedbackInput {

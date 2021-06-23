@@ -69,17 +69,26 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
+		return nil, fmt.Errorf(
+			"can't instantiate firebase repository in resolver: %w",
+			err,
+		)
 	}
 	fcmNotification, err := fcm.NewRemotePushService(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("can't instantiate push notification service : %w", err)
+		return nil, fmt.Errorf(
+			"can't instantiate push notification service : %w",
+			err,
+		)
 	}
 
 	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"can't get projectID from env var `%s`: %w", base.GoogleCloudProjectIDEnvVarName, err)
+			"can't get projectID from env var `%s`: %w",
+			base.GoogleCloudProjectIDEnvVarName,
+			err,
+		)
 	}
 	// Initialize ISC clients
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
@@ -88,13 +97,22 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	fcm := fcm.NewService(fr)
 	mail := mail.NewService()
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail)
+	notification := usecases.NewNotification(
+		fr,
+		fcmNotification,
+		onboarding,
+		fcm,
+		mail,
+	)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
 	sms := sms.NewService(fr)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("can't instantiate notification service in resolver: %w", err)
+		return nil, fmt.Errorf(
+			"can't instantiate notification service in resolver: %w",
+			err,
+		)
 	}
 	feed := usecases.NewFeed(fr, ns)
 	whatsapp := whatsapp.NewService()
@@ -104,7 +122,17 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm, surveys,
+		feed,
+		notification,
+		uploads,
+		library,
+		sms,
+		*mail,
+		whatsapp,
+		otp,
+		twilio,
+		fcm,
+		surveys,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -131,6 +159,12 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path(base.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
 
+	// Expose a bulk SMS sending endpoint
+	r.Path("/send_sms").Methods(
+		http.MethodPost,
+		http.MethodOptions,
+	).HandlerFunc(h.SendToMany(ctx))
+
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
 	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
@@ -144,7 +178,10 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// static files
 	schemaFileHandler, err := rest.SchemaHandler()
 	if err != nil {
-		return nil, fmt.Errorf("can't instantiate schema file handler: %w", err)
+		return nil, fmt.Errorf(
+			"can't instantiate schema file handler: %w",
+			err,
+		)
 	}
 	r.PathPrefix("/schema/").Handler(schemaFileHandler)
 
@@ -343,12 +380,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	isc.Methods(
 		http.MethodPost,
-	).Path("/send_single_recipient_sms").HandlerFunc(
-		h.Send(ctx),
-	).Name("send")
-
-	isc.Methods(
-		http.MethodPost,
 	).Path("/ait_callback").HandlerFunc(
 		h.GetAITSMSDeliveryCallback(ctx),
 	).Name("AITSendSMSCallback")
@@ -399,7 +430,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 }
 
 // PrepareServer starts up a server
-func PrepareServer(ctx context.Context, port int, allowedOrigins []string) *http.Server {
+func PrepareServer(
+	ctx context.Context,
+	port int,
+	allowedOrigins []string,
+) *http.Server {
 	// start up the router
 	r, err := Router(ctx)
 	if err != nil {
