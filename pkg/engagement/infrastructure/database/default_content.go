@@ -32,10 +32,11 @@ const (
 	partnerAccountSetupActionName = "PARTNER_ACCOUNT_SETUP"
 	verifyEmailActionName         = "VERIFY_EMAIL"
 
-	defaultOrg        = "default-org-id-please-change"
-	defaultLocation   = "default-location-id-please-change"
-	defaultContentDir = "/static/"
-	defaultAuthor     = "Be.Well Team"
+	defaultOrg           = "default-org-id-please-change"
+	defaultLocation      = "default-location-id-please-change"
+	defaultContentDir    = "/static/"
+	defaultAuthor        = "Be.Well Team"
+	defaultInsuranceText = "Insurance Simplified"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -1086,6 +1087,18 @@ func getFeedWelcomeVideos() []base.Link {
 			"Slade 360. HealthCare. Simplified.",
 			common.StaticBase+"/items/videos/thumbs/04_slade.png",
 		),
+		base.GetYoutubeVideoLink(
+			"https://youtu.be/-iSB8yrSIps",
+			"Slade 360",
+			"How to add your health insurance cover to your Be.Well app.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
+		base.GetYoutubeVideoLink(
+			"https://youtu.be/-mlr9rjRXmc",
+			"Slade 360",
+			" View your health insurance cover benefits on your Be.Well app.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
 	}
 }
 
@@ -1093,10 +1106,68 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 	libraryService := library.NewLibraryService()
 	items := []base.Item{}
 	feedPosts, err := libraryService.GetFeedContent(ctx)
+	// get videos
 	if err != nil {
 		//  non-fatal, intentionally
 		log.Printf("ERROR: unable to fetch welcome feed posts from CMS: %s", err)
 	}
+	// retrieve video posts from datastore and extend to the list of posts
+	videosLinks := getFeedWelcomeVideos()
+	future := time.Now().Add(time.Hour * futureHours)
+	for _, videoLink := range videosLinks {
+		tagline := ""
+		summary := ""
+		text := ""
+		sequenceNumber := int(time.Now().Unix())
+		if videoLink.URL == "https://youtu.be/mKnlXcS3_Z0" {
+			tagline = "Welcome to Be.Well"
+			summary = "What is Be.Well?"
+			text = "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
+		}
+		if videoLink.URL == "https://youtu.be/-iSB8yrSIps" {
+			tagline = "How to add your cover"
+			summary = defaultInsuranceText
+			text = "How to add your health insurance cover to your Be.Well app."
+			sequenceNumber = int(time.Now().Unix()) + 1
+		}
+		if videoLink.URL == "https://youtu.be/-mlr9rjRXmc" {
+			tagline = "How to view your cover"
+			summary = defaultInsuranceText
+			text = "View your health insurance cover benefits on your Be.Well app."
+			sequenceNumber = int(time.Now().Unix()) + 2
+		}
+
+		items = append(items, base.Item{
+			ID:             ksuid.New().String(),
+			SequenceNumber: sequenceNumber,
+			Expiry:         future,
+			Persistent:     false,
+			Status:         base.StatusPending,
+			Visibility:     base.VisibilityShow,
+			Icon:           base.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+			Author:         defaultAuthor,
+			Tagline:        tagline,
+			Label:          common.DefaultLabel,
+			Summary:        summary,
+			Timestamp:      time.Now(),
+			Text:           text,
+			TextType:       base.TextTypeHTML,
+			Links: []base.Link{
+				base.GetYoutubeVideoLink(
+					videoLink.URL,
+					videoLink.Title,
+					videoLink.Description,
+					videoLink.Thumbnail,
+				),
+			},
+			Actions:              []base.Action{},
+			Conversations:        []base.Message{},
+			Users:                []string{},
+			Groups:               []string{},
+			NotificationChannels: []base.Channel{},
+		})
+	}
+
 	for _, post := range feedPosts {
 		if post == nil {
 			// non fatal, intentionally
@@ -1105,6 +1176,7 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 		}
 		items = append(items, feedItemFromCMSPost(*post))
 	}
+
 	return items
 }
 
@@ -1112,7 +1184,7 @@ func feedItemFromCMSPost(post library.GhostCMSPost) base.Item {
 	future := time.Now().Add(time.Hour * futureHours)
 	return base.Item{
 		ID:                   post.UUID,
-		SequenceNumber:       int(post.UpdatedAt.Unix()),
+		SequenceNumber:       int(post.PublishedAt.Unix()),
 		Expiry:               future,
 		Persistent:           false,
 		Status:               base.StatusPending,
