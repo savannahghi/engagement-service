@@ -173,10 +173,10 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodGet,
 	).HandlerFunc(h.GetContactLists())
 	r.Path("/contact_list").Methods(
-		http.MethodGet,
+		http.MethodPost,
 	).HandlerFunc(h.GetContactListByID())
 	r.Path("/contact_list_contacts").Methods(
-		http.MethodGet,
+		http.MethodPost,
 	).HandlerFunc(h.GetContactsInAList())
 
 	// Upload route.
