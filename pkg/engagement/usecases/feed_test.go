@@ -12,6 +12,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
@@ -82,9 +83,10 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	otp := otp.NewService()
 	twilio := twilio.NewService()
 	surveys := surveys.NewService(r)
+	hubspot := hubspot.NewHubSpotService()
 
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm, surveys,
+		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm, surveys, hubspot,
 	)
 
 	if err != nil {

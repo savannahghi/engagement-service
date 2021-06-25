@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
@@ -119,6 +120,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	otp := otp.NewService()
 	twilio := twilio.NewService()
 	surveys := surveys.NewService(fr)
+	hubspot := hubspot.NewHubSpotService()
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
@@ -133,6 +135,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		twilio,
 		fcm,
 		surveys,
+		hubspot,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -164,6 +167,17 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 		http.MethodOptions,
 	).HandlerFunc(h.SendToMany(ctx))
+
+	// HubSpot CRM specific endpoints
+	r.Path("/contact_lists").Methods(
+		http.MethodGet,
+	).HandlerFunc(h.GetContactLists())
+	r.Path("/contact_list").Methods(
+		http.MethodGet,
+	).HandlerFunc(h.GetContactListByID())
+	r.Path("/contact_list_contacts").Methods(
+		http.MethodGet,
+	).HandlerFunc(h.GetContactsInAList())
 
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.

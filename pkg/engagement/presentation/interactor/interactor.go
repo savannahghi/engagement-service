@@ -3,6 +3,7 @@
 package interactor
 
 import (
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
@@ -28,6 +29,7 @@ type Interactor struct {
 	Twilio       twilio.ServiceTwilio
 	FCM          fcm.ServiceFCM
 	Surveys      surveys.ServiceSurveys
+	CRM          hubspot.ServiceHubSpotInterface
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -43,6 +45,7 @@ func NewEngagementInteractor(
 	twilio twilio.ServiceTwilio,
 	fcm fcm.ServiceFCM,
 	surveys surveys.ServiceSurveys,
+	CRM hubspot.ServiceHubSpotInterface,
 ) (*Interactor, error) {
 	return &Interactor{
 		Feed:         feed,
@@ -56,5 +59,6 @@ func NewEngagementInteractor(
 		Twilio:       twilio,
 		FCM:          fcm,
 		Surveys:      surveys,
+		CRM:          CRM,
 	}, nil
 }

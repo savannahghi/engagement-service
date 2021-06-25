@@ -161,6 +161,10 @@ type PresentationHandlers interface {
 	VerifyRetryEmailOTPHandler(ctx context.Context) http.HandlerFunc
 
 	SendNotificationHandler(ctx context.Context) http.HandlerFunc
+
+	GetContactLists() http.HandlerFunc
+	GetContactListByID() http.HandlerFunc
+	GetContactsInAList() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1685,5 +1689,48 @@ func (p PresentationHandlersImpl) SendNotificationHandler(
 			Status string `json:"status"`
 		}
 		base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+	}
+}
+
+// GetContactLists fetches all the Contact Lists on hubspot
+// todo write automated tests for this (it has already been hand-tested to work)
+func (p PresentationHandlersImpl) GetContactLists() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		contactLists, err := p.interactor.CRM.GetContactLists()
+		if err != nil {
+			base.RespondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		base.WriteJSONResponse(w, contactLists, http.StatusOK)
+	}
+}
+
+// GetContactListByID fetches a specific Contact List given its listId
+// todo write automated tests for this (it has already been hand-tested to work)
+func (p PresentationHandlersImpl) GetContactListByID() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &dto.ListID{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+		contactList, err := p.interactor.CRM.GetContactListByID(payload.ListID)
+		if err != nil {
+			base.RespondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		base.WriteJSONResponse(w, contactList, http.StatusOK)
+	}
+}
+
+// GetContactsInAList fetches all the contacts segmented in a Contact List
+// todo write automated tests for this (it has already been hand-tested to work)
+func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &dto.ListID{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+		contactList, err := p.interactor.CRM.GetContactsInAList(payload.ListID)
+		if err != nil {
+			base.RespondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		base.WriteJSONResponse(w, contactList, http.StatusOK)
 	}
 }

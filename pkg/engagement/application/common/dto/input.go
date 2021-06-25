@@ -39,3 +39,8 @@ type NPSInput struct {
 	PhoneNumber *string          `json:"phoneNumber"`
 	Feedback    []*FeedbackInput `json:"feedback"`
 }
+
+// ListID is a HubSpot Contact List ID
+type ListID struct {
+	ListID int `json:"listId"`
+}
