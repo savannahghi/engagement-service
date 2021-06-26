@@ -1082,12 +1082,6 @@ func getProWelcomeThread(
 func getFeedWelcomeVideos() []base.Link {
 	return []base.Link{
 		base.GetYoutubeVideoLink(
-			"https://youtu.be/mKnlXcS3_Z0",
-			"Slade 360",
-			"Slade 360. HealthCare. Simplified.",
-			common.StaticBase+"/items/videos/thumbs/04_slade.png",
-		),
-		base.GetYoutubeVideoLink(
 			"https://youtu.be/-iSB8yrSIps",
 			"Slade 360",
 			"How to add your health insurance cover to your Be.Well app.",
@@ -1119,22 +1113,17 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 		summary := ""
 		text := ""
 		sequenceNumber := int(time.Now().Unix())
-		if videoLink.URL == "https://youtu.be/mKnlXcS3_Z0" {
-			tagline = "Welcome to Be.Well"
-			summary = "What is Be.Well?"
-			text = "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
-		}
+
 		if videoLink.URL == "https://youtu.be/-iSB8yrSIps" {
 			tagline = "How to add your cover"
 			summary = defaultInsuranceText
 			text = "How to add your health insurance cover to your Be.Well app."
-			sequenceNumber = int(time.Now().Unix()) + 1
 		}
 		if videoLink.URL == "https://youtu.be/-mlr9rjRXmc" {
 			tagline = "How to view your cover"
 			summary = defaultInsuranceText
 			text = "View your health insurance cover benefits on your Be.Well app."
-			sequenceNumber = int(time.Now().Unix()) + 2
+			sequenceNumber = int(time.Now().Unix()) + 1
 		}
 
 		items = append(items, base.Item{
