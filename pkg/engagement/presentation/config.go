@@ -168,6 +168,10 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 		http.MethodOptions,
 	).HandlerFunc(h.SendToMany(ctx))
+	r.Path("/send_marketing_sms").Methods(
+		http.MethodPost,
+		http.MethodOptions,
+	).HandlerFunc(h.SendMarketingSMS(ctx))
 
 	// HubSpot CRM specific endpoints
 	r.Path("/contact_lists").Methods(
@@ -179,6 +183,21 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/contact_list_contacts").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.GetContactsInAList())
+
+	// Callbacks
+	// r.HandleFunc("/ait_callback", h.GetAITSMSDeliveryCallback()).Methods(http.MethodPost)
+	r.Path("/ait_callback").
+		Methods(http.MethodPost).
+		HandlerFunc(h.GetAITSMSDeliveryCallback(ctx))
+	r.Path("/twilio_notification").
+		Methods(http.MethodPost).
+		HandlerFunc(h.GetNotificationHandler(ctx))
+	r.Path("/twilio_incoming_message").
+		Methods(http.MethodPost).
+		HandlerFunc(h.GetIncomingMessageHandler(ctx))
+	r.Path("/twilio_fallback").
+		Methods(http.MethodPost).
+		HandlerFunc(h.GetFallbackHandler(ctx))
 
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
@@ -393,30 +412,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		h.SendToMany(ctx),
 	).Name("sendToMany")
 
-	isc.Methods(
-		http.MethodPost,
-	).Path("/ait_callback").HandlerFunc(
-		h.GetAITSMSDeliveryCallback(ctx),
-	).Name("AITSendSMSCallback")
-
-	isc.Methods(
-		http.MethodPost,
-	).Path("/twilio_notification").HandlerFunc(
-		h.GetNotificationHandler(ctx),
-	).Name("getNotification")
-
-	isc.Methods(
-		http.MethodPost,
-	).Path("/twilio_incoming_message").HandlerFunc(
-		h.GetIncomingMessageHandler(ctx),
-	).Name("getMessage")
-
-	isc.Methods(
-		http.MethodPost,
-	).Path("/twilio_fallback").HandlerFunc(
-		h.GetFallbackHandler(ctx),
-	).Name("getFallback")
-
 	isc.Path("/verify_phonenumber").Methods(http.MethodPost).HandlerFunc(
 		h.PhoneNumberVerificationCodeHandler(ctx),
 	)
@@ -466,7 +461,11 @@ func PrepareServer(
 		handlers.AllowedMethods([]string{"OPTIONS", "GET", "POST"}),
 	)(h)
 	h = handlers.CombinedLoggingHandler(os.Stdout, h)
-	h = handlers.ContentTypeHandler(h, "application/json")
+	h = handlers.ContentTypeHandler(
+		h,
+		"application/json",
+		"application/x-www-form-urlencoded",
+	)
 	srv := &http.Server{
 		Handler:      h,
 		Addr:         addr,

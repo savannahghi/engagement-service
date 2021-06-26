@@ -37,11 +37,6 @@ type SendMessageResponse struct {
 	SMSMessageData *SMS `json:"SMSMessageData"`
 }
 
-// CallbackData records data sent back from the AIT API to our HTTP callback URL
-type CallbackData struct {
-	Values map[string][]string `json:"values,omitempty" firestore:"values,omitempty"`
-}
-
 // Message is a Twilio WhatsApp or SMS message
 type Message struct {
 	ID                  string            `json:"id" firestore:"id"`

@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -37,9 +38,29 @@ const (
 
 // ServiceSMS defines the interactions with sms service
 type ServiceSMS interface {
-	SendToMany(message string, to []string, from base.SenderID) (*dto.SendMessageResponse, error)
-	Send(to, message string, from base.SenderID) (*dto.SendMessageResponse, error)
-	SaveAITCallbackResponse(ctx context.Context, data dto.CallbackData) error
+	SendToMany(
+		message string,
+		to []string,
+		from base.SenderID,
+	) (*dto.SendMessageResponse, error)
+	Send(
+		to, message string,
+		from base.SenderID,
+	) (*dto.SendMessageResponse, error)
+	SendMarketingSMS(
+		to []string,
+		message string,
+		from base.SenderID,
+	) (*dto.SendMessageResponse, error)
+	SaveMarketingMessage(
+		ctx context.Context,
+		data dto.MarketingSMS,
+	) error
+	UpdateMarketingMessage(
+		ctx context.Context,
+		phoneNumber string,
+		deliveryReport *dto.ATDeliveryReport,
+	) (*dto.MarketingSMS, error)
 }
 
 // Service defines a sms service struct
@@ -62,7 +83,10 @@ func getHost(env, service string) string {
 	if env != "sandbox" {
 		return fmt.Sprintf("https://%s.africastalking.com", service)
 	}
-	return fmt.Sprintf("https://%s.sandbox.africastalking.com", service)
+	return fmt.Sprintf(
+		"https://%s.sandbox.africastalking.com",
+		service,
+	)
 
 }
 
@@ -72,9 +96,21 @@ func NewService(repository repository.Repository) *Service {
 	return &Service{env, repository}
 }
 
-// SaveAITCallbackResponse saves the callback data for future analysis
-func (s Service) SaveAITCallbackResponse(ctx context.Context, data dto.CallbackData) error {
-	return s.Repository.SaveAITCallbackResponse(ctx, data)
+// SaveMarketingMessage saves the callback data for future analysis
+func (s Service) SaveMarketingMessage(
+	ctx context.Context,
+	data dto.MarketingSMS,
+) error {
+	return s.Repository.SaveMarketingMessage(ctx, data)
+}
+
+// UpdateMarketingMessage adds a delivery reposrt to an AIT SMS
+func (s Service) UpdateMarketingMessage(
+	ctx context.Context,
+	phoneNumber string,
+	deliveryReport *dto.ATDeliveryReport,
+) (*dto.MarketingSMS, error) {
+	return s.Repository.UpdateMarketingMessage(ctx, phoneNumber, deliveryReport)
 }
 
 // SendToMany is a utility method to send to many recipients at the same time
@@ -88,7 +124,10 @@ func (s Service) SendToMany(
 }
 
 // Send is a method used to send to a single recipient
-func (s Service) Send(to, message string, from base.SenderID) (*dto.SendMessageResponse, error) {
+func (s Service) Send(
+	to, message string,
+	from base.SenderID,
+) (*dto.SendMessageResponse, error) {
 	switch from {
 	case base.SenderIDSLADE360:
 		return s.SendSMS(
@@ -156,7 +195,8 @@ func (s Service) SendSMS(
 
 	if err := json.NewDecoder(res.Body).Decode(smsMessageResponse); err != nil {
 		return nil, errors.New(
-			fmt.Errorf("SMS Error : unable to parse sms response ; %v", err).Error(),
+			fmt.Errorf("SMS Error : unable to parse sms response ; %v", err).
+				Error(),
 		)
 	}
 
@@ -185,4 +225,45 @@ func (s Service) newPostRequest(
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	return client.Do(req)
+}
+
+// SendMarketingSMS is a method to send marketing bulk SMS for Be.Well launch/campaigns.
+// It interacts with our DB to save the message and update our CRM with engagements
+func (s Service) SendMarketingSMS(
+	to []string,
+	message string,
+	from base.SenderID,
+) (*dto.SendMessageResponse, error) {
+	recipients := strings.Join(to, ",")
+	resp, err := s.Send(recipients, message, from)
+	if err != nil {
+		return nil, err
+	}
+
+	smsMsgData := resp.SMSMessageData
+	if smsMsgData == nil {
+		return nil, nil
+	}
+
+	smsMsgDataRecipients := smsMsgData.Recipients
+	for _, recipient := range smsMsgDataRecipients {
+		data := dto.MarketingSMS{
+			ID:                   uuid.New().String(),
+			PhoneNumber:          recipient.Number,
+			SenderID:             from,
+			MessageSentTimeStamp: time.Now(),
+			Message:              message,
+		}
+		if err := s.SaveMarketingMessage(
+			context.Background(),
+			data,
+		); err != nil {
+			return nil, err
+		}
+
+		// todo we need to create an engagement for these people in the CRM
+		// todo we should do a check first
+	}
+
+	return resp, nil
 }

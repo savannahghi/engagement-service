@@ -219,10 +219,16 @@ type Repository interface {
 		title string,
 	) (*base.Nudge, error)
 
-	SaveAITCallbackResponse(
+	SaveMarketingMessage(
 		ctx context.Context,
-		data dto.CallbackData,
+		data dto.MarketingSMS,
 	) error
+
+	UpdateMarketingMessage(
+		ctx context.Context,
+		phoneNumber string,
+		deliveryReport *dto.ATDeliveryReport,
+	) (*dto.MarketingSMS, error)
 
 	SaveTwilioResponse(
 		ctx context.Context,

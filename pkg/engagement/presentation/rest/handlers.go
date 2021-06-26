@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strconv"
 	"strings"
+	"time"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
@@ -142,6 +144,8 @@ type PresentationHandlers interface {
 	SendEmail(ctx context.Context) http.HandlerFunc
 
 	SendToMany(ctx context.Context) http.HandlerFunc
+
+	SendMarketingSMS(ctx context.Context) http.HandlerFunc
 
 	GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc
 
@@ -1327,7 +1331,6 @@ func (p PresentationHandlersImpl) SendToMany(
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.SendSMSPayload{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
-
 		for _, phoneNo := range payload.To {
 			_, err := base.NormalizeMSISDN(phoneNo)
 			if err != nil {
@@ -1345,7 +1348,7 @@ func (p PresentationHandlersImpl) SendToMany(
 			return
 		}
 
-		_, err := p.interactor.SMS.SendToMany(
+		resp, err := p.interactor.SMS.SendToMany(
 			payload.Message,
 			payload.To,
 			payload.Sender,
@@ -1364,11 +1367,58 @@ func (p PresentationHandlersImpl) SendToMany(
 			return
 		}
 
-		type okResp struct {
-			Status string `json:"status"`
+		marshalled, err := json.Marshal(resp)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+// SendMarketingSMS sends a data message to the specified recipient
+func (p PresentationHandlersImpl) SendMarketingSMS(
+	ctx context.Context,
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &dto.SendSMSPayload{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+		if len(payload.To) == 0 {
+			respondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("expected atleast one phone number"),
+			)
 		}
 
-		marshalled, err := json.Marshal(okResp{Status: "ok"})
+		if payload.Message == "" {
+			respondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("can't send sms, expected a message"),
+			)
+			return
+		}
+
+		resp, err := p.interactor.SMS.SendMarketingSMS(
+			payload.To,
+			payload.Message,
+			payload.Sender,
+		)
+		if err != nil {
+			badRequest := strings.Contains(
+				err.Error(),
+				"http error status: 400",
+			)
+			if badRequest {
+				respondWithError(w, http.StatusBadRequest, err)
+				return
+			}
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		marshalled, err := json.Marshal(resp)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1382,7 +1432,6 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 	ctx context.Context,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Parses the request body
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("unable to parse request data %v", err)
@@ -1392,15 +1441,35 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			return
 		}
 
-		err = p.interactor.SMS.SaveAITCallbackResponse(
+		networkCode := r.Form.Get("networkCode")
+		failureReason := r.Form.Get("failureReason")
+		phoneNumber := r.Form.Get("phoneNumber")
+		retryCount, err := strconv.Atoi(r.Form.Get("retryCount"))
+		if err != nil {
+			log.Printf("unable to convert retry count to int")
+			return
+		}
+
+		deliveryReport := &dto.ATDeliveryReport{
+			ID:                      r.Form.Get("id"),
+			Status:                  r.Form.Get("status"),
+			PhoneNumber:             phoneNumber,
+			NetworkCode:             &networkCode,
+			FailureReason:           &failureReason,
+			RetryCount:              retryCount,
+			DeliveryReportTimeStamp: time.Now(),
+		}
+
+		marketingSMS, err := p.interactor.SMS.UpdateMarketingMessage(
 			ctx,
-			dto.CallbackData{Values: r.Form},
+			phoneNumber,
+			deliveryReport,
 		)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		marshalled, err := json.Marshal(dto.CallbackData{Values: r.Form})
+		marshalled, err := json.Marshal(marketingSMS)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1750,7 +1819,9 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 			PropertyName: "email",
 			Operator:     "EQ",
 		}
-		filtergroup := CRMDomain.FilterGroups{Filters: []CRMDomain.Filters{filters}}
+		filtergroup := CRMDomain.FilterGroups{
+			Filters: []CRMDomain.Filters{filters},
+		}
 		searchParams := CRMDomain.SearchParams{
 			FilterGroups: []CRMDomain.FilterGroups{filtergroup},
 			Properties:   []string{"email", "phone", "firstname", "lastname"},
@@ -1758,7 +1829,11 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 
 		usercontacts, err := p.interactor.CRM.SearchContact(searchParams)
 		if err != nil {
-			base.RespondWithError(w, http.StatusBadRequest, fmt.Errorf("failed to search contact %v", err))
+			base.RespondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("failed to search contact %v", err),
+			)
 			return
 		}
 
@@ -1769,7 +1844,11 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 		}
 
 		if _, err := p.interactor.CRM.UpdateContact(usercontacts.Results[0].Properties.Phone, crmContactProperties); err != nil {
-			base.RespondWithError(w, http.StatusBadRequest, fmt.Errorf("failed to update contatct %v", err))
+			base.RespondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("failed to update contatct %v", err),
+			)
 			return
 		}
 		base.WriteJSONResponse(w, dto.OKResp{Status: "SUCCESS"}, http.StatusOK)

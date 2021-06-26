@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
@@ -161,6 +163,45 @@ func TestSend(t *testing.T) {
 					return
 				}
 			}
+		})
+	}
+}
+
+func TestService_SendMarketingSMS(t *testing.T) {
+	ctx := context.Background()
+	fr, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't instantiate firebase repository: %w", err)
+		return
+	}
+	s := sms.NewService(fr)
+	type args struct {
+		to      []string
+		message string
+		from    base.SenderID
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Happily send a marketing SMS :)",
+			args: args{
+				to:      []string{gofakeit.Phone()},
+				message: gofakeit.HipsterSentence(10),
+				from:    base.SenderIDBewell,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			smsResp, err := s.SendMarketingSMS(tt.args.to, tt.args.message, tt.args.from)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.SendMarketingSMS() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			logrus.Print(smsResp)
 		})
 	}
 }

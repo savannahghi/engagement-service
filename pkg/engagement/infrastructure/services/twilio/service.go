@@ -15,7 +15,6 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/kevinburke/twilio-go"
 	"github.com/kevinburke/twilio-go/token"
-	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -156,7 +155,6 @@ func (s Service) MakeTwilioRequest(
 	target interface{},
 ) error {
 	s.checkPreconditions()
-	logrus.Print("We are now making the twilio request")
 	if base.IsDebug() {
 		log.Printf("Twilio request data: \n%s\n", content)
 	}
@@ -179,12 +177,9 @@ func (s Service) MakeTwilioRequest(
 	if err != nil {
 		return fmt.Errorf("twilio room content error: %w", err)
 	}
-	logrus.Printf("The response is %v", respBs)
 	if resp.StatusCode > 201 {
 		return fmt.Errorf("twilio API Error: %s", string(respBs))
 	}
-
-	logrus.Printf("the response status is %v \n\n\n and the resp body is %v", resp.StatusCode, resp.Body)
 
 	if base.IsDebug() {
 		log.Printf("Twilio response: \n%s\n", string(respBs))

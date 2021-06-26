@@ -216,9 +216,9 @@ type FakeEngagementRepository struct {
 		title string,
 	) (*base.Nudge, error)
 
-	SaveAITCallbackResponseFn func(
+	SaveMarketingMessageFn func(
 		ctx context.Context,
-		data dto.CallbackData,
+		data dto.MarketingSMS,
 	) error
 
 	SaveTwilioResponseFn func(
@@ -244,6 +244,12 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		response *dto.NPSResponse,
 	) error
+
+	UpdateMarketingMessageFn func(
+		ctx context.Context,
+		phoneNumber string,
+		deliveryReport *dto.ATDeliveryReport,
+	) (*dto.MarketingSMS, error)
 }
 
 // GetFeed ...
@@ -512,12 +518,12 @@ func (f *FakeEngagementRepository) GetDefaultNudgeByTitle(
 	return f.GetDefaultNudgeByTitleFn(ctx, uid, flavour, title)
 }
 
-// SaveAITCallbackResponse saves the callback data for future analysis
-func (f *FakeEngagementRepository) SaveAITCallbackResponse(
+// SaveMarketingMessage saves the callback data for future analysis
+func (f *FakeEngagementRepository) SaveMarketingMessage(
 	ctx context.Context,
-	data dto.CallbackData,
+	data dto.MarketingSMS,
 ) error {
-	return f.SaveAITCallbackResponseFn(ctx, data)
+	return f.SaveMarketingMessageFn(ctx, data)
 }
 
 // SaveTwilioResponse saves the callback data for future analysis
@@ -554,4 +560,13 @@ func (f *FakeEngagementRepository) SaveNPSResponse(
 	response *dto.NPSResponse,
 ) error {
 	return f.SaveNPSResponseFn(ctx, response)
+}
+
+// UpdateMarketingMessage ..
+func (f *FakeEngagementRepository) UpdateMarketingMessage(
+	ctx context.Context,
+	phoneNumber string,
+	deliveryReport *dto.ATDeliveryReport,
+) (*dto.MarketingSMS, error) {
+	return f.UpdateMarketingMessageFn(ctx, phoneNumber, deliveryReport)
 }

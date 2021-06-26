@@ -1,6 +1,10 @@
 package dto
 
-import "gitlab.slade360emr.com/go/base"
+import (
+	"time"
+
+	"gitlab.slade360emr.com/go/base"
+)
 
 // SendSMSPayload is used to serialise an SMS sent through the AIT service REST API
 type SendSMSPayload struct {
@@ -48,4 +52,25 @@ type ListID struct {
 // SetBewellAwareInput payload to set bewell aware
 type SetBewellAwareInput struct {
 	EmailAddress string `json:"emailAddress"`
+}
+
+// MarketingSMS represents marketing SMS data
+type MarketingSMS struct {
+	ID                   string            `json:"id"`
+	PhoneNumber          string            `json:"phoneNumber"`
+	SenderID             base.SenderID     `json:"senderId"`
+	MessageSentTimeStamp time.Time         `json:"messageSentTimeStamp"`
+	Message              string            `json:"message"`
+	DeliveryReport       *ATDeliveryReport `json:"deliveryReport"`
+}
+
+// ATDeliveryReport callback delivery reports
+type ATDeliveryReport struct {
+	ID                      string    `json:"id"`
+	Status                  string    `json:"status"`
+	PhoneNumber             string    `json:"phoneNumber"`
+	NetworkCode             *string   `json:"networkCode"`
+	FailureReason           *string   `json:"failureReason"`
+	RetryCount              int       `json:"retryCount"`
+	DeliveryReportTimeStamp time.Time `json:"deliveryReportTimeStamp"`
 }

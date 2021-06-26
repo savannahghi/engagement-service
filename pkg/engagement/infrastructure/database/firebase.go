@@ -33,9 +33,9 @@ const (
 	messagesSubcollectionName    = "messages"
 	incomingEventsCollectionName = "incoming_events"
 	outgoingEventsCollectionName = "outgoing_events"
-	//AITCallbackCollectionName is the name of a Cloud Firestore collection into which AIT
+	//AITMarketingMessageName is the name of a Cloud Firestore collection into which AIT
 	// callback data will be saved for future analysis
-	AITCallbackCollectionName = "ait_callbacks"
+	AITMarketingMessageName = "ait_marketing_sms"
 
 	// NPSResponseCollectionName firestore collection name where nps responses are stored
 	NPSResponseCollectionName = "nps_response"
@@ -51,7 +51,9 @@ const (
 )
 
 // NewFirebaseRepository initializes a Firebase repository
-func NewFirebaseRepository(ctx context.Context) (repository.Repository, error) {
+func NewFirebaseRepository(
+	ctx context.Context,
+) (repository.Repository, error) {
 	fc := base.FirebaseClient{}
 	fa, err := fc.InitFirebase()
 	if err != nil {
@@ -135,7 +137,14 @@ func (fr Repository) GetFeed(
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 
-	nudges, err := fr.GetNudges(ctx, *uid, flavour, status, visibility, expired)
+	nudges, err := fr.GetNudges(
+		ctx,
+		*uid,
+		flavour,
+		status,
+		visibility,
+		expired,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
@@ -157,14 +166,20 @@ func (fr Repository) GetFeed(
 	// only add default content if...
 	// - the `persistent` filter is set to "BOTH"
 	// - all other filters are nil
-	noFilters := persistent == base.BooleanFilterBoth && status == nil && visibility == nil && expired == nil && filterParams == nil
+	noFilters := persistent == base.BooleanFilterBoth && status == nil &&
+		visibility == nil &&
+		expired == nil &&
+		filterParams == nil
 	noActions := len(actions) == 0
 	noNudges := len(nudges) == 0
 	noItems := len(items) == 0
 	if noFilters && noActions && noNudges && noItems {
 		err = fr.initializeDefaultFeed(ctx, *uid, flavour)
 		if err != nil {
-			return nil, fmt.Errorf("unable to initialize default feed: %w", err)
+			return nil, fmt.Errorf(
+				"unable to initialize default feed: %w",
+				err,
+			)
 		}
 
 		// this recursion is potentially dangerous but there's an integration test
@@ -381,7 +396,12 @@ func (fr Repository) GetNudge(
 	}
 
 	nudgeCollection := fr.getNudgesCollection(uid, flavour)
-	el, err := fr.getSingleElement(ctx, nudgeCollection, nudgeID, &base.Nudge{})
+	el, err := fr.getSingleElement(
+		ctx,
+		nudgeCollection,
+		nudgeID,
+		&base.Nudge{},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
@@ -495,7 +515,12 @@ func (fr Repository) GetAction(
 	}
 
 	actionCollection := fr.getActionsCollection(uid, flavour)
-	el, err := fr.getSingleElement(ctx, actionCollection, actionID, &base.Action{})
+	el, err := fr.getSingleElement(
+		ctx,
+		actionCollection,
+		actionID,
+		&base.Action{},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
@@ -643,7 +668,12 @@ func (fr Repository) GetMessage(
 	messageID string,
 ) (*base.Message, error) {
 	messageCollection := fr.getMessagesCollection(uid, flavour, itemID)
-	el, err := fr.getSingleElement(ctx, messageCollection, messageID, &base.Message{})
+	el, err := fr.getSingleElement(
+		ctx,
+		messageCollection,
+		messageID,
+		&base.Message{},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get message: %w", err)
 	}
@@ -673,7 +703,9 @@ func (fr Repository) DeleteMessage(
 			"repository precondition check failed: %w", err)
 	}
 
-	_, err := fr.getMessagesCollection(uid, flavour, itemID).Doc(messageID).Delete(ctx)
+	_, err := fr.getMessagesCollection(uid, flavour, itemID).
+		Doc(messageID).
+		Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("can't delete message: %w", err)
 	}
@@ -736,8 +768,8 @@ func (fr Repository) getFeedCollectionName() string {
 	return suffixed
 }
 
-func (fr Repository) getAITCallbackCollectionName() string {
-	suffixed := base.SuffixCollection(AITCallbackCollectionName)
+func (fr Repository) getMaretingSMSCollectionName() string {
+	suffixed := base.SuffixCollection(AITMarketingMessageName)
 	return suffixed
 }
 
@@ -1060,7 +1092,10 @@ func (fr Repository) UnreadPersistentItems(
 	uDoc, err := unreadDoc.Get(ctx)
 	if err != nil {
 		if status.Code(err) != codes.NotFound {
-			return -1, fmt.Errorf("error fetching unread docs collection: %w", err)
+			return -1, fmt.Errorf(
+				"error fetching unread docs collection: %w",
+				err,
+			)
 		}
 		// create it if not found
 		defaultCount := map[string]int{
@@ -1079,7 +1114,9 @@ func (fr Repository) UnreadPersistentItems(
 	err = uDoc.DataTo(&counts)
 	if err != nil {
 		return -1, fmt.Errorf(
-			"can't unmarshal unread counts from Firestore doc to list: %w", err)
+			"can't unmarshal unread counts from Firestore doc to list: %w",
+			err,
+		)
 	}
 
 	count, present := counts["count"]
@@ -1196,8 +1233,10 @@ func (fr Repository) getMessagesQuery(
 	flavour base.Flavour,
 	itemID string,
 ) *firestore.Query {
-	messagesQuery := fr.getMessagesCollection(uid, flavour, itemID).Query.OrderBy(
-		"id", firestore.Desc).OrderBy("sequenceNumber", firestore.Desc)
+	messagesQuery := fr.getMessagesCollection(uid, flavour, itemID).
+		Query.OrderBy(
+		"id", firestore.Desc).
+		OrderBy("sequenceNumber", firestore.Desc)
 	return &messagesQuery
 }
 
@@ -1398,22 +1437,57 @@ func (fr Repository) GetDefaultNudgeByTitle(
 	return nudge, nil
 }
 
-// SaveAITCallbackResponse saves the callback data for future analysis
-func (fr Repository) SaveAITCallbackResponse(
+// SaveMarketingMessage saves SMS data for future analysis
+func (fr Repository) SaveMarketingMessage(
 	ctx context.Context,
-	data dto.CallbackData,
+	data dto.MarketingSMS,
 ) error {
 	if err := fr.checkPreconditions(); err != nil {
 		return fmt.Errorf("repository precondition check failed: %w", err)
 	}
 
-	collectionName := fr.getAITCallbackCollectionName()
+	collectionName := fr.getMaretingSMSCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
 	if err != nil {
 		return fmt.Errorf("unable to save callback response")
 	}
 
 	return nil
+}
+
+// UpdateMarketingMessage updates marketing SMS data
+func (fr Repository) UpdateMarketingMessage(
+	ctx context.Context,
+	phoneNumber string,
+	deliveryReport *dto.ATDeliveryReport,
+) (*dto.MarketingSMS, error) {
+	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
+		Where("PhoneNumber", "==", phoneNumber).
+		OrderBy("MessageSentTimeStamp", firestore.Desc)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return nil, err
+	}
+	if len(docs) == 0 {
+		return nil, nil
+	}
+
+	var marketingSMS dto.MarketingSMS
+	err = docs[0].DataTo(&marketingSMS)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"unable to unmarshal marketing SMS from doc snapshot: %w", err)
+	}
+
+	marketingSMS.DeliveryReport = deliveryReport
+	doc := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
+		Doc(docs[0].Ref.ID)
+	if _, err = doc.Set(ctx, marketingSMS); err != nil {
+		return nil, err
+	}
+
+	return &marketingSMS, nil
 }
 
 // SaveTwilioResponse saves the callback data
@@ -1441,7 +1515,8 @@ func (fr Repository) SaveNotification(
 	notification dto.SavedNotification,
 ) error {
 	collectionName := fr.getNotificationCollectionName()
-	_, _, err := firestoreClient.Collection(collectionName).Add(ctx, notification)
+	_, _, err := firestoreClient.Collection(collectionName).
+		Add(ctx, notification)
 	if err != nil {
 		return fmt.Errorf("can't save notification: %w", err)
 	}
@@ -1473,7 +1548,10 @@ func (fr Repository) RetrieveNotification(
 		var notification dto.SavedNotification
 		err = doc.DataTo(&notification)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling saved notification: %w", err)
+			return nil, fmt.Errorf(
+				"error unmarshalling saved notification: %w",
+				err,
+			)
 		}
 		notifications = append(notifications, &notification)
 	}
