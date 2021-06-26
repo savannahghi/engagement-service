@@ -158,6 +158,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
+	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
 
 	r.Path(base.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
+	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // NotificationEnvelope is used to "wrap" elements with context and metadata
@@ -244,4 +245,24 @@ func (e *NPSResponse) GetID() base.ID {
 // SetID sets the struct's ID value
 func (e *NPSResponse) SetID(id string) {
 	e.ID = id
+}
+
+// OKResp is used to return OK responses in inter-service calls
+type OKResp struct {
+	Status   string      `json:"status,omitempty"`
+	Response interface{} `json:"response,omitempty"`
+}
+
+// NewOKResp ...
+func NewOKResp(rawResponse interface{}) *OKResp {
+	return &OKResp{
+		Status:   "OK",
+		Response: rawResponse,
+	}
+}
+
+// UpdateContactPSMessage represents CRM update contact Pub/Sub message
+type UpdateContactPSMessage struct {
+	Properties CRMDomain.ContactProperties `json:"properties"`
+	Email      string                      `json:"email"`
 }

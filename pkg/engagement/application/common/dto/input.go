@@ -44,3 +44,8 @@ type NPSInput struct {
 type ListID struct {
 	ListID int `json:"listId"`
 }
+
+// SetBewellAwareInput payload to set bewell aware
+type SetBewellAwareInput struct {
+	EmailAddress string `json:"emailAddress"`
+}
