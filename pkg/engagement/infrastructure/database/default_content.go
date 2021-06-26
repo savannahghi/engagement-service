@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 
 	"github.com/markbates/pkger"
@@ -37,6 +39,7 @@ const (
 	defaultContentDir    = "/static/"
 	defaultAuthor        = "Be.Well Team"
 	defaultInsuranceText = "Insurance Simplified"
+	onboardingService    = "profile"
 )
 
 // embed default content assets (e.g images and documents) in the binary
@@ -1097,7 +1100,12 @@ func getFeedWelcomeVideos() []base.Link {
 }
 
 func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
-	libraryService := library.NewLibraryService()
+	// Initialize ISC clients
+	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
+
+	// Initialize new instances of the infrastructure services
+	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
+	libraryService := library.NewLibraryService(onboarding)
 	items := []base.Item{}
 	feedPosts, err := libraryService.GetFeedContent(ctx)
 	if err != nil {

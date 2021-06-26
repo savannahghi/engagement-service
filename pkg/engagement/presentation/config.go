@@ -108,8 +108,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		mail,
 	)
 	uploads := uploads.NewUploadsService()
-	library := library.NewLibraryService()
 	crm := hubspot.NewHubSpotService()
+	library := library.NewLibraryService(onboarding)
 	sms := sms.NewService(fr, crm)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {

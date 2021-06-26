@@ -10,6 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 )
 
 // Library service constants
@@ -21,9 +22,11 @@ const (
 	includeAuthors               = "&include=authors"
 	formats                      = "&formats=html,plaintext"
 	allowedFeedTagFilter         = "&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
-	allowedPROFAQsTagFilter      = "&filter=tag:faqs-pro&filter=tag:how-to"
+	allowedPROFAQsTagFilter      = "&filter=tag:faqs-pro"
 	allowedConsumerFAQsTagFilter = "&filter=tag:faqs-consumer&filter=tag:how-to"
 	allowedLibraryTagFilter      = "&filter=tag:diet&filter=tag:health-tips"
+	allowedAgentTagFilter        = "&filter=tag:agent-faqs&filter=tag:faqs-pro"
+	allowedEmployeeTagFilter     = "&filter=tag:emplpoyee-faqs&filter=tag:faqs-pro"
 )
 
 // ServiceLibrary ...
@@ -40,16 +43,22 @@ const (
 	faqsRequestConsumer
 	faqsRequestPro
 	libraryRequest
+	employeeHelpRequest
+	agentHelpRequest
 )
 
 // NewLibraryService creates a new library Service
-func NewLibraryService() *Service {
+func NewLibraryService(
+	onboarding onboarding.ProfileService,
+) *Service {
 	e := base.MustGetEnvVar(ghostCMSAPIEndpoint)
 	a := base.MustGetEnvVar(ghostCMSAPIKey)
+
 	srv := &Service{
 		APIEndpoint:  e,
 		APIKey:       a,
 		PostsAPIRoot: fmt.Sprintf("%v%vkey=%v", e, apiRoot, a),
+		onboarding:   onboarding,
 	}
 	srv.checkPreconditions()
 	return srv
@@ -61,6 +70,7 @@ type Service struct {
 	APIEndpoint  string
 	APIKey       string
 	PostsAPIRoot string
+	onboarding   onboarding.ProfileService
 }
 
 func (s Service) checkPreconditions() {
@@ -116,6 +126,25 @@ func (s Service) composeRequest(reqType requestType) string {
 			includeAuthors,
 			formats,
 		)
+
+	case employeeHelpRequest:
+		urlRequest = fmt.Sprintf(
+			"%v%v%v%v%v",
+			s.PostsAPIRoot,
+			includeTags,
+			allowedEmployeeTagFilter,
+			includeAuthors,
+			formats,
+		)
+	case agentHelpRequest:
+		urlRequest = fmt.Sprintf(
+			"%v%v%v%v%v",
+			s.PostsAPIRoot,
+			includeTags,
+			allowedAgentTagFilter,
+			includeAuthors,
+			formats,
+		)
 	}
 	return urlRequest
 }
@@ -153,7 +182,27 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*G
 		return s.getCMSPosts(ctx, faqsRequestConsumer)
 	}
 
-	return s.getCMSPosts(ctx, faqsRequestPro)
+	// get profile from onboarding service
+	user, err := base.GetLoggedInUser(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user: %w", err)
+	}
+
+	profile, err := s.onboarding.GetUserProfile(user.UID)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user profile: %w", err)
+	}
+
+	switch profile.Role {
+	case base.RoleTypeEmployee:
+		return s.getCMSPosts(ctx, employeeHelpRequest)
+	case base.RoleTypeAgent:
+		return s.getCMSPosts(ctx, agentHelpRequest)
+	default:
+		return s.getCMSPosts(ctx, faqsRequestPro)
+
+	}
 }
 
 // GetLibraryContent gets library content to be show under libary section of the app.

@@ -109,3 +109,8 @@ type Segment struct {
 	Wing                     string `json:"wing" firestore:"wing"`
 	Message_sent             string `json:"message_sent" firestore:"message_sent"`
 }
+
+// UIDPayload is the user ID used in some inter-service requests
+type UIDPayload struct {
+	UID *string `json:"uid"`
+}

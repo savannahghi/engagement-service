@@ -77,8 +77,9 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	mail := mail.NewService()
 	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail)
 	uploads := uploads.NewUploadsService()
-	library := library.NewLibraryService()
 	crm := hubspot.NewHubSpotService()
+
+	library := library.NewLibraryService(onboardingSvc)
 	sms := sms.NewService(r, crm)
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()

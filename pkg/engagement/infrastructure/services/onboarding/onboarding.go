@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
 // specific endpoint paths for ISC
@@ -14,6 +15,7 @@ const (
 	profileEmails       = "internal/contactdetails/emails/"
 	profilePhoneNumbers = "internal/contactdetails/phonenumbers/"
 	profileTokens       = "internal/contactdetails/tokens/"
+	userProfile         = "internal/user_profile"
 )
 
 // UserUIDs is used to serialize user UIDs for inter-service calls to the
@@ -27,6 +29,7 @@ type ProfileService interface {
 	GetEmailAddresses(uids UserUIDs) (map[string][]string, error)
 	GetPhoneNumbers(uids UserUIDs) (map[string][]string, error)
 	GetDeviceTokens(uid UserUIDs) (map[string][]string, error)
+	GetUserProfile(uid string) (*base.UserProfile, error)
 }
 
 // NewRemoteProfileService initializes a connection to a remote profile service
@@ -100,4 +103,31 @@ func (rps RemoteProfileService) GetDeviceTokens(
 	uids UserUIDs,
 ) (map[string][]string, error) {
 	return rps.callProfileService(uids, profileTokens)
+}
+
+// GetUserProfile gets the specified users' profile from the onboarding service
+func (rps RemoteProfileService) GetUserProfile(uid string) (*base.UserProfile, error) {
+	uidPayoload := dto.UIDPayload{
+		UID: &uid,
+	}
+	resp, err := rps.profileClient.MakeRequest(http.MethodPost, userProfile, uidPayoload)
+
+	if err != nil {
+		return nil, fmt.Errorf("error calling profile service: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("user profile not found. Error code: %v", resp.StatusCode)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading profile response body: %w", err)
+	}
+	user := base.UserProfile{}
+	err = json.Unmarshal(data, &user)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing user profile data: %w", err)
+	}
+	return &user, nil
 }

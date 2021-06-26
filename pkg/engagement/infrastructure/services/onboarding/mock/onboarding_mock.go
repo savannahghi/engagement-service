@@ -1,12 +1,16 @@
 package mock
 
-import "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
+import (
+	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
+)
 
 // FakeServiceOnboarding is an "onboarding" service mock
 type FakeServiceOnboarding struct {
 	GetEmailAddressesFn func(uids onboarding.UserUIDs) (map[string][]string, error)
 	GetPhoneNumbersFn   func(uids onboarding.UserUIDs) (map[string][]string, error)
 	GetDeviceTokensFn   func(uid onboarding.UserUIDs) (map[string][]string, error)
+	GetUserProfileFn    func(uid string) (*base.UserProfile, error)
 
 	// GetDeviceTokensFn   func(uids UserUIDsFn) (map[string][]string, error)
 }
@@ -24,4 +28,9 @@ func (f *FakeServiceOnboarding) GetPhoneNumbers(uids onboarding.UserUIDs) (map[s
 // GetDeviceTokens ...
 func (f *FakeServiceOnboarding) GetDeviceTokens(uid onboarding.UserUIDs) (map[string][]string, error) {
 	return f.GetDeviceTokensFn(uid)
+}
+
+// GetUserProfile ...
+func (f *FakeServiceOnboarding) GetUserProfile(uid string) (*base.UserProfile, error) {
+	return f.GetUserProfileFn(uid)
 }
