@@ -16,6 +16,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/surveys"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
@@ -149,6 +150,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	h := rest.NewPresentationHandlers(i)
 
 	r := mux.NewRouter() // gorilla mux
+	r.Use(otelmux.Middleware(base.MetricsCollectorService("engagement")))
 	r.Use(
 		handlers.RecoveryHandler(
 			handlers.PrintRecoveryStack(true),
