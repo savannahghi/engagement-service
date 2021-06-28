@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -25,7 +25,8 @@ func TestSendToMany(t *testing.T) {
 		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
 		return
 	}
-	service := sms.NewService(fr)
+	crm := hubspot.NewHubSpotService()
+	service := sms.NewService(fr, crm)
 
 	type args struct {
 		message string
@@ -95,7 +96,8 @@ func TestSend(t *testing.T) {
 		t.Errorf("can't instantiate firebase repository: %w", err)
 		return
 	}
-	service := sms.NewService(fr)
+	crm := hubspot.NewHubSpotService()
+	service := sms.NewService(fr, crm)
 
 	type args struct {
 		to      string
@@ -174,7 +176,8 @@ func TestService_SendMarketingSMS(t *testing.T) {
 		t.Errorf("can't instantiate firebase repository: %w", err)
 		return
 	}
-	s := sms.NewService(fr)
+	crm := hubspot.NewHubSpotService()
+	s := sms.NewService(fr, crm)
 	type args struct {
 		to      []string
 		message string
@@ -201,7 +204,10 @@ func TestService_SendMarketingSMS(t *testing.T) {
 				t.Errorf("Service.SendMarketingSMS() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			logrus.Print(smsResp)
+			if smsResp == nil {
+				t.Errorf("expected an sms response to be returned")
+				return
+			}
 		})
 	}
 }

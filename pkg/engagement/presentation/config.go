@@ -109,7 +109,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService()
-	sms := sms.NewService(fr)
+	crm := hubspot.NewHubSpotService()
+	sms := sms.NewService(fr, crm)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -187,7 +188,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).HandlerFunc(h.GetContactsInAList())
 
 	// Callbacks
-	// r.HandleFunc("/ait_callback", h.GetAITSMSDeliveryCallback()).Methods(http.MethodPost)
 	r.Path("/ait_callback").
 		Methods(http.MethodPost).
 		HandlerFunc(h.GetAITSMSDeliveryCallback(ctx))

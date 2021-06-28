@@ -12,6 +12,7 @@ import (
 	"github.com/pquerna/otp/totp"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -72,7 +73,8 @@ func NewService() *Service {
 
 	mail := mail.NewService()
 
-	sms := sms.NewService(repository)
+	crm := hubspot.NewHubSpotService()
+	sms := sms.NewService(repository, crm)
 
 	twilio := twilio.NewService()
 

@@ -16,6 +16,7 @@ import (
 	"github.com/kevinburke/twilio-go"
 	"github.com/kevinburke/twilio-go/token"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -70,7 +71,8 @@ func NewService() *Service {
 	publicDomain := base.MustGetEnvVar(ServerPublicDomainEnvVarName)
 	callbackURL := publicDomain + TwilioCallbackPath
 	smsNumber := base.MustGetEnvVar(TwilioSMSNumberEnvVarName)
-	sms := sms.NewService(repository)
+	crm := hubspot.NewHubSpotService()
+	sms := sms.NewService(repository, crm)
 
 	srv := &Service{
 		region:            region,

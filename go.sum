@@ -90,8 +90,6 @@ github.com/boombuler/barcode v1.0.1 h1:NDBbPmhS+EqABEs5Kg3n/5ZNjy73Pz7SIV+KCeqyX
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/brianvoe/gofakeit/v6 v6.5.0 h1:zoWqGsuB8TB4MSwUZXtV3OwUSdzi8EHeXO8JfReRIHg=
 github.com/brianvoe/gofakeit/v6 v6.5.0/go.mod h1:palrJUk4Fyw38zIFB/uBZqsgzW5VsNllhHKKwAebzew=
-github.com/casbin/casbin/v2 v2.30.0 h1:bBUyn1xgI+AApUDAPK+G7aw1Ln+dbKMIdqKFwOzhz/4=
-github.com/casbin/casbin/v2 v2.30.0/go.mod h1:vByNa/Fchek0KZUgG5wEsl7iFsiviAYKRtgrQfcJqHg=
 github.com/casbin/casbin/v2 v2.31.6 h1:PRelilpk9CG7ise7eRoeGpum+TVSZtmZqESwnzuvB14=
 github.com/casbin/casbin/v2 v2.31.6/go.mod h1:vByNa/Fchek0KZUgG5wEsl7iFsiviAYKRtgrQfcJqHg=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -450,10 +448,11 @@ github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 gitlab.slade360emr.com/go/base v0.0.157/go.mod h1:2I0e87cNOQj2hT42jHER4MzXyW+kgGsKFoCFDvG99ro=
+gitlab.slade360emr.com/go/base v0.0.157/go.mod h1:2I0e87cNOQj2hT42jHER4MzXyW+kgGsKFoCFDvG99ro=
 gitlab.slade360emr.com/go/base v0.0.158 h1:eDY2ud4N0jNMmoIwyGDQd3WcicdY5uJzxDSGz3cEtA0=
 gitlab.slade360emr.com/go/base v0.0.158/go.mod h1:+PMV3TfnNGMFEaT1fSFegPvf2iULwIOypXl2VZy3Zvk=
-gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210628094640-44afb96cfc76 h1:Q6RGrWzkOAqNdhK/65opZV9SL+RjoWog1WYdIwZ4GuE=
-gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210628094640-44afb96cfc76/go.mod h1:5ujqaixFxH7woDoVsIk94dfOvk2Sm6sJ4pGAaGvUarQ=
+gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210628105506-27d6e856b066 h1:quHuFW4Re3vZas7QdRZIg+AG8GQGSkkgIe1Fm9GSit4=
+gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210628105506-27d6e856b066/go.mod h1:oI/kBaauNWqDmyp+9GDbUgTtNWBqj6wz7qfXF5R9B3E=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

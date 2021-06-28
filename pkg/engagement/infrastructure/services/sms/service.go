@@ -16,6 +16,8 @@ import (
 
 	"github.com/google/uuid"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
@@ -67,6 +69,7 @@ type ServiceSMS interface {
 type Service struct {
 	Env        string
 	Repository repository.Repository
+	Crm        hubspot.ServiceHubSpotInterface
 }
 
 // GetSmsURL is the sms endpoint
@@ -91,9 +94,9 @@ func getHost(env, service string) string {
 }
 
 // NewService returns a new service
-func NewService(repository repository.Repository) *Service {
+func NewService(repository repository.Repository, crm hubspot.ServiceHubSpotInterface) *Service {
 	env := base.MustGetEnvVar(AITEnvVarName)
-	return &Service{env, repository}
+	return &Service{env, repository, crm}
 }
 
 // SaveMarketingMessage saves the callback data for future analysis
@@ -247,9 +250,10 @@ func (s Service) SendMarketingSMS(
 
 	smsMsgDataRecipients := smsMsgData.Recipients
 	for _, recipient := range smsMsgDataRecipients {
+		phone := recipient.Number
 		data := dto.MarketingSMS{
 			ID:                   uuid.New().String(),
-			PhoneNumber:          recipient.Number,
+			PhoneNumber:          phone,
 			SenderID:             from,
 			MessageSentTimeStamp: time.Now(),
 			Message:              message,
@@ -261,8 +265,26 @@ func (s Service) SendMarketingSMS(
 			return nil, err
 		}
 
-		// todo we need to create an engagement for these people in the CRM
-		// todo we should do a check first
+		// todo make this async
+		engagement := domain.Engagement{
+			Active:    true,
+			Type:      "NOTE",
+			Timestamp: time.Now().UnixNano() / 1000000,
+		}
+		engagementData := domain.EngagementData{
+			Engagement: engagement,
+			Metadata: map[string]interface{}{
+				"body": message,
+			},
+		}
+		_, err := s.Crm.CreateEngagementByPhone(phone, engagementData)
+		if err != nil {
+			log.Print(err)
+		}
+
+		// Sleep for 5 seconds to reduce the rate at which we call HubSpot's APIs
+		// They have a rate limit of 100/10s
+		time.Sleep(5 * time.Second)
 	}
 
 	return resp, nil
