@@ -53,7 +53,7 @@ lint_and_test:
       - $CI_PROJECT_DIR/coverage_report.txt
   tags:
     - healthcloud-multi
-    
+
 deploy_develop_to_staging:
   image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   before_script:
@@ -172,7 +172,6 @@ deploy_develop_to_e2e:
     - /google-cloud-sdk/bin/gcloud run services add-iam-policy-binding --platform managed --region=europe-west1 --member=allUsers --role=roles/run.invoker engagement-e2e --quiet
   tags:
     - healthcloud-multi
-
 
 deploy_master_to_demo:
   before_script:

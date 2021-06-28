@@ -184,7 +184,7 @@ func NewPresentationHandlers(i *interactor.Interactor) PresentationHandlers {
 	return &PresentationHandlersImpl{i}
 }
 
-// GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
+// + receives push messages from Google Cloud Pub-Sub
 func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1837,20 +1837,23 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 			return
 		}
 
-		crmContactProperties := CRMDomain.ContactProperties{
-			BeWellAware: CRMDomain.GeneralOptionTypeYes,
-			Phone:       usercontacts.Results[0].Properties.Phone,
-			Email:       usercontacts.Results[0].Properties.Email,
+		if len(usercontacts.Results) >= 1 {
+			crmContactProperties := CRMDomain.ContactProperties{
+				BeWellAware: CRMDomain.GeneralOptionTypeYes,
+				Phone:       usercontacts.Results[0].Properties.Phone,
+				Email:       usercontacts.Results[0].Properties.Email,
+			}
+
+			if _, err := p.interactor.CRM.UpdateContact(usercontacts.Results[0].Properties.Phone, crmContactProperties); err != nil {
+				base.RespondWithError(
+					w,
+					http.StatusBadRequest,
+					fmt.Errorf("failed to update contact %v", err),
+				)
+				return
+			}
 		}
 
-		if _, err := p.interactor.CRM.UpdateContact(usercontacts.Results[0].Properties.Phone, crmContactProperties); err != nil {
-			base.RespondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("failed to update contatct %v", err),
-			)
-			return
-		}
 		base.WriteJSONResponse(w, dto.OKResp{Status: "SUCCESS"}, http.StatusOK)
 	}
 }
