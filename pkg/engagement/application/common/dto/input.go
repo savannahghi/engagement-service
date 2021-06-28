@@ -74,3 +74,9 @@ type ATDeliveryReport struct {
 	RetryCount              int       `json:"retryCount"`
 	DeliveryReportTimeStamp time.Time `json:"deliveryReportTimeStamp"`
 }
+
+// PrimaryEmailAddressPayload used when collecting HubSpot user email.
+type PrimaryEmailAddressPayload struct {
+	PhoneNumber  string `json:"phone"`
+	EmailAddress string `json:"email"`
+}

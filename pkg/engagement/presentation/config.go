@@ -200,7 +200,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/twilio_fallback").
 		Methods(http.MethodPost).
 		HandlerFunc(h.GetFallbackHandler(ctx))
-
+	r.Path("/collect_email_address").Methods(
+		http.MethodPost,
+	).HandlerFunc(h.CollectEmailAddress())
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
 	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")

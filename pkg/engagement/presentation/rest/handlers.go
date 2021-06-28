@@ -170,7 +170,7 @@ type PresentationHandlers interface {
 	GetContactLists() http.HandlerFunc
 	GetContactListByID() http.HandlerFunc
 	GetContactsInAList() http.HandlerFunc
-
+	CollectEmailAddress() http.HandlerFunc
 	SetBewellAware() http.HandlerFunc
 }
 
@@ -1852,5 +1852,66 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 			return
 		}
 		base.WriteJSONResponse(w, dto.OKResp{Status: "SUCCESS"}, http.StatusOK)
+	}
+}
+
+// CollectEmailAddress updates a user CRM contact with the supplied email
+// todo write automated tests for this (it has already been hand-tested to work)
+func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &dto.PrimaryEmailAddressPayload{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+		if payload.PhoneNumber == "" {
+			err := fmt.Errorf("expected `phone` to be defined")
+			base.WriteJSONResponse(w, base.CustomError{
+				Err:     err,
+				Message: err.Error(),
+			}, http.StatusBadRequest)
+			return
+		}
+		if payload.EmailAddress == "" {
+			err := fmt.Errorf("expected `email` to be defined")
+			base.WriteJSONResponse(w, base.CustomError{
+				Err:     err,
+				Message: err.Error(),
+			}, http.StatusBadRequest)
+			return
+		}
+
+		CRMContactProperties := CRMDomain.ContactProperties{
+			Email: payload.EmailAddress,
+		}
+
+		_, err := p.interactor.CRM.UpdateContact(payload.PhoneNumber, CRMContactProperties)
+		if err != nil {
+			base.RespondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		Subject := `
+		Download the Be.Well App on your Android or iOS device to access and view your health insurance benefits.
+
+		Play Store: https://play.google.com/store/apps/details?id=com.savannah.bewell
+		App Store: https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692"
+		`
+		Text := "Join the Be. Well community today"
+		sendEmail, _, err := p.interactor.Mail.SendEmail(
+			Subject,
+			Text,
+			payload.EmailAddress,
+		)
+		if err != nil {
+			err := fmt.Errorf("email not sent: %s", err)
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		marshalled, err := json.Marshal(sendEmail)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }
