@@ -32,6 +32,7 @@ import (
 
 	"net/http"
 
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -61,6 +62,8 @@ var allowedHeaders = []string{
 	"Accept-Encoding", "Origin", "Host", "User-Agent", "Content-Length",
 	"Content-Type",
 }
+
+var allowedMethods = "OPTIONS, GET, POST"
 
 // Router sets up the ginContext router
 func Router(ctx context.Context) (*mux.Router, error) {
@@ -458,6 +461,13 @@ func PrepareServer(
 	// start the server
 	addr := fmt.Sprintf(":%d", port)
 	h := handlers.CompressHandlerLevel(r, gzip.BestCompression)
+	c := cors.New(cors.Options{
+		AllowedMethods:   []string{allowedMethods},
+		AllowedOrigins:   allowedOrigins,
+		AllowedHeaders:   allowedHeaders,
+		AllowCredentials: true,
+	})
+
 	h = handlers.CORS(
 		handlers.AllowedHeaders(allowedHeaders),
 		handlers.AllowedOrigins(allowedOrigins),
@@ -471,13 +481,39 @@ func PrepareServer(
 		"application/x-www-form-urlencoded",
 	)
 	srv := &http.Server{
-		Handler:      h,
+		Handler:      AddCrossOrignsHandler(c.Handler(h)),
 		Addr:         addr,
 		WriteTimeout: serverTimeoutSeconds * time.Second,
 		ReadTimeout:  serverTimeoutSeconds * time.Second,
 	}
 	log.Infof("Server running at port %v", addr)
 	return srv
+}
+
+// AddCrossOrignsHandler add access-control-allow-origin to preflight resquests
+func AddCrossOrignsHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		headers := w.Header()
+		origin := r.Header.Get("Origin")
+		validOrigins := AllowedOrigins[3:]
+
+		if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+			headers.Set("Access-Control-Allow-Origin", origin)
+			headers.Set("Access-Control-Allow-Methods", allowedMethods)
+			headers.Set("Access-Control-Allow-Headers", "Accept, Accept-Charset, Accept-Language, Accept-Encoding, Origin, Host, User-Agent, Content-Length, Content-Type, X-Authorization, Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Access-Control-Allow-Headers")
+			headers.Set("Vary", "Accept-Encoding, Origin")
+			h.ServeHTTP(w, r)
+
+		} else if r.Method == http.MethodPost &&
+			(origin == validOrigins[0] || origin == validOrigins[1] || origin == validOrigins[2] || origin == validOrigins[3] || origin == validOrigins[4]) {
+			headers.Set("Access-Control-Allow-Origin", origin)
+			headers.Set("Vary", "Accept-Encoding, Origin")
+			h.ServeHTTP(w, r)
+
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	})
 }
 
 //HealthStatusCheck endpoint to check if the server is working.
