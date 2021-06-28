@@ -62,6 +62,7 @@ type MarketingSMS struct {
 	MessageSentTimeStamp time.Time         `json:"messageSentTimeStamp"`
 	Message              string            `json:"message"`
 	DeliveryReport       *ATDeliveryReport `json:"deliveryReport"`
+	Status               string            `json:"status"`
 }
 
 // ATDeliveryReport callback delivery reports

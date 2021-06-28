@@ -257,6 +257,7 @@ func (s Service) SendMarketingSMS(
 			SenderID:             from,
 			MessageSentTimeStamp: time.Now(),
 			Message:              message,
+			Status:               recipient.Status,
 		}
 		if err := s.SaveMarketingMessage(
 			context.Background(),

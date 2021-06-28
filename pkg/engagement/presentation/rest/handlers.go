@@ -1432,6 +1432,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 	ctx context.Context,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Print("Entry point to our AT callback implementation...\n\n\n")
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("unable to parse request data %v", err)
@@ -1441,6 +1442,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			return
 		}
 
+		log.Print("Parsing the form data and creating a delivery report ...")
 		networkCode := r.Form.Get("networkCode")
 		failureReason := r.Form.Get("failureReason")
 		phoneNumber := r.Form.Get("phoneNumber")
@@ -1460,6 +1462,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			DeliveryReportTimeStamp: time.Now(),
 		}
 
+		log.Print("Updating the message with the deilvery report recieved: %v \n\n\n", deliveryReport)
 		marketingSMS, err := p.interactor.SMS.UpdateMarketingMessage(
 			ctx,
 			phoneNumber,
@@ -1469,11 +1472,14 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
+
+		log.Print("The updated message that has been returned %v\n\n\n", marketingSMS)
 		marshalled, err := json.Marshal(marketingSMS)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
+		log.Print("The response returned %v \n\n\n", marshalled)
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }
