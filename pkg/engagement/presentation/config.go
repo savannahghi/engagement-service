@@ -52,6 +52,8 @@ const (
 var AllowedOrigins = []string{
 	"https://healthcloud.co.ke",
 	"https://bewell.healthcloud.co.ke",
+	"https://a.bewell.co.ke",
+	"https://b.bewell.co.ke",
 	"http://localhost:5000",
 }
 var allowedHeaders = []string{
