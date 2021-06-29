@@ -18,12 +18,11 @@ IOS_BUNDLE_ID = os.getenv("IOS_BUNDLE_ID")
 DOMAIN_URI_PREFIX = os.getenv("DOMAIN_URI_PREFIX")
 FIREBASE_DYNAMIC_LINK_URL = os.getenv("FIREBASE_DYNAMIC_LINK_URL")
 
-MESSAGE = (
-    "Hi {}, Some of your {} insurance benefits are unused. "
-    "Download Be.Well to view them. Click on {} to download. "
-    "To opt out dial *384*600#. Be.Well by Slade360"
-)
-SEGMENT_NAME = "sil_segment_wing_B_02"
+# todo change this message for the different segments
+MESSAGE = ""
+
+# todo change the segment name after first run
+SEGMENT_NAME = ""
 
 
 class SenderID(enum.Enum):
@@ -89,13 +88,6 @@ def send_sms(payload):
     return
 
 
-def get_segmented_contacts():
-    """
-    Get segmented contacts details from a data store.
-    """
-    return [1, 2, 3, 4, 5]
-
-
 def current_time():
     """Return the current time"""
     return datetime.now()
@@ -106,6 +98,24 @@ def convert_datetime_to_hours(date_time):
     return date_time / 3600
 
 
+def get_segmented_contacts(segment):
+    """
+    Get segmented contacts details from a data store.
+    """
+    headers = {"Content-Type": "application/json"}
+    url = BASE_URL + "marketing_data"
+    payload = {
+        "wing": segment,
+    }
+    response = requests.post(url=url, json=payload, headers=headers)
+    if response.status_code > 299:
+        raise Exception(
+            "unable to get marketing data with status code "
+            f"{response.status_code} and data {response.content}"
+        )
+    return response.json()
+
+
 def send_marketing_bulk_sms():
     """
     Send bulk SMS.
@@ -113,14 +123,13 @@ def send_marketing_bulk_sms():
     The call is made to our engagement service to send bulk SMS
     to our segments using either our BeWell or Slade360 sender
     """
-    contacts = get_segmented_contacts()
-
+    contacts = get_segmented_contacts(SEGMENT_NAME)
     phone_message_list = []
     for contact in contacts:
-        phone = "0703754685"
-        first_name = "Kenneth"
-        payer_name = "Resolution"
-        email = "mathenge@healthcloud.co.ke"
+        phone = contact["phone"]
+        first_name = contact["firstname"]
+        payer_name = contact["lastname"]
+        email = contact["email"]
 
         phone_message_dict = {
             "phone_number": phone,
