@@ -137,7 +137,7 @@ const ColLectCMREmailTemplate = `
               <p></p>
 
               <p style="margin: 0">
-                <span style="color: black;">Hi Vincent Michuki</span>, click the link below to download the Be.Well App
+                <span style="color: black;">Hi, click the link below to download the Be.Well App
                 on your <a href="https://play.google.com/store/apps/details?id=com.savannah.bewell">Android</a> or <a
                   href="https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692">iOS</a> device.
               </p>
