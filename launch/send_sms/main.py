@@ -4,6 +4,7 @@ import enum
 import json
 import logging
 import os
+import time
 from datetime import datetime
 
 import requests
@@ -63,6 +64,7 @@ def generate_shortened_dynamic_links(long_link):
         )
 
     result = resp.json()
+    time.sleep(2)
     return result["shortLink"]
 
 
@@ -116,7 +118,7 @@ def get_segmented_contacts(segment):
     return response.json()
 
 
-def send_marketing_bulk_sms():
+def send_marketing_bulk_sms(request):
     """
     Send bulk SMS.
 
@@ -124,6 +126,9 @@ def send_marketing_bulk_sms():
     to our segments using either our BeWell or Slade360 sender
     """
     contacts = get_segmented_contacts(SEGMENT_NAME)
+    if contacts is None:
+        raise Exception("No contacts found")
+
     phone_message_list = []
     for contact in contacts:
         phone = contact["phone"]
@@ -185,7 +190,7 @@ def send_marketing_bulk_sms():
 
 
 def main():
-    send_marketing_bulk_sms()
+    send_marketing_bulk_sms("")
 
 
 if __name__ == "__main__":
