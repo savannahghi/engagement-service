@@ -1648,6 +1648,10 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 		return err
 	}
 
+	if len(docs) == 0 {
+		return nil
+	}
+
 	var marketingData dto.Segment
 	err = docs[0].DataTo(&marketingData)
 	if err != nil {
@@ -1672,6 +1676,9 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
 		return err
+	}
+	if len(docs) == 0 {
+		return nil
 	}
 
 	var marketingData dto.Segment
