@@ -1390,6 +1390,7 @@ func (p PresentationHandlersImpl) SendMarketingSMS(
 				http.StatusBadRequest,
 				fmt.Errorf("expected atleast one phone number"),
 			)
+			return
 		}
 
 		if payload.Message == "" {
@@ -1502,6 +1503,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler(
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
+			return
 		}
 
 		// save Twilio response for audit purposes
@@ -1514,6 +1516,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler(
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
+			return
 		}
 		// TODO Common pathway for saving, returning OK etc
 
@@ -1541,6 +1544,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
+			return
 		}
 
 		// save Twilio response for audit purposes
@@ -1553,6 +1557,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
+			return
 		}
 		// TODO Common pathway for saving, returning OK etc
 
@@ -1620,15 +1625,16 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 			return
 		}
 
-		code, codeErr := s.GenerateAndSendOTP(msisdn)
-		if codeErr != nil {
+		code, err := s.GenerateAndSendOTP(msisdn)
+		if err != nil {
 			base.WriteJSONResponse(
 				w,
 				base.ErrorMap(
-					fmt.Errorf("unable to generate and send otp: %v", codeErr),
+					fmt.Errorf("unable to generate and send otp: %v", err),
 				),
 				http.StatusInternalServerError,
 			)
+			return
 		}
 
 		base.WriteJSONResponse(w, code, http.StatusOK)
@@ -1647,19 +1653,20 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler(
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		code, codeErr := s.GenerateRetryOTP(
+		code, err := s.GenerateRetryOTP(
 			ctx,
 			payload.Msisdn,
 			payload.RetryStep,
 		)
-		if codeErr != nil {
+		if err != nil {
 			err := base.ErrorMap(
 				fmt.Errorf(
 					"unable to generate and send a fallback OTP: %v",
-					codeErr,
+					err,
 				),
 			)
 			base.WriteJSONResponse(w, err, http.StatusInternalServerError)
+			return
 		}
 
 		base.WriteJSONResponse(w, code, http.StatusOK)
