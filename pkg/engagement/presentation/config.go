@@ -126,6 +126,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	twilio := twilio.NewService()
 	surveys := surveys.NewService(fr)
 	hubspot := hubspot.NewHubSpotService()
+	marketing := usecases.NewMarketing(fr)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
@@ -141,6 +142,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		fcm,
 		surveys,
 		hubspot,
+		marketing,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
@@ -177,6 +179,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 		http.MethodOptions,
 	).HandlerFunc(h.SendMarketingSMS(ctx))
+
+	// Get Marketing Data (Segments) from collections
+	r.Path("/marketing_data").Methods(
+		http.MethodGet,
+	).HandlerFunc(h.GetMarketingData(ctx))
 
 	// HubSpot CRM specific endpoints
 	r.Path("/contact_lists").Methods(

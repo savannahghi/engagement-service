@@ -2072,3 +2072,59 @@ func TestRepository_SaveNPSResponse(t *testing.T) {
 		})
 	}
 }
+
+func TestRepository_RetrieveMarketingData(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("can't initialize Firebase repository: %w", err)
+		return
+	}
+	if fr == nil {
+		t.Errorf("nil firebase repository")
+		return
+	}
+	payload := dto.MarketingMessagePayload{
+		Wing: "WING A",
+	}
+
+	payload2 := dto.MarketingMessagePayload{
+		Wing: "WING B",
+	}
+
+	type args struct {
+		ctx  context.Context
+		data *dto.MarketingMessagePayload
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Happy case - Fetch all data from wing A",
+			args: args{
+				ctx:  ctx,
+				data: &payload,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Happy case - Fetch all data from wing B",
+			args: args{
+				ctx:  ctx,
+				data: &payload2,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := fr.RetrieveMarketingData(tt.args.ctx, tt.args.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.RetrieveMarketingData() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}

@@ -172,6 +172,8 @@ type PresentationHandlers interface {
 	GetContactsInAList() http.HandlerFunc
 	CollectEmailAddress() http.HandlerFunc
 	SetBewellAware() http.HandlerFunc
+
+	GetMarketingData(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1921,6 +1923,42 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 			return
 		}
 
+		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+func (p PresentationHandlersImpl) GetMarketingData(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &dto.MarketingMessagePayload{}
+		base.DecodeJSONToTargetStruct(w, r, payload)
+
+		if payload.Wing == "" {
+			respondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("expected `wing` to be defined"),
+			)
+			return
+		}
+
+		resp, err := p.interactor.Marketing.GetMarketingData(
+			ctx,
+			payload,
+		)
+		if err != nil {
+			base.RespondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("failed to retrieve data %v", err),
+			)
+			return
+		}
+
+		marshalled, err := json.Marshal(resp)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }

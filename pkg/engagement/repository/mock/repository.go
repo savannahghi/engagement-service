@@ -250,6 +250,16 @@ type FakeEngagementRepository struct {
 		phoneNumber string,
 		deliveryReport *dto.ATDeliveryReport,
 	) (*dto.MarketingSMS, error)
+
+	RetrieveMarketingDataFn func(
+		ctx context.Context,
+		data *dto.MarketingMessagePayload,
+	) ([]*dto.Segment, error)
+
+	UpdateMessageSentStatusFn func(
+		ctx context.Context,
+		phonenumber string,
+	) error
 }
 
 // GetFeed ...
@@ -569,4 +579,20 @@ func (f *FakeEngagementRepository) UpdateMarketingMessage(
 	deliveryReport *dto.ATDeliveryReport,
 ) (*dto.MarketingSMS, error) {
 	return f.UpdateMarketingMessageFn(ctx, phoneNumber, deliveryReport)
+}
+
+// RetrieveMarketingData ..
+func (f *FakeEngagementRepository) RetrieveMarketingData(
+	ctx context.Context,
+	data *dto.MarketingMessagePayload,
+) ([]*dto.Segment, error) {
+	return f.RetrieveMarketingDataFn(ctx, data)
+}
+
+// UpdateMessageSentStatus ..
+func (f *FakeEngagementRepository) UpdateMessageSentStatus(
+	ctx context.Context,
+	phonenumber string,
+) error {
+	return f.UpdateMessageSentStatusFn(ctx, phonenumber)
 }

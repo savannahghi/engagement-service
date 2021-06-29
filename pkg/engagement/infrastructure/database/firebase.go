@@ -33,6 +33,7 @@ const (
 	messagesSubcollectionName    = "messages"
 	incomingEventsCollectionName = "incoming_events"
 	outgoingEventsCollectionName = "outgoing_events"
+	marketingDataCollectionName  = "marketing_data"
 	//AITMarketingMessageName is the name of a Cloud Firestore collection into which AIT
 	// callback data will be saved for future analysis
 	AITMarketingMessageName = "ait_marketing_sms"
@@ -785,6 +786,11 @@ func (fr Repository) getNPSResponseCollectionName() string {
 
 func (fr Repository) getTwilioCallbackCollectionName() string {
 	suffixed := base.SuffixCollection(twilioCallbackCollectionName)
+	return suffixed
+}
+
+func (fr Repository) getMarketingDataCollectionName() string {
+	suffixed := base.SuffixCollection(marketingDataCollectionName)
 	return suffixed
 }
 
@@ -1567,6 +1573,68 @@ func (fr Repository) SaveNPSResponse(
 	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, response)
 	if err != nil {
 		return fmt.Errorf("can't save nps response: %w", err)
+	}
+	return nil
+}
+
+// RetrieveMarketingData retrieves the segmented data from the database
+func (fr Repository) RetrieveMarketingData(
+	ctx context.Context,
+	data *dto.MarketingMessagePayload,
+) ([]*dto.Segment, error) {
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Where("message_sent", "==", "FALSE").Where("wing", "==", data.Wing)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(docs) == 0 {
+		return nil, nil
+	}
+
+	marketingData := []*dto.Segment{}
+	for _, doc := range docs {
+		var data dto.Segment
+		err := doc.DataTo(&data)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"error unmarshalling saved data: %w",
+				err,
+			)
+		}
+		marketingData = append(marketingData, &data)
+	}
+	return marketingData, nil
+}
+
+// UpdateMessageSentStatus updates the message sent status to true
+func (fr Repository) UpdateMessageSentStatus(
+	ctx context.Context,
+	phonenumber string,
+) error {
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Where("message_sent", "==", "FALSE").Where("phone", "==", phonenumber)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return err
+	}
+
+	var marketingData dto.Segment
+	err = docs[0].DataTo(&marketingData)
+	if err != nil {
+		return fmt.Errorf(
+			"unable to unmarshal marketing Data from doc snapshot: %w", err)
+	}
+
+	marketingData.Message_sent = "TRUE"
+
+	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Doc(docs[0].Ref.ID)
+	if _, err = doc.Set(ctx, marketingData); err != nil {
+		return err
 	}
 	return nil
 }

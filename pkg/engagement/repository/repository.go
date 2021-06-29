@@ -253,4 +253,14 @@ type Repository interface {
 		ctx context.Context,
 		response *dto.NPSResponse,
 	) error
+
+	RetrieveMarketingData(
+		ctx context.Context,
+		data *dto.MarketingMessagePayload,
+	) ([]*dto.Segment, error)
+
+	UpdateMessageSentStatus(
+		ctx context.Context,
+		phonenumber string,
+	) error
 }

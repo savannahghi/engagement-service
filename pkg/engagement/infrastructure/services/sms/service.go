@@ -107,6 +107,15 @@ func (s Service) SaveMarketingMessage(
 	return s.Repository.SaveMarketingMessage(ctx, data)
 }
 
+// UpdateMessageSentStatus updates the message sent field to true when a message
+// is sent to a user
+func (s Service) UpdateMessageSentStatus(
+	ctx context.Context,
+	phonenumber string,
+) error {
+	return s.Repository.UpdateMessageSentStatus(ctx, phonenumber)
+}
+
 // UpdateMarketingMessage adds a delivery reposrt to an AIT SMS
 func (s Service) UpdateMarketingMessage(
 	ctx context.Context,
@@ -262,6 +271,14 @@ func (s Service) SendMarketingSMS(
 		if err := s.SaveMarketingMessage(
 			context.Background(),
 			data,
+		); err != nil {
+			return nil, err
+		}
+
+		// Toggle message sent value to TRUE
+		if err := s.UpdateMessageSentStatus(
+			context.Background(),
+			data.PhoneNumber,
 		); err != nil {
 			return nil, err
 		}

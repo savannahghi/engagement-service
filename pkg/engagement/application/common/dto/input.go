@@ -81,3 +81,28 @@ type PrimaryEmailAddressPayload struct {
 	PhoneNumber  string `json:"phone"`
 	EmailAddress string `json:"email"`
 }
+
+// MarketingMessagePayload is used when retrieving the segmented data from the database
+type MarketingMessagePayload struct {
+	Wing string `json:"wing" firestore:"wing"`
+}
+
+// Segment represents the Segments data
+type Segment struct {
+	Be_well_enrolled         string `json:"be_well_enrolled" firestore:"be_well_enrolled"`
+	Opt_out                  string `json:"opt_out" firestore:"opt_out"`
+	Be_well_aware            string `json:"be_well_aware" firestore:"be_well_aware"`
+	Be_well_persona          string `json:"be_well_persona" firestore:"be_well_persona"`
+	Has_wellness_card        string `json:"has_wellness_card" firestore:"has_wellness_card"`
+	Has_cover                string `json:"has_cover" firestore:"has_cover"`
+	Payor                    string `json:"payor" firestore:"payor"`
+	First_channel_of_contact string `json:"first_channel_of_contact" firestore:"first_channel_of_contact"`
+	Initial_segment          string `json:"initial_segment" firestore:"initial_segment"`
+	Has_virtual_card         string `json:"has_virtual_card" firestore:"has_virtual_card"`
+	Email                    string `json:"email" firestore:"email"`
+	Phone_number             string `json:"phone" firestore:"phone"`
+	Firstname                string `json:"firstname" firestore:"firstname"`
+	Lastname                 string `json:"lastname" firestore:"lastname"`
+	Wing                     string `json:"wing" firestore:"wing"`
+	Message_sent             string `json:"message_sent" firestore:"message_sent"`
+}
