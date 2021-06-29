@@ -1082,15 +1082,15 @@ func getProWelcomeThread(
 func getFeedWelcomeVideos() []base.Link {
 	return []base.Link{
 		base.GetYoutubeVideoLink(
-			"https://youtu.be/-iSB8yrSIps",
-			"Slade 360",
-			"How to add your health insurance cover to your Be.Well app.",
-			common.StaticBase+"/items/videos/thumbs/01_lead.png",
-		),
-		base.GetYoutubeVideoLink(
 			"https://youtu.be/-mlr9rjRXmc",
 			"Slade 360",
 			" View your health insurance cover benefits on your Be.Well app.",
+			common.StaticBase+"/items/videos/thumbs/01_lead.png",
+		),
+		base.GetYoutubeVideoLink(
+			"https://youtu.be/-iSB8yrSIps",
+			"Slade 360",
+			"How to add your health insurance cover to your Be.Well app.",
 			common.StaticBase+"/items/videos/thumbs/01_lead.png",
 		),
 	}
@@ -1100,7 +1100,6 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 	libraryService := library.NewLibraryService()
 	items := []base.Item{}
 	feedPosts, err := libraryService.GetFeedContent(ctx)
-	// get videos
 	if err != nil {
 		//  non-fatal, intentionally
 		log.Printf("ERROR: unable to fetch welcome feed posts from CMS: %s", err)
@@ -1114,13 +1113,13 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 		text := ""
 		sequenceNumber := int(time.Now().Unix())
 
-		if videoLink.URL == "https://youtu.be/-iSB8yrSIps" {
-			tagline = "How to add your cover"
+		if videoLink.URL == "https://youtu.be/-mlr9rjRXmc" {
+			tagline = "See what you can do on your Be.Well app"
 			summary = defaultInsuranceText
 			text = "How to add your health insurance cover to your Be.Well app."
 		}
-		if videoLink.URL == "https://youtu.be/-mlr9rjRXmc" {
-			tagline = "How to view your cover"
+		if videoLink.URL == "https://youtu.be/-iSB8yrSIps" {
+			tagline = "Learn how to add your cover in 3 easy steps"
 			summary = defaultInsuranceText
 			text = "View your health insurance cover benefits on your Be.Well app."
 			sequenceNumber = int(time.Now().Unix()) + 1
@@ -1165,6 +1164,37 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 		}
 		items = append(items, feedItemFromCMSPost(*post))
 	}
+
+	// add the slade 360 video last
+	items = append(items, base.Item{
+		ID:             ksuid.New().String(),
+		SequenceNumber: int(time.Now().Unix()),
+		Expiry:         future,
+		Persistent:     false,
+		Status:         base.StatusPending,
+		Visibility:     base.VisibilityShow,
+		Icon:           base.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+		Author:         defaultAuthor,
+		Tagline:        "Learn what is Be.Well and how you can benefit from using it",
+		Label:          common.DefaultLabel,
+		Summary:        "Be.Well is a virtual and physical healthcare community.",
+		Timestamp:      time.Now(),
+		Text:           "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person.",
+		TextType:       base.TextTypeHTML,
+		Links: []base.Link{
+			base.GetYoutubeVideoLink(
+				"https://youtu.be/mKnlXcS3_Z0",
+				"Slade 360",
+				"Slade 360. HealthCare. Simplified.",
+				common.StaticBase+"/items/videos/thumbs/04_slade.png",
+			),
+		},
+		Actions:              []base.Action{},
+		Conversations:        []base.Message{},
+		Users:                []string{},
+		Groups:               []string{},
+		NotificationChannels: []base.Channel{},
+	})
 
 	return items
 }
