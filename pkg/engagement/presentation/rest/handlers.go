@@ -1880,8 +1880,8 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 			return
 		}
 		name := "Hello"
-		subject := GenerateCollectEmailFunc(name)
-		Text := "Join the Be. Well community today"
+		Text := GenerateCollectEmailFunc(name)
+		subject := "Join the Be. Well community today"
 		sendEmail, _, err := p.interactor.Mail.SendEmail(
 			subject,
 			Text,
