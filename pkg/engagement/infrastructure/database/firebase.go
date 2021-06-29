@@ -1638,3 +1638,55 @@ func (fr Repository) UpdateMessageSentStatus(
 	}
 	return nil
 }
+
+// UpdateUserCRMData updates user CRM contact properties with the supplied data
+func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("phone", "==", phoneNumber)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return err
+	}
+
+	var marketingData dto.Segment
+	err = docs[0].DataTo(&marketingData)
+	if err != nil {
+		return fmt.Errorf(
+			"unable to unmarshal marketing Data from doc snapshot: %w", err)
+	}
+
+	marketingData.Email = payload.Properties.Email
+
+	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Doc(docs[0].Ref.ID)
+	if _, err = doc.Set(ctx, marketingData); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateUserCRMBewellAware updates user CMR data with provided email= as bewell-aware on the CRM
+func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("email", "==", email)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return err
+	}
+
+	var marketingData dto.Segment
+	err = docs[0].DataTo(&marketingData)
+	if err != nil {
+		return fmt.Errorf(
+			"unable to unmarshal marketing Data from doc snapshot: %w", err)
+	}
+
+	marketingData.Be_well_aware = payload.Properties.BeWellAware.String()
+
+	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Doc(docs[0].Ref.ID)
+	if _, err = doc.Set(ctx, marketingData); err != nil {
+		return err
+	}
+	return nil
+}

@@ -263,4 +263,7 @@ type Repository interface {
 		ctx context.Context,
 		phonenumber string,
 	) error
+
+	UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
+	UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
 }

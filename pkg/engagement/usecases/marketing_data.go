@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
 type MarketingDataUseCases interface {
 	GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*dto.Segment, error)
+	UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error
+	BeWellAware(ctx context.Context, email string) error
 }
 
 // MarketingDataImpl represents the marketing usecase implementation
@@ -33,4 +36,34 @@ func (m MarketingDataImpl) GetMarketingData(ctx context.Context, data *dto.Marke
 	}
 
 	return segmentData, nil
+}
+
+// UpdateUserCRMEmail updates a user CRM contact with the supplied email
+func (m MarketingDataImpl) UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error {
+	CRMContactProperties := CRMDomain.ContactProperties{
+		Email: email,
+	}
+
+	if err := m.repository.UpdateUserCRMEmail(ctx, phonenumber, &dto.UpdateContactPSMessage{
+		Properties: CRMContactProperties,
+		Phone:      phonenumber,
+	}); err != nil {
+		fmt.Errorf("failed to create CRM staging payload")
+	}
+	return nil
+
+}
+
+//BeWellAware toggles the user identified by the provided email= as bewell-aware on the CRM
+func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error {
+	CRMContactProperties := CRMDomain.ContactProperties{
+		BeWellAware: CRMDomain.GeneralOptionTypeYes,
+	}
+
+	if err := m.repository.UpdateUserCRMBewellAware(ctx, email, &dto.UpdateContactPSMessage{
+		Properties: CRMContactProperties,
+	}); err != nil {
+		fmt.Errorf("failed to create CRM staging payload")
+	}
+	return nil
 }

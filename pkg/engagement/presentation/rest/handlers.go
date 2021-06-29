@@ -20,7 +20,6 @@ import (
 
 	"gitlab.slade360emr.com/go/base"
 
-	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
@@ -170,8 +169,8 @@ type PresentationHandlers interface {
 	GetContactLists() http.HandlerFunc
 	GetContactListByID() http.HandlerFunc
 	GetContactsInAList() http.HandlerFunc
-	CollectEmailAddress() http.HandlerFunc
-	SetBewellAware() http.HandlerFunc
+	CollectEmailAddress(ctx context.Context) http.HandlerFunc
+	SetBewellAware(cxt context.Context) http.HandlerFunc
 
 	GetMarketingData(ctx context.Context) http.HandlerFunc
 }
@@ -1817,58 +1816,34 @@ func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
 
 //SetBewellAware the user identified by the provided email= as bewell-aware on the CRM
 // todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
+func (p PresentationHandlersImpl) SetBewellAware(cxt context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.SetBewellAwareInput{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
 
-		filters := CRMDomain.Filters{
-			Value:        payload.EmailAddress,
-			PropertyName: "email",
-			Operator:     "EQ",
-		}
-		filtergroup := CRMDomain.FilterGroups{
-			Filters: []CRMDomain.Filters{filters},
-		}
-		searchParams := CRMDomain.SearchParams{
-			FilterGroups: []CRMDomain.FilterGroups{filtergroup},
-			Properties:   []string{"email", "phone", "firstname", "lastname"},
-		}
-
-		usercontacts, err := p.interactor.CRM.SearchContact(searchParams)
+		err := p.interactor.Marketing.BeWellAware(
+			cxt,
+			payload.EmailAddress,
+		)
 		if err != nil {
-			base.RespondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("failed to search contact %v", err),
-			)
+			base.RespondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		resp := map[string]string{"status": "success"}
+		marshalled, err := json.Marshal(resp)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		if len(usercontacts.Results) >= 1 {
-			crmContactProperties := CRMDomain.ContactProperties{
-				BeWellAware: CRMDomain.GeneralOptionTypeYes,
-				Phone:       usercontacts.Results[0].Properties.Phone,
-				Email:       usercontacts.Results[0].Properties.Email,
-			}
-
-			if _, err := p.interactor.CRM.UpdateContact(usercontacts.Results[0].Properties.Phone, crmContactProperties); err != nil {
-				base.RespondWithError(
-					w,
-					http.StatusBadRequest,
-					fmt.Errorf("failed to update contact %v", err),
-				)
-				return
-			}
-		}
-
-		base.WriteJSONResponse(w, dto.OKResp{Status: "SUCCESS"}, http.StatusOK)
+		respondWithJSON(w, http.StatusOK, marshalled)
 	}
+
 }
 
 // CollectEmailAddress updates a user CRM contact with the supplied email
 // todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
+func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.PrimaryEmailAddressPayload{}
 		base.DecodeJSONToTargetStruct(w, r, payload)
@@ -1888,12 +1863,11 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 			}, http.StatusBadRequest)
 			return
 		}
-
-		CRMContactProperties := CRMDomain.ContactProperties{
-			Email: payload.EmailAddress,
-		}
-
-		_, err := p.interactor.CRM.UpdateContact(payload.PhoneNumber, CRMContactProperties)
+		err := p.interactor.Marketing.UpdateUserCRMEmail(
+			ctx,
+			payload.EmailAddress,
+			payload.PhoneNumber,
+		)
 		if err != nil {
 			base.RespondWithError(w, http.StatusBadRequest, err)
 			return

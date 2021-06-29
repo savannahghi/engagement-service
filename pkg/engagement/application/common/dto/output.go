@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
-	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // NotificationEnvelope is used to "wrap" elements with context and metadata
@@ -254,10 +253,4 @@ func NewOKResp(rawResponse interface{}) *OKResp {
 		Status:   "OK",
 		Response: rawResponse,
 	}
-}
-
-// UpdateContactPSMessage represents CRM update contact Pub/Sub message
-type UpdateContactPSMessage struct {
-	Properties CRMDomain.ContactProperties `json:"properties"`
-	Email      string                      `json:"email"`
 }

@@ -163,7 +163,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
+	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware(ctx))
 
 	r.Path(base.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
@@ -209,7 +209,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		HandlerFunc(h.GetFallbackHandler(ctx))
 	r.Path("/collect_email_address").Methods(
 		http.MethodPost,
-	).HandlerFunc(h.CollectEmailAddress())
+	).HandlerFunc(h.CollectEmailAddress(ctx))
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
 	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")

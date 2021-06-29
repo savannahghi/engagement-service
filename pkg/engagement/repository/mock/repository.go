@@ -260,6 +260,9 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		phonenumber string,
 	) error
+
+	UpdateUserCRMEmailFn       func(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
+	UpdateUserCRMBewellAwareFn func(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
 }
 
 // GetFeed ...
@@ -595,4 +598,14 @@ func (f *FakeEngagementRepository) UpdateMessageSentStatus(
 	phonenumber string,
 ) error {
 	return f.UpdateMessageSentStatusFn(ctx, phonenumber)
+}
+
+// UpdateUserCRMEmail ..
+func (f *FakeEngagementRepository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
+	return f.UpdateUserCRMEmailFn(ctx, phoneNumber, payload)
+}
+
+// UpdateUserCRMBewellAware ..
+func (f *FakeEngagementRepository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
+	return f.UpdateUserCRMBewellAwareFn(ctx, email, payload)
 }

@@ -52,7 +52,7 @@ type ListID struct {
 
 // SetBewellAwareInput payload to set bewell aware
 type SetBewellAwareInput struct {
-	EmailAddress string `json:"emailAddress"`
+	EmailAddress string `json:"email"`
 }
 
 // MarketingSMS represents marketing SMS data
@@ -108,6 +108,14 @@ type Segment struct {
 	Lastname                 string `json:"lastname" firestore:"lastname"`
 	Wing                     string `json:"wing" firestore:"wing"`
 	Message_sent             string `json:"message_sent" firestore:"message_sent"`
+	Is_synced                string `json:"is_synced" firestore:"is_synced"`
+	Time_synced              string `json:"time_synced" firestore:"time_synced"`
+}
+
+// UpdateContactPSMessage represents CRM update contact Pub/Sub message
+type UpdateContactPSMessage struct {
+	Properties domain.ContactProperties `json:"properties"`
+	Phone      string                   `json:"phone"`
 }
 
 // UIDPayload is the user ID used in some inter-service requests
