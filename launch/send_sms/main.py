@@ -24,7 +24,7 @@ MESSAGE = ""
 
 # todo change the segment name after first run
 SEGMENT_NAME = ""
-
+WING_NAME = ""
 
 class SenderID(enum.Enum):
     """SenderID enum values."""
@@ -100,14 +100,15 @@ def convert_datetime_to_hours(date_time):
     return date_time / 3600
 
 
-def get_segmented_contacts(segment):
+def get_segmented_contacts(wing,segment):
     """
     Get segmented contacts details from a data store.
     """
     headers = {"Content-Type": "application/json"}
     url = BASE_URL + "marketing_data"
     payload = {
-        "wing": segment,
+        "wing": wing,
+        "initialSegment": segment,
     }
     response = requests.post(url=url, json=payload, headers=headers)
     if response.status_code > 299:
@@ -125,7 +126,7 @@ def send_marketing_bulk_sms(request):
     The call is made to our engagement service to send bulk SMS
     to our segments using either our BeWell or Slade360 sender
     """
-    contacts = get_segmented_contacts(SEGMENT_NAME)
+    contacts = get_segmented_contacts(WING_NAME,SEGMENT_NAME)
     if contacts is None:
         raise Exception("No contacts found")
 

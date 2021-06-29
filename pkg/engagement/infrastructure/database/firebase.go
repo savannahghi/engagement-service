@@ -1594,7 +1594,8 @@ func (fr Repository) RetrieveMarketingData(
 	data *dto.MarketingMessagePayload,
 ) ([]*dto.Segment, error) {
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("message_sent", "==", "FALSE").Where("wing", "==", data.Wing)
+		Where("message_sent", "==", "FALSE").Where("wing", "==", data.Wing).
+		Where("initial_segment", "==", data.InitialSegment)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1640,7 +1641,7 @@ func (fr Repository) UpdateMessageSentStatus(
 			"unable to unmarshal marketing Data from doc snapshot: %w", err)
 	}
 
-	marketingData.Message_sent = "TRUE"
+	marketingData.MessageSent = "TRUE"
 
 	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Doc(docs[0].Ref.ID)
@@ -1699,7 +1700,7 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 			"unable to unmarshal marketing Data from doc snapshot: %w", err)
 	}
 
-	marketingData.Be_well_aware = payload.Properties.BeWellAware.String()
+	marketingData.BeWellAware = payload.Properties.BeWellAware.String()
 
 	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Doc(docs[0].Ref.ID)

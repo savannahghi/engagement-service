@@ -2085,11 +2085,13 @@ func TestRepository_RetrieveMarketingData(t *testing.T) {
 		return
 	}
 	payload := dto.MarketingMessagePayload{
-		Wing: "WING A",
+		Wing:           "WING A",
+		InitialSegment: "SIL Segment",
 	}
 
 	payload2 := dto.MarketingMessagePayload{
-		Wing: "WING B",
+		Wing:           "WING B",
+		InitialSegment: "SIL Segment",
 	}
 
 	type args struct {

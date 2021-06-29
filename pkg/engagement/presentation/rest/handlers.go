@@ -1918,6 +1918,15 @@ func (p PresentationHandlersImpl) GetMarketingData(ctx context.Context) http.Han
 			return
 		}
 
+		if payload.InitialSegment == "" {
+			respondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("expected `initial segment` to be defined"),
+			)
+			return
+		}
+
 		resp, err := p.interactor.Marketing.GetMarketingData(
 			ctx,
 			payload,
