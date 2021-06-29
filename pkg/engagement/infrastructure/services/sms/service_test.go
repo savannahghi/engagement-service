@@ -179,6 +179,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 	crm := hubspot.NewHubSpotService()
 	s := sms.NewService(fr, crm)
 	type args struct {
+		ctx     context.Context
 		to      []string
 		message string
 		from    base.SenderID
@@ -191,6 +192,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 		{
 			name: "Happily send a marketing SMS :)",
 			args: args{
+				ctx:     context.Background(),
 				to:      []string{gofakeit.Phone()},
 				message: gofakeit.HipsterSentence(10),
 				from:    base.SenderIDBewell,
@@ -199,7 +201,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			smsResp, err := s.SendMarketingSMS(tt.args.to, tt.args.message, tt.args.from)
+			smsResp, err := s.SendMarketingSMS(tt.args.ctx, tt.args.to, tt.args.message, tt.args.from)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.SendMarketingSMS() error = %v, wantErr %v", err, tt.wantErr)
 				return

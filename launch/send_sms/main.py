@@ -133,7 +133,7 @@ def send_marketing_bulk_sms(request):
     for contact in contacts:
         phone = contact["phone"]
         first_name = contact["firstname"]
-        payer_name = contact["lastname"]
+        payer_name = contact["payor"]
         email = contact["email"]
 
         phone_message_dict = {

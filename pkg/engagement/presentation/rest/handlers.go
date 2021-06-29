@@ -1403,6 +1403,7 @@ func (p PresentationHandlersImpl) SendMarketingSMS(
 		}
 
 		resp, err := p.interactor.SMS.SendMarketingSMS(
+			ctx,
 			payload.To,
 			payload.Message,
 			payload.Sender,

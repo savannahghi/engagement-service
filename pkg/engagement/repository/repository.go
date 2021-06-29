@@ -266,4 +266,6 @@ type Repository interface {
 
 	UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
 	UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
+
+	IsOptedOuted(ctx context.Context, phoneNumber string) (bool, error)
 }

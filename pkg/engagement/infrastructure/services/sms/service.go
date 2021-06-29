@@ -50,6 +50,7 @@ type ServiceSMS interface {
 		from base.SenderID,
 	) (*dto.SendMessageResponse, error)
 	SendMarketingSMS(
+		ctx context.Context,
 		to []string,
 		message string,
 		from base.SenderID,
@@ -242,11 +243,27 @@ func (s Service) newPostRequest(
 // SendMarketingSMS is a method to send marketing bulk SMS for Be.Well launch/campaigns.
 // It interacts with our DB to save the message and update our CRM with engagements
 func (s Service) SendMarketingSMS(
+	ctx context.Context,
 	to []string,
 	message string,
 	from base.SenderID,
 ) (*dto.SendMessageResponse, error) {
-	recipients := strings.Join(to, ",")
+	// todo should we have one collection as the source of truth
+	var whitelistedNumbers []string
+	for _, number := range to {
+		optedOut, err := s.Repository.IsOptedOuted(ctx, number)
+		if err != nil {
+			return nil, err
+		}
+		if !optedOut {
+			whitelistedNumbers = append(whitelistedNumbers, number)
+		}
+	}
+	if len(whitelistedNumbers) == 0 {
+		return nil, nil
+	}
+
+	recipients := strings.Join(whitelistedNumbers, ",")
 	resp, err := s.Send(recipients, message, from)
 	if err != nil {
 		return nil, err
@@ -282,7 +299,7 @@ func (s Service) SendMarketingSMS(
 			Engagement:           engagementData,
 		}
 
-		// todo make this async
+		// todo make this async @mathenge
 		resp, err := s.Crm.CreateEngagementByPhone(phone, engagementData)
 		if err != nil {
 			log.Print(err)
@@ -293,19 +310,21 @@ func (s Service) SendMarketingSMS(
 		}
 
 		if err := s.SaveMarketingMessage(
-			context.Background(),
+			ctx,
 			data,
 		); err != nil {
 			return nil, err
 		}
 
 		// Toggle message sent value to TRUE
-		if err := s.UpdateMessageSentStatus(
-			context.Background(),
-			data.PhoneNumber,
-		); err != nil {
-			return nil, err
-		}
+		// todo this returns a nil pointer investigate and fix
+		// todo why is it TRUE instead of true
+		// if err := s.UpdateMessageSentStatus(
+		// 	context.Background(),
+		// 	data.PhoneNumber,
+		// ); err != nil {
+		// 	return nil, err
+		// }
 
 		// Sleep for 5 seconds to reduce the rate at which we call HubSpot's APIs
 		// They have a rate limit of 100/10s
