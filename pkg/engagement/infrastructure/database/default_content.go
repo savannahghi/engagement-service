@@ -1115,12 +1115,12 @@ func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
 
 		if videoLink.URL == "https://youtu.be/-mlr9rjRXmc" {
 			tagline = "See what you can do on your Be.Well app"
-			summary = defaultInsuranceText
+			summary = "See what you can do on your Be.Well app"
 			text = "How to add your health insurance cover to your Be.Well app."
 		}
 		if videoLink.URL == "https://youtu.be/-iSB8yrSIps" {
 			tagline = "Learn how to add your cover in 3 easy steps"
-			summary = defaultInsuranceText
+			summary = "Learn how to add your cover in 3 easy steps"
 			text = "View your health insurance cover benefits on your Be.Well app."
 			sequenceNumber = int(time.Now().Unix()) + 1
 		}
