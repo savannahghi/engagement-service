@@ -1898,16 +1898,11 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 			base.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-
-		Subject := `
-		Download the Be.Well App on your Android or iOS device to access and view your health insurance benefits.
-
-		Play Store: https://play.google.com/store/apps/details?id=com.savannah.bewell
-		App Store: https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692"
-		`
+		name := "Hello"
+		subject := GenerateCollectEmailFunc(name)
 		Text := "Join the Be. Well community today"
 		sendEmail, _, err := p.interactor.Mail.SendEmail(
-			Subject,
+			subject,
 			Text,
 			payload.EmailAddress,
 		)
