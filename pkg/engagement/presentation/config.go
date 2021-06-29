@@ -62,8 +62,6 @@ var allowedHeaders = []string{
 	"Content-Type", " X-Authorization", " Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers",
 }
 
-var allowedMethods = "OPTIONS, GET, POST"
-
 // Router sets up the ginContext router
 func Router(ctx context.Context) (*mux.Router, error) {
 	fc := &base.FirebaseClient{}
@@ -182,7 +180,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Get Marketing Data (Segments) from collections
 	r.Path("/marketing_data").Methods(
-		http.MethodGet,
+		http.MethodPost,
 	).HandlerFunc(h.GetMarketingData(ctx))
 
 	// HubSpot CRM specific endpoints

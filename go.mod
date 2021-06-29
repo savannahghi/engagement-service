@@ -31,7 +31,6 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
-	github.com/rs/cors v1.6.0
 	github.com/rs/xid v1.3.0
 	github.com/segmentio/ksuid v1.0.3
 	github.com/sirupsen/logrus v1.8.1

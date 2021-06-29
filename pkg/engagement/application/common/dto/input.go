@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // SendSMSPayload is used to serialise an SMS sent through the AIT service REST API
@@ -56,13 +57,15 @@ type SetBewellAwareInput struct {
 
 // MarketingSMS represents marketing SMS data
 type MarketingSMS struct {
-	ID                   string            `json:"id"`
-	PhoneNumber          string            `json:"phoneNumber"`
-	SenderID             base.SenderID     `json:"senderId"`
-	MessageSentTimeStamp time.Time         `json:"messageSentTimeStamp"`
-	Message              string            `json:"message"`
-	DeliveryReport       *ATDeliveryReport `json:"deliveryReport"`
-	Status               string            `json:"status"`
+	ID                   string                `json:"id"`
+	PhoneNumber          string                `json:"phoneNumber"`
+	SenderID             base.SenderID         `json:"senderId"`
+	MessageSentTimeStamp time.Time             `json:"messageSentTimeStamp"`
+	Message              string                `json:"message"`
+	DeliveryReport       *ATDeliveryReport     `json:"deliveryReport"`
+	Status               string                `json:"status"`
+	Engagement           domain.EngagementData `json:"engagement"`
+	IsSynced             bool                  `json:"isSynced"`
 }
 
 // ATDeliveryReport callback delivery reports

@@ -257,6 +257,18 @@ func (s Service) SendMarketingSMS(
 		return nil, nil
 	}
 
+	engagement := domain.Engagement{
+		Active:    true,
+		Type:      "NOTE",
+		Timestamp: time.Now().UnixNano() / 1000000,
+	}
+	engagementData := domain.EngagementData{
+		Engagement: engagement,
+		Metadata: map[string]interface{}{
+			"body": message,
+		},
+	}
+
 	smsMsgDataRecipients := smsMsgData.Recipients
 	for _, recipient := range smsMsgDataRecipients {
 		phone := recipient.Number
@@ -267,7 +279,19 @@ func (s Service) SendMarketingSMS(
 			MessageSentTimeStamp: time.Now(),
 			Message:              message,
 			Status:               recipient.Status,
+			Engagement:           engagementData,
 		}
+
+		// todo make this async
+		resp, err := s.Crm.CreateEngagementByPhone(phone, engagementData)
+		if err != nil {
+			log.Print(err)
+		}
+
+		if resp != nil {
+			data.IsSynced = true
+		}
+
 		if err := s.SaveMarketingMessage(
 			context.Background(),
 			data,
@@ -281,23 +305,6 @@ func (s Service) SendMarketingSMS(
 			data.PhoneNumber,
 		); err != nil {
 			return nil, err
-		}
-
-		// todo make this async
-		engagement := domain.Engagement{
-			Active:    true,
-			Type:      "NOTE",
-			Timestamp: time.Now().UnixNano() / 1000000,
-		}
-		engagementData := domain.EngagementData{
-			Engagement: engagement,
-			Metadata: map[string]interface{}{
-				"body": message,
-			},
-		}
-		_, err := s.Crm.CreateEngagementByPhone(phone, engagementData)
-		if err != nil {
-			log.Print(err)
 		}
 
 		// Sleep for 5 seconds to reduce the rate at which we call HubSpot's APIs

@@ -4,3 +4,6 @@
 docs/build/
 
 Makefile
+dataset/
+venv
+__pycache__/
