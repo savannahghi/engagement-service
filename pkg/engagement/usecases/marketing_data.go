@@ -144,8 +144,97 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			return fmt.Errorf("%v", err)
 		}
 
-		// TODO(push to CRM)
+		res, err := m.hubspot.SearchContactByPhone(line[11])
+		if err != nil {
+			_ = m.repository.RollBackMarketingData(ctx, data)
+			return fmt.Errorf("%v", err)
+		}
 
+		// contact already exists. Nothing to do here
+		if len(res.Results) >= 1 {
+			return nil
+		}
+
+		convertor := func(d string) CRMDomain.GeneralOptionType {
+			if d == "YES" {
+				return CRMDomain.GeneralOptionTypeYes
+			}
+			return CRMDomain.GeneralOptionTypeNo
+		}
+
+		convertorPersona := func(d string) CRMDomain.Persona {
+			if d == "ALICE" {
+				return CRMDomain.PersonaAlice
+			}
+
+			if d == "JUMA" {
+				return CRMDomain.PersonaJuma
+			}
+
+			if d == "BOB" {
+				return CRMDomain.PersonaBob
+			}
+
+			if d == "ANDREW" {
+				return CRMDomain.PersonaAndrew
+			}
+			return CRMDomain.PersonaSlader
+		}
+
+		convertorPayor := func(d string) CRMDomain.Payor {
+			if d == "RESOLUTION" || d == "RESOLUTION INSURANCE" {
+				return CRMDomain.PayorResolution
+			}
+
+			if d == "APA" || d == "APA INSURANCE" {
+				return CRMDomain.PayorApa
+			}
+
+			if d == "JUBILEE" || d == "JUBILEE INSURANCE" {
+				return CRMDomain.PayorJubilee
+			}
+
+			if d == "BRITAM" || d == "BRITAM INSURANCE" {
+				return CRMDomain.PayorBritam
+			}
+
+			if d == "MADISON" || d == "MADISON INSURANCE" {
+				return CRMDomain.PayorMadison
+			}
+
+			return CRMDomain.PayorJubilee
+		}
+
+		convertorChannel := func(d string) CRMDomain.ChannelOfContact {
+			if d == "APP" {
+				return CRMDomain.ChannelOfContactApp
+			}
+			if d == "USSD" {
+				return CRMDomain.ChannelOfContactUssd
+			}
+			return CRMDomain.ChannelOfContactShortcode
+		}
+
+		if _, err := m.hubspot.CreateContact(CRMDomain.CRMContact{
+			Properties: CRMDomain.ContactProperties{
+				BeWellEnrolled:        convertor(line[0]),
+				OptOut:                convertor(line[1]),
+				BeWellAware:           convertor(line[2]),
+				BeWellPersona:         convertorPersona(line[3]),
+				HasSladeID:            convertor(line[4]),
+				HasCover:              convertor(line[5]),
+				Payor:                 convertorPayor(line[6]),
+				FirstChannelOfContact: convertorChannel(line[7]),
+				HasVirtualCard:        convertor(line[9]),
+				Email:                 line[10],
+				Phone:                 line[11],
+				FirstName:             line[12],
+				LastName:              line[13],
+			},
+		}); err != nil {
+			_ = m.repository.RollBackMarketingData(ctx, data)
+			return fmt.Errorf("failed to create contact on CRM %v", err)
+		}
 	}
 
 	return nil
