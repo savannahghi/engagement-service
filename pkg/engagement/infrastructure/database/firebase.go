@@ -1488,6 +1488,7 @@ func (fr Repository) UpdateMarketingMessage(
 		return nil, err
 	}
 	if len(docs) == 0 {
+		log.Printf("marketing sms for phone number %s not found", phoneNumber)
 		return nil, nil
 	}
 

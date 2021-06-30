@@ -28,6 +28,8 @@ def custom_hubspot_properties():
         "phone_number",
         "firstname",
         "lastname",
+        "wing",
+        "message_sent",
     ]
 
 
@@ -112,6 +114,8 @@ def write_wing_data_to_csv(segment_name, path_to_csv):
         writer = csv.DictWriter(wing_A_csv, fieldnames=fieldnames)
         writer.writeheader()
         for dataset in wing_1_data:
+            dataset["wing"] = "WING A"
+            dataset["message_sent"] = "FALSE"
             writer.writerow(dataset)
 
     with open(f"{segment_name}_wing_B.csv", mode="w") as wing_B_csv:
@@ -119,6 +123,8 @@ def write_wing_data_to_csv(segment_name, path_to_csv):
         writer = csv.DictWriter(wing_B_csv, fieldnames=fieldnames)
         writer.writeheader()
         for dataset in wing_2_data:
+            dataset["wing"] = "WING B"
+            dataset["message_sent"] = "FALSE"
             writer.writerow(dataset)
 
 

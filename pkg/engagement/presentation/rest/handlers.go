@@ -1475,18 +1475,18 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			phoneNumber,
 			deliveryReport,
 		)
+		log.Printf("An error occurred when updating message delivery report: %v \n\n\n", err)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-
 		log.Printf("The updated message that has been returned %v\n\n\n", marketingSMS)
 		marshalled, err := json.Marshal(marketingSMS)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
-		log.Printf("The response returned %v \n\n\n", marshalled)
+		log.Printf("The response returned %v \n\n\n", string(marshalled))
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }

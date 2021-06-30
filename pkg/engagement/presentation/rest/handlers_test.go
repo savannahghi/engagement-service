@@ -5772,14 +5772,14 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 
 	err = fr.SaveMarketingMessage(ctx, sms)
 	if err != nil {
-		t.Errorf("unable to resolve nudge: %w",
+		t.Errorf("unable to save marketing message: %w",
 			err,
 		)
 		return
 	}
 	expectedPayload := map[string]interface{}{
 		"phoneNumber": sms.PhoneNumber,
-		"retryCount":  0,
+		"retryCount":  "0",
 		"status":      "success",
 	}
 	bs, err := json.Marshal(expectedPayload)
