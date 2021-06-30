@@ -5873,3 +5873,89 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 		})
 	}
 }
+
+func TestSetBewellAware(t *testing.T) {
+	assert := assert.New(t)
+	userEmail := dto.SetBewellAwareInput{EmailAddress: "info@gmail"}
+	userEmailAsJson, err := json.Marshal(userEmail)
+	if !assert.Nilf(err, "unable to marshall upload input to JSON: %s", err) {
+		return
+	}
+
+	headers := getDefaultHeaders(t, baseURL)
+	payload := bytes.NewBuffer(userEmailAsJson)
+	uploadUrl := fmt.Sprintf("%s/set_bewell_aware", baseURL)
+
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "Set Be.Well aware with valid data",
+			args: args{
+				url:        uploadUrl,
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "Set Be.Well aware with no data",
+			args: args{
+				url:        uploadUrl,
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       nil,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if !assert.Nilf(err, "unable to compose request: %s", err) {
+				return
+			}
+			if !assert.NotNil(request, "nil request") {
+				return
+			}
+
+			for key, val := range tt.args.headers {
+				request.Header.Add(key, val)
+			}
+
+			response, err := http.DefaultClient.Do(request)
+			assert.Nilf(err, "request error: %s", err)
+			assert.False(!tt.wantErr && response == nil, "nil response")
+			if response == nil {
+				return
+			}
+
+			data, err := io.ReadAll(response.Body)
+			if !assert.Nilf(err, "can't read request body: %s", err) {
+				return
+			}
+			if !assert.NotNil(data, "nil response data") {
+				return
+			}
+
+			assert.Equalf(tt.wantStatus, response.StatusCode, "expected http status %v, but got %v", tt.wantStatus, response.StatusCode)
+		})
+	}
+}

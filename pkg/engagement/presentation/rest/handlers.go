@@ -1467,7 +1467,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			DeliveryReportTimeStamp: time.Now(),
 		}
 
-		log.Print("Updating the message with the deilvery report recieved: %v \n\n\n", deliveryReport)
+		log.Printf("Updating the message with the deilvery report recieved: %v \n\n\n", deliveryReport)
 		marketingSMS, err := p.interactor.SMS.UpdateMarketingMessage(
 			ctx,
 			phoneNumber,
@@ -1478,13 +1478,13 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			return
 		}
 
-		log.Print("The updated message that has been returned %v\n\n\n", marketingSMS)
+		log.Printf("The updated message that has been returned %v\n\n\n", marketingSMS)
 		marshalled, err := json.Marshal(marketingSMS)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
-		log.Print("The response returned %v \n\n\n", marshalled)
+		log.Printf("The response returned %v \n\n\n", marshalled)
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }
