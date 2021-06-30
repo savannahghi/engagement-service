@@ -20,3 +20,4 @@ p,254700000000,post_message,create, deny
 p,254700000000,delete_message,delete, deny
 p,254700000000,process_event,create, deny
 p,254700000000,item_update,update, deny
+p,254700000000,load_marketing_data,create, allow

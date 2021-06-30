@@ -265,6 +265,9 @@ type FakeEngagementRepository struct {
 	UpdateUserCRMBewellAwareFn func(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
 
 	IsOptedOutedFn func(ctx context.Context, phoneNumber string) (bool, error)
+
+	LoadMarketingDataFn     func(ctx context.Context, data dto.Segment) error
+	RollBackMarketingDataFn func(ctx context.Context, data dto.Segment) error
 }
 
 // GetFeed ...
@@ -615,4 +618,14 @@ func (f *FakeEngagementRepository) UpdateUserCRMBewellAware(ctx context.Context,
 // IsOptedOuted ..
 func (f *FakeEngagementRepository) IsOptedOuted(ctx context.Context, phoneNumber string) (bool, error) {
 	return f.IsOptedOutedFn(ctx, phoneNumber)
+}
+
+// LoadMarketingData ...
+func (f *FakeEngagementRepository) LoadMarketingData(ctx context.Context, data dto.Segment) error {
+	return f.LoadMarketingDataFn(ctx, data)
+}
+
+// RollBackMarketingData ...
+func (f *FakeEngagementRepository) RollBackMarketingData(ctx context.Context, data dto.Segment) error {
+	return f.RollBackMarketingDataFn(ctx, data)
 }

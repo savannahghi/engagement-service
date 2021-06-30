@@ -174,6 +174,8 @@ type PresentationHandlers interface {
 	SetBewellAware(cxt context.Context) http.HandlerFunc
 
 	GetMarketingData(ctx context.Context) http.HandlerFunc
+
+	LoadCampaignData(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1951,4 +1953,37 @@ func (p PresentationHandlersImpl) GetMarketingData(ctx context.Context) http.Han
 		}
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
+}
+
+//LoadCampaignData loads a prepared campaign dataset into firestore and CRM
+// todo write automated tests for this (it has already been hand-tested to work)
+func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		payload := &dto.LoadCampgainDataInput{}
+
+		base.DecodeJSONToTargetStruct(w, r, payload)
+
+		if payload == nil || payload.PhoneNumber == nil {
+			respondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("expected `phoneNumber` to be defined"),
+			)
+			return
+		}
+
+		if err := p.interactor.Marketing.LoadCampaignDataset(ctx, *payload.PhoneNumber); err != nil {
+			respondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("failed to load campaign dataset: %v", err),
+			)
+			return
+		}
+
+		res, _ := json.Marshal(dto.OKResp{Status: "SUCCESS"})
+
+		respondWithJSON(w, http.StatusOK, res)
+	}
+
 }

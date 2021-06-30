@@ -124,7 +124,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	twilio := twilio.NewService()
 	surveys := surveys.NewService(fr)
 	hubspot := hubspot.NewHubSpotService()
-	marketing := usecases.NewMarketing(fr)
+	marketing := usecases.NewMarketing(fr, hubspot)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
@@ -164,6 +164,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
 	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware(ctx))
+	r.Path("/load_data").Methods(http.MethodPost).HandlerFunc(h.LoadCampaignData(ctx))
 
 	r.Path(base.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)

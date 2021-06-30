@@ -1589,6 +1589,43 @@ func (fr Repository) SaveNPSResponse(
 	return nil
 }
 
+// LoadMarketingData ...
+func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) error {
+	// check the data does not exist
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Where("email", "==", data.Email)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return err
+	}
+	if len(docs) >= 1 {
+		return fmt.Errorf("marketing entry with the provided email address: %v already exists ", data.Email)
+	}
+	// create a new record
+	if _, _, err := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Add(ctx, data); err != nil {
+		return fmt.Errorf("unable create marketing record: %v", err)
+	}
+	return nil
+}
+
+// RollBackMarketingData remove the record that was creatded. This happens only when the same record fails to the created on the crm
+func (fr Repository) RollBackMarketingData(ctx context.Context, data dto.Segment) error {
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Where("email", "==", data.Email)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return err
+	}
+
+	// delete the record
+	if _, err := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Doc(docs[0].Ref.ID).Delete(ctx); err != nil {
+		return fmt.Errorf("unable to delete marketing record: %v", err)
+	}
+	return nil
+}
+
 // RetrieveMarketingData retrieves the segmented data from the database
 func (fr Repository) RetrieveMarketingData(
 	ctx context.Context,
