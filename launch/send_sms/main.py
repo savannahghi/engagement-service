@@ -26,6 +26,7 @@ MESSAGE = ""
 SEGMENT_NAME = ""
 WING_NAME = ""
 
+
 class SenderID(enum.Enum):
     """SenderID enum values."""
 
@@ -100,7 +101,7 @@ def convert_datetime_to_hours(date_time):
     return date_time / 3600
 
 
-def get_segmented_contacts(wing,segment):
+def get_segmented_contacts(wing, segment):
     """
     Get segmented contacts details from a data store.
     """
@@ -110,27 +111,40 @@ def get_segmented_contacts(wing,segment):
         "wing": wing,
         "initialSegment": segment,
     }
+    logger.warning("We are about to fetch contacts from our table ... \n")
     response = requests.post(url=url, json=payload, headers=headers)
     if response.status_code > 299:
         raise Exception(
             "unable to get marketing data with status code "
             f"{response.status_code} and data {response.content}"
         )
+    logger.warning("That was tough. But we finally made it .. :) \n")
+
     return response.json()
 
 
-def send_marketing_bulk_sms(request):
+def send_marketing_bulk_sms():
     """
     Send bulk SMS.
 
     The call is made to our engagement service to send bulk SMS
     to our segments using either our BeWell or Slade360 sender
     """
-    contacts = get_segmented_contacts(WING_NAME,SEGMENT_NAME)
+    logger.warning(
+        "If you see this then it means we have started executing ..."
+    )
+    start_time = current_time()
+    contacts = get_segmented_contacts(WING_NAME, SEGMENT_NAME)
     if contacts is None:
         raise Exception("No contacts found")
 
-    phone_message_list = []
+    logger.warning(f"{len(contacts)} found ... \n")
+    logger.warning(
+        f"We are sending to the segment: {SEGMENT_NAME}. Wing: {WING_NAME}"
+    )
+    logger.warning(f"The message we are about to send: {MESSAGE}\n")
+
+    contact_count = 0
     for contact in contacts:
         phone = contact["phone"]
         first_name = contact["firstname"]
@@ -147,15 +161,10 @@ def send_marketing_bulk_sms(request):
                 ),
             ),
         }
-        phone_message_list.append(phone_message_dict)
 
-    contact_count = 0
-
-    for data in phone_message_list:
-        start_time = current_time()
         payload = {
-            "to": [data["phone_number"]],
-            "message": data["message"],
+            "to": [phone_message_dict["phone_number"]],
+            "message": phone_message_dict["message"],
             "sender": SenderID.BeWell.value,
         }
 
@@ -171,9 +180,7 @@ def send_marketing_bulk_sms(request):
         if contact_count % 100 == 0:
             t = (current_time() - start_time).total_seconds()
             time_taken_so_far = convert_datetime_to_hours(t)
-            time_left = (
-                len(phone_message_list) - contact_count
-            ) * send_sms_total_time
+            time_left = (len(contacts) - contact_count) * send_sms_total_time
 
             time_left_in_hr = convert_datetime_to_hours(
                 time_left.total_seconds()
@@ -181,17 +188,15 @@ def send_marketing_bulk_sms(request):
             logger.warning(
                 f"{contact_count} contacts marketed to, "
                 f"{time_taken_so_far} hours taken so far, "
-                f"{sms_rate}, {time_left_in_hr} hours left"
+                f"{sms_rate}, {time_left_in_hr} hours left\n"
             )
 
-    if contact_count == len(phone_message_list):
-        logger.warning(
-            f"{len(phone_message_list)} contacts engaged successfully!"
-        )
+    if contact_count == len(contacts):
+        logger.warning(f"{len(contacts)} contacts engaged successfully!")
 
 
 def main():
-    send_marketing_bulk_sms("")
+    send_marketing_bulk_sms()
 
 
 if __name__ == "__main__":
