@@ -104,7 +104,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 	}
 
 	cwd, _ := os.Getwd()
-	path := filepath.Join(cwd, campaignDataFileName)
+	path := filepath.Join(cwd, "launch", "dataset", campaignDataFileName)
 
 	csvFile, err := os.Open(path)
 	if err != nil {
@@ -117,7 +117,11 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		return fmt.Errorf("failed to read data from the CSV file :%w", err)
 	}
 
-	for _, line := range csvContent {
+	csvPayload := csvContent[1:]
+
+	count := 0
+
+	for _, line := range csvPayload {
 		data := dto.Segment{
 			BeWellEnrolled:        line[0],
 			OptOut:                line[1],
@@ -139,6 +143,8 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			TimeSynced:            line[17],
 		}
 
+		logrus.Printf("Loading date of email %v", data.Email)
+
 		// publish to firestore
 		if err := m.repository.LoadMarketingData(ctx, data); err != nil {
 			return fmt.Errorf("%v", err)
@@ -147,12 +153,12 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		res, err := m.hubspot.SearchContactByPhone(line[11])
 		if err != nil {
 			_ = m.repository.RollBackMarketingData(ctx, data)
-			return fmt.Errorf("%v", err)
+			continue
 		}
 
 		// contact already exists. Nothing to do here
 		if len(res.Results) >= 1 {
-			return nil
+			continue
 		}
 
 		convertor := func(d string) CRMDomain.GeneralOptionType {
@@ -233,9 +239,13 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			},
 		}); err != nil {
 			_ = m.repository.RollBackMarketingData(ctx, data)
-			return fmt.Errorf("failed to create contact on CRM %v", err)
+			continue
 		}
+
+		count++
 	}
+
+	logrus.Printf("Records successfully created on firestore and CRM %v", count)
 
 	return nil
 }
