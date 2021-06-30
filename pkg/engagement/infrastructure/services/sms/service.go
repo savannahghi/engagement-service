@@ -317,14 +317,12 @@ func (s Service) SendMarketingSMS(
 		}
 
 		// Toggle message sent value to TRUE
-		// todo this returns a nil pointer investigate and fix
-		// todo why is it TRUE instead of true
-		// if err := s.UpdateMessageSentStatus(
-		// 	context.Background(),
-		// 	data.PhoneNumber,
-		// ); err != nil {
-		// 	return nil, err
-		// }
+		if err := s.UpdateMessageSentStatus(
+			ctx,
+			data.PhoneNumber,
+		); err != nil {
+			return nil, err
+		}
 
 		// Sleep for 5 seconds to reduce the rate at which we call HubSpot's APIs
 		// They have a rate limit of 100/10s

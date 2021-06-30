@@ -1635,6 +1635,10 @@ func (fr Repository) UpdateMessageSentStatus(
 		return err
 	}
 
+	if len(docs) == 0 {
+		return nil
+	}
+
 	var marketingData dto.Segment
 	err = docs[0].DataTo(&marketingData)
 	if err != nil {
