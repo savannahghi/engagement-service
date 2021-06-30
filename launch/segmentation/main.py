@@ -1,11 +1,10 @@
 """Segment CSV data into the different segments."""
 import csv
 
+import click
 import numpy as np
 
 WINGS = 2
-CSV_FILE_NAME = "sil_segment - Sheet1 "
-SEGMENT_NAME = "Frequent_Fliers"
 
 
 def custom_hubspot_properties():
@@ -38,10 +37,10 @@ def randomize_data(data):
     return data
 
 
-def create_custom_properties_from_slade_data():
+def create_custom_properties_from_slade_data(path_to_csv, segment_name):
     """Infer Hubspot data from the slade CSV data."""
     list_of_properties_we_want = []
-    with open(f"dataset/{CSV_FILE_NAME}.csv") as csv_file:
+    with open(path_to_csv) as csv_file:
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
             has_virtual_card = (
@@ -59,7 +58,7 @@ def create_custom_properties_from_slade_data():
                 "has_cover": "YES",
                 "payor": row["payer_name"],
                 "first_channel_of_contact": "SMS",
-                "initial_segment": "Frequent Fliers",
+                "initial_segment": segment_name,
                 "has_virtual_card": has_virtual_card,
                 "phone_number": phone_number,
                 "firstname": row["first_name"],
@@ -69,7 +68,7 @@ def create_custom_properties_from_slade_data():
     return list_of_properties_we_want
 
 
-def split_segment_data_into_wings():
+def split_segment_data_into_wings(path_to_csv, segment_name):
     """
     Split the data we have into wings.
 
@@ -77,7 +76,7 @@ def split_segment_data_into_wings():
     based on the number of wings defined
     """
     random_data = randomize_data(
-        create_custom_properties_from_slade_data(),
+        create_custom_properties_from_slade_data(path_to_csv, segment_name),
     )
     wing_1_data, wing_2_data = np.array_split(
         random_data,
@@ -86,22 +85,24 @@ def split_segment_data_into_wings():
     return wing_1_data, wing_2_data
 
 
-def write_wing_data_to_csv():
+def write_wing_data_to_csv(segment_name, path_to_csv):
     """
     Write the extracted data to a CSV.
 
     This helper write the first wing data (data in wing one)
     to a CSV file
     """
-    wing_1_data, wing_2_data = split_segment_data_into_wings()
-    with open(f"dataset/{SEGMENT_NAME}_wing_A.csv", mode="w") as wing_A_csv:
+    wing_1_data, wing_2_data = split_segment_data_into_wings(
+        path_to_csv, segment_name
+    )
+    with open(f"{segment_name}_wing_A.csv", mode="w") as wing_A_csv:
         fieldnames = custom_hubspot_properties()
         writer = csv.DictWriter(wing_A_csv, fieldnames=fieldnames)
         writer.writeheader()
         for dataset in wing_1_data:
             writer.writerow(dataset)
 
-    with open(f"dataset/{SEGMENT_NAME}_wing_B.csv", mode="w") as wing_B_csv:
+    with open(f"{segment_name}_wing_B.csv", mode="w") as wing_B_csv:
         fieldnames = custom_hubspot_properties()
         writer = csv.DictWriter(wing_B_csv, fieldnames=fieldnames)
         writer.writeheader()
@@ -109,14 +110,17 @@ def write_wing_data_to_csv():
             writer.writerow(dataset)
 
 
+@click.command()
+@click.argument("path_to_csv")
+@click.argument("segment_name")
+def generate_children_csv(path_to_csv, segment_name):
+    """Entry point to our script."""
+    write_wing_data_to_csv(segment_name, path_to_csv)
+
+
 def main():
-    write_wing_data_to_csv()
+    generate_children_csv()
 
 
 if __name__ == "__main__":
     main()
-
-# TODO: DRY the code
-# TODO: Uniqueness
-# TODO: File names should not be hardcoded
-# TODO: Make this a CLI
