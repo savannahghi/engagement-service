@@ -1882,7 +1882,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 			base.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		name := "Hello"
+		name := "Kevin From Be.Well"
 
 		body := GenerateCollectEmailFunc(name)
 		subject := "Download the new Be.Well app to manage your insurance benefits"
