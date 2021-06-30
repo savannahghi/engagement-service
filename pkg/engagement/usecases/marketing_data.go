@@ -104,7 +104,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 	}
 
 	cwd, _ := os.Getwd()
-	path := filepath.Join(cwd, "launch", "dataset", campaignDataFileName)
+	path := filepath.Join(cwd, campaignDataFileName)
 
 	csvFile, err := os.Open(path)
 	if err != nil {
