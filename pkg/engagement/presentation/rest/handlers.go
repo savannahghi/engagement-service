@@ -29,7 +29,8 @@ import (
 
 const (
 	// StaticDir is the directory that contains schemata, default images etc
-	StaticDir = "gitlab.slade360emr.com/go/engagement:/static/"
+	StaticDir     = "gitlab.slade360emr.com/go/engagement:/static/"
+	marketingText = "Kevin from Be.Well Team"
 
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
@@ -1307,6 +1308,7 @@ func (p PresentationHandlersImpl) SendEmail(
 		resp, _, err := p.interactor.Mail.SendEmail(
 			payload.Subject,
 			payload.Text,
+			nil,
 			payload.To...,
 		)
 		if err != nil {
@@ -1881,11 +1883,13 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 			return
 		}
 		name := "Hello"
-		Text := GenerateCollectEmailFunc(name)
-		subject := "Join the Be. Well community today"
+
+		body := GenerateCollectEmailFunc(name)
+		subject := "Download the new Be.Well app to manage your insurance benefits"
 		sendEmail, _, err := p.interactor.Mail.SendEmail(
 			subject,
-			Text,
+			marketingText,
+			&body,
 			payload.EmailAddress,
 		)
 		if err != nil {

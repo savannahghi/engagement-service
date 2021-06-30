@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
@@ -1683,12 +1684,16 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 
 // UpdateUserCRMBewellAware updates user CMR data with provided email= as bewell-aware on the CRM
 func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
+	logrus.Printf("collection name %v", fr.getMarketingDataCollectionName())
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("email", "==", email)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
 		return err
 	}
+
+	logrus.Printf("documents found %v", docs)
+
 	if len(docs) == 0 {
 		return nil
 	}
@@ -1700,7 +1705,11 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 			"unable to unmarshal marketing Data from doc snapshot: %w", err)
 	}
 
+	logrus.Printf("update payload %v", marketingData)
+
 	marketingData.BeWellAware = payload.Properties.BeWellAware.String()
+
+	logrus.Printf("update after amend payload %v", marketingData)
 
 	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Doc(docs[0].Ref.ID)

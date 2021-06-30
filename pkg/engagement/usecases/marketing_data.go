@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -48,7 +49,7 @@ func (m MarketingDataImpl) UpdateUserCRMEmail(ctx context.Context, email string,
 		Properties: CRMContactProperties,
 		Phone:      phonenumber,
 	}); err != nil {
-		fmt.Errorf("failed to create CRM staging payload")
+		return fmt.Errorf("failed to create CRM staging payload %v", err)
 	}
 	return nil
 
@@ -60,10 +61,12 @@ func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error 
 		BeWellAware: CRMDomain.GeneralOptionTypeYes,
 	}
 
+	logrus.Printf("bewellAware payload: %v with email: %v", CRMContactProperties, email)
+
 	if err := m.repository.UpdateUserCRMBewellAware(ctx, email, &dto.UpdateContactPSMessage{
 		Properties: CRMContactProperties,
 	}); err != nil {
-		fmt.Errorf("failed to create CRM staging payload")
+		return fmt.Errorf("failed to create CRM staging payload %v", err)
 	}
 	return nil
 }

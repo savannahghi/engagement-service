@@ -35,9 +35,9 @@ const (
 // ServiceMail defines a Mail service interface
 type ServiceMail interface {
 	SendInBlue(subject, text string, to ...string) (string, string, error)
-	SendMailgun(subject, text string, to ...string) (string, string, error)
-	SendEmail(subject, text string, to ...string) (string, string, error)
-	SimpleEmail(subject, text string, to ...string) (string, error)
+	SendMailgun(subject, text string, body *string, to ...string) (string, string, error)
+	SendEmail(subject, text string, body *string, to ...string) (string, string, error)
+	SimpleEmail(subject, text string, body *string, to ...string) (string, error)
 }
 
 // NewService initializes a new MailGun service
@@ -158,10 +158,14 @@ func (s Service) SendInBlue(subject, text string, to ...string) (string, string,
 }
 
 // SendMailgun sends email via MailGun
-func (s Service) SendMailgun(subject, text string, to ...string) (string, string, error) {
+func (s Service) SendMailgun(subject, text string, body *string, to ...string) (string, string, error) {
 	s.CheckPreconditions()
 	message := s.Mg.NewMessage(s.From, subject, text, to...)
-	message.SetHtml(text)
+	if body != nil {
+		message.SetHtml(*body)
+	} else {
+		message.SetHtml(text)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*MailGunTimeoutSeconds)
 	defer cancel()
 
@@ -174,18 +178,18 @@ func (s Service) SendMailgun(subject, text string, to ...string) (string, string
 
 // SendEmail sends the specified email to the recipient(s) specified in `to`
 // and returns the status
-func (s Service) SendEmail(subject, text string, to ...string) (string, string, error) {
+func (s Service) SendEmail(subject, text string, body *string, to ...string) (string, string, error) {
 	s.CheckPreconditions()
 	if s.SendInBlueEnabled {
 		return s.SendInBlue(subject, text, to...)
 	}
-	return s.SendMailgun(subject, text, to...)
+	return s.SendMailgun(subject, text, body, to...)
 }
 
 // SimpleEmail is a simplified API to send email.
 // It returns only a status or error.
-func (s Service) SimpleEmail(subject, text string, to ...string) (string, error) {
+func (s Service) SimpleEmail(subject, text string, body *string, to ...string) (string, error) {
 	s.CheckPreconditions()
-	status, _, err := s.SendEmail(subject, text, to...)
+	status, _, err := s.SendEmail(subject, text, nil, to...)
 	return status, err
 }

@@ -222,7 +222,7 @@ func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string) (str
 		return code, fmt.Errorf("%s is not a valid email", emailstr)
 	}
 
-	_, _, err = s.mail.SendEmail(subject, text, emailstr)
+	_, _, err = s.mail.SendEmail(subject, text, nil, emailstr)
 	if err != nil {
 		return code, fmt.Errorf("unable to send OTP to email: %w", err)
 	}
@@ -428,7 +428,7 @@ func (s Service) EmailVerificationOtp(ctx context.Context, email *string) (strin
 
 	emailstr := *email
 
-	_, _, err = s.mail.SendEmail(subject, text, emailstr)
+	_, _, err = s.mail.SendEmail(subject, text, nil, emailstr)
 	if err != nil {
 		return code, fmt.Errorf("unable to send OTP to email: %w", err)
 	}

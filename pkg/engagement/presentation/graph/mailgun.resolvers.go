@@ -16,7 +16,7 @@ func (r *mutationResolver) SimpleEmail(ctx context.Context, subject string, text
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	status, err := r.interactor.Mail.SimpleEmail(subject, text, to...)
+	status, err := r.interactor.Mail.SimpleEmail(subject, text, nil, to...)
 	if err != nil {
 		return "", fmt.Errorf("unable to send an email: %v", err)
 	}

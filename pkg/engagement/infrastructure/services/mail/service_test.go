@@ -58,7 +58,7 @@ func TestService_SendEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg, id, err := tt.service.SendEmail(tt.subject, tt.text, tt.to...)
+			msg, id, err := tt.service.SendEmail(tt.subject, tt.text, nil, tt.to...)
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("an error was expected")

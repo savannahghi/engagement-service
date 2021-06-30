@@ -136,13 +136,14 @@ const ColLectCMREmailTemplate = `
                 your benefits</p>
               <p></p>
 
+              <p style="margin-bottom: 2px;">Hi,</p>
               <p style="margin: 0">
-                <span style="color: black;">Hi, click the link below to download the Be.Well App
+                Click a link below to download the new Be.Well App
                 on your <a href="https://play.google.com/store/apps/details?id=com.savannah.bewell">Android</a> or <a
                   href="https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692">iOS</a> device.
               </p>
               <br>
-              <p style="margin-bottom: 10px;font-size: 16px;font-weight: bold; color: black;">The Be.Well app lets you:
+              <p style="margin-bottom: 4px;font-size: 16px;font-weight: bold; color: black;">The Be.Well app lets you:
               </p>
               <ul style="margin: 0;">
                 <li>Access your virtual Slade ID Wellness Card</li>
@@ -154,21 +155,22 @@ const ColLectCMREmailTemplate = `
                 <li>See where your cover has been used</li>
               </ul>
 
-              <p>Click on the links below to download the the Be.Well app.</p>
+              <p style="font-size: medium; margin-bottom: 0;">Click a link below to download the new Be.Well app.</p>
               <p style="display: flex;">
-                <a href="https://play.google.com/store/apps/details?id=com.savannah.bewell" style="margin-right: 20px;">
-                  <img src="https://a.bewell.co.ke/image/playstore.svg" width="150"
+                <a target="_blank" href="https://play.google.com/store/apps/details?id=com.savannah.bewell"
+                  style="margin-right: 20px;">
+                  <img src="https://a.bewell.co.ke/image/playstore.png" width="150"
                     style="display: block; border: 0px; margin-bottom: 0" />
                 </a>
 
-                <a href="https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692">
+                <a target="_blank" href="https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692">
                   <img src="
-                    https://a.bewell.co.ke/image/app-store.svg" width="150"
+                    https://a.bewell.co.ke/image/appstore.png" width="150"
                     style="display: block; border: 0px; margin-bottom: 0" />
                 </a>
               </p>
               <br>
-              <p style="margin: 0">
+              <p style="margin: 0; ">
                 Thank you for using Be.Well.
               </p>
             </td>
@@ -196,7 +198,7 @@ const ColLectCMREmailTemplate = `
                 ">
               <p style="margin: 0">
                 Regards,<br />
-                The Be.Well Team
+                <span style="color: black; font-weight: 600;">Kevin from Be.Well</span>
               </p>
             </td>
           </tr>

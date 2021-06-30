@@ -1071,6 +1071,7 @@ func (n NotificationImpl) SendEmail(ctx context.Context, m *base.PubSubPayload) 
 	_, _, err = n.mail.SendEmail(
 		payload.Subject,
 		payload.Text,
+		nil,
 		payload.To...,
 	)
 
