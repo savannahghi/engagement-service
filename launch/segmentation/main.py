@@ -37,6 +37,18 @@ def randomize_data(data):
     return data
 
 
+def normalize_phone_number(phone):
+    """Normalize a phne number."""
+    if phone.startswith("0"):
+        return f"+254{phone[1:]}"
+
+    elif phone.startswith("254"):
+        return f"+{phone}"
+
+    else:
+        return phone
+
+
 def create_custom_properties_from_slade_data(path_to_csv, segment_name):
     """Infer Hubspot data from the slade CSV data."""
     list_of_properties_we_want = []
@@ -46,7 +58,7 @@ def create_custom_properties_from_slade_data(path_to_csv, segment_name):
             has_virtual_card = (
                 "YES" if "VIRTUAL" in row["active_card_types"] else "NO"
             )
-            phone_number = row["phone_contact"]
+            phone_number = normalize_phone_number(row["phone_contact"])
             email = f"{phone_number}@users.bewell.co.ke"
             custom_properties = {
                 "email": email,
