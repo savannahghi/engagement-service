@@ -1439,7 +1439,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 	ctx context.Context,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Print("Entry point to our AT callback implementation...\n\n\n")
+		log.Printf("Entry point to our AT callback implementation...\n\n\n")
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("unable to parse request data %v", err)
@@ -1449,7 +1449,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			return
 		}
 
-		log.Print("Parsing the form data and creating a delivery report ...")
+		log.Printf("Parsing the form data and creating a delivery report ...")
 		networkCode := r.Form.Get("networkCode")
 		failureReason := r.Form.Get("failureReason")
 		phoneNumber := r.Form.Get("phoneNumber")

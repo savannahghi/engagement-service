@@ -25,6 +25,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
+
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -5926,6 +5927,304 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 		})
 	}
+}
+
+func TestPresentationHandlersImpl_GetContactLists(t *testing.T) {
+	type args struct {
+		url        string
+		httpMethod string
+		body       io.Reader
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "success contacts list",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/contact_lists",
+					baseURL,
+				),
+				httpMethod: http.MethodGet,
+				body:       nil,
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid url",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/bad_url_notallowed",
+					baseURL,
+				),
+				httpMethod: http.MethodGet,
+				body:       nil,
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "Method not allowed",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/contact_lists",
+					baseURL,
+				),
+				httpMethod: http.MethodDelete,
+				body:       nil,
+			},
+			wantStatus: http.StatusMethodNotAllowed,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if req == nil {
+				t.Errorf("nil request")
+				return
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(req)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			assert.NotNil(t, data)
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+		})
+	}
+}
+
+// todo write CreateContactList endpoint in the handlers to facilitate
+
+func TestPresentationHandlersImpl_GetContactListByID(t *testing.T) {
+	headers := req.Header{
+		"Accept":       "application/json",
+		"Content-Type": "application/x-www-form-urlencoded",
+	}
+
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+
+	expectedPayload := map[string]interface{}{
+		"ListID": 4,
+	}
+
+	bs, err := json.Marshal(expectedPayload)
+	if err != nil {
+		t.Errorf("unable to marshal listID: %s", err)
+	}
+
+	payload := bytes.NewBuffer(bs)
+
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "success getting contact",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/contact_list",
+					baseURL,
+				),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid url",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/bad_url_lists",
+					baseURL,
+				),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "Method not allowed",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/contact_list",
+					baseURL,
+				),
+				httpMethod: http.MethodGet,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusMethodNotAllowed,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if req == nil {
+				t.Errorf("nil request")
+				return
+			}
+			for k, v := range tt.args.headers {
+				req.Header.Add(k, v)
+			}
+
+			client := http.DefaultClient
+			resp, err := client.Do(req)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			assert.NotNil(t, data)
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+		})
+	}
+}
+
+func TestPresentationHandlersImpl_GetContactsInAList(t *testing.T) {
+
+	headers := req.Header{
+		"Accept":       "application/json",
+		"Content-Type": "application/x-www-form-urlencoded",
+	}
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+	expectedPayload := map[string]interface{}{
+		"ListID": 4,
+	}
+	bs, err := json.Marshal(expectedPayload)
+	if err != nil {
+		t.Errorf("unable to marshal listID: %s", err)
+	}
+
+	payload := bytes.NewBuffer(bs)
+
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "success getting contacts in a list",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/contact_list_contacts",
+					baseURL,
+				),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Invalid url",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/contact_badurl_contacts",
+					baseURL,
+				),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
+			},
+			wantStatus: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if req == nil {
+				t.Errorf("nil request")
+				return
+			}
+			for k, v := range tt.args.headers {
+				req.Header.Add(k, v)
+			}
+
+			client := http.DefaultClient
+			resp, err := client.Do(req)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			assert.NotNil(t, data)
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+		})
+	}
+
 }
 
 func TestSetBewellAware(t *testing.T) {
