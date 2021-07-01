@@ -266,7 +266,7 @@ type FakeEngagementRepository struct {
 
 	IsOptedOutedFn func(ctx context.Context, phoneNumber string) (bool, error)
 
-	LoadMarketingDataFn     func(ctx context.Context, data dto.Segment) error
+	LoadMarketingDataFn     func(ctx context.Context, data dto.Segment) (int, error)
 	RollBackMarketingDataFn func(ctx context.Context, data dto.Segment) error
 }
 
@@ -621,7 +621,7 @@ func (f *FakeEngagementRepository) IsOptedOuted(ctx context.Context, phoneNumber
 }
 
 // LoadMarketingData ...
-func (f *FakeEngagementRepository) LoadMarketingData(ctx context.Context, data dto.Segment) error {
+func (f *FakeEngagementRepository) LoadMarketingData(ctx context.Context, data dto.Segment) (int, error) {
 	return f.LoadMarketingDataFn(ctx, data)
 }
 

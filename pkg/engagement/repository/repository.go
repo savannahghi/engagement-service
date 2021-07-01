@@ -269,7 +269,7 @@ type Repository interface {
 
 	IsOptedOuted(ctx context.Context, phoneNumber string) (bool, error)
 
-	LoadMarketingData(ctx context.Context, data dto.Segment) error
+	LoadMarketingData(ctx context.Context, data dto.Segment) (int, error)
 
 	RollBackMarketingData(ctx context.Context, data dto.Segment) error
 }

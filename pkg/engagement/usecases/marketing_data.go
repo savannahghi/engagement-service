@@ -245,7 +245,8 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		logrus.Infof("processing entry of identifier %v", line[10])
 
 		// publish to firestore
-		if err := m.repository.LoadMarketingData(ctx, data); err != nil {
+		i, err := m.repository.LoadMarketingData(ctx, data)
+		if i == 0 && err != nil {
 			entry.FirebaseLoadError = fmt.Errorf("%v", err)
 			entry.HasLoadedToFirebase = false
 			entry.Identifier = line[10]
@@ -253,11 +254,15 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			continue
 		}
 
+		// record has been created on firestore or it exists. proceeed to crm now
+		if (i == -1 || i == 1) && err == nil {
+			entry.HasLoadedToFirebase = true
+			entry.Identifier = line[10]
+		}
+
 		resH, err := m.hubspot.SearchContactByPhone(line[11])
 		if err != nil {
 			_ = m.repository.RollBackMarketingData(ctx, data)
-			entry.FirebaseLoadError = nil
-			entry.HasLoadedToFirebase = true
 			entry.HasBeenRollBackFromFirebase = true
 			entry.HasLoadedToCRM = false
 			entry.CRMLoadError = err
@@ -268,8 +273,6 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 
 		// contact already exists. Nothing to do here
 		if len(resH.Results) >= 1 {
-			entry.FirebaseLoadError = nil
-			entry.HasLoadedToFirebase = true
 			entry.HasLoadedToCRM = false
 			entry.CRMLoadError = fmt.Errorf("contact already exists on the CRM")
 			entry.Identifier = line[10]
@@ -355,8 +358,6 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			},
 		}); err != nil {
 			_ = m.repository.RollBackMarketingData(ctx, data)
-			entry.FirebaseLoadError = nil
-			entry.HasLoadedToFirebase = true
 			entry.HasBeenRollBackFromFirebase = true
 			entry.HasLoadedToCRM = false
 			entry.CRMLoadError = err
@@ -369,8 +370,6 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		}
 
 		// append entries that have loaded on both firebase and crm
-		entry.FirebaseLoadError = nil
-		entry.HasLoadedToFirebase = true
 		entry.HasLoadedToCRM = true
 		entry.Identifier = line[10]
 		res.Entries = append(res.Entries, entry)

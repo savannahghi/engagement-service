@@ -1590,24 +1590,28 @@ func (fr Repository) SaveNPSResponse(
 	return nil
 }
 
-// LoadMarketingData ...
-func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) error {
+// LoadMarketingData loads data to firebase
+// to guide follow-up logic, an int is return as well
+// 0 =? generic error. 1
+// 1 =? record exists. Means it should be created or checked for existence on the crm
+// -1 =? a record was created on firebase correctly. Means it should be created or checked for existence on the crm
+func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (int, error) {
 	// check the data does not exist
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("email", "==", data.Email)
 
 	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if len(docs) >= 1 {
-		return fmt.Errorf("marketing entry with the provided email address: %v already exists ", data.Email)
+		return 1, nil
 	}
 	// create a new record
 	if _, _, err := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Add(ctx, data); err != nil {
-		return fmt.Errorf("unable create marketing record: %v", err)
+		return 0, fmt.Errorf("unable create marketing record: %v", err)
 	}
-	return nil
+	return -1, nil
 }
 
 // RollBackMarketingData remove the record that was creatded. This happens only when the same record fails to the created on the crm
