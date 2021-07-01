@@ -22,7 +22,7 @@ RUN git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.slad
 RUN go mod download
 
 # Build the binary.
-RUN cd /app/ && CGO_ENABLED=0 GOOS=linux go build -v -o server gitlab.slade360emr.com/go/engagement
+RUN cd /app/ && CGO_ENABLED=0 GOOS=linux go build -race -v -o server gitlab.slade360emr.com/go/engagement
 
 # Use the official Alpine image for a lean production container.
 # https://hub.docker.com/_/alpine

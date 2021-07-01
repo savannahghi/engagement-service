@@ -1596,7 +1596,7 @@ func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) er
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("email", "==", data.Email)
 
-	docs, err := fetchQueryDocs(ctx, query, true)
+	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
 		return err
 	}
