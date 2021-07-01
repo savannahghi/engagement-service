@@ -1768,7 +1768,7 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 // IsOptedOuted checks if a phone number is opted out or not
 func (fr Repository) IsOptedOuted(ctx context.Context, phoneNumber string) (bool, error) {
 	query := fr.firestoreClient.Collection(fr.GetCRMStagingCollectionName()).Where("ContactValue", "==", phoneNumber)
-	docs, err := fetchQueryDocs(ctx, query, true)
+	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
 		return false, err
 	}

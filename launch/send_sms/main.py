@@ -84,12 +84,12 @@ def send_sms(payload):
     result = response.json()
     if response.status_code > 299:
         click.secho(
-            "unable to send SMS with status code "
+            "\n\nunable to send SMS with status code "
             f"{response.status_code} and data {result}",
             fg="red",
             bold=True,
         )
-        return
+        raise Exception("unable to send SMS")
 
 
 def generate_shortened_dynamic_links(long_link):
@@ -119,12 +119,11 @@ def generate_shortened_dynamic_links(long_link):
     result = resp.json()
     if resp.status_code != 200:
         click.secho(
-            "unable to shorten link with status code "
+            "\n\nunable to shorten link with status code "
             f"{resp.status_code} and data {result}",
             fg="red",
             bold=True,
         )
-        return
 
     time.sleep(2)
     return result["shortLink"]
@@ -157,7 +156,7 @@ def get_segmented_contacts(wing, segment):
     result = response.json()
     if response.status_code > 299:
         click.secho(
-            "unable to get marketing data with status code "
+            "\n\nunable to get marketing data with status code "
             f"{response.status_code} and data {result}",
             fg="red",
             bold=True,
@@ -225,10 +224,13 @@ def send_marketing_bulk_sms(segment, wing, message_data):
                     "sender": SenderID.BeWell.value,
                 }
 
-                send_sms_start_time = current_time()
-                send_sms(payload)
-                send_sms_end_time = current_time()
+                try:
+                    send_sms_start_time = current_time()
+                    send_sms(payload)
+                except:
+                    continue
 
+                send_sms_end_time = current_time()
                 send_sms_total_time = send_sms_end_time - send_sms_start_time
                 sms_time_in_secs = send_sms_total_time.total_seconds()
                 sms_rate = f"{sms_time_in_secs}s/message"
@@ -245,7 +247,7 @@ def send_marketing_bulk_sms(segment, wing, message_data):
                     t = (current_time() - start_time).total_seconds()
                     time_taken_so_far = convert_datetime_to_hours(t)
                     time_left = (
-                        len(contacts) - contact_count
+                        contacts_found - contact_count
                     ) * send_sms_total_time
 
                     time_left_in_hr = convert_datetime_to_hours(
