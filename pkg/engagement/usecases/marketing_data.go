@@ -340,7 +340,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			return CRMDomain.ChannelOfContactShortcode
 		}
 
-		if _, err := m.hubspot.CreateContact(CRMDomain.CRMContact{
+		resS, err := m.hubspot.CreateContact(CRMDomain.CRMContact{
 			Properties: CRMDomain.ContactProperties{
 				BeWellEnrolled:        convertor(line[0]),
 				OptOut:                convertor(line[1]),
@@ -356,7 +356,9 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 				FirstName:             line[12],
 				LastName:              line[13],
 			},
-		}); err != nil {
+		})
+
+		if err != nil {
 			_ = m.repository.RollBackMarketingData(ctx, data)
 			entry.HasBeenRollBackFromFirebase = true
 			entry.HasLoadedToCRM = false
@@ -369,13 +371,30 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			continue
 		}
 
-		// append entries that have loaded on both firebase and crm
-		entry.HasLoadedToCRM = true
-		entry.Identifier = line[10]
-		res.Entries = append(res.Entries, entry)
+		// means the record exists on crm
+		if resS == nil && err == nil {
+			entry.HasLoadedToCRM = true
+			entry.CRMLoadError = nil
+			entry.Identifier = line[10]
+			res.Entries = append(res.Entries, entry)
 
-		// protection from hubspot rate limiting
-		time.Sleep(time.Second * 2)
+			// protection from hubspot rate limiting
+			time.Sleep(time.Second * 2)
+			continue
+		}
+
+		// means a new record has been created on the crm
+		if resS != nil && err == nil {
+			// append entries that have loaded on both firebase and crm
+			entry.HasLoadedToCRM = true
+			entry.Identifier = line[10]
+			res.Entries = append(res.Entries, entry)
+
+			// protection from hubspot rate limiting
+			time.Sleep(time.Second * 2)
+			continue
+		}
+
 	}
 
 	res.TotalEntriesFoundOnFile = len(csvPayload)
