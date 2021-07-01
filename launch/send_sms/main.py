@@ -192,66 +192,80 @@ def send_marketing_bulk_sms(segment, wing, message_data):
         return
 
     contacts_found = len(contacts)
+    click.secho(
+        f"A total of {contacts_found} contacts have been found ..", bold=True
+    )
 
     contact_count = 0
-    for contact in contacts:
-        phone = contact["phone"]
-        first_name = contact["firstname"]
-        payer_name = contact["payor"]
-        email = contact["email"]
+    with click.progressbar(contacts, length=contacts_found) as contacts:
+        for contact in contacts:
+            phone = contact["phone"]
+            first_name = contact["firstname"]
+            payer_name = contact["payor"]
+            email = contact["email"]
 
-        phone_message_dict = {
-            "phone_number": phone,
-            "message": message_data["message"].format(
-                first_name,
-                payer_name,
-                generate_shortened_dynamic_links(
-                    generate_marketing_url(email, message_data["tracking_url"])
+            phone_message_dict = {
+                "phone_number": phone,
+                "message": message_data["message"].format(
+                    first_name,
+                    payer_name,
+                    generate_shortened_dynamic_links(
+                        generate_marketing_url(
+                            email, message_data["tracking_url"]
+                        )
+                    ),
                 ),
-            ),
-        }
+            }
 
-        to = [phone_message_dict["phone_number"]]
-        payload = {
-            "to": to,
-            "message": phone_message_dict["message"],
-            "sender": SenderID.BeWell.value,
-        }
+            to = [phone_message_dict["phone_number"]]
+            payload = {
+                "to": to,
+                "message": phone_message_dict["message"],
+                "sender": SenderID.BeWell.value,
+            }
 
-        send_sms_start_time = current_time()
-        send_sms(payload)
-        send_sms_end_time = current_time()
+            send_sms_start_time = current_time()
+            send_sms(payload)
+            send_sms_end_time = current_time()
 
-        send_sms_total_time = send_sms_end_time - send_sms_start_time
-        sms_time_in_secs = send_sms_total_time.total_seconds()
-        sms_rate = f"{sms_time_in_secs}s/message"
+            send_sms_total_time = send_sms_end_time - send_sms_start_time
+            sms_time_in_secs = send_sms_total_time.total_seconds()
+            sms_rate = f"{sms_time_in_secs}s/message"
 
-        click.secho(
-            f"Message has been sent to phone number {to}. "
-            f"Message count {contact_count + 1} out of {contacts_found} "
-            f"with {sms_time_in_secs} seconds"
-        )
-
-        contact_count += 1
-
-        if contact_count % 2 == 0:
-            t = (current_time() - start_time).total_seconds()
-            time_taken_so_far = convert_datetime_to_hours(t)
-            time_left = (len(contacts) - contact_count) * send_sms_total_time
-
-            time_left_in_hr = convert_datetime_to_hours(
-                time_left.total_seconds()
-            )
             click.secho(
-                f"\n{contact_count} contacts marketed to, "
-                f"{time_taken_so_far} hours taken so far, "
-                f"{sms_rate}, {time_left_in_hr} hours left\n",
-                fg="yellow",
+                f"Message has been sent to phone number {to}. "
+                f"Message count {contact_count + 1} out of {contacts_found} "
+                f"with {sms_time_in_secs} seconds"
             )
 
-    if contact_count == len(contacts):
+            contact_count += 1
+
+            if contact_count % 100 == 0:
+                t = (current_time() - start_time).total_seconds()
+                time_taken_so_far = convert_datetime_to_hours(t)
+                time_left = (
+                    len(contacts) - contact_count
+                ) * send_sms_total_time
+
+                time_left_in_hr = convert_datetime_to_hours(
+                    time_left.total_seconds()
+                )
+                click.secho(
+                    f"\n{contact_count} contacts marketed to, "
+                    f"{time_taken_so_far} hours taken so far, "
+                    f"{sms_rate}, {time_left_in_hr} hours left\n",
+                    fg="blue",
+                    blink=True,
+                    bold=True,
+                )
+
+    if contact_count == contacts_found:
         click.secho(
-            f"\n{len(contacts)} contacts engaged successfully!", fg="green"
+            f"\n{contacts_found} contacts engaged successfully!", fg="green"
+        )
+    else:
+        click.secho(
+            f"\n{contact_count} contacts engaged successfully!", fg="green"
         )
 
 

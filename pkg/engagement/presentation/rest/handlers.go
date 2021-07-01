@@ -1469,7 +1469,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			DeliveryReportTimeStamp: time.Now(),
 		}
 
-		log.Printf("Updating the message with the deilvery report recieved: %v \n\n\n", deliveryReport)
+		log.Printf("Delivery report status: %v \n\n\n", deliveryReport.Status)
 		marketingSMS, err := p.interactor.SMS.UpdateMarketingMessage(
 			ctx,
 			phoneNumber,
