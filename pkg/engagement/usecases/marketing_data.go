@@ -1,11 +1,14 @@
 package usecases
 
 import (
+	"bytes"
 	"context"
 	"encoding/csv"
 	"fmt"
 	"os"
 	"path/filepath"
+	"text/template"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
@@ -14,6 +17,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
@@ -21,26 +25,75 @@ const (
 	campaignDataFileName = "campaign.dataset.csv"
 )
 
+const dataLoadingTemaplate = `
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Template</title>
+</head>
+
+<body>
+    <h2>Loading Error, {{.LoadingError}}</h2>
+
+	<h2>Entries Unique Loaded On Firebase, {{.EntriesUniqueLoadedOnFirebase}}</h2>
+
+	<h2>Entries Unique Loaded On CRM, {{.EntriesUniqueLoadedOnCRM}}</h2>
+
+	<h2>Total Entries Found On File, {{.TotalEntriesFoundOnFile}}</h2>
+
+	<h3>Entries</h3>
+
+	<table style="width:100%">
+	<tr>
+		<th>Identifier</th>
+		<th>HasLoadedToFirebase</th>
+		<th>HasBeenRollBackFromFirebase</th>
+		<th>HasLoadedToCRM</th>
+		<th>FirebaseLoadError</th>
+		<th>CRMLoadError</th>
+	</tr>
+	{{range .Entries}}
+		<tr>
+			<td>{{.Identifier}}</td>
+			<td>{{.HasLoadedToFirebase}}</td>
+			<td>{{.HasBeenRollBackFromFirebase}}</td>
+			<td>{{.HasLoadedToCRM}}</td>
+			<td>{{.FirebaseLoadError}}</td>
+			<td>{{.CRMLoadError}}</td>			
+		</tr>
+    {{end}}	
+	</table>   
+
+</body>
+
+</html>
+`
+
 type MarketingDataUseCases interface {
 	GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*dto.Segment, error)
 	UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error
 	BeWellAware(ctx context.Context, email string) error
-	LoadCampaignDataset(ctx context.Context, phone string) error
+	LoadCampaignDataset(ctx context.Context, phone string, email string)
 }
 
 // MarketingDataImpl represents the marketing usecase implementation
 type MarketingDataImpl struct {
 	repository repository.Repository
 	hubspot    hubspot.ServiceHubSpotInterface
+	mail       *mail.Service
 }
 
 // NewMarketing initialises a marketing usecase
 func NewMarketing(
-	repository repository.Repository, hubspot hubspot.ServiceHubSpotInterface,
+	repository repository.Repository, hubspot hubspot.ServiceHubSpotInterface, mail *mail.Service,
 ) *MarketingDataImpl {
 	return &MarketingDataImpl{
 		repository: repository,
 		hubspot:    hubspot,
+		mail:       mail,
 	}
 }
 
@@ -89,18 +142,61 @@ func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error 
 // this call is idempotent,hence its safeguards against duplicates on both firstore and CRM
 // this function expects that the CSV containing the dataset has been preprocessed and contains
 // attributes expected by firestore and CRM
-func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string) error {
+// column order mattters. Should be as;
+// be_well_enrolled
+// opt_out,
+// be_well_aware
+//be_well_persona
+// has_wellness_card
+// has_cover
+// payor
+// first_channel_of_contact
+// initial_segment
+// has_virtual_card
+// email
+// phone_number
+// firstname
+// lastname
+// wing
+// message_sent
+func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string, email string) {
+	logrus.Info("loading campaign dataset started")
+	res := dto.MarketingDataLoadOutput{}
+
+	sendMail := func(data dto.MarketingDataLoadOutput) {
+		logrus.Infof("sending load campaign dataset processing output to  %v", email)
+
+		t := template.Must(template.New("LoadCampaignDataset").Parse(dataLoadingTemaplate))
+		buf := new(bytes.Buffer)
+		_ = t.Execute(buf, res)
+		content := buf.String()
+		if _, _, err := m.mail.SendEmail(
+			"Load Campaign Dataset Processing",
+			content,
+			nil,
+			email,
+		); err != nil {
+			logrus.Errorf("failed to send Load Campaign Dataset Processing email: %v", err)
+		}
+	}
+
 	if p := base.StringSliceContains(base.AuthorizedPhones, phone); !p {
-		return fmt.Errorf("not authorized to access this resource")
+		res.LoadingError = fmt.Errorf("not authorized to access this resource")
+		sendMail(res)
+		return
 	}
 	isAuthorized, err := authorization.IsAuthorized(&base.UserInfo{
 		PhoneNumber: phone,
 	}, permission.LoadMarketingData)
 	if err != nil {
-		return err
+		res.LoadingError = err
+		sendMail(res)
+		return
 	}
 	if !isAuthorized {
-		return fmt.Errorf("user not authorized to access this resource")
+		res.LoadingError = fmt.Errorf("user not authorized to access this resource")
+		sendMail(res)
+		return
 	}
 
 	cwd, _ := os.Getwd()
@@ -108,20 +204,25 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 
 	csvFile, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("error opening the CSV file: %w", err)
+		res.LoadingError = fmt.Errorf("error opening the CSV file: %w", err)
+		sendMail(res)
+		return
 	}
 	defer csvFile.Close()
 
 	csvContent, err := csv.NewReader(csvFile).ReadAll()
 	if err != nil {
-		return fmt.Errorf("failed to read data from the CSV file :%w", err)
+		res.LoadingError = fmt.Errorf("failed to read data from the CSV file :%w", err)
+		sendMail(res)
+		return
 	}
 
 	csvPayload := csvContent[1:]
 
-	count := 0
-
 	for _, line := range csvPayload {
+
+		entry := dto.MarketingDataLoadEntriesOutput{}
+
 		data := dto.Segment{
 			BeWellEnrolled:        line[0],
 			OptOut:                line[1],
@@ -139,25 +240,40 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			LastName:              line[13],
 			Wing:                  line[14],
 			MessageSent:           line[15],
-			IsSynced:              line[16],
-			TimeSynced:            line[17],
 		}
 
-		logrus.Printf("Loading date of email %v", data.Email)
+		logrus.Infof("processing entry of identifier %v", line[10])
 
 		// publish to firestore
 		if err := m.repository.LoadMarketingData(ctx, data); err != nil {
-			return fmt.Errorf("%v", err)
+			entry.FirebaseLoadError = fmt.Errorf("%v", err)
+			entry.HasLoadedToFirebase = false
+			entry.Identifier = line[10]
+			res.Entries = append(res.Entries, entry)
+			continue
 		}
 
-		res, err := m.hubspot.SearchContactByPhone(line[11])
+		resH, err := m.hubspot.SearchContactByPhone(line[11])
 		if err != nil {
 			_ = m.repository.RollBackMarketingData(ctx, data)
+			entry.FirebaseLoadError = nil
+			entry.HasLoadedToFirebase = true
+			entry.HasBeenRollBackFromFirebase = true
+			entry.HasLoadedToCRM = false
+			entry.CRMLoadError = err
+			entry.Identifier = line[10]
+			res.Entries = append(res.Entries, entry)
 			continue
 		}
 
 		// contact already exists. Nothing to do here
-		if len(res.Results) >= 1 {
+		if len(resH.Results) >= 1 {
+			entry.FirebaseLoadError = nil
+			entry.HasLoadedToFirebase = true
+			entry.HasLoadedToCRM = false
+			entry.CRMLoadError = fmt.Errorf("contact already exists on the CRM")
+			entry.Identifier = line[10]
+			res.Entries = append(res.Entries, entry)
 			continue
 		}
 
@@ -239,13 +355,50 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			},
 		}); err != nil {
 			_ = m.repository.RollBackMarketingData(ctx, data)
+			entry.FirebaseLoadError = nil
+			entry.HasLoadedToFirebase = true
+			entry.HasBeenRollBackFromFirebase = true
+			entry.HasLoadedToCRM = false
+			entry.CRMLoadError = err
+			entry.Identifier = line[10]
+			res.Entries = append(res.Entries, entry)
+
+			// protection from hubspot rate limiting
+			time.Sleep(time.Second * 2)
 			continue
 		}
 
-		count++
+		// append entries that have loaded on both firebase and crm
+		entry.FirebaseLoadError = nil
+		entry.HasLoadedToFirebase = true
+		entry.HasLoadedToCRM = true
+		entry.Identifier = line[10]
+		res.Entries = append(res.Entries, entry)
+
+		// protection from hubspot rate limiting
+		time.Sleep(time.Second * 2)
 	}
 
-	logrus.Printf("Records successfully created on firestore and CRM %v", count)
+	res.TotalEntriesFoundOnFile = len(csvPayload)
+	res.EntriesUniqueLoadedOnFirebase = func(ents []dto.MarketingDataLoadEntriesOutput) int {
+		count := 0
+		for _, e := range ents {
+			if e.HasBeenRollBackFromFirebase && !e.HasBeenRollBackFromFirebase {
+				count++
+			}
+		}
+		return 0
+	}(res.Entries)
 
-	return nil
+	res.EntriesUniqueLoadedOnCRM = func(ents []dto.MarketingDataLoadEntriesOutput) int {
+		count := 0
+		for _, e := range ents {
+			if e.HasLoadedToCRM {
+				count++
+			}
+		}
+		return 0
+	}(res.Entries)
+
+	sendMail(res)
 }

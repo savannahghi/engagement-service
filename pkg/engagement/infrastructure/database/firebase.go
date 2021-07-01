@@ -1393,7 +1393,7 @@ func fetchQueryDocs(
 		return nil, fmt.Errorf(
 			"unable to fetch documents: %w", err)
 	}
-	if requireAtLeastOne && len(docs) < 0 {
+	if requireAtLeastOne && len(docs) == 0 {
 		return nil, fmt.Errorf("expected at least one matching document")
 	}
 	return docs, nil

@@ -124,7 +124,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	twilio := twilio.NewService()
 	surveys := surveys.NewService(fr)
 	hubspot := hubspot.NewHubSpotService()
-	marketing := usecases.NewMarketing(fr, hubspot)
+	marketing := usecases.NewMarketing(fr, hubspot, mail)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(

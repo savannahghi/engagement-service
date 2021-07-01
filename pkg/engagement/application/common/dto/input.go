@@ -56,7 +56,8 @@ type SetBewellAwareInput struct {
 }
 
 type LoadCampgainDataInput struct {
-	PhoneNumber *string `json:"phoneNumber"`
+	PhoneNumber  *string `json:"phoneNumber"`
+	EmailAddress *string `json:"email"`
 }
 
 // MarketingSMS represents marketing SMS data

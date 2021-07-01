@@ -86,7 +86,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	twilio := twilio.NewService()
 	surveys := surveys.NewService(r)
 	hubspot := hubspot.NewHubSpotService()
-	marketing := usecases.NewMarketing(r, hubspot)
+	marketing := usecases.NewMarketing(r, hubspot, mail)
 
 	i, err := interactor.NewEngagementInteractor(
 		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm, surveys, hubspot, marketing,
