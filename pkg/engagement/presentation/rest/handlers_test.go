@@ -155,12 +155,12 @@ func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string
 func loadTestMarketingData(ctx context.Context, marketingData dto.Segment) error {
 	repository, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
-		return fmt.Errorf("Error, unable to initialize Firebase Repository: %s", err)
+		return fmt.Errorf("unable to initialize Firebase Repository: %s", err)
 	}
 
 	_, err = repository.LoadMarketingData(ctx, marketingData)
 	if err != nil {
-		return fmt.Errorf("Error, unable to load market data: %s", err)
+		return fmt.Errorf("unable to load market data: %s", err)
 	}
 
 	return nil
@@ -169,12 +169,12 @@ func loadTestMarketingData(ctx context.Context, marketingData dto.Segment) error
 func rollBackTestMarketingData(ctx context.Context, marketingData dto.Segment) error {
 	repository, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
-		return fmt.Errorf("Error, unable to initialize Firebase Repository: %s", err)
+		return fmt.Errorf("unable to initialize Firebase Repository: %s", err)
 	}
 
 	err = repository.RollBackMarketingData(ctx, marketingData)
 	if err != nil {
-		return fmt.Errorf("Error, unable to roll back market data: %s", err)
+		return fmt.Errorf("unable to roll back market data: %s", err)
 	}
 
 	return nil

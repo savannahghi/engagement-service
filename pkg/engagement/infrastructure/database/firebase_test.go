@@ -2,11 +2,13 @@ package database_test
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/google/uuid"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -89,6 +91,28 @@ func testNudge() *base.Nudge {
 			base.ChannelSms,
 			base.ChannelWhatsapp,
 		},
+	}
+}
+
+func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) dto.Segment {
+	return dto.Segment{
+		BeWellEnrolled:        "NO",
+		OptOut:                "NO",
+		BeWellAware:           "NO",
+		BeWellPersona:         "SLADER",
+		HasWellnessCard:       "YES",
+		HasCover:              "YES",
+		Payor:                 "Jubilee Insuarance Kenya",
+		FirstChannelOfContact: "SMS",
+		InitialSegment:        initialSegment,
+		HasVirtualCard:        "NO",
+		Email:                 email,
+		PhoneNumber:           phoneNumber,
+		FirstName:             gofakeit.FirstName(),
+		LastName:              gofakeit.LastName(),
+		Wing:                  wing,
+		MessageSent:           "FALSE",
+		IsSynced:              "FALSE",
 	}
 }
 
@@ -2128,5 +2152,76 @@ func TestRepository_RetrieveMarketingData(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+func TestRepository_UpdateMessageSentStatus(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+	repository, err := db.NewFirebaseRepository(ctx)
+	if !assert.Nilf(err, "Error initializing Firebase repository: %s", err) {
+		return
+	}
+	if !assert.NotNil(repository, "nil Firebase repository") {
+		return
+	}
+
+	// Setup test data
+	segment := composeMarketingDataPayload(
+		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		gofakeit.PhoneFormatted(),
+		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
+	)
+	_, err = repository.LoadMarketingData(ctx, segment)
+	if !assert.Nilf(err, "Error loading marketing data: %s", err) {
+		return
+	}
+
+	payload1 := dto.MarketingMessagePayload{
+		InitialSegment: segment.InitialSegment,
+		Wing:           segment.Wing,
+	}
+	payload2 := dto.MarketingMessagePayload{
+		InitialSegment: fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		Wing:           fmt.Sprintf("WING %s", ksuid.New().String()),
+	}
+
+	// Make sure that segment was loaded in the repository
+	segments, err := repository.RetrieveMarketingData(ctx, &payload1)
+	if !assert.Nilf(err, "Error, unable to retrieve loaded marketing data: %s", err) {
+		return
+	}
+	if !assert.Equalf(len(segments), 1, "Error, expected exactly 1 segment with wing '%s'", err) {
+		return
+	}
+
+	tests := []struct {
+		name    string
+		payload dto.MarketingMessagePayload
+		wantErr bool
+	}{
+		{
+			name:    "Update message sent status of an existing segment",
+			payload: payload1,
+			wantErr: false,
+		},
+		{
+			name:    "Update message sent status of an non-existing segment",
+			payload: payload2,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err = repository.UpdateMessageSentStatus(ctx, segment.PhoneNumber)
+			assert.False(!tt.wantErr && err != nil, "Error, unable to update message sent status: %s", err)
+		})
+	}
+
+	// Teardown test data
+	err = repository.RollBackMarketingData(ctx, segment)
+	if !assert.Nilf(err, "Error, unable to roll back market data: %s", err) {
+		return
 	}
 }
