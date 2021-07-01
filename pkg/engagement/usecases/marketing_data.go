@@ -164,7 +164,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 	res := dto.MarketingDataLoadOutput{}
 
 	sendMail := func(data dto.MarketingDataLoadOutput) {
-		logrus.Infof("sending load campaign dataset processing output to  %v", email)
+		logrus.Infof("sending load campaign dataset processing output to  %v with data: %v", email, data)
 
 		t := template.Must(template.New("LoadCampaignDataset").Parse(dataLoadingTemaplate))
 		buf := new(bytes.Buffer)
