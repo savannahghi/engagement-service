@@ -188,7 +188,7 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*G
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 
-	profile, err := s.onboarding.GetUserProfile(user.UID)
+	profile, err := s.onboarding.GetUserProfile(ctx, user.UID)
 
 	if err != nil {
 		return nil, fmt.Errorf("unable to get user profile: %w", err)

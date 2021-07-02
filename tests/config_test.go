@@ -171,20 +171,20 @@ func GetInterserviceClient(t *testing.T, rootDomain string) *base.InterServiceCl
 	return isc
 }
 
-func GetInterserviceBearerTokenHeader(t *testing.T, rootDomain string) string {
+func GetInterserviceBearerTokenHeader(ctx context.Context, t *testing.T, rootDomain string) string {
 	isc := GetInterserviceClient(t, rootDomain)
-	authToken, err := isc.CreateAuthToken()
+	authToken, err := isc.CreateAuthToken(ctx)
 	assert.Nil(t, err)
 	assert.NotZero(t, authToken)
 	bearerHeader := fmt.Sprintf("Bearer %s", authToken)
 	return bearerHeader
 }
 
-func GetDefaultHeaders(t *testing.T, rootDomain string) map[string]string {
+func GetDefaultHeaders(ctx context.Context, t *testing.T, rootDomain string) map[string]string {
 	return req.Header{
 		"Accept":        "application/json",
 		"Content-Type":  "application/json",
-		"Authorization": GetInterserviceBearerTokenHeader(t, rootDomain),
+		"Authorization": GetInterserviceBearerTokenHeader(ctx, t, rootDomain),
 	}
 }
 
@@ -316,7 +316,7 @@ func postElement(
 		return err
 	}
 
-	headers := GetDefaultHeaders(t, baseURL)
+	headers := GetDefaultHeaders(ctx, t, baseURL)
 	for k, v := range headers {
 		r.Header.Add(k, v)
 	}
@@ -400,7 +400,7 @@ func postMessage(
 		return err
 	}
 
-	headers := GetDefaultHeaders(t, baseURL)
+	headers := GetDefaultHeaders(ctx, t, baseURL)
 	for k, v := range headers {
 		r.Header.Add(k, v)
 	}

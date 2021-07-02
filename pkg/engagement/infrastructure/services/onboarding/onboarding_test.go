@@ -1,6 +1,7 @@
 package onboarding_test
 
 import (
+	"context"
 	"testing"
 
 	"gitlab.slade360emr.com/go/base"
@@ -50,7 +51,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		profileClient,
 	)
@@ -60,6 +61,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 	}
 
 	type args struct {
+		ctx  context.Context
 		uids onboarding.UserUIDs
 	}
 	tests := []struct {
@@ -71,6 +73,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 		{
 			name: "happy case: get email addresses inter-service API call to profile",
 			args: args{
+				ctx: ctx,
 				uids: onboarding.UserUIDs{
 					UIDs: []string{token.UID},
 				},
@@ -81,6 +84,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 		{
 			name: "sad case: get email addresses inter-service API call to profile",
 			args: args{
+				ctx: ctx,
 				uids: onboarding.UserUIDs{
 					UIDs: []string{},
 				},
@@ -91,7 +95,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rps.GetEmailAddresses(tt.args.uids)
+			got, err := rps.GetEmailAddresses(tt.args.ctx, tt.args.uids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RemoteProfileService.GetEmailAddresses() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -120,7 +124,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		profileClient,
 	)
@@ -130,6 +134,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 	}
 
 	type args struct {
+		ctx  context.Context
 		uids onboarding.UserUIDs
 	}
 	tests := []struct {
@@ -141,6 +146,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 		{
 			name: "happy case: get phone numbers inter-service API call to profile",
 			args: args{
+				ctx: ctx,
 				uids: onboarding.UserUIDs{
 					UIDs: []string{token.UID},
 				},
@@ -151,6 +157,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 		{
 			name: "sad case: get phone numbers inter-service API call to profile",
 			args: args{
+				ctx: ctx,
 				uids: onboarding.UserUIDs{
 					UIDs: []string{}, // empty UID list
 				},
@@ -161,7 +168,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rps.GetPhoneNumbers(tt.args.uids)
+			got, err := rps.GetPhoneNumbers(tt.args.ctx, tt.args.uids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RemoteProfileService.GetPhoneNumbers() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -190,7 +197,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		profileClient,
 	)
@@ -200,6 +207,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 	}
 
 	type args struct {
+		ctx  context.Context
 		uids onboarding.UserUIDs
 	}
 	tests := []struct {
@@ -211,6 +219,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 		{
 			name: "happy case: get device tokens inter-service API call to profile",
 			args: args{
+				ctx: ctx,
 				uids: onboarding.UserUIDs{
 					UIDs: []string{token.UID},
 				},
@@ -221,6 +230,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 		{
 			name: "sad case: get device tokens inter-service API call to profile",
 			args: args{
+				ctx: ctx,
 				uids: onboarding.UserUIDs{
 					UIDs: []string{},
 				},
@@ -231,7 +241,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rps.GetDeviceTokens(tt.args.uids)
+			got, err := rps.GetDeviceTokens(tt.args.ctx, tt.args.uids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RemoteProfileService.GetDeviceTokens() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -269,6 +279,7 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 		return
 	}
 	type args struct {
+		ctx context.Context
 		uid string
 	}
 
@@ -286,20 +297,20 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 	}{
 		{
 			name:    "happy case: got user profile",
-			args:    args{uid: UID},
+			args:    args{ctx: ctx, uid: UID},
 			wantNil: false,
 			wantErr: false,
 		},
 		{
 			name:    "sad case: unable to get user profile",
-			args:    args{uid: UID},
+			args:    args{ctx: ctx, uid: UID},
 			wantNil: true,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rps.GetUserProfile(tt.args.uid)
+			got, err := rps.GetUserProfile(tt.args.ctx, tt.args.uid)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RemoteProfileService.GetUserProfile() error = %v, wantErr %v", err, tt.wantErr)
 				return

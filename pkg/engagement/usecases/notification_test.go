@@ -83,6 +83,7 @@ func onboardingISCClient(t *testing.T) *base.InterServiceClient {
 }
 
 func RegisterPushToken(
+	ctx context.Context,
 	t *testing.T,
 	UID string,
 	onboardingClient *base.InterServiceClient,
@@ -97,6 +98,7 @@ func RegisterPushToken(
 		"uid":        UID,
 	}
 	resp, err := onboardingClient.MakeRequest(
+		ctx,
 		http.MethodPost,
 		registerPushToken,
 		payload,
@@ -1023,7 +1025,7 @@ func TestNotifyItemUpdate(t *testing.T) {
 		t.Errorf("failed to create a test user: %v", err)
 		return
 	}
-	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	_, err = RegisterPushToken(ctx, t, token.UID, onboardingISCClient(t))
 
 	if err != nil {
 		t.Errorf("failed to get user push tokens: %v", err)
@@ -1129,7 +1131,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 		t.Errorf("failed to create a test user: %v", err)
 		return
 	}
-	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	_, err = RegisterPushToken(ctx, t, token.UID, onboardingISCClient(t))
 
 	if err != nil {
 		t.Errorf("failed to get user push tokens: %v", err)
@@ -1246,7 +1248,7 @@ func TestGetUserTokens(t *testing.T) {
 		t.Errorf("failed to create a test user: %v", err)
 		return
 	}
-	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	_, err = RegisterPushToken(ctx, t, token.UID, onboardingISCClient(t))
 
 	if err != nil {
 		t.Errorf("failed to get user push tokens: %v", err)
@@ -1256,6 +1258,7 @@ func TestGetUserTokens(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
+		ctx  context.Context
 		uids []string
 	}
 	tokens := token.UID
@@ -1267,6 +1270,7 @@ func TestGetUserTokens(t *testing.T) {
 		{
 			name: "happy case: get user push tokens",
 			args: args{
+				ctx: ctx,
 				uids: []string{
 					tokens,
 				},
@@ -1277,6 +1281,7 @@ func TestGetUserTokens(t *testing.T) {
 		{
 			name: "sad case: get user push tokens",
 			args: args{
+				ctx: ctx,
 				uids: []string{
 					"invalid_uid",
 				},
@@ -1286,7 +1291,7 @@ func TestGetUserTokens(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tokens, err := notify.GetUserTokens(tt.args.uids)
+			tokens, err := notify.GetUserTokens(tt.args.ctx, tt.args.uids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetUserTokens() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -163,6 +163,7 @@ type NotificationUsecases interface {
 	) error
 
 	GetUserTokens(
+		ctx context.Context,
 		uids []string,
 	) ([]string, error)
 
@@ -974,8 +975,8 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 }
 
 // GetUserTokens retrieves the user tokens corresponding to the supplied UIDs
-func (n NotificationImpl) GetUserTokens(uids []string) ([]string, error) {
-	userTokens, err := n.onboarding.GetDeviceTokens(onboarding.UserUIDs{
+func (n NotificationImpl) GetUserTokens(ctx context.Context, uids []string) ([]string, error) {
+	userTokens, err := n.onboarding.GetDeviceTokens(ctx, onboarding.UserUIDs{
 		UIDs: uids,
 	})
 	if err != nil {
@@ -1012,7 +1013,7 @@ func (n NotificationImpl) SendNotificationViaFCM(
 		return fmt.Errorf("nil notification")
 	}
 
-	tokens, err := n.GetUserTokens(uids)
+	tokens, err := n.GetUserTokens(ctx, uids)
 	if err != nil {
 		return fmt.Errorf("can't get user tokens: %w", err)
 	}

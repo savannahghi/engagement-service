@@ -136,7 +136,7 @@ var SendMessage = base.PermissionInput{
 	Action:   "create",
 }
 
-// SendMessage describes the create permissions on a message
+// LoadMarketingData describes the create permissions on a message
 var LoadMarketingData = base.PermissionInput{
 	Resource: "load_marketing_data",
 	Action:   "create",

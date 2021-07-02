@@ -99,6 +99,7 @@ func onboardingISCClient(t *testing.T) *base.InterServiceClient {
 }
 
 func RegisterPushToken(
+	ctx context.Context,
 	t *testing.T,
 	UID string,
 	onboardingClient *base.InterServiceClient,
@@ -113,6 +114,7 @@ func RegisterPushToken(
 		"uid":        UID,
 	}
 	resp, err := onboardingClient.MakeRequest(
+		ctx,
 		http.MethodPost,
 		registerPushToken,
 		payload,
@@ -669,7 +671,7 @@ func TestGetFeed(t *testing.T) {
 		return
 	}
 
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -824,7 +826,7 @@ func TestGetFeed(t *testing.T) {
 				return
 			}
 
-			for k, v := range getDefaultHeaders(t, baseURL) {
+			for k, v := range getDefaultHeaders(ctx, t, baseURL) {
 				r.Header.Add(k, v)
 			}
 
@@ -914,7 +916,7 @@ func TestGetFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -1043,7 +1045,7 @@ func TestGetNudge(t *testing.T) {
 		t.Errorf("can't post nudge: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -1172,7 +1174,7 @@ func TestGetAction(t *testing.T) {
 		t.Errorf("can't post action: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -1277,7 +1279,7 @@ func TestGetAction(t *testing.T) {
 }
 
 func TestPublishFeedItem(t *testing.T) {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1287,7 +1289,7 @@ func TestPublishFeedItem(t *testing.T) {
 	}
 	uid := token.UID
 	fl := base.FlavourConsumer
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	testItem := getTestItem(t)
 
 	bs, err := json.Marshal(testItem)
@@ -1421,7 +1423,7 @@ func TestDeleteFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -1550,7 +1552,7 @@ func TestDeleteNudge(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -1679,7 +1681,7 @@ func TestDeleteAction(t *testing.T) {
 		t.Errorf("can't post test action: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -1817,7 +1819,7 @@ func TestPostMessage(t *testing.T) {
 	}
 	payload := bytes.NewBuffer(msgBytes)
 
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -1962,7 +1964,7 @@ func TestDeleteMessage(t *testing.T) {
 		return
 	}
 
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -2069,7 +2071,7 @@ func TestDeleteMessage(t *testing.T) {
 }
 
 func TestProcessEvent(t *testing.T) {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -2079,7 +2081,7 @@ func TestProcessEvent(t *testing.T) {
 	}
 	uid := token.UID
 	fl := base.FlavourConsumer
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	event := getTestEvent()
 
 	bs, err := json.Marshal(event)
@@ -2189,7 +2191,7 @@ func TestProcessEvent(t *testing.T) {
 }
 
 func TestPublishNudge(t *testing.T) {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -2199,7 +2201,7 @@ func TestPublishNudge(t *testing.T) {
 	}
 	uid := token.UID
 	fl := base.FlavourConsumer
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	nudge := testNudge(t)
 
 	bs, err := json.Marshal(nudge)
@@ -2333,7 +2335,7 @@ func TestResolveNudge(t *testing.T) {
 		t.Errorf("can't post nudge: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -2462,7 +2464,7 @@ func TestUnresolveNudge(t *testing.T) {
 		t.Errorf("can't post nudge: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -2591,7 +2593,7 @@ func TestShowNudge(t *testing.T) {
 		t.Errorf("can't post nudge: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -2720,7 +2722,7 @@ func TestHideNudge(t *testing.T) {
 		t.Errorf("can't post nudge: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -2825,7 +2827,7 @@ func TestHideNudge(t *testing.T) {
 }
 
 func TestPublishAction(t *testing.T) {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -2835,7 +2837,7 @@ func TestPublishAction(t *testing.T) {
 	}
 	uid := token.UID
 	fl := base.FlavourConsumer
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	action := getTestAction()
 
 	bs, err := json.Marshal(action)
@@ -2969,7 +2971,7 @@ func TestResolveFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -3098,7 +3100,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -3227,7 +3229,7 @@ func TestPinFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -3356,7 +3358,7 @@ func TestUnpinFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -3485,7 +3487,7 @@ func TestHideFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -3614,7 +3616,7 @@ func TestShowFeedItem(t *testing.T) {
 		t.Errorf("can't post test item: %s", err)
 		return
 	}
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -3718,20 +3720,20 @@ func TestShowFeedItem(t *testing.T) {
 	}
 }
 
-func getInterserviceBearerTokenHeader(t *testing.T, rootDomain string) string {
+func getInterserviceBearerTokenHeader(ctx context.Context, t *testing.T, rootDomain string) string {
 	isc := getInterserviceClient(t, rootDomain)
-	authToken, err := isc.CreateAuthToken()
+	authToken, err := isc.CreateAuthToken(ctx)
 	assert.Nil(t, err)
 	assert.NotZero(t, authToken)
 	bearerHeader := fmt.Sprintf("Bearer %s", authToken)
 	return bearerHeader
 }
 
-func getDefaultHeaders(t *testing.T, rootDomain string) map[string]string {
+func getDefaultHeaders(ctx context.Context, t *testing.T, rootDomain string) map[string]string {
 	return req.Header{
 		"Accept":        "application/json",
 		"Content-Type":  "application/json",
-		"Authorization": getInterserviceBearerTokenHeader(t, rootDomain),
+		"Authorization": getInterserviceBearerTokenHeader(ctx, t, rootDomain),
 	}
 }
 
@@ -3807,7 +3809,7 @@ func postElement(
 		return err
 	}
 
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	for k, v := range headers {
 		r.Header.Add(k, v)
 	}
@@ -3891,7 +3893,7 @@ func postMessage(
 		return err
 	}
 
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	for k, v := range headers {
 		r.Header.Add(k, v)
 	}
@@ -3925,7 +3927,7 @@ func postMessage(
 }
 
 func getTestItem(t *testing.T) *base.Item {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -3933,7 +3935,7 @@ func getTestItem(t *testing.T) *base.Item {
 		t.Errorf("failed to create a test user: %v", err)
 		return nil
 	}
-	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	_, err = RegisterPushToken(ctx, t, token.UID, onboardingISCClient(t))
 	if err != nil {
 		t.Errorf("failed to get user push tokens: %v", err)
 		return nil
@@ -4003,7 +4005,7 @@ func getTestItem(t *testing.T) *base.Item {
 }
 
 func testNudge(t *testing.T) *base.Nudge {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -4011,7 +4013,7 @@ func testNudge(t *testing.T) *base.Nudge {
 		t.Errorf("failed to create a test user: %v", err)
 		return &base.Nudge{}
 	}
-	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	_, err = RegisterPushToken(ctx, t, token.UID, onboardingISCClient(t))
 	if err != nil {
 		t.Errorf("failed to get user push tokens: %v", err)
 		return nil
@@ -4116,7 +4118,7 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 		t.Errorf("failed to create a test user: %v", err)
 		return
 	}
-	_, err = RegisterPushToken(t, token.UID, onboardingISCClient(t))
+	_, err = RegisterPushToken(ctx, t, token.UID, onboardingISCClient(t))
 
 	if err != nil {
 		t.Errorf("failed to get user push tokens: %v", err)
@@ -5312,7 +5314,8 @@ func TestGoogleCloudPubSubHandler(t *testing.T) {
 }
 
 func TestPostUpload(t *testing.T) {
-	headers := getDefaultHeaders(t, baseURL)
+	ctx := context.Background()
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	itemID := ksuid.New().String()
 
 	imgPath := rest.StaticDir + "/1px.png"
@@ -5576,7 +5579,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 	}
 	payload := bytes.NewBuffer(bs)
 
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
 	type args struct {
 		url        string
@@ -5701,7 +5704,8 @@ func TestResolveDefaultNudge(t *testing.T) {
 }
 
 func TestSendEmail(t *testing.T) {
-	headers := getDefaultHeaders(t, baseURL)
+	ctx := context.Background()
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	to := []string{"be.well@bewell.co.ke"}
 	email := dto.EMailMessage{
 		Subject: "Test Subject :)",
@@ -5841,7 +5845,7 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 	headers := req.Header{
 		"Accept":        "application/json",
 		"Content-Type":  "application/x-www-form-urlencoded",
-		"Authorization": getInterserviceBearerTokenHeader(t, baseURL),
+		"Authorization": getInterserviceBearerTokenHeader(ctx, t, baseURL),
 	}
 
 	type args struct {
@@ -5932,7 +5936,8 @@ func TestSetBewellAware(t *testing.T) {
 		return
 	}
 
-	headers := getDefaultHeaders(t, baseURL)
+	ctx := context.Background()
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	payload := bytes.NewBuffer(userEmailAsJson)
 	uploadUrl := fmt.Sprintf("%s/set_bewell_aware", baseURL)
 
@@ -6049,7 +6054,7 @@ func TestGetMarketingData(t *testing.T) {
 		return
 	}
 
-	headers := getDefaultHeaders(t, baseURL)
+	headers := getDefaultHeaders(ctx, t, baseURL)
 	getUrl := fmt.Sprintf("%s/marketing_data", baseURL)
 
 	tests := []struct {

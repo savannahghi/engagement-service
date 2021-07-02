@@ -1,6 +1,7 @@
 package onboarding
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -26,10 +27,10 @@ type UserUIDs struct {
 
 // ProfileService defines the interactions with the profile service
 type ProfileService interface {
-	GetEmailAddresses(uids UserUIDs) (map[string][]string, error)
-	GetPhoneNumbers(uids UserUIDs) (map[string][]string, error)
-	GetDeviceTokens(uid UserUIDs) (map[string][]string, error)
-	GetUserProfile(uid string) (*base.UserProfile, error)
+	GetEmailAddresses(ctx context.Context, uids UserUIDs) (map[string][]string, error)
+	GetPhoneNumbers(ctx context.Context, uids UserUIDs) (map[string][]string, error)
+	GetDeviceTokens(ctx context.Context, uid UserUIDs) (map[string][]string, error)
+	GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error)
 }
 
 // NewRemoteProfileService initializes a connection to a remote profile service
@@ -49,9 +50,10 @@ type RemoteProfileService struct {
 }
 
 func (rps RemoteProfileService) callProfileService(
+	ctx context.Context,
 	uids UserUIDs, path string,
 ) (map[string][]string, error) {
-	resp, err := rps.profileClient.MakeRequest(http.MethodPost, path, uids)
+	resp, err := rps.profileClient.MakeRequest(ctx, http.MethodPost, path, uids)
 	if err != nil {
 		return nil, fmt.Errorf("error calling profile service: %w", err)
 	}
@@ -84,33 +86,36 @@ func (rps RemoteProfileService) callProfileService(
 // GetEmailAddresses gets the specified users' email addresses from the
 // staging / testing / prod profile service
 func (rps RemoteProfileService) GetEmailAddresses(
+	ctx context.Context,
 	uids UserUIDs,
 ) (map[string][]string, error) {
-	return rps.callProfileService(uids, profileEmails)
+	return rps.callProfileService(ctx, uids, profileEmails)
 }
 
 // GetPhoneNumbers gets the specified users' phone numbers from the
 // staging / testing / prod profile service
 func (rps RemoteProfileService) GetPhoneNumbers(
+	ctx context.Context,
 	uids UserUIDs,
 ) (map[string][]string, error) {
-	return rps.callProfileService(uids, profilePhoneNumbers)
+	return rps.callProfileService(ctx, uids, profilePhoneNumbers)
 }
 
 // GetDeviceTokens gets the specified users' FCM push tokens from the
 // staging / testing / prod profile service
 func (rps RemoteProfileService) GetDeviceTokens(
+	ctx context.Context,
 	uids UserUIDs,
 ) (map[string][]string, error) {
-	return rps.callProfileService(uids, profileTokens)
+	return rps.callProfileService(ctx, uids, profileTokens)
 }
 
 // GetUserProfile gets the specified users' profile from the onboarding service
-func (rps RemoteProfileService) GetUserProfile(uid string) (*base.UserProfile, error) {
+func (rps RemoteProfileService) GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error) {
 	uidPayoload := dto.UIDPayload{
 		UID: &uid,
 	}
-	resp, err := rps.profileClient.MakeRequest(http.MethodPost, userProfile, uidPayoload)
+	resp, err := rps.profileClient.MakeRequest(ctx, http.MethodPost, userProfile, uidPayoload)
 
 	if err != nil {
 		return nil, fmt.Errorf("error calling profile service: %w", err)
