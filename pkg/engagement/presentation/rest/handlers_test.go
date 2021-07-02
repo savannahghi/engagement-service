@@ -128,6 +128,56 @@ func RegisterPushToken(
 	return true, nil
 }
 
+func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) *dto.Segment {
+	return &dto.Segment{
+		BeWellEnrolled:        "NO",
+		OptOut:                "NO",
+		BeWellAware:           "NO",
+		BeWellPersona:         "SLADER",
+		HasWellnessCard:       "YES",
+		HasCover:              "YES",
+		Payor:                 "Jubilee Insuarance Kenya",
+		FirstChannelOfContact: "SMS",
+		InitialSegment:        initialSegment,
+		HasVirtualCard:        "NO",
+		Email:                 email,
+		PhoneNumber:           phoneNumber,
+		FirstName:             gofakeit.FirstName(),
+		LastName:              gofakeit.LastName(),
+		Wing:                  wing,
+		MessageSent:           "FALSE",
+		IsSynced:              "FALSE",
+	}
+}
+
+func loadTestMarketingData(ctx context.Context, marketingData dto.Segment) error {
+	repository, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		return fmt.Errorf("Error, unable to initialize Firebase Repository: %s", err)
+	}
+
+	_, err = repository.LoadMarketingData(ctx, marketingData)
+	if err != nil {
+		return fmt.Errorf("Error, unable to load market data: %s", err)
+	}
+
+	return nil
+}
+
+func rollBackTestMarketingData(ctx context.Context, marketingData dto.Segment) error {
+	repository, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		return fmt.Errorf("Error, unable to initialize Firebase Repository: %s", err)
+	}
+
+	err = repository.RollBackMarketingData(ctx, marketingData)
+	if err != nil {
+		return fmt.Errorf("Error, unable to roll back market data: %s", err)
+	}
+
+	return nil
+}
+
 func TestMain(m *testing.M) {
 	// setup
 	ctx := context.Background()
@@ -5957,5 +6007,117 @@ func TestSetBewellAware(t *testing.T) {
 
 			assert.Equalf(tt.wantStatus, response.StatusCode, "expected http status %v, but got %v", tt.wantStatus, response.StatusCode)
 		})
+	}
+}
+
+func TestGetMarketingData(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+
+	// Setup test data
+	marketingData := composeMarketingDataPayload(
+		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		gofakeit.PhoneFormatted(),
+		gofakeit.Email(),
+	)
+	err := loadTestMarketingData(ctx, *marketingData)
+	if !assert.Nilf(err, "Error: unable to setup test data: %s", err) {
+		return
+	}
+
+	uploadData1 := dto.MarketingMessagePayload{
+		InitialSegment: marketingData.InitialSegment,
+		Wing:           marketingData.Wing,
+	}
+	uploadData2 := dto.MarketingMessagePayload{
+		InitialSegment: fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		Wing:           fmt.Sprintf("WING %s", ksuid.New().String()),
+	}
+	uploadData3 := dto.MarketingMessagePayload{}
+
+	payload1, err := json.Marshal(uploadData1)
+	if !assert.Nilf(err, "Error, unable to marshal upload data 1 to JSON: %s", err) {
+		return
+	}
+	payload2, err := json.Marshal(uploadData2)
+	if !assert.Nilf(err, "Error, unable to marshal upload data 2 to JSON: %s", err) {
+		return
+	}
+	payload3, err := json.Marshal(uploadData3)
+	if !assert.Nilf(err, "Error, unable to marshal upload data 3 to JSON: %s", err) {
+		return
+	}
+
+	headers := getDefaultHeaders(t, baseURL)
+	getUrl := fmt.Sprintf("%s/marketing_data", baseURL)
+
+	tests := []struct {
+		name       string
+		body       io.Reader
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name:       "Get marketing data with valid request",
+			body:       bytes.NewBuffer(payload1),
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name:       "Get marketing data of non existent segments",
+			body:       bytes.NewBuffer(payload2),
+			wantStatus: http.StatusBadRequest,
+			wantErr:    false,
+		},
+		{
+			name:       "Get marketing data with empty request",
+			body:       bytes.NewBuffer(payload3),
+			wantStatus: http.StatusBadRequest,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request, err := http.NewRequest(
+				http.MethodPost,
+				getUrl,
+				tt.body,
+			)
+
+			if !assert.Nilf(err, "Error, unable to compose request: %s", err) {
+				return
+			}
+			if !assert.NotNil(request, "Error, nil request") {
+				return
+			}
+
+			for key, val := range headers {
+				request.Header.Add(key, val)
+			}
+
+			response, err := http.DefaultClient.Do(request)
+			assert.Nilf(err, "Error, unable to make http request: %s", err)
+			assert.False(!tt.wantErr && response == nil, "Error, nil response")
+			if response == nil {
+				return
+			}
+
+			data, err := io.ReadAll(response.Body)
+			if !assert.Nilf(err, "Error, can't read request body: %s", err) {
+				return
+			}
+			if !assert.NotNil(data, "Error, nil response data") {
+				return
+			}
+
+			assert.Equalf(tt.wantStatus, response.StatusCode, "expected http status %v, but got %v", tt.wantStatus, response.StatusCode)
+		})
+	}
+
+	// Teardown test data
+	err = rollBackTestMarketingData(ctx, *marketingData)
+	if !assert.Nilf(err, "Error: unable to teardown test data: %s", err) {
+		return
 	}
 }
