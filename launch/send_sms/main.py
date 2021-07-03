@@ -50,18 +50,19 @@ class Wings(enum.Enum):
 
 MESSAGE_A = {
     "message": (
-        "Hi {}, download the Be.Well App now to keep track of your "
-        "{} balances. Click on {} to download. To opt-out dial *384*600#. "
-        "Be.Well by Slade360"
+        "Hi {}, download the new Be.Well App now to keep track of your "
+        "{} balances. Click on {} to download. To opt out, dial *384*600#. "
+        "For more information, call 0790 360 360. Be.Well by Slade 360."
     ),
     "tracking_url": TRACKING_URL_A,
 }
 
 MESSAGE_B = {
     "message": (
-        "Hi {}, some of your {} benefits are unused. "
-        "Download Be.Well to view them. Click on {} to download. "
-        "To opt out dial *384*600#. Be.Well by Slade360"
+        "Hello {}. You can now access your virtual wellness card "
+        "and {} claim history on the new Be.Well app. Download it "
+        "at {}. To opt out, dial *384*600#. For more information, call "
+        "0790 360 360. Be.Well by Slade 360."
     ),
     "tracking_url": TRACKING_URL_B,
 }

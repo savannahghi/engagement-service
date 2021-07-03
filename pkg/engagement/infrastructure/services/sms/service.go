@@ -266,7 +266,7 @@ func (s Service) SendMarketingSMS(
 	recipients := strings.Join(whitelistedNumbers, ",")
 	resp, err := s.Send(recipients, message, from)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to send SMS: %v", err)
 	}
 
 	smsMsgData := resp.SMSMessageData
@@ -313,7 +313,7 @@ func (s Service) SendMarketingSMS(
 			ctx,
 			data,
 		); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to create a message in our data store: %v", err)
 		}
 
 		// Toggle message sent value to TRUE
@@ -321,7 +321,7 @@ func (s Service) SendMarketingSMS(
 			ctx,
 			data.PhoneNumber,
 		); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to update message sent status to true: %v", err)
 		}
 
 		// Sleep for 5 seconds to reduce the rate at which we call HubSpot's APIs
