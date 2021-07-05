@@ -2225,3 +2225,62 @@ func TestRepository_UpdateMessageSentStatus(t *testing.T) {
 		return
 	}
 }
+
+func TestRepository_LoadMarketingData(t *testing.T) {
+	ctx := context.Background()
+	repository, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize Firebase repository: %s", err)
+		return
+	}
+	if repository == nil {
+		t.Errorf("nil Firebase repository returned")
+		return
+	}
+
+	// Create a new test segment
+	marketingData := composeMarketingDataPayload(
+		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		gofakeit.PhoneFormatted(),
+		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
+	)
+
+	tests := []struct {
+		name          string
+		marketingData dto.Segment
+		wantStatus    int
+	}{
+		{
+			name:          "Load a new segment",
+			marketingData: marketingData,
+			wantStatus:    -1,
+		},
+		{
+			name:          "Load an existing segment",
+			marketingData: marketingData,
+			wantStatus:    1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status, err := repository.LoadMarketingData(ctx, marketingData)
+			if err != nil {
+				t.Errorf("failed to load new marketing data: %s", err)
+				return
+			}
+			if status != tt.wantStatus {
+				t.Errorf("expected load status %v, but got %v instead", tt.wantStatus, status)
+				return
+			}
+		})
+	}
+
+	// Cleanup test data
+	err = repository.RollBackMarketingData(ctx, marketingData)
+	if err != nil {
+		t.Errorf("failed to clean test data: %s", err)
+		return
+	}
+}
