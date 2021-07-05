@@ -194,7 +194,7 @@ func NewPresentationHandlers(i *interactor.Interactor) PresentationHandlers {
 	return &PresentationHandlersImpl{i}
 }
 
-// + receives push messages from Google Cloud Pub-Sub
+//GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
 func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -1998,7 +1998,7 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 
 }
 
-// UpdateMailgunDeliveryStatusWebhook gets the status of the sent emails and logs them in the database
+// UpdateMailgunDeliveryStatus gets the status of the sent emails and logs them in the database
 func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		payload := &dto.MailgunEvent{}

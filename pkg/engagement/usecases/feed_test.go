@@ -1664,7 +1664,7 @@ func TestFeed_GetItem(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
-		wantNil bool
+		want    *base.Item
 	}{
 		{
 			name: "valid case - item that exists",
@@ -1675,6 +1675,7 @@ func TestFeed_GetItem(t *testing.T) {
 				itemID:  item.ID,
 			},
 			wantErr: false,
+			want:    item,
 		},
 		{
 			name: "invalid case - item that does not exist",
@@ -1684,19 +1685,25 @@ func TestFeed_GetItem(t *testing.T) {
 				flavour: fl,
 				itemID:  ksuid.New().String(),
 			},
-			wantErr: false,
-			wantNil: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := agg.GetFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Feed.GetItem() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Feed.GetFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantNil {
-				assert.NotNil(t, got)
+			if got != nil && err != nil {
+				assert.NotNil(t, got.Expiry)
+				expirytext := getTextExpiry()
+				got.Expiry = expirytext
+				tt.want.Expiry = expirytext
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("Feed.GetFeedItem() = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
@@ -1731,7 +1738,7 @@ func TestFeed_GetNudge(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
-		wantNil bool
+		want    *base.Nudge
 	}{
 		{
 			name: "valid case - nudge that exists",
@@ -1742,6 +1749,7 @@ func TestFeed_GetNudge(t *testing.T) {
 				nudgeID: savedNudge.ID,
 			},
 			wantErr: false,
+			want:    savedNudge,
 		},
 		{
 			name: "invalid case - nudge that does not exist",
@@ -1751,8 +1759,7 @@ func TestFeed_GetNudge(t *testing.T) {
 				flavour: fl,
 				nudgeID: ksuid.New().String(),
 			},
-			wantErr: false,
-			wantNil: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1762,8 +1769,8 @@ func TestFeed_GetNudge(t *testing.T) {
 				t.Errorf("Feed.GetNudge() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantNil {
-				assert.NotNil(t, got)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Feed.GetNudge() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1831,6 +1838,13 @@ func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 			}
 		})
 	}
+	// Teardown
+	err = agg.Repository.DeleteNudge(ctx, uid, fl, savedNudge.ID)
+	if err != nil {
+		t.Errorf("teardown failed")
+		return
+	}
+
 }
 func TestFeed_GetAction(t *testing.T) {
 	ctx := base.GetAuthenticatedContext(t)
@@ -1859,7 +1873,7 @@ func TestFeed_GetAction(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
-		wantNil bool
+		want    *base.Action
 	}{
 		{
 			name: "valid case - action that exists",
@@ -1870,6 +1884,7 @@ func TestFeed_GetAction(t *testing.T) {
 				actionID: savedAction.ID,
 			},
 			wantErr: false,
+			want:    savedAction,
 		},
 		{
 			name: "invalid case - action that does not exist",
@@ -1879,8 +1894,7 @@ func TestFeed_GetAction(t *testing.T) {
 				flavour:  fl,
 				actionID: ksuid.New().String(),
 			},
-			wantErr: false,
-			wantNil: true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1890,8 +1904,8 @@ func TestFeed_GetAction(t *testing.T) {
 				t.Errorf("Feed.GetAction() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !tt.wantNil {
-				assert.NotNil(t, got)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Feed.GetAction() = %v, want %v", got, tt.want)
 			}
 		})
 	}

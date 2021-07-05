@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v6"
+	"github.com/brianvoe/gofakeit"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -179,11 +179,13 @@ func TestSend(t *testing.T) {
 }
 
 func TestService_SendMarketingSMS(t *testing.T) {
+	ctx := base.GetAuthenticatedContext(t)
 	s, err := newTestSMSService()
 	if err != nil {
 		t.Errorf("unable to initialize test service with error %v", err)
 		return
 	}
+
 	type args struct {
 		ctx     context.Context
 		to      []string
@@ -195,27 +197,70 @@ func TestService_SendMarketingSMS(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
+		wantNil bool
 	}{
 		{
 			name: "Happily send a marketing SMS :)",
 			args: args{
-				ctx:     context.Background(),
-				to:      []string{gofakeit.Phone()},
+				ctx:     ctx,
+				to:      []string{"+254711223344", "+254700990099"},
 				message: gofakeit.HipsterSentence(10),
 				from:    base.SenderIDBewell,
-				segment: gofakeit.UUID(),
+				segment: "WING A",
 			},
+			wantErr: false,
+		},
+
+		{
+			name: "Sad Case missing message :(",
+			args: args{
+				ctx:     ctx,
+				to:      []string{"+254711223344", "+254700990099"},
+				message: "",
+				from:    base.SenderIDBewell,
+				segment: "WING A",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Sad Case missing sender :(",
+			args: args{
+				ctx:     ctx,
+				to:      []string{"+254711223344", "+254700990099"},
+				message: gofakeit.HipsterSentence(10),
+				from:    "",
+				segment: "WING A",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Sad Case invalid sender :(",
+			args: args{
+				ctx:     ctx,
+				to:      []string{"+254711223344", "+254700990099"},
+				message: gofakeit.HipsterSentence(10),
+				from:    "invalid",
+				segment: "WING A",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Sad Case missing recipient :(",
+			args: args{
+				ctx:     ctx,
+				to:      []string{""},
+				message: gofakeit.HipsterSentence(10),
+				from:    base.SenderIDBewell,
+				segment: "WING A",
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			smsResp, err := s.SendMarketingSMS(tt.args.ctx, tt.args.to, tt.args.message, tt.args.from, tt.args.segment)
+			_, err := s.SendMarketingSMS(tt.args.ctx, tt.args.to, tt.args.message, tt.args.from, tt.args.segment)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.SendMarketingSMS() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if smsResp == nil {
-				t.Errorf("expected an sms response to be returned")
 				return
 			}
 		})

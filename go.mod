@@ -13,6 +13,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go v1.40.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
+	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/brianvoe/gofakeit/v6 v6.5.0
 	github.com/casbin/casbin/v2 v2.33.0
 	github.com/gobuffalo/here v0.6.2 // indirect

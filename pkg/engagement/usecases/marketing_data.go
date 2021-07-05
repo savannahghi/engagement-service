@@ -75,6 +75,7 @@ const dataLoadingTemaplate = `
 </html>
 `
 
+// MarketingDataUseCases represents all the marketing data business logic
 type MarketingDataUseCases interface {
 	GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*apiclient.Segment, error)
 	UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error

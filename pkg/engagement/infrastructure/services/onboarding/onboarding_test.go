@@ -288,6 +288,7 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 		t.Errorf("can't get logged in user: %v", err)
 		return
 	}
+	invalidUID := "9VwnREOH8GdSfaxH69J6MvCu1gp9"
 
 	tests := []struct {
 		name    string
@@ -303,7 +304,7 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 		},
 		{
 			name:    "sad case: unable to get user profile",
-			args:    args{ctx: ctx, uid: UID},
+			args:    args{ctx: ctx, uid: invalidUID},
 			wantNil: true,
 			wantErr: true,
 		},

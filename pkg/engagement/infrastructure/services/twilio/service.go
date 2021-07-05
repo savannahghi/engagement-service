@@ -234,7 +234,7 @@ func (s Service) MakeTwilioRequest(
 // Because of confidentiality issues in healthcare, we do not enable recording
 // for these meetings.
 func (s Service) Room(ctx context.Context) (*dto.Room, error) {
-	ctx, span := tracer.Start(ctx, "Room")
+	_, span := tracer.Start(ctx, "Room")
 	defer span.End()
 	s.checkPreconditions()
 
@@ -305,7 +305,7 @@ func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error
 
 // SendSMS sends a text message through Twilio's programmable SMS
 func (s Service) SendSMS(ctx context.Context, to string, msg string) error {
-	ctx, span := tracer.Start(ctx, "SendSMS")
+	_, span := tracer.Start(ctx, "SendSMS")
 	defer span.End()
 	s.checkPreconditions()
 

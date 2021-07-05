@@ -965,7 +965,6 @@ func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour b
 	// TODO: Restore after the milestone @mathenge
 	// err = n.NotifyInboxCountUpdate(ctx, uid, flavour, unread)
 	// if err != nil {
-	helpers.RecordSpanError(span, err)
 	// 	return fmt.Errorf("can't notify inbox count: %w", err)
 	// }
 

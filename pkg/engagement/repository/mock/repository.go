@@ -638,7 +638,7 @@ func (f *FakeEngagementRepository) SaveOutgoingEmails(ctx context.Context, paylo
 	return f.SaveOutgoingEmailsFn(ctx, payload)
 }
 
-// RollBackMarketingData ...
+// UpdateMailgunDeliveryStatus ...
 func (f *FakeEngagementRepository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
 	return f.UpdateMailgunDeliveryStatusFn(ctx, payload)
 }

@@ -13,13 +13,6 @@ services:
     entrypoint: ["env", "-u", "DOCKER_HOST"]
     command: ["dockerd-entrypoint.sh"]
 
-echo_stage:
-  stage: test
-  script:
-    - echo "Just for echo"
-  tags:
-    - healthcloud-multi
-
 test_launch_scripts:
   stage: test
   variables:
@@ -39,7 +32,6 @@ test_launch_scripts:
 
 lint_and_test:
   stage: test
-  when: manual
   variables:
     REGISTRY_URL: $TEST_SCHEMA_REGISTRY_URL
   before_script:
@@ -54,7 +46,7 @@ lint_and_test:
     - go vet $(go list ./... | grep -v /vendor/)
     - golint -set_exit_status $(go list ./... | grep -v /vendor/)
     - errcheck -ignore 'os:.*,' $(go list ./... | grep -v /vendor/)
-    - gosec -exclude=G101 ./...
+    - gosec -exclude=G101,G304,G307 ./...
     # - ineffassign ./*  # identify ineffective assignments
     - "gocyclo -over 5 . || :" # display the most complex functions but do not fail the build because of this
     - go-acc -o coverage.txt --ignore generated,main,model ./... -- -timeout 20m

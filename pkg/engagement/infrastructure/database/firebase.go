@@ -1875,7 +1875,7 @@ func (fr Repository) UpdateMessageSentStatus(
 	return nil
 }
 
-// UpdateUserCRMData updates user CRM contact properties with the supplied data
+// UpdateUserCRMEmail updates user CRM contact properties with the supplied data
 func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
 	ctx, span := tracer.Start(ctx, "UpdateUserCRMEmail")
 	defer span.End()
