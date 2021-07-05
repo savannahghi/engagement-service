@@ -258,6 +258,9 @@ func NewOKResp(rawResponse interface{}) *OKResp {
 // MarketingDataLoadOutput ...
 type MarketingDataLoadOutput struct {
 	LoadingError                  error                            `json:"loading_error"`
+	StartedAt                     time.Time                        `json:"started_at"`
+	StoppedAt                     time.Time                        `json:"stopped_at"`
+	HoursTaken                    float64                          `json:"hours_taken"`
 	EntriesUniqueLoadedOnFirebase int                              `json:"entries_unique_loaded_on_firebase"`
 	EntriesUniqueLoadedOnCRM      int                              `json:"entries_unique_loaded_on_crm"`
 	TotalEntriesFoundOnFile       int                              `json:"total_entries_found_on_file"`

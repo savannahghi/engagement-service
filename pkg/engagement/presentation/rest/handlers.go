@@ -1963,7 +1963,7 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 
 		base.DecodeJSONToTargetStruct(w, r, payload)
 
-		if payload == nil || payload.PhoneNumber == nil || payload.EmailAddress == nil {
+		if payload == nil || payload.PhoneNumber == nil || len(payload.Emails) == 0 {
 			respondWithError(
 				w,
 				http.StatusBadRequest,
@@ -1974,7 +1974,7 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 
 		// running the processing in an async fashion. Is the process can take a long time, on the account of
 		// sleeps in-place. HTTP may timeout before a response is received.
-		go p.interactor.Marketing.LoadCampaignDataset(ctx, *payload.PhoneNumber, *payload.EmailAddress)
+		go p.interactor.Marketing.LoadCampaignDataset(ctx, *payload.PhoneNumber, payload.Emails)
 
 		res, _ := json.Marshal(dto.OKResp{Status: "REQUEST PROCESSING ONGOING"})
 

@@ -36,13 +36,13 @@ const dataLoadingTemaplate = `
 </head>
 
 <body>
-    <h2>Loading Error, {{.LoadingError}}</h2>
+    <h2>Loading Error : {{.LoadingError}}</h2>
 
-	<h2>Entries Unique Loaded On Firebase, {{.EntriesUniqueLoadedOnFirebase}}</h2>
+	<h2>Entries Unique Loaded On Firebase : {{.EntriesUniqueLoadedOnFirebase}}</h2>
 
-	<h2>Entries Unique Loaded On CRM, {{.EntriesUniqueLoadedOnCRM}}</h2>
+	<h2>Entries Unique Loaded On CRM : {{.EntriesUniqueLoadedOnCRM}}</h2>
 
-	<h2>Total Entries Found On File, {{.TotalEntriesFoundOnFile}}</h2>
+	<h2>Total Entries Found On File : {{.TotalEntriesFoundOnFile}}</h2>
 
 	<h3>Entries</h3>
 
@@ -76,7 +76,7 @@ type MarketingDataUseCases interface {
 	GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*dto.Segment, error)
 	UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error
 	BeWellAware(ctx context.Context, email string) error
-	LoadCampaignDataset(ctx context.Context, phone string, email string)
+	LoadCampaignDataset(ctx context.Context, phone string, emails []string)
 }
 
 // MarketingDataImpl represents the marketing usecase implementation
@@ -159,24 +159,29 @@ func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error 
 // lastname
 // wing
 // message_sent
-func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string, email string) {
+func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string, emails []string) {
 	logrus.Info("loading campaign dataset started")
 	res := dto.MarketingDataLoadOutput{}
+	res.StartedAt = time.Now()
 
 	sendMail := func(data dto.MarketingDataLoadOutput) {
-		logrus.Infof("sending load campaign dataset processing output to  %v with data: %v", email, data)
+		for _, email := range emails {
+			logrus.Infof("sending load campaign dataset processing output to  %v", email)
+			data.StoppedAt = time.Now()
+			data.HoursTaken = data.StartedAt.Sub(data.StoppedAt).Hours()
 
-		t := template.Must(template.New("LoadCampaignDataset").Parse(dataLoadingTemaplate))
-		buf := new(bytes.Buffer)
-		_ = t.Execute(buf, res)
-		content := buf.String()
-		if _, _, err := m.mail.SendEmail(
-			"Load Campaign Dataset Processing",
-			content,
-			nil,
-			email,
-		); err != nil {
-			logrus.Errorf("failed to send Load Campaign Dataset Processing email: %v", err)
+			t := template.Must(template.New("LoadCampaignDataset").Parse(dataLoadingTemaplate))
+			buf := new(bytes.Buffer)
+			_ = t.Execute(buf, res)
+			content := buf.String()
+			if _, _, err := m.mail.SendEmail(
+				"Load Campaign Dataset Processing",
+				content,
+				nil,
+				email,
+			); err != nil {
+				logrus.Errorf("failed to send Load Campaign Dataset Processing email: %v", err)
+			}
 		}
 	}
 
@@ -219,7 +224,8 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 
 	csvPayload := csvContent[1:]
 
-	for _, line := range csvPayload {
+	for idx, line := range csvPayload {
+		logrus.Infof("processing entry of identifier %v : Index %v", line[10], idx)
 
 		entry := dto.MarketingDataLoadEntriesOutput{}
 
@@ -241,8 +247,6 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			Wing:                  line[14],
 			MessageSent:           line[15],
 		}
-
-		logrus.Infof("processing entry of identifier %v", line[10])
 
 		// publish to firestore
 		i, err := m.repository.LoadMarketingData(ctx, data)
@@ -367,7 +371,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			res.Entries = append(res.Entries, entry)
 
 			// protection from hubspot rate limiting
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Millisecond * 500)
 			continue
 		}
 
@@ -379,7 +383,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			res.Entries = append(res.Entries, entry)
 
 			// protection from hubspot rate limiting
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Millisecond * 500)
 			continue
 		}
 
@@ -391,7 +395,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			res.Entries = append(res.Entries, entry)
 
 			// protection from hubspot rate limiting
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Millisecond * 500)
 			continue
 		}
 
