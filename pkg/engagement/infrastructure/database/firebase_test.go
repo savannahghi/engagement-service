@@ -2284,3 +2284,61 @@ func TestRepository_LoadMarketingData(t *testing.T) {
 		return
 	}
 }
+
+func TestRepository_RollBackMarketingData(t *testing.T) {
+	ctx := context.Background()
+	repository, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize Firebase repository: %s", err)
+		return
+	}
+	if repository == nil {
+		t.Errorf("nil Firebase repository returned")
+		return
+	}
+
+	// Setup test data
+	marketingData1 := composeMarketingDataPayload(
+		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		gofakeit.PhoneFormatted(),
+		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
+	)
+	marketingData2 := composeMarketingDataPayload(
+		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		gofakeit.PhoneFormatted(),
+		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
+	)
+	_, err = repository.LoadMarketingData(ctx, marketingData1)
+	if err != nil {
+		t.Errorf("failed to setup test data: %s", err)
+	}
+
+	tests := []struct {
+		name          string
+		marketingData dto.Segment
+		wantErr       bool
+	}{
+		{
+			name:          "Rollback an existing segment",
+			marketingData: marketingData1,
+			wantErr:       false,
+		},
+		{
+			name:          "Rollback a non existing segment",
+			marketingData: marketingData2,
+			wantErr:       true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err = repository.RollBackMarketingData(ctx, marketingData1)
+			if !tt.wantErr && err != nil {
+				t.Errorf("failed to rollback marketing data: %s", err)
+				return
+			}
+		})
+	}
+}
