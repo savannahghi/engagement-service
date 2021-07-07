@@ -159,6 +159,8 @@ func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error 
 // lastname
 // wing
 // message_sent
+// payer_slade_code
+// member_number
 func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string, emails []string) {
 	logrus.Info("loading campaign dataset started")
 	res := dto.MarketingDataLoadOutput{}
@@ -246,6 +248,8 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			LastName:              line[13],
 			Wing:                  line[14],
 			MessageSent:           line[15],
+			PayerSladeCode:        line[16],
+			MemberNumber:          line[17],
 		}
 
 		// publish to firestore

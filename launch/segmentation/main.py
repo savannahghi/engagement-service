@@ -5,6 +5,7 @@ import click
 import numpy as np
 
 WINGS = 2
+CHUNKS = 5
 
 
 def custom_hubspot_properties():
@@ -30,6 +31,8 @@ def custom_hubspot_properties():
         "lastname",
         "wing",
         "message_sent",
+        "payer_slade_code",
+        "member_number",
     ]
 
 
@@ -40,7 +43,7 @@ def randomize_data(data):
 
 
 def normalize_phone_number(phone):
-    """Normalize a phne number."""
+    """Normalize a phone number."""
     if phone.startswith("0"):
         return f"+254{phone[1:]}"
 
@@ -77,6 +80,8 @@ def create_custom_properties_from_slade_data(path_to_csv, segment_name):
                 "phone_number": phone_number,
                 "firstname": row["first_name"],
                 "lastname": row["last_name"],
+                "payer_slade_code": row["payer_slade_code"],
+                "member_number": row["beneficiary_code"],
             }
             list_of_properties_we_want.append(custom_properties)
     return list_of_properties_we_want
@@ -92,11 +97,19 @@ def split_segment_data_into_wings(path_to_csv, segment_name):
     random_data = randomize_data(
         create_custom_properties_from_slade_data(path_to_csv, segment_name),
     )
-    wing_1_data, wing_2_data = np.array_split(
+    return np.array_split(
         random_data,
         WINGS,
     )
-    return wing_1_data, wing_2_data
+
+
+def chunk_winged_data(path_to_csv, segment_name):
+    """For each wing split the data further into chunks."""
+    winged_data = split_segment_data_into_wings(path_to_csv, segment_name)
+    chunked_data = []
+    for data in winged_data:
+        chunked_data.append(np.array_split(data, CHUNKS))
+    return chunked_data
 
 
 def write_wing_data_to_csv(segment_name, path_to_csv):
@@ -106,26 +119,18 @@ def write_wing_data_to_csv(segment_name, path_to_csv):
     This helper write the first wing data (data in wing one)
     to a CSV file
     """
-    wing_1_data, wing_2_data = split_segment_data_into_wings(
-        path_to_csv, segment_name
-    )
-    with open(f"{segment_name}_wing_A.csv", mode="w") as wing_A_csv:
-        fieldnames = custom_hubspot_properties()
-        writer = csv.DictWriter(wing_A_csv, fieldnames=fieldnames)
-        writer.writeheader()
-        for dataset in wing_1_data:
-            dataset["wing"] = "WING A"
-            dataset["message_sent"] = "FALSE"
-            writer.writerow(dataset)
+    chunked_data = chunk_winged_data(path_to_csv, segment_name)
+    for i in range(0, WINGS):
+        with open(f"{segment_name}_wing_{i}.csv", mode="w") as wing_A_csv:
+            fieldnames = custom_hubspot_properties()
+            writer = csv.DictWriter(wing_A_csv, fieldnames=fieldnames)
+            writer.writeheader()
 
-    with open(f"{segment_name}_wing_B.csv", mode="w") as wing_B_csv:
-        fieldnames = custom_hubspot_properties()
-        writer = csv.DictWriter(wing_B_csv, fieldnames=fieldnames)
-        writer.writeheader()
-        for dataset in wing_2_data:
-            dataset["wing"] = "WING B"
-            dataset["message_sent"] = "FALSE"
-            writer.writerow(dataset)
+            for index, chunk_list in enumerate(chunked_data[i]):
+                for data in chunk_list:
+                    data["wing"] = f"WING {chr(ord('@')+(i + 1))} 0{index + 1}"
+                    data["message_sent"] = "FALSE"
+                    writer.writerow(data)
 
 
 @click.command()
