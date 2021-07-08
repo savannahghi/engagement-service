@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
-	"text/template"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -314,30 +314,6 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			return CRMDomain.PersonaSlader
 		}
 
-		convertorPayor := func(d string) CRMDomain.Payor {
-			if d == "RESOLUTION" || d == "RESOLUTION INSURANCE" {
-				return CRMDomain.PayorResolution
-			}
-
-			if d == "APA" || d == "APA INSURANCE" {
-				return CRMDomain.PayorApa
-			}
-
-			if d == "JUBILEE" || d == "JUBILEE INSURANCE" {
-				return CRMDomain.PayorJubilee
-			}
-
-			if d == "BRITAM" || d == "BRITAM INSURANCE" {
-				return CRMDomain.PayorBritam
-			}
-
-			if d == "MADISON" || d == "MADISON INSURANCE" {
-				return CRMDomain.PayorMadison
-			}
-
-			return CRMDomain.PayorJubilee
-		}
-
 		convertorChannel := func(d string) CRMDomain.ChannelOfContact {
 			if d == "APP" {
 				return CRMDomain.ChannelOfContactApp
@@ -356,7 +332,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 				BeWellPersona:         convertorPersona(line[3]),
 				HasSladeID:            convertor(line[4]),
 				HasCover:              convertor(line[5]),
-				Payor:                 convertorPayor(line[6]),
+				Payor:                 CRMDomain.Payor(line[6]),
 				FirstChannelOfContact: convertorChannel(line[7]),
 				HasVirtualCard:        convertor(line[9]),
 				Email:                 line[10],
