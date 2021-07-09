@@ -44,8 +44,7 @@ ANDROID_DUMMY_TEMPLATE = """
         firebase.initializeApp(firebaseConfig);
         var analytics = firebase.analytics();
 
-        analytics.logEvent('redirected_to_android_playstore');
-        window.location.replace("https://play.google.com/store/apps/details?id=com.savannah.bewell");
+        analytics.logEvent('redirected_to_android_playstore');     
 
         if (RegExp('[?&]' + 'email' + '=([^&]*)').exec(window.location.search)) {
             identifyVisitor();
@@ -83,6 +82,7 @@ ANDROID_DUMMY_TEMPLATE = """
             return response.json();
         }
 
+        window.location.replace("https://play.google.com/store/apps/details?id=com.savannah.bewell");
     </script>
 </body>
 </html>
@@ -121,7 +121,6 @@ IOS_DUMMY_TEMPLATE = """
 
         analytics.logEvent('redirected_to_iOS_appstore');
 
-        window.location.replace("https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692");
 
         if (RegExp('[?&]' + 'email' + '=([^&]*)').exec(window.location.search)) {
             identifyVisitor();
@@ -158,6 +157,8 @@ IOS_DUMMY_TEMPLATE = """
             });
             return response.json();
         }
+
+        window.location.replace("https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692");
     </script>
 </body>
 </html>

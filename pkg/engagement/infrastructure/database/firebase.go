@@ -1734,7 +1734,7 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 // UpdateUserCRMBewellAware updates user CMR data with provided email= as bewell-aware on the CRM
 func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
 	logrus.Printf("collection name %v", fr.getMarketingDataCollectionName())
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Email", "==", email)
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Email", "==", email).Where("properties.BeWellAware", "==", "NO")
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1747,24 +1747,27 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 		return nil
 	}
 
-	var marketingData dto.Segment
-	err = docs[0].DataTo(&marketingData)
-	if err != nil {
-		return fmt.Errorf(
-			"unable to unmarshal marketing Data from doc snapshot: %w", err)
+	for _, doc := range docs {
+		var marketingData dto.Segment
+		err = doc.DataTo(&marketingData)
+		if err != nil {
+			return fmt.Errorf(
+				"unable to unmarshal marketing Data from doc snapshot: %w", err)
+		}
+
+		logrus.Printf("update payload %v", marketingData)
+
+		marketingData.Properties.BeWellAware = payload.Properties.BeWellAware
+
+		logrus.Printf("update after amend payload %v", marketingData)
+
+		doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+			Doc(doc.Ref.ID)
+		if _, err = doc.Set(ctx, marketingData); err != nil {
+			return err
+		}
 	}
 
-	logrus.Printf("update payload %v", marketingData)
-
-	marketingData.Properties.BeWellAware = payload.Properties.BeWellAware
-
-	logrus.Printf("update after amend payload %v", marketingData)
-
-	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Doc(docs[0].Ref.ID)
-	if _, err = doc.Set(ctx, marketingData); err != nil {
-		return err
-	}
 	return nil
 }
 
