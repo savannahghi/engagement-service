@@ -1736,7 +1736,7 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 	logrus.Printf("collection name %v", fr.getMarketingDataCollectionName())
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Email", "==", email).Where("properties.BeWellAware", "==", "NO")
 
-	docs, err := fetchQueryDocs(ctx, query, true)
+	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
 		return err
 	}
