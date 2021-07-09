@@ -56,6 +56,7 @@ var AllowedOrigins = []string{
 	"https://a.bewell.co.ke",
 	"https://b.bewell.co.ke",
 	"http://localhost:5000",
+	"https://europe-west3-bewell-app.cloudfunctions.net",
 }
 var allowedHeaders = []string{
 	"Authorization", "Accept", "Accept-Charset", "Accept-Language",
