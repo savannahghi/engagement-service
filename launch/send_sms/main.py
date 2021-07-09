@@ -285,9 +285,11 @@ def run_campaign(segment, wing):
     print(type(wing))
     if "WING A" in wing:
         send_marketing_bulk_sms(segment, wing, MESSAGE_A)
+        return
 
     if "WING B" in wing:
         send_marketing_bulk_sms(segment, wing, MESSAGE_B)
+        return
 
     else:
         click.secho(
