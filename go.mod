@@ -38,7 +38,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.2.0
 	gitlab.slade360emr.com/go/base v0.0.202
-	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210630150309-d16e550296ef
+	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210709074557-c2cc58bb4029
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.21.0
 	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914

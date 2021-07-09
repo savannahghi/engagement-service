@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 
+	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -133,23 +134,26 @@ func RegisterPushToken(
 
 func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) *dto.Segment {
 	return &dto.Segment{
-		BeWellEnrolled:        "NO",
-		OptOut:                "NO",
-		BeWellAware:           "NO",
-		BeWellPersona:         "SLADER",
-		HasWellnessCard:       "YES",
-		HasCover:              "YES",
-		Payor:                 "Jubilee Insuarance Kenya",
-		FirstChannelOfContact: "SMS",
-		InitialSegment:        initialSegment,
-		HasVirtualCard:        "NO",
-		Email:                 email,
-		PhoneNumber:           phoneNumber,
-		FirstName:             gofakeit.FirstName(),
-		LastName:              gofakeit.LastName(),
-		Wing:                  wing,
-		MessageSent:           "FALSE",
-		IsSynced:              "FALSE",
+		Properties: CRMDomain.ContactProperties{
+			BeWellEnrolled:        "NO",
+			OptOut:                "NO",
+			BeWellAware:           "NO",
+			BeWellPersona:         "SLADER",
+			HasWellnessCard:       "YES",
+			HasCover:              "YES",
+			Payor:                 "Jubilee Insuarance Kenya",
+			FirstChannelOfContact: "SMS",
+			InitialSegment:        initialSegment,
+			HasVirtualCard:        "NO",
+			Email:                 email,
+			Phone:                 phoneNumber,
+			FirstName:             gofakeit.FirstName(),
+			LastName:              gofakeit.LastName(),
+		},
+
+		Wing:        wing,
+		MessageSent: "FALSE",
+		IsSynced:    "FALSE",
 	}
 }
 
@@ -6331,7 +6335,7 @@ func TestGetMarketingData(t *testing.T) {
 	}
 
 	uploadData1 := dto.MarketingMessagePayload{
-		InitialSegment: marketingData.InitialSegment,
+		InitialSegment: marketingData.Properties.InitialSegment,
 		Wing:           marketingData.Wing,
 	}
 	uploadData2 := dto.MarketingMessagePayload{

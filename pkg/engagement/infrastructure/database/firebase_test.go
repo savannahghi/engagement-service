@@ -13,6 +13,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -96,23 +97,26 @@ func testNudge() *base.Nudge {
 
 func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) dto.Segment {
 	return dto.Segment{
-		BeWellEnrolled:        "NO",
-		OptOut:                "NO",
-		BeWellAware:           "NO",
-		BeWellPersona:         "SLADER",
-		HasWellnessCard:       "YES",
-		HasCover:              "YES",
-		Payor:                 "Jubilee Insuarance Kenya",
-		FirstChannelOfContact: "SMS",
-		InitialSegment:        initialSegment,
-		HasVirtualCard:        "NO",
-		Email:                 email,
-		PhoneNumber:           phoneNumber,
-		FirstName:             gofakeit.FirstName(),
-		LastName:              gofakeit.LastName(),
-		Wing:                  wing,
-		MessageSent:           "FALSE",
-		IsSynced:              "FALSE",
+		Properties: domain.ContactProperties{
+			BeWellEnrolled:        "NO",
+			OptOut:                "NO",
+			BeWellAware:           "NO",
+			BeWellPersona:         "SLADER",
+			HasWellnessCard:       "YES",
+			HasCover:              "YES",
+			Payor:                 "Jubilee Insuarance Kenya",
+			FirstChannelOfContact: "SMS",
+			InitialSegment:        initialSegment,
+			HasVirtualCard:        "NO",
+			Email:                 email,
+			Phone:                 phoneNumber,
+			FirstName:             gofakeit.FirstName(),
+			LastName:              gofakeit.LastName(),
+		},
+
+		Wing:        wing,
+		MessageSent: "FALSE",
+		IsSynced:    "FALSE",
 	}
 }
 
@@ -2179,7 +2183,7 @@ func TestRepository_UpdateMessageSentStatus(t *testing.T) {
 	}
 
 	payload1 := dto.MarketingMessagePayload{
-		InitialSegment: segment.InitialSegment,
+		InitialSegment: segment.Properties.InitialSegment,
 		Wing:           segment.Wing,
 	}
 	payload2 := dto.MarketingMessagePayload{
@@ -2214,7 +2218,7 @@ func TestRepository_UpdateMessageSentStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err = repository.UpdateMessageSentStatus(ctx, segment.PhoneNumber)
+			err = repository.UpdateMessageSentStatus(ctx, segment.Properties.Phone)
 			assert.False(!tt.wantErr && err != nil, "Error, unable to update message sent status: %s", err)
 		})
 	}

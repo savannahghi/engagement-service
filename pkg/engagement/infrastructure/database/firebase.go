@@ -1598,7 +1598,7 @@ func (fr Repository) SaveNPSResponse(
 func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (int, error) {
 	// check the data does not exist
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("email", "==", data.Email)
+		Where("properties.Email", "==", data.Properties.Email).Where("properties.InitialSegment", "==", data.Properties.InitialSegment)
 
 	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
@@ -1608,16 +1608,18 @@ func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (i
 		return 1, nil
 	}
 	// create a new record
-	if _, _, err := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Add(ctx, data); err != nil {
+	_, _, err = fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Add(ctx, data)
+	if err != nil {
 		return 0, fmt.Errorf("unable create marketing record: %v", err)
 	}
+
 	return -1, nil
 }
 
 // RollBackMarketingData remove the record that was creatded. This happens only when the same record fails to the created on the crm
 func (fr Repository) RollBackMarketingData(ctx context.Context, data dto.Segment) error {
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("email", "==", data.Email)
+		Where("properties.Email", "==", data.Properties.Email)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1638,7 +1640,7 @@ func (fr Repository) RetrieveMarketingData(
 ) ([]*dto.Segment, error) {
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("message_sent", "==", "FALSE").Where("wing", "==", data.Wing).
-		Where("initial_segment", "==", data.InitialSegment)
+		Where("properties.InitialSegment", "==", data.InitialSegment)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1670,7 +1672,7 @@ func (fr Repository) UpdateMessageSentStatus(
 	phonenumber string,
 ) error {
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("message_sent", "==", "FALSE").Where("phone", "==", phonenumber)
+		Where("message_sent", "==", "FALSE").Where("properties.Phone", "==", phonenumber)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1700,7 +1702,7 @@ func (fr Repository) UpdateMessageSentStatus(
 
 // UpdateUserCRMData updates user CRM contact properties with the supplied data
 func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("phone", "==", phoneNumber)
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Phone", "==", phoneNumber)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1718,7 +1720,7 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 			"unable to unmarshal marketing Data from doc snapshot: %w", err)
 	}
 
-	marketingData.Email = payload.Properties.Email
+	marketingData.Properties.Email = payload.Properties.Email
 
 	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Doc(docs[0].Ref.ID)
@@ -1731,7 +1733,7 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 // UpdateUserCRMBewellAware updates user CMR data with provided email= as bewell-aware on the CRM
 func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
 	logrus.Printf("collection name %v", fr.getMarketingDataCollectionName())
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("email", "==", email)
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Email", "==", email)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1753,7 +1755,7 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 
 	logrus.Printf("update payload %v", marketingData)
 
-	marketingData.BeWellAware = payload.Properties.BeWellAware.String()
+	marketingData.Properties.BeWellAware = payload.Properties.BeWellAware
 
 	logrus.Printf("update after amend payload %v", marketingData)
 

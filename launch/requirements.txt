@@ -1,0 +1,5 @@
+google-cloud-storage==1.39.0
+requests==2.25.1
+click==8.0.1
+google-cloud-bigquery==2.20.0
+numpy==1.21.0
