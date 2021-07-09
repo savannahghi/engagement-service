@@ -262,6 +262,7 @@ type Repository interface {
 	UpdateMessageSentStatus(
 		ctx context.Context,
 		phonenumber string,
+		segment string,
 	) error
 
 	UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error

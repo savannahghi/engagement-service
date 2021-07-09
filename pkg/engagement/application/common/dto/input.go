@@ -12,6 +12,7 @@ type SendSMSPayload struct {
 	To      []string      `json:"to"`
 	Message string        `json:"message"`
 	Sender  base.SenderID `json:"sender"`
+	Segment *string       `json:"segment"`
 }
 
 // EMailMessage holds data required to send emails

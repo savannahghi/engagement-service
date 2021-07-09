@@ -259,6 +259,7 @@ type FakeEngagementRepository struct {
 	UpdateMessageSentStatusFn func(
 		ctx context.Context,
 		phonenumber string,
+		segment string,
 	) error
 
 	UpdateUserCRMEmailFn       func(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
@@ -601,8 +602,9 @@ func (f *FakeEngagementRepository) RetrieveMarketingData(
 func (f *FakeEngagementRepository) UpdateMessageSentStatus(
 	ctx context.Context,
 	phonenumber string,
+	segment string,
 ) error {
-	return f.UpdateMessageSentStatusFn(ctx, phonenumber)
+	return f.UpdateMessageSentStatusFn(ctx, phonenumber, segment)
 }
 
 // UpdateUserCRMEmail ..

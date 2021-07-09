@@ -2218,7 +2218,7 @@ func TestRepository_UpdateMessageSentStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err = repository.UpdateMessageSentStatus(ctx, segment.Properties.Phone)
+			err = repository.UpdateMessageSentStatus(ctx, segment.Properties.Phone, segment.Properties.InitialSegment)
 			assert.False(!tt.wantErr && err != nil, "Error, unable to update message sent status: %s", err)
 		})
 	}

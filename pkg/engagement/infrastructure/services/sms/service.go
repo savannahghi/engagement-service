@@ -54,6 +54,7 @@ type ServiceSMS interface {
 		to []string,
 		message string,
 		from base.SenderID,
+		segment string,
 	) (*dto.SendMessageResponse, error)
 	SaveMarketingMessage(
 		ctx context.Context,
@@ -113,8 +114,9 @@ func (s Service) SaveMarketingMessage(
 func (s Service) UpdateMessageSentStatus(
 	ctx context.Context,
 	phonenumber string,
+	segment string,
 ) error {
-	return s.Repository.UpdateMessageSentStatus(ctx, phonenumber)
+	return s.Repository.UpdateMessageSentStatus(ctx, phonenumber, segment)
 }
 
 // UpdateMarketingMessage adds a delivery reposrt to an AIT SMS
@@ -247,6 +249,7 @@ func (s Service) SendMarketingSMS(
 	to []string,
 	message string,
 	from base.SenderID,
+	segment string,
 ) (*dto.SendMessageResponse, error) {
 	// todo should we have one collection as the source of truth
 	var whitelistedNumbers []string
@@ -320,6 +323,7 @@ func (s Service) SendMarketingSMS(
 		if err := s.UpdateMessageSentStatus(
 			ctx,
 			data.PhoneNumber,
+			segment,
 		); err != nil {
 			return nil, fmt.Errorf("failed to update message sent status to true: %v", err)
 		}

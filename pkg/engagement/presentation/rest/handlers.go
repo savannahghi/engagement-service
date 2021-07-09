@@ -1411,6 +1411,7 @@ func (p PresentationHandlersImpl) SendMarketingSMS(
 			payload.To,
 			payload.Message,
 			payload.Sender,
+			*payload.Segment,
 		)
 		if err != nil {
 			badRequest := strings.Contains(

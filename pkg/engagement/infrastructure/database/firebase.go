@@ -1670,9 +1670,10 @@ func (fr Repository) RetrieveMarketingData(
 func (fr Repository) UpdateMessageSentStatus(
 	ctx context.Context,
 	phonenumber string,
+	segment string,
 ) error {
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("message_sent", "==", "FALSE").Where("properties.Phone", "==", phonenumber)
+		Where("message_sent", "==", "FALSE").Where("properties.Phone", "==", phonenumber).Where("properties.InitialSegment", "==", segment)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {

@@ -201,10 +201,10 @@ def send_marketing_bulk_sms(segment, wing, message_data):
     try:
         with click.progressbar(contacts, length=contacts_found) as contacts:
             for contact in contacts:
-                phone = contact["phone"]
-                first_name = contact["firstname"]
-                payer_name = contact["payor"]
-                email = contact["email"]
+                phone = contact["properties"]["phone"]
+                first_name = contact["properties"]["firstname"]
+                payer_name = contact["properties"]["payor"]
+                email = contact["properties"]["email"]
 
                 phone_message_dict = {
                     "phone_number": phone,
@@ -224,6 +224,7 @@ def send_marketing_bulk_sms(segment, wing, message_data):
                     "to": to,
                     "message": phone_message_dict["message"],
                     "sender": SenderID.BeWell.value,
+                    "segment": segment,
                 }
 
                 try:
@@ -281,8 +282,14 @@ def send_marketing_bulk_sms(segment, wing, message_data):
 @click.argument("wing")
 def run_campaign(segment, wing):
     """Run the campaign."""
-    wings = [Wings.WingA.value, Wings.WingB.value]
-    if wing not in wings:
+    print(type(wing))
+    if "WING A" in wing:
+        send_marketing_bulk_sms(segment, wing, MESSAGE_A)
+
+    if "WING B" in wing:
+        send_marketing_bulk_sms(segment, wing, MESSAGE_B)
+
+    else:
         click.secho(
             f"{wing} is an unidentified wing name",
             fg="red",
@@ -290,8 +297,6 @@ def run_campaign(segment, wing):
             bold=True,
         )
         return
-    message_data = MESSAGE_A if wing == Wings.WingA.value else MESSAGE_B
-    send_marketing_bulk_sms(segment, wing, message_data)
 
 
 if __name__ == "__main__":
