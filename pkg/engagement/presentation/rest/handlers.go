@@ -818,6 +818,10 @@ func (p PresentationHandlersImpl) PublishNudge(
 			nudge,
 		)
 		if err != nil {
+			if strings.Contains(err.Error(), "found an existing nudge with same title") {
+				respondWithError(w, http.StatusConflict, err)
+				return
+			}
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}

@@ -438,6 +438,17 @@ func (fr Repository) SaveNudge(
 			"repository precondition check failed: %w", err)
 	}
 
+	// find an existing nudge with the same title
+	existingNudge, err := fr.GetDefaultNudgeByTitle(ctx, uid, flavour, nudge.Title)
+	if err != nil {
+		// error means an existing nudge wasn't found
+		log.Printf("nudge doesn't exist error: %v", err.Error())
+	}
+
+	if existingNudge != nil {
+		return nil, fmt.Errorf("cannot save nudge, found an existing nudge with same title")
+	}
+
 	coll := fr.getNudgesCollection(uid, flavour)
 	if err := fr.saveElement(
 		ctx,

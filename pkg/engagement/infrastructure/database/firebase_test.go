@@ -918,6 +918,9 @@ func TestFirebaseRepository_SaveNudge(t *testing.T) {
 	flavour := base.FlavourConsumer
 	nudge := testNudge()
 
+	nudge2 := testNudge()
+	fr.SaveNudge(ctx, uid, flavour, nudge2)
+
 	type args struct {
 		uid     string
 		flavour base.Flavour
@@ -936,6 +939,15 @@ func TestFirebaseRepository_SaveNudge(t *testing.T) {
 				nudge:   nudge,
 			},
 			wantErr: false,
+		},
+		{
+			name: "invalid case - save duplicate nudge",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				nudge:   nudge2,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
