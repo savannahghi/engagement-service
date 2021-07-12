@@ -25,8 +25,8 @@ const (
 	allowedPROFAQsTagFilter      = "&filter=tag:faqs-pro"
 	allowedConsumerFAQsTagFilter = "&filter=tag:faqs-consumer&filter=tag:how-to"
 	allowedLibraryTagFilter      = "&filter=tag:diet&filter=tag:health-tips"
-	allowedAgentTagFilter        = "&filter=tag:agent-faqs&filter=tag:faqs-pro"
-	allowedEmployeeTagFilter     = "&filter=tag:emplpoyee-faqs&filter=tag:faqs-pro"
+	allowedAgentTagFilter        = "&filter=tag:agent-faqs"
+	allowedEmployeeTagFilter     = "&filter=tag:emplpoyee-faqs"
 )
 
 // ServiceLibrary ...
