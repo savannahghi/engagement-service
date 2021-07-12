@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -30,11 +31,11 @@ type PushService interface {
 func NewRemotePushService(
 	ctx context.Context,
 ) (*RemotePushService, error) {
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID, err := serverutils.GetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"can't get projectID from env var `%s`: %w",
-			base.GoogleCloudProjectIDEnvVarName,
+			serverutils.GoogleCloudProjectIDEnvVarName,
 			err,
 		)
 	}
@@ -71,7 +72,7 @@ func (rfs RemotePushService) Push(
 	notificationPayload base.SendNotificationPayload,
 ) error {
 	rfs.checkPreconditions()
-	env := base.GetRunningEnvironment()
+	env := serverutils.GetRunningEnvironment()
 	payload, err := json.Marshal(notificationPayload)
 	if err != nil {
 		return fmt.Errorf("can't marshal notification payload: %w", err)

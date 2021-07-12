@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
@@ -42,7 +43,7 @@ func NewService() *Service {
 	// OAUth 2 "delegated permissions" model. To cap off a bad situation, the
 	// automatically generated "official" Go client is difficult to mock.
 	var gcalService *calendar.Service
-	if base.IsRunningTests() {
+	if serverutils.IsRunningTests() {
 		mockClient := MockGCALHTTPClient()
 		gcalService, err = calendar.NewService(ctx, option.WithHTTPClient(mockClient))
 		if err != nil {

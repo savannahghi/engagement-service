@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -47,10 +48,10 @@ func InitializeTestNewFeed(ctx context.Context) (*usecases.FeedUseCaseImpl, erro
 	if err != nil {
 		return nil, err
 	}
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID, err := serverutils.GetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"can't get projectID from env var `%s`: %w", base.GoogleCloudProjectIDEnvVarName, err)
+			"can't get projectID from env var `%s`: %w", serverutils.GoogleCloudProjectIDEnvVarName, err)
 	}
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {

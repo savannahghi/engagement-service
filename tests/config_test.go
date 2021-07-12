@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/imroc/req"
+	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -35,7 +36,7 @@ var serverErr error
 func TestMain(m *testing.M) {
 	// setup
 	ctx := context.Background()
-	srv, baseURL, serverErr = base.StartTestServer(
+	srv, baseURL, serverErr = serverutils.StartTestServer(
 		ctx,
 		presentation.PrepareServer,
 		presentation.AllowedOrigins,

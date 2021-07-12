@@ -19,6 +19,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 
@@ -87,11 +88,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		)
 	}
 
-	projectID, err := base.GetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID, err := serverutils.GetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"can't get projectID from env var `%s`: %w",
-			base.GoogleCloudProjectIDEnvVarName,
+			serverutils.GoogleCloudProjectIDEnvVarName,
 			err,
 		)
 	}
@@ -151,17 +152,17 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	h := rest.NewPresentationHandlers(i)
 
 	r := mux.NewRouter() // gorilla mux
-	r.Use(otelmux.Middleware(base.MetricsCollectorService("engagement")))
+	r.Use(otelmux.Middleware(serverutils.MetricsCollectorService("engagement")))
 	r.Use(
 		handlers.RecoveryHandler(
 			handlers.PrintRecoveryStack(true),
 			handlers.RecoveryLogger(log.StandardLogger()),
 		),
 	) // recover from panics by writing a HTTP error
-	r.Use(base.RequestDebugMiddleware())
+	r.Use(serverutils.RequestDebugMiddleware())
 
 	// Add Middleware that records the metrics for our HTTP routes
-	r.Use(base.CustomHTTPRequestMetricsMiddleware())
+	r.Use(serverutils.CustomHTTPRequestMetricsMiddleware())
 
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
@@ -463,7 +464,7 @@ func PrepareServer(
 	// start up the router
 	r, err := Router(ctx)
 	if err != nil {
-		base.LogStartupError(ctx, err)
+		serverutils.LogStartupError(ctx, err)
 	}
 
 	// start the server
@@ -506,7 +507,7 @@ func GQLHandler(ctx context.Context,
 ) http.HandlerFunc {
 	resolver, err := graph.NewResolver(ctx, service)
 	if err != nil {
-		base.LogStartupError(ctx, err)
+		serverutils.LogStartupError(ctx, err)
 	}
 	srv := handler.NewDefaultServer(
 		generated.NewExecutableSchema(

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/serverutils"
 )
 
 func (r *mutationResolver) PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error) {
@@ -22,7 +22,7 @@ func (r *mutationResolver) PhoneNumberVerificationCode(ctx context.Context, to s
 		return false, fmt.Errorf("failed to send a verification code: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"phoneNumberVerificationCode",
@@ -50,7 +50,7 @@ func (r *mutationResolver) WellnessCardActivationDependant(ctx context.Context, 
 		return false, fmt.Errorf("failed to send wellness card activation messages to dependant via WhatsApp: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"wellnessCardActivationDependant",
@@ -79,7 +79,7 @@ func (r *mutationResolver) WellnessCardActivationPrincipal(ctx context.Context, 
 		return false, fmt.Errorf("failed to send wellness card activation messages to principal via WhatsApp: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"wellnessCardActivationPrincipal",
@@ -109,7 +109,7 @@ func (r *mutationResolver) BillNotification(ctx context.Context, to string, prod
 		return false, fmt.Errorf("failed to send bill notification messages via WhatsApp: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"billNotification",
@@ -137,7 +137,7 @@ func (r *mutationResolver) VirtualCards(ctx context.Context, to string, wellness
 		return false, fmt.Errorf("failed to send virtual card setup notifications : %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"virtualCards",
@@ -167,7 +167,7 @@ func (r *mutationResolver) VisitStart(ctx context.Context, to string, memberName
 	if err != nil {
 		return false, fmt.Errorf("failed to send visit start SMS messages to members")
 	}
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		beginTime,
 		"visitStart",
@@ -197,7 +197,7 @@ func (r *mutationResolver) ClaimNotification(ctx context.Context, to string, cla
 		return false, fmt.Errorf("failed to send a claim notification message via WhatsApp")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"claimNotification",
@@ -229,7 +229,7 @@ func (r *mutationResolver) PreauthApproval(ctx context.Context, to string, curre
 		return false, fmt.Errorf("failed to send a pre-authorization approval message via WhatsApp")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"preauthApproval",
@@ -262,7 +262,7 @@ func (r *mutationResolver) PreauthRequest(ctx context.Context, to string, curren
 		return false, fmt.Errorf("failed to send a pre-authorization request message via WhatsApp")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"preauthRequest",
@@ -284,7 +284,7 @@ func (r *mutationResolver) SladeOtp(ctx context.Context, to string, name string,
 		return false, fmt.Errorf("failed to send Slade ID OTP messages")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"sladeOTP",

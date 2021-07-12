@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
@@ -28,7 +28,7 @@ func (r *mutationResolver) VerifyOtp(ctx context.Context, msisdn string, otp str
 		return false, fmt.Errorf("failed to check for the validity of the supplied OTP")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"verifyOTP",
@@ -49,7 +49,7 @@ func (r *mutationResolver) VerifyEmailOtp(ctx context.Context, email string, otp
 		return false, fmt.Errorf("failed to check for the validity of the supplied OTP")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"verifyEmailOTP",
@@ -70,7 +70,7 @@ func (r *queryResolver) GenerateOtp(ctx context.Context, msisdn string) (string,
 		return "", fmt.Errorf("failed to generate OTP")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"generateOTP",
@@ -90,7 +90,7 @@ func (r *queryResolver) GenerateAndEmailOtp(ctx context.Context, msisdn string, 
 	if err != nil {
 		return "", fmt.Errorf("failed to send the generated OTP to the provided email address")
 	}
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"generateAndEmailOTP",
@@ -110,7 +110,7 @@ func (r *queryResolver) GenerateRetryOtp(ctx context.Context, msisdn string, ret
 	if err != nil {
 		return "", fmt.Errorf("failed to generate fallback OTPs")
 	}
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"generateRetryOTP",
@@ -130,7 +130,7 @@ func (r *queryResolver) EmailVerificationOtp(ctx context.Context, email string) 
 	if err != nil {
 		return "", fmt.Errorf("failed to generate an OTP to the supplied email for verification")
 	}
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"emailVerificationOTP",

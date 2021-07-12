@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
@@ -37,7 +38,7 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 		return false, fmt.Errorf("failed to send a notification : %w", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"sendNotification",
@@ -58,7 +59,7 @@ func (r *queryResolver) Notifications(ctx context.Context, registrationToken str
 		return nil, fmt.Errorf("failed to retrieve notifications: %w", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"notifications",

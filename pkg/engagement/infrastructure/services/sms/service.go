@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
@@ -97,7 +98,7 @@ func getHost(env, service string) string {
 
 // NewService returns a new service
 func NewService(repository repository.Repository, crm hubspot.ServiceHubSpotInterface) *Service {
-	env := base.MustGetEnvVar(AITEnvVarName)
+	env := serverutils.MustGetEnvVar(AITEnvVarName)
 	return &Service{env, repository, crm}
 }
 
@@ -148,17 +149,17 @@ func (s Service) Send(
 		return s.SendSMS(
 			to,
 			message,
-			base.MustGetEnvVar(APISenderIDEnvVarName),
-			base.MustGetEnvVar(APIUsernameEnvVarName),
-			base.MustGetEnvVar(APIKeyEnvVarName),
+			serverutils.MustGetEnvVar(APISenderIDEnvVarName),
+			serverutils.MustGetEnvVar(APIUsernameEnvVarName),
+			serverutils.MustGetEnvVar(APIKeyEnvVarName),
 		)
 	case base.SenderIDBewell:
 		return s.SendSMS(
 			to,
 			message,
-			base.MustGetEnvVar(BeWellAITSenderID),
-			base.MustGetEnvVar(BeWellAITUsername),
-			base.MustGetEnvVar(BeWellAITAPIKey),
+			serverutils.MustGetEnvVar(BeWellAITSenderID),
+			serverutils.MustGetEnvVar(BeWellAITUsername),
+			serverutils.MustGetEnvVar(BeWellAITAPIKey),
 		)
 	}
 	return nil, fmt.Errorf("unknown AIT sender")

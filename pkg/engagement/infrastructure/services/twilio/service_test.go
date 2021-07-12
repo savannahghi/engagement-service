@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/savannahghi/serverutils"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
@@ -26,11 +27,11 @@ func TestNewService(t *testing.T) {
 }
 
 func setTwilioCredsToLive() (string, string, error) {
-	initialTwilioAuthToken := base.MustGetEnvVar("TWILIO_ACCOUNT_AUTH_TOKEN")
-	initialTwilioSID := base.MustGetEnvVar("TWILIO_ACCOUNT_SID")
+	initialTwilioAuthToken := serverutils.MustGetEnvVar("TWILIO_ACCOUNT_AUTH_TOKEN")
+	initialTwilioSID := serverutils.MustGetEnvVar("TWILIO_ACCOUNT_SID")
 
-	liveTwilioAuthToken := base.MustGetEnvVar("TESTING_TWILIO_ACCOUNT_AUTH_TOKEN")
-	liveTwilioSID := base.MustGetEnvVar("TESTING_TWILIO_ACCOUNT_SID")
+	liveTwilioAuthToken := serverutils.MustGetEnvVar("TESTING_TWILIO_ACCOUNT_AUTH_TOKEN")
+	liveTwilioSID := serverutils.MustGetEnvVar("TESTING_TWILIO_ACCOUNT_SID")
 
 	err := os.Setenv("TWILIO_ACCOUNT_AUTH_TOKEN", liveTwilioAuthToken)
 	if err != nil {
@@ -192,8 +193,8 @@ func TestService_AccessToken(t *testing.T) {
 func TestService_SendSMS(t *testing.T) {
 
 	// set test credentials
-	initialSmsNumber := base.MustGetEnvVar(twilio.TwilioSMSNumberEnvVarName)
-	testSmsNumber := base.MustGetEnvVar("TEST_TWILIO_SMS_NUMBER")
+	initialSmsNumber := serverutils.MustGetEnvVar(twilio.TwilioSMSNumberEnvVarName)
+	testSmsNumber := serverutils.MustGetEnvVar("TEST_TWILIO_SMS_NUMBER")
 	os.Setenv(twilio.TwilioSMSNumberEnvVarName, testSmsNumber)
 
 	type args struct {

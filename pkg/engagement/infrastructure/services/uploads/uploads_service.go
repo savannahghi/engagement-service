@@ -15,6 +15,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/storage"
 	"github.com/rs/xid"
+	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/base"
 )
@@ -40,7 +41,7 @@ type ServiceUploads interface {
 }
 
 func getBucketName() string {
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	projectSlug := strings.ReplaceAll(projectID, "-", "_")
 	bucketName := fmt.Sprintf("%s_%s", projectSlug, BucketNameBase)
 	return bucketName
@@ -55,7 +56,7 @@ func GCSClient() (*storage.Client, error) {
 		return nil, fmt.Errorf("can't initialize storage client: %w", err)
 	}
 
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	bucket := storageClient.Bucket(getBucketName())
 	_, err = bucket.Attrs(ctx)
 	if err != nil {

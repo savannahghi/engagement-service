@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -33,9 +34,9 @@ const (
 
 // NewService initializes a properly set up WhatsApp service
 func NewService() *Service {
-	sid := base.MustGetEnvVar(TwilioWhatsappSIDEnvVarName)
-	authToken := base.MustGetEnvVar(TwilioWhatsappAuthTokenEnvVarName)
-	sender := base.MustGetEnvVar(TwilioWhatsappSenderEnvVarName)
+	sid := serverutils.MustGetEnvVar(TwilioWhatsappSIDEnvVarName)
+	authToken := serverutils.MustGetEnvVar(TwilioWhatsappAuthTokenEnvVarName)
+	sender := serverutils.MustGetEnvVar(TwilioWhatsappSenderEnvVarName)
 	httpClient := &http.Client{
 		Timeout: time.Second * TwilioHTTPClientTimeoutSeconds,
 	}
@@ -195,7 +196,7 @@ func (s Service) MakeTwilioRequest(
 ) error {
 	s.CheckPreconditions()
 
-	if base.IsDebug() {
+	if serverutils.IsDebug() {
 		log.Printf("Twilio request data: \n%s\n", content)
 	}
 
@@ -222,7 +223,7 @@ func (s Service) MakeTwilioRequest(
 		return fmt.Errorf("twilio API Error: %s", string(respBs))
 	}
 
-	if base.IsDebug() {
+	if serverutils.IsDebug() {
 		log.Printf("Twilio response: \n%s\n", string(respBs))
 	}
 	err = json.Unmarshal(respBs, target)

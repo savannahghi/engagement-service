@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -13,7 +14,7 @@ import (
 
 func TestNewPubSubNotificationService(t *testing.T) {
 	ctx := context.Background()
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 
 	tests := []struct {
 		name    string
@@ -43,7 +44,7 @@ func TestNewPubSubNotificationService(t *testing.T) {
 
 func TestPubSubNotificationService_Notify(t *testing.T) {
 	ctx := context.Background()
-	projectID := base.MustGetEnvVar(base.GoogleCloudProjectIDEnvVarName)
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	srv, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		t.Errorf("can't initialize pubsub notification service: %s", err)

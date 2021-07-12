@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 )
 
@@ -15,7 +16,7 @@ const (
 
 // AddPubSubNamespace creates a namespaced topic name
 func AddPubSubNamespace(topicName string) string {
-	environment := base.GetRunningEnvironment()
+	environment := serverutils.GetRunningEnvironment()
 	return base.NamespacePubsubIdentifier(
 		ServiceName,
 		topicName,

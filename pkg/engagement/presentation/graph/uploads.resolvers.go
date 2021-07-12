@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 )
 
@@ -20,7 +21,7 @@ func (r *mutationResolver) Upload(ctx context.Context, input base.UploadInput) (
 		return nil, fmt.Errorf("unable to upload: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"upload",
@@ -39,7 +40,7 @@ func (r *queryResolver) FindUploadByID(ctx context.Context, id string) (*base.Up
 		return nil, fmt.Errorf("unable to find upload by ID: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"findUploadByID",

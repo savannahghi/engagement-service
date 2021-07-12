@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
@@ -21,7 +22,7 @@ func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*library.Ghost
 		return nil, fmt.Errorf("unable to get library content: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "getLibraryContent", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "getLibraryContent", err)
 
 	return ghostCMSPost, nil
 }
@@ -34,7 +35,7 @@ func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour base.Flavour
 		return nil, fmt.Errorf("unable to get FAQs content: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "getFaqsContent", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "getFaqsContent", err)
 
 	return faqs, nil
 }

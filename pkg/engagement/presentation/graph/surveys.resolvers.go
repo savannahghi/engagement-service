@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
@@ -23,7 +23,7 @@ func (r *mutationResolver) RecordNPSResponse(ctx context.Context, input dto.NPSI
 		return false, fmt.Errorf("failed to record nps response")
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"recordNPSResponse",

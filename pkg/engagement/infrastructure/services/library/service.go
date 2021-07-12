@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
@@ -51,8 +52,8 @@ const (
 func NewLibraryService(
 	onboarding onboarding.ProfileService,
 ) *Service {
-	e := base.MustGetEnvVar(ghostCMSAPIEndpoint)
-	a := base.MustGetEnvVar(ghostCMSAPIKey)
+	e := serverutils.MustGetEnvVar(ghostCMSAPIEndpoint)
+	a := serverutils.MustGetEnvVar(ghostCMSAPIKey)
 
 	srv := &Service{
 		APIEndpoint:  e,

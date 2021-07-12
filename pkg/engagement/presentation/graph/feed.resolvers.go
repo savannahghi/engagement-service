@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -25,7 +26,7 @@ func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour base.Fla
 		return nil, fmt.Errorf("unable to resolve a Feed item: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "resolveFeedItem", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "resolveFeedItem", err)
 
 	return item, nil
 }
@@ -42,7 +43,7 @@ func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour base.F
 		return nil, fmt.Errorf("unable to unresolve Feed item: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "unresolveFeedItem", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "unresolveFeedItem", err)
 
 	return item, nil
 }
@@ -59,7 +60,7 @@ func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour base.Flavour
 		return nil, fmt.Errorf("unable to pin Feed item: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "pinFeedItem", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "pinFeedItem", err)
 
 	return item, nil
 }
@@ -76,7 +77,7 @@ func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour base.Flavo
 		return nil, fmt.Errorf("unable to unpin Feed item: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "unpinFeedItem", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "unpinFeedItem", err)
 
 	return item, nil
 }
@@ -93,7 +94,7 @@ func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour base.Flavou
 		return nil, fmt.Errorf("unable to hide Feed item: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "hideFeedItem", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "hideFeedItem", err)
 
 	return item, nil
 }
@@ -110,7 +111,7 @@ func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour base.Flavou
 		return nil, fmt.Errorf("unable to show Feed item: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "showFeedItem", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "showFeedItem", err)
 
 	return item, nil
 }
@@ -127,7 +128,7 @@ func (r *mutationResolver) HideNudge(ctx context.Context, flavour base.Flavour, 
 		return nil, fmt.Errorf("unable to hide nudge: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "hideNudge", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "hideNudge", err)
 
 	return nudge, nil
 }
@@ -144,7 +145,7 @@ func (r *mutationResolver) ShowNudge(ctx context.Context, flavour base.Flavour, 
 		return nil, fmt.Errorf("unable to show nudge: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "showNudge", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "showNudge", err)
 
 	return nudge, nil
 }
@@ -161,7 +162,7 @@ func (r *mutationResolver) PostMessage(ctx context.Context, flavour base.Flavour
 		return nil, fmt.Errorf("unable to post a message: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "postMessage", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "postMessage", err)
 
 	return msg, nil
 }
@@ -178,7 +179,7 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour base.Flavo
 		return false, fmt.Errorf("can't delete message: %w", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "deleteMessage", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "deleteMessage", err)
 
 	return true, nil
 }
@@ -195,7 +196,7 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour base.Flavou
 		return false, fmt.Errorf("can't process event: %w", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "processEvent", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "processEvent", err)
 
 	return true, nil
 }
@@ -222,7 +223,7 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour base.Flavour, isAno
 		return nil, fmt.Errorf("can't get Feed: %w", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "getFeed", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "getFeed", err)
 
 	return feed, nil
 }
@@ -239,7 +240,7 @@ func (r *queryResolver) Labels(ctx context.Context, flavour base.Flavour) ([]str
 		return nil, fmt.Errorf("unable to get Labels count: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "labels", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "labels", err)
 
 	return labels, nil
 }
@@ -256,7 +257,7 @@ func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour base.
 		return -1, fmt.Errorf("unable to count unread persistent items: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(ctx, startTime, "unreadPersistentItems", err)
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "unreadPersistentItems", err)
 
 	return count, nil
 }

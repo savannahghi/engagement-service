@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/serverutils"
 )
 
 func (r *mutationResolver) SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error) {
@@ -21,7 +21,7 @@ func (r *mutationResolver) SimpleEmail(ctx context.Context, subject string, text
 		return "", fmt.Errorf("unable to send an email: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"simpleEmail",

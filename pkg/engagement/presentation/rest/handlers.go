@@ -16,6 +16,7 @@ import (
 
 	"net/http"
 
+	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 
 	"gitlab.slade360emr.com/go/base"
@@ -195,13 +196,13 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 ) {
 	m, err := base.VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
-		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 
 	topicID, err := base.GetPubSubTopic(m)
 	if err != nil {
-		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 
@@ -209,7 +210,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	var envelope dto.NotificationEnvelope
 	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
-		base.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 	ctx := addUIDToContext(envelope.UID)
@@ -218,7 +219,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemPublishTopic):
 		err = p.interactor.Notification.HandleItemPublish(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -228,7 +229,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemDeleteTopic):
 		err = p.interactor.Notification.HandleItemDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -238,7 +239,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemResolveTopic):
 		err = p.interactor.Notification.HandleItemResolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -248,7 +249,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemUnresolveTopic):
 		err = p.interactor.Notification.HandleItemUnresolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -258,7 +259,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemHideTopic):
 		err = p.interactor.Notification.HandleItemHide(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -268,7 +269,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemShowTopic):
 		err = p.interactor.Notification.HandleItemShow(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -278,7 +279,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemPinTopic):
 		err = p.interactor.Notification.HandleItemPin(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -288,7 +289,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ItemUnpinTopic):
 		err = p.interactor.Notification.HandleItemUnpin(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -298,7 +299,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.NudgePublishTopic):
 		err = p.interactor.Notification.HandleNudgePublish(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -308,7 +309,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.NudgeDeleteTopic):
 		err = p.interactor.Notification.HandleNudgeDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -318,7 +319,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.NudgeResolveTopic):
 		err = p.interactor.Notification.HandleNudgeResolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -328,7 +329,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.NudgeUnresolveTopic):
 		err = p.interactor.Notification.HandleNudgeUnresolve(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -338,7 +339,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.NudgeHideTopic):
 		err = p.interactor.Notification.HandleNudgeHide(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -348,7 +349,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.NudgeShowTopic):
 		err = p.interactor.Notification.HandleNudgeShow(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -358,7 +359,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ActionPublishTopic):
 		err = p.interactor.Notification.HandleActionPublish(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -368,7 +369,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.ActionDeleteTopic):
 		err = p.interactor.Notification.HandleActionDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -378,7 +379,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.MessagePostTopic):
 		err = p.interactor.Notification.HandleMessagePost(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -388,7 +389,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.MessageDeleteTopic):
 		err = p.interactor.Notification.HandleMessageDelete(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -398,7 +399,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.IncomingEventTopic):
 		err = p.interactor.Notification.HandleIncomingEvent(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -408,7 +409,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.FcmPublishTopic):
 		err = p.interactor.Notification.HandleSendNotification(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -418,7 +419,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	case helpers.AddPubSubNamespace(common.SentEmailTopic):
 		err = p.interactor.Notification.SendEmail(ctx, m)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusBadRequest,
@@ -1294,7 +1295,7 @@ func (p PresentationHandlersImpl) SendEmail(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.EMailMessage{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.Subject == "" {
 			err := fmt.Errorf("blank email subject")
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1339,7 +1340,7 @@ func (p PresentationHandlersImpl) SendToMany(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.SendSMSPayload{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		for _, phoneNo := range payload.To {
 			_, err := base.NormalizeMSISDN(phoneNo)
 			if err != nil {
@@ -1391,7 +1392,7 @@ func (p PresentationHandlersImpl) SendMarketingSMS(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.SendSMSPayload{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if len(payload.To) == 0 {
 			respondWithError(
 				w,
@@ -1502,13 +1503,13 @@ func (p PresentationHandlersImpl) GetNotificationHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.Message{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
 			err := fmt.Errorf(
 				"twilio notification payload not parsed correctly",
 			)
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
@@ -1521,7 +1522,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler(
 		if err != nil {
 			err := fmt.Errorf("twilio notification payload not saved")
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
@@ -1533,7 +1534,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler(
 		type okResp struct {
 			Status string `json:"status"`
 		}
-		base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+		serverutils.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
 	}
 }
 
@@ -1543,13 +1544,13 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.Message{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
 			err := fmt.Errorf(
 				"twilio notification payload not parsed correctly",
 			)
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
@@ -1562,7 +1563,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(
 		if err != nil {
 			err := fmt.Errorf("twilio notification payload not saved")
 			log.Printf("Twilio callback error: %s", err)
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(err),
 				http.StatusInternalServerError,
@@ -1574,7 +1575,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(
 		type okResp struct {
 			Status string `json:"status"`
 		}
-		base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+		serverutils.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
 	}
 }
 
@@ -1584,9 +1585,9 @@ func (p PresentationHandlersImpl) GetFallbackHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO ErrorCode and ErrorURL sent here as params
-		// TODO Implement WhatsAPP fallback handler: base.DecodeJSONToTargetStruct(w, r, notificationPayload)
+		// TODO Implement WhatsAPP fallback handler: serverutils.DecodeJSONToTargetStruct(w, r, notificationPayload)
 		// base.ErrorMap(fmt.Errorf("unbound mandatory notification payload fields")),
-		// base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+		// serverutils.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
 	}
 }
 
@@ -1603,7 +1604,7 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(
 
 		payloadRequest := &PayloadRequest{}
 
-		base.DecodeJSONToTargetStruct(rw, r, payloadRequest)
+		serverutils.DecodeJSONToTargetStruct(rw, r, payloadRequest)
 
 		ok, err := p.interactor.Whatsapp.PhoneNumberVerificationCode(
 			ctx,
@@ -1621,7 +1622,7 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(
 		}
 
 		response := &PayloadResponse{Status: ok}
-		base.WriteJSONResponse(rw, response, http.StatusOK)
+		serverutils.WriteJSONResponse(rw, response, http.StatusOK)
 	}
 }
 
@@ -1637,7 +1638,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 
 		code, err := s.GenerateAndSendOTP(msisdn)
 		if err != nil {
-			base.WriteJSONResponse(
+			serverutils.WriteJSONResponse(
 				w,
 				base.ErrorMap(
 					fmt.Errorf("unable to generate and send otp: %v", err),
@@ -1647,7 +1648,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 			return
 		}
 
-		base.WriteJSONResponse(w, code, http.StatusOK)
+		serverutils.WriteJSONResponse(w, code, http.StatusOK)
 	}
 }
 
@@ -1675,11 +1676,11 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler(
 					err,
 				),
 			)
-			base.WriteJSONResponse(w, err, http.StatusInternalServerError)
+			serverutils.WriteJSONResponse(w, err, http.StatusInternalServerError)
 			return
 		}
 
-		base.WriteJSONResponse(w, code, http.StatusOK)
+		serverutils.WriteJSONResponse(w, code, http.StatusOK)
 	}
 }
 
@@ -1707,7 +1708,7 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler(
 			IsVerified bool `json:"IsVerified"`
 		}
 
-		base.WriteJSONResponse(
+		serverutils.WriteJSONResponse(
 			w,
 			otpResponse{IsVerified: isVerified},
 			http.StatusOK,
@@ -1739,7 +1740,7 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(
 			IsVerified bool `json:"IsVerified"`
 		}
 
-		base.WriteJSONResponse(
+		serverutils.WriteJSONResponse(
 			w,
 			otpResponse{IsVerified: isVerified},
 			http.StatusOK,
@@ -1784,7 +1785,7 @@ func (p PresentationHandlersImpl) SendNotificationHandler(
 		type okResp struct {
 			Status string `json:"status"`
 		}
-		base.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
+		serverutils.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
 	}
 }
 
@@ -1797,7 +1798,7 @@ func (p PresentationHandlersImpl) GetContactLists() http.HandlerFunc {
 			base.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		base.WriteJSONResponse(w, contactLists, http.StatusOK)
+		serverutils.WriteJSONResponse(w, contactLists, http.StatusOK)
 	}
 }
 
@@ -1806,13 +1807,13 @@ func (p PresentationHandlersImpl) GetContactLists() http.HandlerFunc {
 func (p PresentationHandlersImpl) GetContactListByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.ListID{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		contactList, err := p.interactor.CRM.GetContactListByID(payload.ListID)
 		if err != nil {
 			base.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		base.WriteJSONResponse(w, contactList, http.StatusOK)
+		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
 	}
 }
 
@@ -1821,13 +1822,13 @@ func (p PresentationHandlersImpl) GetContactListByID() http.HandlerFunc {
 func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.ListID{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		contactList, err := p.interactor.CRM.GetContactsInAList(payload.ListID)
 		if err != nil {
 			base.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		base.WriteJSONResponse(w, contactList, http.StatusOK)
+		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
 	}
 }
 
@@ -1836,7 +1837,7 @@ func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
 func (p PresentationHandlersImpl) SetBewellAware(cxt context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.SetBewellAwareInput{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 
 		err := p.interactor.Marketing.BeWellAware(
 			cxt,
@@ -1863,10 +1864,10 @@ func (p PresentationHandlersImpl) SetBewellAware(cxt context.Context) http.Handl
 func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.PrimaryEmailAddressPayload{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.PhoneNumber == "" {
 			err := fmt.Errorf("expected `phone` to be defined")
-			base.WriteJSONResponse(w, base.CustomError{
+			serverutils.WriteJSONResponse(w, base.CustomError{
 				Err:     err,
 				Message: err.Error(),
 			}, http.StatusBadRequest)
@@ -1874,7 +1875,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 		}
 		if payload.EmailAddress == "" {
 			err := fmt.Errorf("expected `email` to be defined")
-			base.WriteJSONResponse(w, base.CustomError{
+			serverutils.WriteJSONResponse(w, base.CustomError{
 				Err:     err,
 				Message: err.Error(),
 			}, http.StatusBadRequest)
@@ -1918,7 +1919,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 func (p PresentationHandlersImpl) GetMarketingData(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.MarketingMessagePayload{}
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 
 		if payload.Wing == "" {
 			respondWithError(
@@ -1966,7 +1967,7 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.LoadCampgainDataInput{}
 
-		base.DecodeJSONToTargetStruct(w, r, payload)
+		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 
 		if payload == nil || payload.PhoneNumber == nil || len(payload.Emails) == 0 {
 			respondWithError(

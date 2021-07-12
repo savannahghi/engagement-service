@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
@@ -22,7 +23,7 @@ func (r *mutationResolver) Send(ctx context.Context, to string, message string) 
 		return nil, fmt.Errorf("unable send SMS: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"send",
@@ -42,7 +43,7 @@ func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []
 		return nil, fmt.Errorf("unable to send SMS to many: %v", err)
 	}
 
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"sendToMany",

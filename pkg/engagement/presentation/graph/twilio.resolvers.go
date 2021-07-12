@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
@@ -22,7 +22,7 @@ func (r *queryResolver) TwilioAccessToken(ctx context.Context) (*dto.AccessToken
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate access token: %w", err)
 	}
-	defer base.RecordGraphqlResolverMetrics(
+	defer serverutils.RecordGraphqlResolverMetrics(
 		ctx,
 		startTime,
 		"twilioAccessToken",

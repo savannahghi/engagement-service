@@ -10,6 +10,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp/totp"
+	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
@@ -101,7 +102,7 @@ func NewService() *Service {
 			AccountName: accountName,
 		},
 		firestoreClient:      firestoreClient,
-		rootCollectionSuffix: base.MustGetEnvVar("ROOT_COLLECTION_SUFFIX"),
+		rootCollectionSuffix: serverutils.MustGetEnvVar("ROOT_COLLECTION_SUFFIX"),
 		whatsapp:             whatsapp,
 		mail:                 mail,
 		sms:                  sms,

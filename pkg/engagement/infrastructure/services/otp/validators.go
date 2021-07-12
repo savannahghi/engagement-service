@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
@@ -11,7 +12,7 @@ import (
 // ValidateSendOTPPayload checks the validity of the request payload
 func ValidateSendOTPPayload(w http.ResponseWriter, r *http.Request) (string, error) {
 	payload := &dto.Msisdn{}
-	base.DecodeJSONToTargetStruct(w, r, payload)
+	serverutils.DecodeJSONToTargetStruct(w, r, payload)
 	if payload.Msisdn == "" {
 		err := fmt.Errorf("invalid generate and send otp payload")
 		base.ReportErr(w, err, http.StatusBadRequest)
@@ -23,7 +24,7 @@ func ValidateSendOTPPayload(w http.ResponseWriter, r *http.Request) (string, err
 // ValidateGenerateRetryOTPPayload checks the validity of the request payload
 func ValidateGenerateRetryOTPPayload(w http.ResponseWriter, r *http.Request) (*dto.GenerateRetryOTP, error) {
 	payload := &dto.GenerateRetryOTP{}
-	base.DecodeJSONToTargetStruct(w, r, payload)
+	serverutils.DecodeJSONToTargetStruct(w, r, payload)
 	if payload.Msisdn == nil || payload.RetryStep == 0 {
 		err := fmt.Errorf("invalid generate retry and fallback otp payload")
 		base.ReportErr(w, err, http.StatusBadRequest)
@@ -35,7 +36,7 @@ func ValidateGenerateRetryOTPPayload(w http.ResponseWriter, r *http.Request) (*d
 // ValidateVerifyOTPPayload checks the validity of the request payload
 func ValidateVerifyOTPPayload(w http.ResponseWriter, r *http.Request, isEmail bool) (*dto.VerifyOTP, error) {
 	payload := &dto.VerifyOTP{}
-	base.DecodeJSONToTargetStruct(w, r, payload)
+	serverutils.DecodeJSONToTargetStruct(w, r, payload)
 	if isEmail {
 		if payload.Email == nil || payload.VerificationCode == nil {
 			err := fmt.Errorf("invalid verify otp payload")

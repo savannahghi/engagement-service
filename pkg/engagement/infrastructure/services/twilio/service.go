@@ -15,6 +15,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/kevinburke/twilio-go"
 	"github.com/kevinburke/twilio-go/token"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -59,18 +60,18 @@ type ServiceTwilio interface {
 // NewService initializes a service to interact with Twilio
 func NewService() *Service {
 	var repository repository.Repository
-	region := base.MustGetEnvVar(TwilioRegionEnvVarName)
-	videoBaseURL := base.MustGetEnvVar(TwilioVideoAPIURLEnvVarName)
-	videoAPIKeySID := base.MustGetEnvVar(TwilioVideoAPIKeySIDEnvVarName)
-	videoAPIKeySecret := base.MustGetEnvVar(TwilioVideoAPIKeySecretEnvVarName)
-	accountSID := base.MustGetEnvVar(TwilioAccountSIDEnvVarName)
-	accountAuthToken := base.MustGetEnvVar(TwilioAccountAuthTokenEnvVarName)
+	region := serverutils.MustGetEnvVar(TwilioRegionEnvVarName)
+	videoBaseURL := serverutils.MustGetEnvVar(TwilioVideoAPIURLEnvVarName)
+	videoAPIKeySID := serverutils.MustGetEnvVar(TwilioVideoAPIKeySIDEnvVarName)
+	videoAPIKeySecret := serverutils.MustGetEnvVar(TwilioVideoAPIKeySecretEnvVarName)
+	accountSID := serverutils.MustGetEnvVar(TwilioAccountSIDEnvVarName)
+	accountAuthToken := serverutils.MustGetEnvVar(TwilioAccountAuthTokenEnvVarName)
 	httpClient := &http.Client{
 		Timeout: time.Second * TwilioHTTPClientTimeoutSeconds,
 	}
-	publicDomain := base.MustGetEnvVar(ServerPublicDomainEnvVarName)
+	publicDomain := serverutils.MustGetEnvVar(ServerPublicDomainEnvVarName)
 	callbackURL := publicDomain + TwilioCallbackPath
-	smsNumber := base.MustGetEnvVar(TwilioSMSNumberEnvVarName)
+	smsNumber := serverutils.MustGetEnvVar(TwilioSMSNumberEnvVarName)
 	crm := hubspot.NewHubSpotService()
 	sms := sms.NewService(repository, crm)
 
@@ -157,7 +158,7 @@ func (s Service) MakeTwilioRequest(
 	target interface{},
 ) error {
 	s.checkPreconditions()
-	if base.IsDebug() {
+	if serverutils.IsDebug() {
 		log.Printf("Twilio request data: \n%s\n", content)
 	}
 
@@ -183,7 +184,7 @@ func (s Service) MakeTwilioRequest(
 		return fmt.Errorf("twilio API Error: %s", string(respBs))
 	}
 
-	if base.IsDebug() {
+	if serverutils.IsDebug() {
 		log.Printf("Twilio response: \n%s\n", string(respBs))
 	}
 	err = json.Unmarshal(respBs, target)

@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/mailgun/mailgun-go/v4"
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/serverutils"
 )
 
 // Mail configuration constants
@@ -42,9 +42,9 @@ type ServiceMail interface {
 
 // NewService initializes a new MailGun service
 func NewService() *Service {
-	apiKey := base.MustGetEnvVar(MailGunAPIKeyEnvVarName)
-	domain := base.MustGetEnvVar(MailGunDomainEnvVarName)
-	from := base.MustGetEnvVar(MailGunFromEnvVarName)
+	apiKey := serverutils.MustGetEnvVar(MailGunAPIKeyEnvVarName)
+	domain := serverutils.MustGetEnvVar(MailGunDomainEnvVarName)
+	from := serverutils.MustGetEnvVar(MailGunFromEnvVarName)
 	mg := mailgun.NewMailgun(domain, apiKey)
 	mg.SetAPIBase(mailgun.APIBaseEU)
 
@@ -54,14 +54,14 @@ func NewService() *Service {
 	}
 
 	sendInBlueEnabled := false
-	if base.MustGetEnvVar(SendInBlueEnabledEnvVarName) == "true" {
+	if serverutils.MustGetEnvVar(SendInBlueEnabledEnvVarName) == "true" {
 		sendInBlueEnabled = true
 	}
 
 	return &Service{
 		Mg:                mg,
 		From:              from,
-		SendInBlueAPIKey:  base.MustGetEnvVar(SendInBlueAPIKeyEnvVarName),
+		SendInBlueAPIKey:  serverutils.MustGetEnvVar(SendInBlueAPIKeyEnvVarName),
 		SendInBlueEnabled: sendInBlueEnabled,
 	}
 }
@@ -99,7 +99,7 @@ func (s Service) MakeSendInBlueRequest(data map[string]interface{}, target inter
 		return reqErr
 	}
 
-	sendInBlueAPIKey := base.MustGetEnvVar(SendInBlueAPIKeyEnvVarName)
+	sendInBlueAPIKey := serverutils.MustGetEnvVar(SendInBlueAPIKeyEnvVarName)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("api-key", sendInBlueAPIKey)

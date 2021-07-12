@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -52,12 +53,12 @@ func NewPubSubNotificationService(
 		return nil, fmt.Errorf("unable to initialize pubsub client: %w", err)
 	}
 
-	environment, err := base.GetEnvVar(base.Environment)
+	environment, err := serverutils.GetEnvVar(serverutils.Environment)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get the environment variable `%s`: %w", base.Environment, err)
+		return nil, fmt.Errorf("unable to get the environment variable `%s`: %w", serverutils.Environment, err)
 	}
 
-	hostName, err := base.GetEnvVar(hostNameEnvVarName)
+	hostName, err := serverutils.GetEnvVar(hostNameEnvVarName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get the %s environment variable: %w", hostNameEnvVarName, err)
 	}
