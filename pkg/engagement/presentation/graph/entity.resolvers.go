@@ -49,6 +49,10 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.F
 	)
 }
 
+func (r *entityResolver) FindLinkByID(ctx context.Context, id string) (*base.Link, error) {
+	return nil, nil
+}
+
 func (r *entityResolver) FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error) {
 	panic(fmt.Errorf("not implemented"))
 }

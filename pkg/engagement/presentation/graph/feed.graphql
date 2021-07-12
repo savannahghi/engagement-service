@@ -181,7 +181,13 @@ input MsgInput {
   timestamp: Time!
 }
 
-type Link {
+type Link
+  @key(fields: "id")
+  @key(fields: "url")
+  @key(fields: "linkType")
+  @key(fields: "title")
+  @key(fields: "description")
+  @key(fields: "thumbnail") {
   id: String!
   url: String!
   linkType: LinkType!
