@@ -20,6 +20,23 @@ echo_stage:
   tags:
     - healthcloud-multi
 
+test_launch_scripts:
+  stage: test
+  variables:
+    REGISTRY_URL: $TEST_SCHEMA_REGISTRY_URL
+  before_script:
+    - apt-get update
+    - apt-get install -y python3-pip
+    - pip3 install virtualenv
+    - virtualenv --python=python3 healthcloud_venv
+    - source healthcloud_venv/bin/activate
+  script:
+    - cd launch
+    - pip3 install tox
+    - tox -r
+  tags:
+    - healthcloud-multi
+
 lint_and_test:
   stage: test
   when: manual
@@ -53,6 +70,26 @@ lint_and_test:
       - $CI_PROJECT_DIR/coverage.json
       - $CI_PROJECT_DIR/coverage.html
       - $CI_PROJECT_DIR/coverage_report.txt
+  tags:
+    - healthcloud-multi
+
+deploy_cloud_function:
+  image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
+  before_script:
+    - /google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $GCLOUD_STAGING_SERVICE_ACCOUNT
+    - /google-cloud-sdk/bin/gcloud config set project bewell-app-testing
+    - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_STAGING_SERVICE_ACCOUNT
+    - export CLOUDSDK_CORE_PROJECT=bewell-app-testing
+  stage: deploy
+  only:
+    - master
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  resource_group: prod
+  script:
+    - cd launch/browser_detect
+    - /google-cloud-sdk/bin/gcloud functions deploy detect_browser --runtime python38 --trigger-http --allow-unauthenticated --region europe-west3
   tags:
     - healthcloud-multi
 

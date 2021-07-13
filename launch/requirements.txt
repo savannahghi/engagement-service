@@ -3,3 +3,10 @@ requests==2.25.1
 click==8.0.1
 google-cloud-bigquery==2.20.0
 numpy==1.21.0
+pytest==6.2.4
+flake8==3.9.2
+flake8-docstrings==1.6.0
+tox==3.23.1
+pytest-cov==2.12.1
+flask==2.0.1
+user-agents==2.2.0

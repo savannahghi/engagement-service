@@ -6,3 +6,8 @@ docs/build/
 Makefile
 venv
 __pycache__/
+.tox
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/

@@ -15,7 +15,8 @@ app = flask.Flask(__name__)
 
 IOS = "iOS"
 ANDROID = "Android"
-BASE_URL = "https://engagement-prod-uyajqt434q-ew.a.run.app/"
+BASE_URL = "https://engagement-prod.healthcloud.co.ke/"
+A_LANDING_PAGE = "https://a.bewell.co.ke"
 
 ANDROID_DUMMY_TEMPLATE = """
 <html lang="en">
@@ -91,7 +92,7 @@ ANDROID_DUMMY_TEMPLATE = """
     </script>
 </body>
 </html>
-"""
+"""  # noqa
 
 IOS_DUMMY_TEMPLATE = """
 <html lang="en">
@@ -167,18 +168,17 @@ IOS_DUMMY_TEMPLATE = """
     </script>
 </body>
 </html>
-"""
+"""  # noqa
 
 
 def mark_bewell_aware(email):
-    """Marks a user as bewell aware."""
+    """Mark a user as bewell aware."""
     url = BASE_URL + "set_bewell_aware"
     decoded_email = base64.b64decode(email)
     response = requests.post(
         url=url, json={"email": decoded_email.decode("utf-8")}
     )
-    result = response.json()
-    return result
+    return response
 
 
 def detect_browser(request):
@@ -188,20 +188,20 @@ def detect_browser(request):
     Given the family of OS we get, we redirect to either
     our Play store or App store.
     """
-    user_agent = parse(flask.request.headers.get("User-Agent"))
+    user_agent = parse(request.headers.get("User-Agent"))
     os_family = user_agent.os.family
-    if os_family == IOS:
-        email = request.args.get("email")
+    email = request.args.get("email")
+    if email is not None:
         mark_bewell_aware(email)
+
+    if os_family == IOS:
         return flask.render_template_string(IOS_DUMMY_TEMPLATE)
 
     if os_family == ANDROID:
-        email = request.args.get("email")
-        mark_bewell_aware(email)
         return flask.render_template_string(ANDROID_DUMMY_TEMPLATE)
 
     else:
-        return "Run this on an Android or iOS phone and see the magic happen :). Be.Well By Slade360"
+        return flask.redirect(A_LANDING_PAGE)
 
 
 @app.route("/")
