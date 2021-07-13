@@ -123,7 +123,6 @@ type ComplexityRoot struct {
 		FindAccessTokenByJwt      func(childComplexity int, jwt string) int
 		FindDummyByID             func(childComplexity int, id *string) int
 		FindFeedByID              func(childComplexity int, id string) int
-		FindLinkByID              func(childComplexity int, id string) int
 		FindSavedNotificationByID func(childComplexity int, id string) int
 	}
 
@@ -424,7 +423,6 @@ type EntityResolver interface {
 	FindAccessTokenByJwt(ctx context.Context, jwt string) (*dto.AccessToken, error)
 	FindDummyByID(ctx context.Context, id *string) (*dto.Dummy, error)
 	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
-	FindLinkByID(ctx context.Context, id string) (*base.Link, error)
 	FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error)
 }
 type MutationResolver interface {
@@ -881,18 +879,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Entity.FindFeedByID(childComplexity, args["id"].(string)), true
-
-	case "Entity.findLinkByID":
-		if e.complexity.Entity.FindLinkByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findLinkByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindLinkByID(childComplexity, args["id"].(string)), true
 
 	case "Entity.findSavedNotificationByID":
 		if e.complexity.Entity.FindSavedNotificationByID == nil {
@@ -2870,13 +2856,7 @@ input MsgInput {
   timestamp: Time!
 }
 
-type Link
-  @key(fields: "id")
-  @key(fields: "url")
-  @key(fields: "linkType")
-  @key(fields: "title")
-  @key(fields: "description")
-  @key(fields: "thumbnail") {
+type Link {
   id: String!
   url: String!
   linkType: LinkType!
@@ -3289,14 +3269,13 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = AccessToken | Dummy | Feed | Link | SavedNotification
+union _Entity = AccessToken | Dummy | Feed | SavedNotification
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
 		findAccessTokenByJwt(jwt: String!,): AccessToken!
 	findDummyByID(id: ID,): Dummy!
 	findFeedByID(id: String!,): Feed!
-	findLinkByID(id: String!,): Link!
 	findSavedNotificationByID(id: String!,): SavedNotification!
 
 }
@@ -3348,21 +3327,6 @@ func (ec *executionContext) field_Entity_findDummyByID_args(ctx context.Context,
 }
 
 func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findLinkByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -6662,48 +6626,6 @@ func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field grap
 	res := resTmp.(*domain.Feed)
 	fc.Result = res
 	return ec.marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋdomainᚐFeed(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findLinkByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findLinkByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindLinkByID(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*base.Link)
-	fc.Result = res
-	return ec.marshalNLink2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findSavedNotificationByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -15635,13 +15557,6 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._Feed(ctx, sel, obj)
-	case base.Link:
-		return ec._Link(ctx, sel, &obj)
-	case *base.Link:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Link(ctx, sel, obj)
 	case dto.SavedNotification:
 		return ec._SavedNotification(ctx, sel, &obj)
 	case *dto.SavedNotification:
@@ -16063,20 +15978,6 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 					}
 				}()
 				res = ec._Entity_findFeedByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findLinkByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findLinkByID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -16839,7 +16740,7 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var linkImplementors = []string{"Link", "_Entity"}
+var linkImplementors = []string{"Link"}
 
 func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj *base.Link) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, linkImplementors)
@@ -18487,16 +18388,6 @@ func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋba
 
 func (ec *executionContext) marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {
 	return ec._Link(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNLink2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v *base.Link) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Link(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLinkType(ctx context.Context, v interface{}) (base.LinkType, error) {

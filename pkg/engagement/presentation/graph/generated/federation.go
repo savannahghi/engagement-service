@@ -81,20 +81,6 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 
 			list = append(list, entity)
 
-		case "Link":
-			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
-			}
-
-			entity, err := ec.resolvers.Entity().FindLinkByID(ctx,
-				id0)
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, entity)
-
 		case "SavedNotification":
 			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
 			if err != nil {
