@@ -663,7 +663,7 @@ func simpleConsumerWelcome(
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person."
-	links := getFeedWelcomeVideos()
+	links := getFeedWelcomeVideos(flavour)
 	actions, err := defaultActions(ctx, uid, flavour, repository)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize default actions: %w", err)
@@ -706,7 +706,7 @@ func simpleProWelcome(
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
 	text := "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to provide affordable high-quality healthcare - whether online or in person."
-	links := getFeedWelcomeVideos()
+	links := getFeedWelcomeVideos(flavour)
 	actions, err := defaultActions(ctx, uid, flavour, repository)
 	if err != nil {
 		return nil, fmt.Errorf("can't initialize default actions: %w", err)
@@ -1082,38 +1082,55 @@ func getProWelcomeThread(
 	}, nil
 }
 
-func getFeedWelcomeVideos() []base.Link {
-	return []base.Link{
-		base.GetYoutubeVideoLink(
-			"https://youtu.be/-mlr9rjRXmc",
-			"Slade 360",
-			" View your health insurance cover benefits on your Be.Well app.",
-			common.StaticBase+"/items/videos/thumbs/01_lead.png",
-		),
-		base.GetYoutubeVideoLink(
-			"https://youtu.be/-iSB8yrSIps",
-			"Slade 360",
-			"How to add your health insurance cover to your Be.Well app.",
-			common.StaticBase+"/items/videos/thumbs/01_lead.png",
-		),
+func getFeedWelcomeVideos(flavour base.Flavour) []base.Link {
+	videos := []base.Link{}
+
+	switch flavour {
+	case base.FlavourConsumer:
+		// Videos for Consumer
+		consumerVideos := []base.Link{
+			base.GetYoutubeVideoLink(
+				"https://youtu.be/-mlr9rjRXmc",
+				"Slade 360",
+				" View your health insurance cover benefits on your Be.Well app.",
+				common.StaticBase+"/items/videos/thumbs/01_lead.png",
+			),
+			base.GetYoutubeVideoLink(
+				"https://youtu.be/-iSB8yrSIps",
+				"Slade 360",
+				"How to add your health insurance cover to your Be.Well app.",
+				common.StaticBase+"/items/videos/thumbs/01_lead.png",
+			),
+		}
+		videos = append(videos, consumerVideos...)
+
+	case base.FlavourPro:
+		// Videos for PRO
+
 	}
+
+	return videos
 }
 
-func feedItemsFromCMSFeedTag(ctx context.Context) []base.Item {
+func feedItemsFromCMSFeedTag(ctx context.Context, flavour base.Flavour) []base.Item {
 	// Initialize ISC clients
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 
 	// Initialize new instances of the infrastructure services
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	libraryService := library.NewLibraryService(onboarding)
+
 	items := []base.Item{}
-	feedPosts, err := libraryService.GetFeedContent(ctx)
+
+	feedPosts, err := libraryService.GetFeedContent(ctx, flavour)
 	if err != nil {
 		//  non-fatal, intentionally
 		log.Printf("ERROR: unable to fetch welcome feed posts from CMS: %s", err)
 	}
+
 	// retrieve video posts from datastore and extend to the list of posts
-	videosLinks := getFeedWelcomeVideos()
+	videosLinks := getFeedWelcomeVideos(flavour)
+
 	future := time.Now().Add(time.Hour * futureHours)
 	for _, videoLink := range videosLinks {
 		tagline := ""

@@ -22,7 +22,8 @@ const (
 	includeTags                  = "&include=tags"
 	includeAuthors               = "&include=authors"
 	formats                      = "&formats=html,plaintext"
-	allowedFeedTagFilter         = "&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
+	allowedConsumerFeedTagFilter = "&filter=tag:feed-consumer&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
+	allowedProFeedTagFilter      = "&filter=tag:feed-pro&filter=tag:welcome&filter=tag:what-is&filter=tag:getting-started"
 	allowedPROFAQsTagFilter      = "&filter=tag:faqs-pro"
 	allowedConsumerFAQsTagFilter = "&filter=tag:faqs-consumer&filter=tag:how-to"
 	allowedLibraryTagFilter      = "&filter=tag:diet&filter=tag:health-tips"
@@ -32,7 +33,7 @@ const (
 
 // ServiceLibrary ...
 type ServiceLibrary interface {
-	GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error)
+	GetFeedContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error)
 	GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error)
 }
@@ -40,7 +41,8 @@ type ServiceLibrary interface {
 type requestType int
 
 const (
-	feedRequest requestType = iota + 1
+	feedRequestConsumer requestType = iota + 1
+	feedRequestPro
 	faqsRequestConsumer
 	faqsRequestPro
 	libraryRequest
@@ -91,12 +93,21 @@ func (s Service) checkPreconditions() {
 func (s Service) composeRequest(reqType requestType) string {
 	var urlRequest string
 	switch reqType {
-	case feedRequest:
+	case feedRequestConsumer:
 		urlRequest = fmt.Sprintf(
 			"%v%v%v%v%v",
 			s.PostsAPIRoot,
 			includeTags,
-			allowedFeedTagFilter,
+			allowedConsumerFeedTagFilter,
+			includeAuthors,
+			formats,
+		)
+	case feedRequestPro:
+		urlRequest = fmt.Sprintf(
+			"%v%v%v%v%v",
+			s.PostsAPIRoot,
+			includeTags,
+			allowedProFeedTagFilter,
 			includeAuthors,
 			formats,
 		)
@@ -173,8 +184,18 @@ func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*G
 }
 
 // GetFeedContent fetches posts that should be added to the feed.
-func (s Service) GetFeedContent(ctx context.Context) ([]*GhostCMSPost, error) {
-	return s.getCMSPosts(ctx, feedRequest)
+func (s Service) GetFeedContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error) {
+	var request requestType
+
+	switch flavour {
+	case base.FlavourConsumer:
+		request = feedRequestConsumer
+	case base.FlavourPro:
+		request = feedRequestConsumer
+
+	}
+
+	return s.getCMSPosts(ctx, request)
 }
 
 // GetFaqsContent fetches posts tagged as FAQs.

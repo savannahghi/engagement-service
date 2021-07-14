@@ -205,7 +205,7 @@ func (fr Repository) GetFeed(
 		Flavour:     flavour,
 		Actions:     actions,
 		Nudges:      nudges,
-		Items:       feedItemsFromCMSFeedTag(ctx),
+		Items:       feedItemsFromCMSFeedTag(ctx, flavour),
 		IsAnonymous: isAnonymous,
 	}
 

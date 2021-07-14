@@ -28,7 +28,8 @@ func TestService_GetFeedContent(t *testing.T) {
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	s := library.NewLibraryService(onboarding)
 	type args struct {
-		ctx context.Context
+		ctx     context.Context
+		flavour base.Flavour
 	}
 	tests := []struct {
 		name        string
@@ -39,7 +40,8 @@ func TestService_GetFeedContent(t *testing.T) {
 		{
 			name: "default case",
 			args: args{
-				ctx: context.Background(),
+				ctx:     context.Background(),
+				flavour: base.FlavourConsumer,
 			},
 			wantNonZero: true,
 			wantErr:     false,
@@ -47,7 +49,7 @@ func TestService_GetFeedContent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := s.GetFeedContent(tt.args.ctx)
+			got, err := s.GetFeedContent(tt.args.ctx, tt.args.flavour)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.GetFeedContent() error = %v, wantErr %v", err, tt.wantErr)
 				return
