@@ -20,7 +20,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"gitlab.slade360emr.com/go/base"
-	crmDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,10 +48,6 @@ const (
 
 	labelsDocID            = "item_labels"
 	unreadInboxCountsDocID = "unread_inbox_counts"
-	// borrowed from onboarding
-	// todo there should be better management of opt-out data
-	// todo the naming of this collection hapana @mathenge
-	crmStagingCollectionName = "crm_staging"
 
 	itemsLimit = 1000
 )
@@ -860,12 +855,6 @@ func (fr Repository) getMessagesCollection(
 	itemsColl := fr.getElementCollection(uid, flavour, itemsSubcollectionName)
 	messagesColl := itemsColl.Doc(itemID).Collection(messagesSubcollectionName)
 	return messagesColl
-}
-
-//GetCRMStagingCollectionName ...
-func (fr Repository) GetCRMStagingCollectionName() string {
-	suffixed := base.SuffixCollection(crmStagingCollectionName)
-	return suffixed
 }
 
 func (fr Repository) elementExists(
@@ -1686,7 +1675,7 @@ func (fr Repository) UpdateMessageSentStatus(
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("message_sent", "==", "FALSE").Where("properties.Phone", "==", phonenumber).Where("properties.InitialSegment", "==", segment)
 
-	docs, err := fetchQueryDocs(ctx, query, true)
+	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
 		return err
 	}
@@ -1780,29 +1769,4 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 	}
 
 	return nil
-}
-
-// IsOptedOuted checks if a phone number is opted out or not
-func (fr Repository) IsOptedOuted(ctx context.Context, phoneNumber string) (bool, error) {
-	query := fr.firestoreClient.Collection(fr.GetCRMStagingCollectionName()).Where("ContactValue", "==", phoneNumber)
-	docs, err := fetchQueryDocs(ctx, query, false)
-	if err != nil {
-		return false, err
-	}
-	if len(docs) == 0 {
-		return false, nil
-	}
-
-	var data dto.ContactLeadInput
-	err = docs[0].DataTo(&data)
-	if err != nil {
-		return false, fmt.Errorf(
-			"unable to unmarshal contact lead data from doc snapshot: %w", err)
-	}
-
-	if data.OptOut == crmDomain.GeneralOptionTypeNo {
-		return false, nil
-	}
-
-	return true, nil
 }

@@ -19,6 +19,7 @@ import (
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"moul.io/http2curl"
@@ -73,7 +74,8 @@ func NewService() *Service {
 	callbackURL := publicDomain + TwilioCallbackPath
 	smsNumber := serverutils.MustGetEnvVar(TwilioSMSNumberEnvVarName)
 	crm := hubspot.NewHubSpotService()
-	sms := sms.NewService(repository, crm)
+	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
+	sms := sms.NewService(repository, crm, onboarding)
 
 	srv := &Service{
 		region:            region,

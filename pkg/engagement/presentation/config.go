@@ -23,7 +23,6 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
@@ -46,7 +45,6 @@ import (
 const (
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
-	onboardingService    = "profile"
 )
 
 // AllowedOrigins is list of CORS origins allowed to interact with
@@ -96,11 +94,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 			err,
 		)
 	}
-	// Initialize ISC clients
-	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 
 	// Initialize new instances of the infrastructure services
-	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
+	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 	fcm := fcm.NewService(fr)
 	mail := mail.NewService()
 	notification := usecases.NewNotification(
@@ -113,7 +109,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	uploads := uploads.NewUploadsService()
 	crm := hubspot.NewHubSpotService()
 	library := library.NewLibraryService(onboarding)
-	sms := sms.NewService(fr, crm)
+	sms := sms.NewService(fr, crm, onboarding)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf(

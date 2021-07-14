@@ -2,6 +2,7 @@ package sms_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 )
 
@@ -18,15 +20,23 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestSendToMany(t *testing.T) {
+func newTestSMSService() (*sms.Service, error) {
 	ctx := context.Background()
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
-		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
-		return
+		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
 	}
 	crm := hubspot.NewHubSpotService()
-	service := sms.NewService(fr, crm)
+	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
+	return sms.NewService(fr, crm, onboarding), nil
+}
+
+func TestSendToMany(t *testing.T) {
+	service, err := newTestSMSService()
+	if err != nil {
+		t.Errorf("unable to initialize test service with error %v", err)
+		return
+	}
 
 	type args struct {
 		message string
@@ -90,14 +100,11 @@ func TestSendToMany(t *testing.T) {
 }
 
 func TestSend(t *testing.T) {
-	ctx := context.Background()
-	fr, err := database.NewFirebaseRepository(ctx)
+	service, err := newTestSMSService()
 	if err != nil {
-		t.Errorf("can't instantiate firebase repository: %w", err)
+		t.Errorf("unable to initialize test service with error %v", err)
 		return
 	}
-	crm := hubspot.NewHubSpotService()
-	service := sms.NewService(fr, crm)
 
 	type args struct {
 		to      string
@@ -170,14 +177,11 @@ func TestSend(t *testing.T) {
 }
 
 func TestService_SendMarketingSMS(t *testing.T) {
-	ctx := context.Background()
-	fr, err := database.NewFirebaseRepository(ctx)
+	s, err := newTestSMSService()
 	if err != nil {
-		t.Errorf("can't instantiate firebase repository: %w", err)
+		t.Errorf("unable to initialize test service with error %v", err)
 		return
 	}
-	crm := hubspot.NewHubSpotService()
-	s := sms.NewService(fr, crm)
 	type args struct {
 		ctx     context.Context
 		to      []string

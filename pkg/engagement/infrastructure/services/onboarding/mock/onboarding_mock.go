@@ -13,8 +13,7 @@ type FakeServiceOnboarding struct {
 	GetPhoneNumbersFn   func(ctx context.Context, uids onboarding.UserUIDs) (map[string][]string, error)
 	GetDeviceTokensFn   func(ctx context.Context, uid onboarding.UserUIDs) (map[string][]string, error)
 	GetUserProfileFn    func(ctx context.Context, uid string) (*base.UserProfile, error)
-
-	// GetDeviceTokensFn   func(uids UserUIDsFn) (map[string][]string, error)
+	IsOptedOutFn        func(ctx context.Context, phoneNumber string) (bool, error)
 }
 
 // GetEmailAddresses ...
@@ -35,4 +34,9 @@ func (f *FakeServiceOnboarding) GetDeviceTokens(ctx context.Context, uid onboard
 // GetUserProfile ...
 func (f *FakeServiceOnboarding) GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error) {
 	return f.GetUserProfileFn(ctx, uid)
+}
+
+// IsOptedOut ..
+func (f *FakeServiceOnboarding) IsOptedOut(ctx context.Context, phoneNumber string) (bool, error) {
+	return f.IsOptedOutFn(ctx, phoneNumber)
 }

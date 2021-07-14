@@ -9,6 +9,7 @@ import (
 
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 // specific endpoint paths for ISC
@@ -17,6 +18,9 @@ const (
 	profilePhoneNumbers = "internal/contactdetails/phonenumbers/"
 	profileTokens       = "internal/contactdetails/tokens/"
 	userProfile         = "internal/user_profile"
+	isOptedOut          = "internal/is_opted_out"
+
+	onboardingService = "profile"
 )
 
 // UserUIDs is used to serialize user UIDs for inter-service calls to the
@@ -27,10 +31,20 @@ type UserUIDs struct {
 
 // ProfileService defines the interactions with the profile service
 type ProfileService interface {
-	GetEmailAddresses(ctx context.Context, uids UserUIDs) (map[string][]string, error)
-	GetPhoneNumbers(ctx context.Context, uids UserUIDs) (map[string][]string, error)
-	GetDeviceTokens(ctx context.Context, uid UserUIDs) (map[string][]string, error)
+	GetEmailAddresses(
+		ctx context.Context,
+		uids UserUIDs,
+	) (map[string][]string, error)
+	GetPhoneNumbers(
+		ctx context.Context,
+		uids UserUIDs,
+	) (map[string][]string, error)
+	GetDeviceTokens(
+		ctx context.Context,
+		uid UserUIDs,
+	) (map[string][]string, error)
 	GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error)
+	IsOptedOut(ctx context.Context, phoneNumber string) (bool, error)
 }
 
 // NewRemoteProfileService initializes a connection to a remote profile service
@@ -49,11 +63,21 @@ type RemoteProfileService struct {
 	profileClient *base.InterServiceClient
 }
 
+// NewOnboardingClient initializes a new interservice client for onboarding
+func NewOnboardingClient() *base.InterServiceClient {
+	return helpers.InitializeInterServiceClient(onboardingService)
+}
+
 func (rps RemoteProfileService) callProfileService(
 	ctx context.Context,
 	uids UserUIDs, path string,
 ) (map[string][]string, error) {
-	resp, err := rps.profileClient.MakeRequest(ctx, http.MethodPost, path, uids)
+	resp, err := rps.profileClient.MakeRequest(
+		ctx,
+		http.MethodPost,
+		path,
+		uids,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error calling profile service: %w", err)
 	}
@@ -66,7 +90,8 @@ func (rps RemoteProfileService) callProfileService(
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"error status code after calling profile service, got status %d and data `%s`",
-			resp.StatusCode, string(data),
+			resp.StatusCode,
+			string(data),
 		)
 	}
 
@@ -111,18 +136,29 @@ func (rps RemoteProfileService) GetDeviceTokens(
 }
 
 // GetUserProfile gets the specified users' profile from the onboarding service
-func (rps RemoteProfileService) GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error) {
+func (rps RemoteProfileService) GetUserProfile(
+	ctx context.Context,
+	uid string,
+) (*base.UserProfile, error) {
 	uidPayoload := dto.UIDPayload{
 		UID: &uid,
 	}
-	resp, err := rps.profileClient.MakeRequest(ctx, http.MethodPost, userProfile, uidPayoload)
+	resp, err := rps.profileClient.MakeRequest(
+		ctx,
+		http.MethodPost,
+		userProfile,
+		uidPayoload,
+	)
 
 	if err != nil {
 		return nil, fmt.Errorf("error calling profile service: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("user profile not found. Error code: %v", resp.StatusCode)
+		return nil, fmt.Errorf(
+			"user profile not found. Error code: %v",
+			resp.StatusCode,
+		)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
@@ -135,4 +171,48 @@ func (rps RemoteProfileService) GetUserProfile(ctx context.Context, uid string) 
 		return nil, fmt.Errorf("error parsing user profile data: %w", err)
 	}
 	return &user, nil
+}
+
+// IsOptedOut checks and returns if a user is opted out or not
+func (rps RemoteProfileService) IsOptedOut(
+	ctx context.Context,
+	phoneNumber string,
+) (bool, error) {
+	payload := map[string]interface{}{
+		"phoneNumber": phoneNumber,
+	}
+	resp, err := rps.profileClient.MakeRequest(
+		ctx,
+		http.MethodPost,
+		isOptedOut,
+		payload,
+	)
+	if err != nil {
+		return false, fmt.Errorf(
+			"unable to make remote profile call with error: %v",
+			err,
+		)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf(
+			"failed to get opted out status. Error code: %v",
+			resp.StatusCode,
+		)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, fmt.Errorf(
+			"error reading profile response body: %w",
+			err,
+		)
+	}
+
+	body := map[string]bool{}
+	err = json.Unmarshal(data, &body)
+	if err != nil {
+		return false, fmt.Errorf("error parsing user profile data: %w", err)
+	}
+
+	return body["opted_out"], nil
 }

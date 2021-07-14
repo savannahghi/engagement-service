@@ -20,6 +20,7 @@ import (
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
@@ -73,6 +74,7 @@ type Service struct {
 	Env        string
 	Repository repository.Repository
 	Crm        hubspot.ServiceHubSpotInterface
+	Onboarding onboarding.ProfileService
 }
 
 // GetSmsURL is the sms endpoint
@@ -97,9 +99,9 @@ func getHost(env, service string) string {
 }
 
 // NewService returns a new service
-func NewService(repository repository.Repository, crm hubspot.ServiceHubSpotInterface) *Service {
+func NewService(repository repository.Repository, crm hubspot.ServiceHubSpotInterface, onboarding onboarding.ProfileService) *Service {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)
-	return &Service{env, repository, crm}
+	return &Service{env, repository, crm, onboarding}
 }
 
 // SaveMarketingMessage saves the callback data for future analysis
@@ -120,7 +122,7 @@ func (s Service) UpdateMessageSentStatus(
 	return s.Repository.UpdateMessageSentStatus(ctx, phonenumber, segment)
 }
 
-// UpdateMarketingMessage adds a delivery reposrt to an AIT SMS
+// UpdateMarketingMessage adds a delivery report to an AIT SMS
 func (s Service) UpdateMarketingMessage(
 	ctx context.Context,
 	phoneNumber string,
@@ -252,10 +254,9 @@ func (s Service) SendMarketingSMS(
 	from base.SenderID,
 	segment string,
 ) (*dto.SendMessageResponse, error) {
-	// todo should we have one collection as the source of truth
 	var whitelistedNumbers []string
 	for _, number := range to {
-		optedOut, err := s.Repository.IsOptedOuted(ctx, number)
+		optedOut, err := s.Onboarding.IsOptedOut(ctx, number)
 		if err != nil {
 			return nil, err
 		}

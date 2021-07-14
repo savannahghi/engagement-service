@@ -16,6 +16,7 @@ import (
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
@@ -75,7 +76,8 @@ func NewService() *Service {
 	mail := mail.NewService()
 
 	crm := hubspot.NewHubSpotService()
-	sms := sms.NewService(repository, crm)
+	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
+	sms := sms.NewService(repository, crm, onboarding)
 
 	twilio := twilio.NewService()
 

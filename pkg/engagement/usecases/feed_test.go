@@ -81,7 +81,8 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	crm := hubspot.NewHubSpotService()
 
 	library := library.NewLibraryService(onboardingSvc)
-	sms := sms.NewService(r, crm)
+	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
+	sms := sms.NewService(r, crm, onboarding)
 	whatsapp := whatsapp.NewService()
 	otp := otp.NewService()
 	twilio := twilio.NewService()
