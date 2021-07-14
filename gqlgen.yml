@@ -26,6 +26,7 @@ autobind:
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
   - "gitlab.slade360emr.com/go/base"
+  - "github.com/savannahghi/scalarutils"
   - "google.golang.org/api/calendar/v3"
 
 models:

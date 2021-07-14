@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"github.com/savannahghi/scalarutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
@@ -126,7 +127,7 @@ type ContactLeadInput struct {
 	ContactValue   string                   `json:"contact_value,omitempty"`
 	FirstName      string                   `json:"first_name,omitempty"`
 	LastName       string                   `json:"last_name,omitempty"`
-	DateOfBirth    base.Date                `json:"date_of_birth,omitempty"`
+	DateOfBirth    scalarutils.Date         `json:"date_of_birth,omitempty"`
 	IsSync         bool                     `json:"isSync"  firestore:"IsSync"`
 	TimeSync       *time.Time               `json:"timeSync"  firestore:"TimeSync"`
 	OptOut         domain.GeneralOptionType `json:"opt_out,omitempty"`
