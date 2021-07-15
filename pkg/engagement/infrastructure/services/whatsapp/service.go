@@ -14,8 +14,12 @@ import (
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/whatsapp")
 
 // Twilio Whatsapp API contants
 const (
@@ -189,11 +193,14 @@ func (s Service) CheckPreconditions() {
 
 // MakeTwilioRequest makes a twilio request
 func (s Service) MakeTwilioRequest(
+	ctx context.Context,
 	method string,
 	urlPath string,
 	content url.Values,
 	target interface{},
 ) error {
+	_, span := tracer.Start(ctx, "MakeTwilioRequest")
+	defer span.End()
 	s.CheckPreconditions()
 
 	if serverutils.IsDebug() {
@@ -201,9 +208,10 @@ func (s Service) MakeTwilioRequest(
 	}
 
 	r := strings.NewReader(content.Encode())
-	req, reqErr := http.NewRequest(method, s.BaseURL+urlPath, r)
-	if reqErr != nil {
-		return reqErr
+	req, err := http.NewRequest(method, s.BaseURL+urlPath, r)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return err
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -211,11 +219,13 @@ func (s Service) MakeTwilioRequest(
 
 	resp, err := s.HTTPClient.Do(req)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("twilio API error: %w", err)
 	}
 
 	respBs, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("twilio room content error: %w", err)
 	}
 
@@ -228,6 +238,7 @@ func (s Service) MakeTwilioRequest(
 	}
 	err = json.Unmarshal(respBs, target)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to unmarshal Twilio resp: %w", err)
 	}
 
@@ -241,10 +252,13 @@ func (s Service) PhoneNumberVerificationCode(
 	code string,
 	marketingMessage string,
 ) (bool, error) {
+	ctx, span := tracer.Start(ctx, "PhoneNumberVerificationCode")
+	defer span.End()
 	s.CheckPreconditions()
 
 	normalizedPhoneNo, err := base.NormalizeMSISDN(to)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("%s is not a valid E164 phone number: %w", to, err)
 	}
 
@@ -260,18 +274,21 @@ func (s Service) PhoneNumberVerificationCode(
 	target := dto.Message{}
 	path := fmt.Sprintf("%s/Messages.json", s.AccountSID)
 	err = s.MakeTwilioRequest(
+		ctx,
 		http.MethodPost,
 		path,
 		payload,
 		&target,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("error from Twilio: %w", err)
 	}
 
 	// save Twilio response for audit purposes
 	_, _, err = base.CreateNode(ctx, &target)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("unable to save Twilio response: %w", err)
 	}
 	// TODO Find out why /ide is not working (401s)

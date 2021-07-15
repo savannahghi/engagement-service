@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 // NewMockNotificationService initializes a mock notification service
@@ -49,7 +50,10 @@ func (mn MockNotificationService) Notify(
 	payload base.Element,
 	metadata map[string]interface{},
 ) error {
+	_, span := tracer.Start(ctx, "Notify")
+	defer span.End()
 	if err := mn.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("pubsub service precondition check failed: %w", err)
 	}
 

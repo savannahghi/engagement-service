@@ -9,9 +9,13 @@ import (
 	"cloud.google.com/go/firestore"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/scheduling")
 
 // calendar app constants
 const (
@@ -47,11 +51,13 @@ func NewService() *Service {
 		mockClient := MockGCALHTTPClient()
 		gcalService, err = calendar.NewService(ctx, option.WithHTTPClient(mockClient))
 		if err != nil {
+
 			log.Panicf("unable to create mock Google Calendar service: %s", err)
 		}
 	} else {
 		gcalService, err = calendar.NewService(ctx, option.WithTokenSource(ts))
 		if err != nil {
+
 			log.Panicf("unable to create Google Calendar service: %s", err)
 		}
 	}
@@ -59,10 +65,12 @@ func NewService() *Service {
 	fc := &base.FirebaseClient{}
 	fa, err := fc.InitFirebase()
 	if err != nil {
+
 		log.Printf("unable to initialize Firebase app: %s", err)
 	}
 	firestore, err := fa.Firestore(ctx)
 	if err != nil {
+
 		log.Printf("unable to initialize Firestore: %s", err)
 	}
 
@@ -95,7 +103,9 @@ func (s Service) checkPreconditions() {
 //
 // Also: If you create more than 60 new calendars in a short period, your
 // calendar might go into read-only mode for several hours.
-func (s Service) CreateCalendar(name string) (*calendar.Calendar, error) {
+func (s Service) CreateCalendar(ctx context.Context, name string) (*calendar.Calendar, error) {
+	_, span := tracer.Start(ctx, "CreateCalendar")
+	defer span.End()
 	s.checkPreconditions()
 
 	inp := &calendar.Calendar{
@@ -109,6 +119,7 @@ func (s Service) CreateCalendar(name string) (*calendar.Calendar, error) {
 	insertCall := s.gcalService.Calendars.Insert(inp)
 	calendar, err := insertCall.Do()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to insert calendar: %w", err)
 	}
 	return calendar, nil
@@ -122,6 +133,8 @@ func (s Service) FreeBusy(
 	start time.Time,
 	end time.Time,
 ) (map[string][]*BusySlot, error) {
+	_, span := tracer.Start(ctx, "FreeBusy")
+	defer span.End()
 	s.checkPreconditions()
 
 	items := []*calendar.FreeBusyRequestItem{}
@@ -140,6 +153,7 @@ func (s Service) FreeBusy(
 	call := s.gcalService.Freebusy.Query(req)
 	resp, err := call.Do()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't get free/busy for calendar(s): %w", err)
 	}
 	output := make(map[string][]*BusySlot)
@@ -168,6 +182,7 @@ func (s Service) FreeBusy(
 
 // AddEvent adds an event to a calendar.
 func (s Service) AddEvent(
+	ctx context.Context,
 	title string,
 	description string,
 	start time.Time,
@@ -175,6 +190,8 @@ func (s Service) AddEvent(
 	attendeeEmails []string,
 	privateExtendedPropertiesContent map[string]string,
 ) (*calendar.Event, error) {
+	_, span := tracer.Start(ctx, "SendOTPToEmail")
+	defer span.End()
 	s.checkPreconditions()
 
 	if len(attendeeEmails) == 0 {
@@ -185,6 +202,7 @@ func (s Service) AddEvent(
 	calGet := s.gcalService.Calendars.Get(calendarID)
 	cal, err := calGet.Do()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't get Google Calendar with ID %s: %w", calendarID, err)
 	}
 
@@ -252,6 +270,7 @@ func (s Service) AddEvent(
 	calInsertCall.SendNotifications(true)
 	event, err = calInsertCall.Do()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't create calendar event: %w", err)
 	}
 	return event, nil

@@ -5,6 +5,8 @@ import (
 
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -37,4 +39,10 @@ func ValidateElement(el base.Element) error {
 	}
 
 	return nil
+}
+
+// RecordSpanError is a helper function to capture errors in a span
+func RecordSpanError(span trace.Span, err error) {
+	span.SetStatus(codes.Error, err.Error())
+	span.RecordError(err)
 }

@@ -73,18 +73,22 @@ func SetDefaultActions(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Action, error) {
+	ctx, span := tracer.Start(ctx, "SetDefaultActions")
+	defer span.End()
 	actions := []base.Action{}
 
 	switch flavour {
 	case base.FlavourConsumer:
 		consumerActions, err := defaultConsumerActions(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default consumer actions: %w", err)
 		}
 		actions = consumerActions
 	case base.FlavourPro:
 		proActions, err := defaultProActions(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default pro actions: %w", err)
 		}
 		actions = proActions
@@ -100,18 +104,22 @@ func SetDefaultNudges(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "SetDefaultNudges")
+	defer span.End()
 	var nudges []base.Nudge
 
 	switch flavour {
 	case base.FlavourConsumer:
 		consumerNudges, err := defaultConsumerNudges(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default consumer nudges: %w", err)
 		}
 		nudges = consumerNudges
 	case base.FlavourPro:
 		proNudges, err := defaultProNudges(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default pro nudges: %w", err)
 		}
 		nudges = proNudges
@@ -127,18 +135,22 @@ func SetDefaultItems(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Item, error) {
+	ctx, span := tracer.Start(ctx, "SetDefaultItems")
+	defer span.End()
 	var items []base.Item
 
 	switch flavour {
 	case base.FlavourConsumer:
 		consumerItems, err := defaultConsumerItems(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default consumer items: %w", err)
 		}
 		items = consumerItems
 	case base.FlavourPro:
 		proItems, err := defaultProItems(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default pro items: %w", err)
 		}
 		items = proItems
@@ -153,6 +165,8 @@ func defaultConsumerNudges(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "defaultConsumerNudges")
+	defer span.End()
 	var nudges []base.Nudge
 	fns := []nudgeGenerator{
 		verifyEmailNudge,
@@ -160,6 +174,7 @@ func defaultConsumerNudges(
 	for _, fn := range fns {
 		nudge, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("error when generating nudge: %w", err)
 		}
 		nudges = append(nudges, *nudge)
@@ -173,6 +188,8 @@ func defaultProNudges(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "defaultProNudges")
+	defer span.End()
 	var nudges []base.Nudge
 	fns := []nudgeGenerator{
 		partnerAccountSetupNudge,
@@ -181,6 +198,7 @@ func defaultProNudges(
 	for _, fn := range fns {
 		nudge, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("error when generating nudge: %w", err)
 		}
 		nudges = append(nudges, *nudge)
@@ -194,6 +212,8 @@ func defaultConsumerActions(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Action, error) {
+	ctx, span := tracer.Start(ctx, "defaultConsumerActions")
+	defer span.End()
 	var actions []base.Action
 	fns := []actionGenerator{
 		defaultGetInsuranceAction,
@@ -204,6 +224,7 @@ func defaultConsumerActions(
 	for _, fn := range fns {
 		action, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("error when generating action: %w", err)
 		}
 		actions = append(actions, *action)
@@ -217,6 +238,8 @@ func defaultProActions(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Action, error) {
+	ctx, span := tracer.Start(ctx, "defaultProActions")
+	defer span.End()
 	var actions []base.Action
 	fns := []actionGenerator{
 		defaultAddPatientAction,
@@ -225,6 +248,7 @@ func defaultProActions(
 	for _, fn := range fns {
 		action, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("error when generating action: %w", err)
 		}
 		actions = append(actions, *action)
@@ -364,6 +388,8 @@ func partnerAccountSetupNudge(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "partnerAccountSetupNudge")
+	defer span.End()
 	title := common.PartnerAccountSetupNudgeTitle
 	text := "Create a partner account to begin transacting on Be.Well"
 	imgURL := common.StaticBase + "/nudges/complete_profile.png"
@@ -378,6 +404,7 @@ func partnerAccountSetupNudge(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", partnerAccountSetupActionName, err)
 	}
@@ -408,6 +435,8 @@ func verifyEmailNudge(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "verifyEmailNudge")
+	defer span.End()
 	title := common.AddPrimaryEmailNudgeTitle
 	text := "Please add and verify your primary email address"
 	imgURL := common.StaticBase + "/nudges/verify_email.png"
@@ -422,6 +451,7 @@ func verifyEmailNudge(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", verifyEmailActionName, err)
 	}
@@ -459,6 +489,8 @@ func createNudge(
 	repository repository.Repository,
 	notificationBody base.NotificationBody,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "createNudge")
+	defer span.End()
 	future := time.Now().Add(time.Hour * futureHours)
 	nudge := &base.Nudge{
 		ID:             ksuid.New().String(),
@@ -480,11 +512,13 @@ func createNudge(
 	}
 	_, err := nudge.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("nudge validation error: %w", err)
 	}
 
 	nudge, err = repository.SaveNudge(ctx, uid, flavour, nudge)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save nudge: %w", err)
 	}
 	return nudge, nil
@@ -503,6 +537,8 @@ func createGlobalAction(
 	iconDescription string,
 	repository repository.Repository,
 ) (*base.Action, error) {
+	ctx, span := tracer.Start(ctx, "createGlobalAction")
+	defer span.End()
 	action := &base.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
@@ -515,11 +551,13 @@ func createGlobalAction(
 	}
 	_, err := action.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("action validation error: %w", err)
 	}
 
 	action, err = repository.SaveAction(ctx, uid, flavour, action)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save action: %w", err)
 	}
 	return action, nil
@@ -535,6 +573,8 @@ func createLocalAction(
 	handling base.Handling,
 	repository repository.Repository,
 ) (*base.Action, error) {
+	_, span := tracer.Start(ctx, "createLocalAction")
+	defer span.End()
 	action := &base.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
@@ -551,6 +591,7 @@ func createLocalAction(
 	}
 	_, err := action.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("action validation error: %w", err)
 	}
 	// not saved...intentionally
@@ -578,6 +619,8 @@ func createFeedItem(
 	persistent bool,
 	repository repository.Repository,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "createFeedItem")
+	defer span.End()
 	future := time.Now().Add(time.Hour * futureHours)
 	item := &base.Item{
 		ID:             itemID,
@@ -604,10 +647,12 @@ func createFeedItem(
 	}
 	_, err := item.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("item validation error: %w", err)
 	}
 	item, err = repository.SaveFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save item: %w", err)
 	}
 	return item, nil
@@ -619,6 +664,8 @@ func defaultConsumerItems(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Item, error) {
+	ctx, span := tracer.Start(ctx, "defaultConsumerItems")
+	defer span.End()
 	var items []base.Item
 	fns := []itemGenerator{
 		simpleConsumerWelcome,
@@ -626,6 +673,7 @@ func defaultConsumerItems(
 	for _, fn := range fns {
 		item, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("error when generating item: %w", err)
 		}
 		items = append(items, *item)
@@ -639,6 +687,8 @@ func defaultProItems(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Item, error) {
+	ctx, span := tracer.Start(ctx, "defaultProItems")
+	defer span.End()
 	var items []base.Item
 	fns := []itemGenerator{
 		simpleProWelcome,
@@ -646,6 +696,7 @@ func defaultProItems(
 	for _, fn := range fns {
 		item, err := fn(ctx, uid, flavour, repository)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("error when generating item: %w", err)
 		}
 		items = append(items, *item)
@@ -659,6 +710,8 @@ func simpleConsumerWelcome(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "simpleConsumerWelcome")
+	defer span.End()
 	persistent := true // at least one persistent message in welcome data
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
@@ -666,12 +719,14 @@ func simpleConsumerWelcome(
 	links := getFeedWelcomeVideos(flavour)
 	actions, err := defaultActions(ctx, uid, flavour, repository)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't initialize default actions: %w", err)
 	}
 
 	itemID := ksuid.New().String()
 	conversations, err := getConsumerWelcomeThread(ctx, uid, flavour, itemID, repository)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to initialize welcome message thread: %w", err)
 	}
 
@@ -702,6 +757,8 @@ func simpleProWelcome(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "simpleProWelcome")
+	defer span.End()
 	persistent := true // at least one persistent message in welcome data
 	tagline := "Welcome to Be.Well"
 	summary := "What is Be.Well?"
@@ -709,12 +766,14 @@ func simpleProWelcome(
 	links := getFeedWelcomeVideos(flavour)
 	actions, err := defaultActions(ctx, uid, flavour, repository)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't initialize default actions: %w", err)
 	}
 
 	itemID := ksuid.New().String()
 	conversations, err := getProWelcomeThread(ctx, uid, flavour, itemID, repository)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to initialize welcome message thread: %w", err)
 	}
 
@@ -749,6 +808,8 @@ func getMessage(
 	postedByName string,
 	repository repository.Repository,
 ) (*base.Message, error) {
+	ctx, span := tracer.Start(ctx, "getMessage")
+	defer span.End()
 	msg := &base.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
@@ -763,6 +824,7 @@ func getMessage(
 
 	savedMsg, err := repository.PostMessage(ctx, uid, flavour, itemID, msg)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't save message for default welcome thread(s): %w", err)
 	}
 
@@ -780,6 +842,8 @@ func getConsumerWelcomeThread(
 	itemID string,
 	repository repository.Repository,
 ) ([]base.Message, error) {
+	ctx, span := tracer.Start(ctx, "getConsumerWelcomeThread")
+	defer span.End()
 	welcome, err := getMessage(
 		ctx,
 		uid,
@@ -791,6 +855,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -805,6 +870,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -819,6 +885,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -833,6 +900,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -847,6 +915,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -861,6 +930,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -875,6 +945,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -889,6 +960,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -903,6 +975,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -917,6 +990,7 @@ func getConsumerWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -940,6 +1014,8 @@ func getProWelcomeThread(
 	itemID string,
 	repository repository.Repository,
 ) ([]base.Message, error) {
+	ctx, span := tracer.Start(ctx, "getProWelcomeThread")
+	defer span.End()
 	welcome, err := getMessage(
 		ctx,
 		uid,
@@ -951,6 +1027,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -965,6 +1042,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -979,6 +1057,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -993,6 +1072,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -1007,6 +1087,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -1021,6 +1102,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -1035,6 +1117,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -1049,9 +1132,11 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -1066,6 +1151,7 @@ func getProWelcomeThread(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -1113,6 +1199,8 @@ func getFeedWelcomeVideos(flavour base.Flavour) []base.Link {
 }
 
 func feedItemsFromCMSFeedTag(ctx context.Context, flavour base.Flavour) []base.Item {
+	ctx, span := tracer.Start(ctx, "feedItemsFromCMSFeedTag")
+	defer span.End()
 	// Initialize ISC clients
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 
@@ -1124,6 +1212,7 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour base.Flavour) []base.I
 
 	feedPosts, err := libraryService.GetFeedContent(ctx, flavour)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		//  non-fatal, intentionally
 		log.Printf("ERROR: unable to fetch welcome feed posts from CMS: %s", err)
 	}
@@ -1311,6 +1400,8 @@ func defaultActions(
 	flavour base.Flavour,
 	repository repository.Repository,
 ) ([]base.Action, error) {
+	ctx, span := tracer.Start(ctx, "defaultActions")
+	defer span.End()
 	resolveAction, err := createLocalAction(
 		ctx,
 		uid,
@@ -1322,6 +1413,7 @@ func defaultActions(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to create resolve action: %w", err)
 	}
 
@@ -1336,6 +1428,7 @@ func defaultActions(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to create pin action: %w", err)
 	}
 
@@ -1350,6 +1443,7 @@ func defaultActions(
 		repository,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to create hide action: %w", err)
 	}
 	actions := []base.Action{

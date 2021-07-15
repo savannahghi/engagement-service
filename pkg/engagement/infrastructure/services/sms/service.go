@@ -20,9 +20,13 @@ import (
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/sms")
 
 // AIT environment variables names
 const (
@@ -43,11 +47,13 @@ const (
 // ServiceSMS defines the interactions with sms service
 type ServiceSMS interface {
 	SendToMany(
+		ctx context.Context,
 		message string,
 		to []string,
 		from base.SenderID,
 	) (*dto.SendMessageResponse, error)
 	Send(
+		ctx context.Context,
 		to, message string,
 		from base.SenderID,
 	) (*dto.SendMessageResponse, error)
@@ -133,22 +139,26 @@ func (s Service) UpdateMarketingMessage(
 
 // SendToMany is a utility method to send to many recipients at the same time
 func (s Service) SendToMany(
+	ctx context.Context,
 	message string,
 	to []string,
 	from base.SenderID,
 ) (*dto.SendMessageResponse, error) {
 	recipients := strings.Join(to, ",")
-	return s.Send(recipients, message, from)
+	return s.Send(ctx, recipients, message, from)
 }
 
 // Send is a method used to send to a single recipient
 func (s Service) Send(
+	ctx context.Context,
 	to, message string,
 	from base.SenderID,
 ) (*dto.SendMessageResponse, error) {
+
 	switch from {
 	case base.SenderIDSLADE360:
 		return s.SendSMS(
+			ctx,
 			to,
 			message,
 			serverutils.MustGetEnvVar(APISenderIDEnvVarName),
@@ -157,6 +167,7 @@ func (s Service) Send(
 		)
 	case base.SenderIDBewell:
 		return s.SendSMS(
+			ctx,
 			to,
 			message,
 			serverutils.MustGetEnvVar(BeWellAITSenderID),
@@ -169,11 +180,14 @@ func (s Service) Send(
 
 // SendSMS is a method used to send SMS
 func (s Service) SendSMS(
+	ctx context.Context,
 	to, message string,
 	from string,
 	username string,
 	key string,
 ) (*dto.SendMessageResponse, error) {
+	ctx, span := tracer.Start(ctx, "SendSMS")
+	defer span.End()
 	values := url.Values{}
 	values.Set("username", username)
 	values.Set("to", to)
@@ -184,8 +198,9 @@ func (s Service) SendSMS(
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/x-www-form-urlencoded"
 
-	res, err := s.newPostRequest(smsURL, values, headers, key)
+	res, err := s.newPostRequest(ctx, smsURL, values, headers, key)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	defer func() {
@@ -195,6 +210,7 @@ func (s Service) SendSMS(
 	// read the response body to a variable
 	bodyBytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -222,15 +238,19 @@ func (s Service) SendSMS(
 }
 
 func (s Service) newPostRequest(
+	ctx context.Context,
 	url string,
 	values url.Values,
 	headers map[string]string,
 	key string,
 ) (*http.Response, error) {
+	_, span := tracer.Start(ctx, "newPostRequest")
+	defer span.End()
 	reader := strings.NewReader(values.Encode())
 
 	req, err := http.NewRequest(http.MethodPost, url, reader)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -254,10 +274,13 @@ func (s Service) SendMarketingSMS(
 	from base.SenderID,
 	segment string,
 ) (*dto.SendMessageResponse, error) {
+	ctx, span := tracer.Start(ctx, "SendMarketingSMS")
+	defer span.End()
 	var whitelistedNumbers []string
 	for _, number := range to {
 		optedOut, err := s.Onboarding.IsOptedOut(ctx, number)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, err
 		}
 		if !optedOut {
@@ -269,8 +292,9 @@ func (s Service) SendMarketingSMS(
 	}
 
 	recipients := strings.Join(whitelistedNumbers, ",")
-	resp, err := s.Send(recipients, message, from)
+	resp, err := s.Send(ctx, recipients, message, from)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to send SMS: %v", err)
 	}
 
@@ -307,6 +331,7 @@ func (s Service) SendMarketingSMS(
 		// todo make this async @mathenge
 		resp, err := s.Crm.CreateEngagementByPhone(phone, engagementData)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			log.Print(err)
 		}
 
@@ -318,6 +343,7 @@ func (s Service) SendMarketingSMS(
 			ctx,
 			data,
 		); err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("failed to create a message in our data store: %v", err)
 		}
 
@@ -327,6 +353,7 @@ func (s Service) SendMarketingSMS(
 			data.PhoneNumber,
 			segment,
 		); err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("failed to update message sent status to true: %v", err)
 		}
 

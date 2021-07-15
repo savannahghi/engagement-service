@@ -32,6 +32,7 @@ func newTestSMSService() (*sms.Service, error) {
 }
 
 func TestSendToMany(t *testing.T) {
+	ctx := context.Background()
 	service, err := newTestSMSService()
 	if err != nil {
 		t.Errorf("unable to initialize test service with error %v", err)
@@ -72,7 +73,7 @@ func TestSendToMany(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.SendToMany(tt.args.message, tt.args.to, base.SenderIDBewell)
+			got, err := service.SendToMany(ctx, tt.args.message, tt.args.to, base.SenderIDBewell)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SendToMany() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -100,6 +101,7 @@ func TestSendToMany(t *testing.T) {
 }
 
 func TestSend(t *testing.T) {
+	ctx := context.Background()
 	service, err := newTestSMSService()
 	if err != nil {
 		t.Errorf("unable to initialize test service with error %v", err)
@@ -149,7 +151,7 @@ func TestSend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.Send(tt.args.to, tt.args.message, tt.args.sender)
+			got, err := service.Send(ctx, tt.args.to, tt.args.message, tt.args.sender)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Send error = %v, wantErr %v", err, tt.wantErr)
 				return

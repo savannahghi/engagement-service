@@ -71,10 +71,13 @@ func (rfs RemotePushService) Push(
 	sender string,
 	notificationPayload base.SendNotificationPayload,
 ) error {
+	ctx, span := tracer.Start(ctx, "Push")
+	defer span.End()
 	rfs.checkPreconditions()
 	env := serverutils.GetRunningEnvironment()
 	payload, err := json.Marshal(notificationPayload)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't marshal notification payload: %w", err)
 	}
 
@@ -88,6 +91,7 @@ func (rfs RemotePushService) Push(
 		payload,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't publish FCM message to pubsub: %w", err)
 	}
 

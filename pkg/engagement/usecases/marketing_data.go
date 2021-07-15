@@ -17,6 +17,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
@@ -98,8 +99,11 @@ func NewMarketing(
 }
 
 func (m MarketingDataImpl) GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*dto.Segment, error) {
+	ctx, span := tracer.Start(ctx, "GetMarketingData")
+	defer span.End()
 	segmentData, err := m.repository.RetrieveMarketingData(ctx, data)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to retrieve the marketing data")
 	}
 
@@ -108,6 +112,8 @@ func (m MarketingDataImpl) GetMarketingData(ctx context.Context, data *dto.Marke
 
 // UpdateUserCRMEmail updates a user CRM contact with the supplied email
 func (m MarketingDataImpl) UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error {
+	ctx, span := tracer.Start(ctx, "UpdateUserCRMEmail")
+	defer span.End()
 	CRMContactProperties := domain.ContactProperties{
 		Email: email,
 	}
@@ -116,6 +122,7 @@ func (m MarketingDataImpl) UpdateUserCRMEmail(ctx context.Context, email string,
 		Properties: CRMContactProperties,
 		Phone:      phonenumber,
 	}); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("failed to create CRM staging payload %v", err)
 	}
 	return nil
@@ -124,6 +131,8 @@ func (m MarketingDataImpl) UpdateUserCRMEmail(ctx context.Context, email string,
 
 //BeWellAware toggles the user identified by the provided email= as bewell-aware on the CRM
 func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error {
+	ctx, span := tracer.Start(ctx, "BeWellAware")
+	defer span.End()
 	CRMContactProperties := domain.ContactProperties{
 		BeWellAware: domain.GeneralOptionTypeYes,
 	}
@@ -131,6 +140,7 @@ func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error 
 	if err := m.repository.UpdateUserCRMBewellAware(ctx, email, &dto.UpdateContactPSMessage{
 		Properties: CRMContactProperties,
 	}); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("failed to set user as BeWell Aware %v", err)
 	}
 	return nil
@@ -160,6 +170,8 @@ func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error 
 // payer_slade_code
 // member_number
 func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string, emails []string) {
+	ctx, span := tracer.Start(ctx, "LoadCampaignDataset")
+	defer span.End()
 	logrus.Info("loading campaign dataset started")
 	res := dto.MarketingDataLoadOutput{}
 	res.StartedAt = time.Now()
@@ -175,11 +187,13 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 			_ = t.Execute(buf, res)
 			content := buf.String()
 			if _, _, err := m.mail.SendEmail(
+				ctx,
 				"Load Campaign Dataset Processing",
 				content,
 				nil,
 				email,
 			); err != nil {
+				helpers.RecordSpanError(span, err)
 				logrus.Errorf("failed to send Load Campaign Dataset Processing email: %v", err)
 			}
 		}
@@ -194,6 +208,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		PhoneNumber: phone,
 	}, permission.LoadMarketingData)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		res.LoadingError = err
 		sendMail(res)
 		return
@@ -209,6 +224,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 
 	csvFile, err := os.Open(path)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		res.LoadingError = fmt.Errorf("error opening the CSV file: %w", err)
 		sendMail(res)
 		return
@@ -217,6 +233,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 
 	csvContent, err := csv.NewReader(csvFile).ReadAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		res.LoadingError = fmt.Errorf("failed to read data from the CSV file :%w", err)
 		sendMail(res)
 		return
@@ -255,6 +272,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		// publish to firestore
 		i, err := m.repository.LoadMarketingData(ctx, data)
 		if i == 0 && err != nil {
+			helpers.RecordSpanError(span, err)
 			entry.FirebaseLoadError = fmt.Errorf("%v", err)
 			entry.HasLoadedToFirebase = false
 			entry.Identifier = line[10]
@@ -270,6 +288,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 
 		resH, err := m.hubspot.SearchContactByPhone(line[11])
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			// Do not roll back
 			// We shall sync this data further
 			// _ = m.repository.RollBackMarketingData(ctx, data)
@@ -309,6 +328,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		})
 
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			// Do not roll back
 			// We shall sync this data further
 			// _ = m.repository.RollBackMarketingData(ctx, data)

@@ -11,8 +11,12 @@ import (
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/library")
 
 // Library service constants
 const (
@@ -162,22 +166,27 @@ func (s Service) composeRequest(reqType requestType) string {
 }
 
 func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*GhostCMSPost, error) {
+	_, span := tracer.Start(ctx, "getCMSPosts")
+	defer span.End()
 	s.checkPreconditions()
 	url := s.composeRequest(requestType)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to create action request with error; %v", err)
 	}
 
 	c := &http.Client{Timeout: time.Second * 300}
 	resp, err := c.Do(req)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
 	}
 	defer resp.Body.Close()
 
 	var rr GhostCMSServerResponse
 	if err := json.NewDecoder(resp.Body).Decode(&rr); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to decoder response with err %v", err)
 	}
 	return rr.Posts, nil
@@ -200,6 +209,8 @@ func (s Service) GetFeedContent(ctx context.Context, flavour base.Flavour) ([]*G
 
 // GetFaqsContent fetches posts tagged as FAQs.
 func (s Service) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error) {
+	ctx, span := tracer.Start(ctx, "GetFaqsContent")
+	defer span.End()
 	if flavour == base.FlavourConsumer {
 		return s.getCMSPosts(ctx, faqsRequestConsumer)
 	}
@@ -207,12 +218,14 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*G
 	// get profile from onboarding service
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 
 	profile, err := s.onboarding.GetUserProfile(ctx, user.UID)
 
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user profile: %w", err)
 	}
 

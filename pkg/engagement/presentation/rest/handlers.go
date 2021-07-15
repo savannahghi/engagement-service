@@ -1314,6 +1314,7 @@ func (p PresentationHandlersImpl) SendEmail(
 		}
 
 		resp, _, err := p.interactor.Mail.SendEmail(
+			ctx,
 			payload.Subject,
 			payload.Text,
 			nil,
@@ -1360,6 +1361,7 @@ func (p PresentationHandlersImpl) SendToMany(
 		}
 
 		resp, err := p.interactor.SMS.SendToMany(
+			ctx,
 			payload.Message,
 			payload.To,
 			payload.Sender,
@@ -1896,6 +1898,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 		body := GenerateCollectEmailFunc(name)
 		subject := "Download the new Be.Well app to manage your insurance benefits"
 		sendEmail, _, err := p.interactor.Mail.SendEmail(
+			ctx,
 			subject,
 			marketingText,
 			&body,

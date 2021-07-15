@@ -1,6 +1,7 @@
 package mail_test
 
 import (
+	"context"
 	"os"
 	"reflect"
 	"testing"
@@ -36,6 +37,7 @@ func TestNewService(t *testing.T) {
 }
 
 func TestService_SendEmail(t *testing.T) {
+	ctx := context.Background()
 	service := mail.NewService()
 	tests := []struct {
 		name    string
@@ -58,7 +60,7 @@ func TestService_SendEmail(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg, id, err := tt.service.SendEmail(tt.subject, tt.text, nil, tt.to...)
+			msg, id, err := tt.service.SendEmail(ctx, tt.subject, tt.text, nil, tt.to...)
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("an error was expected")
@@ -84,6 +86,7 @@ func TestService_SendEmail(t *testing.T) {
 }
 
 func TestService_SendInBlue(t *testing.T) {
+	ctx := context.Background()
 	type args struct {
 		subject string
 		text    string
@@ -110,7 +113,7 @@ func TestService_SendInBlue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := mail.NewService()
 			if s.SendInBlueEnabled {
-				got, _, err := s.SendInBlue(tt.args.subject, tt.args.text, tt.args.to...)
+				got, _, err := s.SendInBlue(ctx, tt.args.subject, tt.args.text, tt.args.to...)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Service.SendInBlue() error = %v, wantErr %v", err, tt.wantErr)
 					return
