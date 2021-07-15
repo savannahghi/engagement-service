@@ -54,6 +54,9 @@ const (
 	unreadInboxCountsDocID = "unread_inbox_counts"
 
 	itemsLimit = 1000
+
+	// outgoingEmails represent all the sent emails
+	outgoingEmails = "outgoing_emails"
 )
 
 // NewFirebaseRepository initializes a Firebase repository
@@ -896,6 +899,10 @@ func (fr Repository) getMarketingDataCollectionName() string {
 	return suffixed
 }
 
+func (fr Repository) getOutgoingEmailsCollectionName() string {
+	return base.SuffixCollection(outgoingEmails)
+}
+
 func (fr Repository) getUserCollection(
 	uid string,
 	flavour base.Flavour,
@@ -1451,10 +1458,6 @@ func (fr Repository) getSingleElement(
 			"unable to get element with ID %s: %w", id, err)
 	}
 
-	if len(docs) == 0 {
-		return nil, nil
-	}
-
 	el, err = docToElement(docs[0], el)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1635,10 +1638,6 @@ func (fr Repository) UpdateMarketingMessage(
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, err
-	}
-	if len(docs) == 0 {
-		log.Printf("marketing sms for phone number %s not found", phoneNumber)
-		return nil, nil
 	}
 
 	var marketingSMS dto.MarketingSMS
@@ -1823,10 +1822,6 @@ func (fr Repository) RetrieveMarketingData(
 		return nil, err
 	}
 
-	if len(docs) == 0 {
-		return nil, nil
-	}
-
 	marketingData := []*dto.Segment{}
 	for _, doc := range docs {
 		var data dto.Segment
@@ -1860,10 +1855,6 @@ func (fr Repository) UpdateMessageSentStatus(
 		return err
 	}
 
-	if len(docs) == 0 {
-		return nil
-	}
-
 	var marketingData dto.Segment
 	err = docs[0].DataTo(&marketingData)
 	if err != nil {
@@ -1893,10 +1884,6 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
-	}
-
-	if len(docs) == 0 {
-		return nil
 	}
 
 	var marketingData dto.Segment
@@ -1933,10 +1920,6 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 
 	logrus.Printf("documents found %v", docs)
 
-	if len(docs) == 0 {
-		return nil
-	}
-
 	for _, doc := range docs {
 		var marketingData dto.Segment
 		err = doc.DataTo(&marketingData)
@@ -1961,4 +1944,50 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 	}
 
 	return nil
+}
+
+// SaveOutgoingEmails saves all the outgoing emails
+func (fr Repository) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
+	collection := fr.getOutgoingEmailsCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, payload)
+	if err != nil {
+		return fmt.Errorf("unable to save ougoing email logs")
+	}
+	return nil
+}
+
+// UpdateMailgunDeliveryStatus updates the status and delivery time of the sent email message
+func (fr Repository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
+
+	collection := fr.getOutgoingEmailsCollectionName()
+
+	query := fr.firestoreClient.Collection(collection).Where("messageID", "==", payload.MessageID)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return nil, err
+	}
+
+	var emailLogData dto.OutgoingEmailsLog
+	err = docs[0].DataTo(&emailLogData)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal data from docs snapshot: %w", err)
+	}
+
+	timeOfDelivery := helpers.EpochTimetoStandardTime(payload.DeliveredOn)
+
+	eventOutput := dto.MailgunEventOutput{
+		EventName:   payload.EventName,
+		DeliveredOn: timeOfDelivery,
+	}
+
+	emailLogData.Event = &eventOutput
+
+	doc := fr.firestoreClient.Collection(fr.getOutgoingEmailsCollectionName()).Doc(docs[0].Ref.ID)
+	if _, err = doc.Set(ctx, emailLogData); err != nil {
+		logrus.Print("an error occurred while updating data: ", err)
+		return nil, fmt.Errorf("unable to update data")
+	}
+
+	return &emailLogData, nil
 }

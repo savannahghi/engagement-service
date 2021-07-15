@@ -79,7 +79,7 @@ func NewService() *Service {
 
 	whatsapp := whatsapp.NewService()
 
-	mail := mail.NewService()
+	mail := mail.NewService(repository)
 
 	crm := hubspot.NewHubSpotService()
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())

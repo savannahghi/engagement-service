@@ -179,6 +179,7 @@ type PresentationHandlers interface {
 	GetMarketingData(ctx context.Context) http.HandlerFunc
 
 	LoadCampaignData(ctx context.Context) http.HandlerFunc
+	UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1992,4 +1993,26 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 		respondWithJSON(w, http.StatusOK, res)
 	}
 
+}
+
+// UpdateMailgunDeliveryStatusWebhook gets the status of the sent emails and logs them in the database
+func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		payload := &dto.MailgunEvent{}
+		base.DecodeJSONToTargetStruct(rw, r, payload)
+
+		emailLog, err := p.interactor.Mail.UpdateMailgunDeliveryStatus(ctx, payload)
+		if err != nil {
+			err := fmt.Errorf("email not sent: %s", err)
+			respondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+
+		marshalled, err := json.Marshal(emailLog)
+		if err != nil {
+			respondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(rw, http.StatusOK, marshalled)
+	}
 }

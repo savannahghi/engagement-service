@@ -267,6 +267,9 @@ type FakeEngagementRepository struct {
 
 	LoadMarketingDataFn     func(ctx context.Context, data dto.Segment) (int, error)
 	RollBackMarketingDataFn func(ctx context.Context, data dto.Segment) error
+
+	SaveOutgoingEmailsFn          func(ctx context.Context, payload *dto.OutgoingEmailsLog) error
+	UpdateMailgunDeliveryStatusFn func(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
 }
 
 // GetFeed ...
@@ -623,4 +626,14 @@ func (f *FakeEngagementRepository) LoadMarketingData(ctx context.Context, data d
 // RollBackMarketingData ...
 func (f *FakeEngagementRepository) RollBackMarketingData(ctx context.Context, data dto.Segment) error {
 	return f.RollBackMarketingDataFn(ctx, data)
+}
+
+// SaveOutgoingEmails ...
+func (f *FakeEngagementRepository) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
+	return f.SaveOutgoingEmailsFn(ctx, payload)
+}
+
+// RollBackMarketingData ...
+func (f *FakeEngagementRepository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
+	return f.UpdateMailgunDeliveryStatusFn(ctx, payload)
 }

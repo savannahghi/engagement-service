@@ -12,9 +12,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/savannahghi/serverutils"
+	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
 )
 
@@ -42,10 +46,12 @@ type ServiceMail interface {
 	SendMailgun(ctx context.Context, subject, text string, body *string, to ...string) (string, string, error)
 	SendEmail(ctx context.Context, subject, text string, body *string, to ...string) (string, string, error)
 	SimpleEmail(ctx context.Context, subject, text string, body *string, to ...string) (string, error)
+	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
+	UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
 }
 
 // NewService initializes a new MailGun service
-func NewService() *Service {
+func NewService(repository repository.Repository) *Service {
 	apiKey := serverutils.MustGetEnvVar(MailGunAPIKeyEnvVarName)
 	domain := serverutils.MustGetEnvVar(MailGunDomainEnvVarName)
 	from := serverutils.MustGetEnvVar(MailGunFromEnvVarName)
@@ -65,8 +71,9 @@ func NewService() *Service {
 	return &Service{
 		Mg:                mg,
 		From:              from,
-		SendInBlueAPIKey:  serverutils.MustGetEnvVar(SendInBlueAPIKeyEnvVarName),
+		SendInBlueAPIKey:  base.MustGetEnvVar(SendInBlueAPIKeyEnvVarName),
 		SendInBlueEnabled: sendInBlueEnabled,
+		Repository:        repository,
 	}
 }
 
@@ -76,6 +83,7 @@ type Service struct {
 	From              string
 	SendInBlueEnabled bool
 	SendInBlueAPIKey  string
+	Repository        repository.Repository
 }
 
 // CheckPreconditions checks that all the required preconditions are satisfied
@@ -168,6 +176,7 @@ func (s Service) SendInBlue(ctx context.Context, subject, text string, to ...str
 	if !ok {
 		return "", "", fmt.Errorf("string messageID not found in SendInBlue response %#v", result)
 	}
+
 	return "ok", messageID, nil
 }
 
@@ -182,6 +191,7 @@ func (s Service) SendMailgun(ctx context.Context, subject, text string, body *st
 	} else {
 		message.SetHtml(text)
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*MailGunTimeoutSeconds)
 	defer cancel()
 
@@ -190,6 +200,24 @@ func (s Service) SendMailgun(ctx context.Context, subject, text string, body *st
 		helpers.RecordSpanError(span, err)
 		return resp, id, fmt.Errorf("mailgun email sending error: %s", err)
 	}
+
+	messageID := helpers.StripMailGunIDSpecialCharacters(id)
+
+	outgoingEmail := &dto.OutgoingEmailsLog{
+		UUID:        uuid.NewString(),
+		To:          to,
+		From:        MailGunFromEnvVarName,
+		Subject:     subject,
+		Text:        text,
+		MessageID:   messageID,
+		EmailSentOn: time.Now(),
+	}
+
+	err = s.SaveOutgoingEmails(context.Background(), outgoingEmail)
+	if err != nil {
+		return resp, id, fmt.Errorf("unable to save outgoing email(s): %s", err)
+	}
+
 	return resp, id, err
 }
 
@@ -209,4 +237,14 @@ func (s Service) SimpleEmail(ctx context.Context, subject, text string, body *st
 	s.CheckPreconditions()
 	status, _, err := s.SendEmail(ctx, subject, text, nil, to...)
 	return status, err
+}
+
+// SaveOutgoingEmails saves all the outgoing emails
+func (s Service) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
+	return s.Repository.SaveOutgoingEmails(ctx, payload)
+}
+
+// UpdateMailgunDeliveryStatus updates the status and delivery time of the sent email message
+func (s Service) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
+	return s.Repository.UpdateMailgunDeliveryStatus(ctx, payload)
 }

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
 func TestMain(m *testing.M) {
@@ -15,7 +16,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewService(t *testing.T) {
-	service := mail.NewService()
+	var repo repository.Repository
+	service := mail.NewService(repo)
 	tests := []struct {
 		name string
 		want *mail.Service
@@ -27,7 +29,7 @@ func TestNewService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := mail.NewService(); !reflect.DeepEqual(got, tt.want) {
+			if got := mail.NewService(repo); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewService() = %v, want %v", got, tt.want)
 			} else {
 				got.CheckPreconditions()
@@ -38,7 +40,8 @@ func TestNewService(t *testing.T) {
 
 func TestService_SendEmail(t *testing.T) {
 	ctx := context.Background()
-	service := mail.NewService()
+	var repo repository.Repository
+	service := mail.NewService(repo)
 	tests := []struct {
 		name    string
 		service *mail.Service
@@ -87,6 +90,7 @@ func TestService_SendEmail(t *testing.T) {
 
 func TestService_SendInBlue(t *testing.T) {
 	ctx := context.Background()
+	var repo repository.Repository
 	type args struct {
 		subject string
 		text    string
@@ -111,7 +115,7 @@ func TestService_SendInBlue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := mail.NewService()
+			s := mail.NewService(repo)
 			if s.SendInBlueEnabled {
 				got, _, err := s.SendInBlue(ctx, tt.args.subject, tt.args.text, tt.args.to...)
 				if (err != nil) != tt.wantErr {
