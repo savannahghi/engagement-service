@@ -24,11 +24,12 @@ import (
 )
 
 const (
-	issuer       = "Savannah Informatics Limited"
-	accountName  = "info@healthcloud.co.ke"
-	subject      = "Be.Well Verification Code"
-	whatsappStep = 1
-	twilioStep   = 2
+	issuer        = "Savannah Informatics Limited"
+	accountName   = "info@healthcloud.co.ke"
+	subject       = "Be.Well Verification Code"
+	whatsappStep  = 1
+	twilioStep    = 2
+	appIdentifier = "ZjMyZTFjOTF"
 )
 
 // These constants are here to support Integration Testing
@@ -133,7 +134,7 @@ func cleanITPhoneNumber() (*string, error) {
 
 // SendOTP sends otp code message to specified number
 func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code string) (string, error) {
-	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
+	msg := fmt.Sprintf("%s is your Be.Well verification code %s", code, appIdentifier)
 
 	if base.IsKenyanNumber(normalizedPhoneNumber) {
 		_, err := s.sms.Send(normalizedPhoneNumber, msg, base.SenderIDBewell)
