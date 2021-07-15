@@ -59,8 +59,14 @@ def get_bewell_marketing_data():
 
     for row in query_job:
         data = json.loads(row[5])
-        phone = data["phone"]
-        phone_numbers.append(phone)
+        if "phone" in data:
+            phone = data["phone"]
+            phone_numbers.append(phone)
+        elif "Phone" in data["properties"]:
+            phoneNumber = data["properties"]["Phone"]
+            phone_numbers.append(phoneNumber) 
+        else:
+            print("missing phone number")
 
     logging.info(
         f"length of marketing data with sent messages: {len(phone_numbers)}\n"
