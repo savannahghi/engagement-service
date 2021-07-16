@@ -10,6 +10,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"firebase.google.com/go/messaging"
 	"github.com/google/uuid"
+	"github.com/savannahghi/firebasetools"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -28,7 +29,7 @@ type Service struct {
 
 func initializeFirestoreClient() (*firestore.Client, error) {
 	ctx := context.Background()
-	fc := &base.FirebaseClient{}
+	fc := &firebasetools.FirebaseClient{}
 	app, err := fc.InitFirebase()
 	if err != nil {
 		log.Panicf("unable to initialize Firebase app: %s", err)
@@ -43,7 +44,7 @@ func initializeFirestoreClient() (*firestore.Client, error) {
 
 func initializeFCMClient() (*messaging.Client, error) {
 	ctx := context.Background()
-	fc := &base.FirebaseClient{}
+	fc := &firebasetools.FirebaseClient{}
 	app, err := fc.InitFirebase()
 	if err != nil {
 		log.Panicf("unable to initialize Firebase app: %s", err)
@@ -63,10 +64,10 @@ type ServiceFCM interface {
 		ctx context.Context,
 		registrationTokens []string,
 		data map[string]string,
-		notification *base.FirebaseSimpleNotificationInput,
-		android *base.FirebaseAndroidConfigInput,
-		ios *base.FirebaseAPNSConfigInput,
-		web *base.FirebaseWebpushConfigInput,
+		notification *firebasetools.FirebaseSimpleNotificationInput,
+		android *firebasetools.FirebaseAndroidConfigInput,
+		ios *firebasetools.FirebaseAPNSConfigInput,
+		web *firebasetools.FirebaseWebpushConfigInput,
 	) (bool, error)
 
 	Notifications(
@@ -140,10 +141,10 @@ func (s Service) SendNotification(
 	ctx context.Context,
 	registrationTokens []string,
 	data map[string]string,
-	notification *base.FirebaseSimpleNotificationInput,
-	android *base.FirebaseAndroidConfigInput,
-	ios *base.FirebaseAPNSConfigInput,
-	web *base.FirebaseWebpushConfigInput,
+	notification *firebasetools.FirebaseSimpleNotificationInput,
+	android *firebasetools.FirebaseAndroidConfigInput,
+	ios *firebasetools.FirebaseAPNSConfigInput,
+	web *firebasetools.FirebaseWebpushConfigInput,
 ) (bool, error) {
 	ctx, span := tracer.Start(ctx, "SendNotification")
 	defer span.End()

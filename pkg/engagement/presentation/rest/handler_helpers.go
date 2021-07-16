@@ -13,15 +13,16 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gorilla/mux"
 	"github.com/markbates/pkger"
+	"github.com/savannahghi/errorcodeutil"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	log "github.com/sirupsen/logrus"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 func respondWithError(w http.ResponseWriter, code int, err error) {
-	errMap := base.ErrorMap(err)
+	errMap := errorcodeutil.ErrorMap(err)
 	errBytes, err := json.Marshal(errMap)
 	if err != nil {
 		errBytes = []byte(fmt.Sprintf("error: %s", err))
@@ -271,8 +272,8 @@ func SchemaHandler() (http.Handler, error) {
 
 func addUIDToContext(ctx context.Context, uid string) context.Context {
 	return context.WithValue(
-		ctx,
-		base.AuthTokenContextKey,
+		context.Background(),
+		firebasetools.AuthTokenContextKey,
 		&auth.Token{UID: uid},
 	)
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -23,7 +24,6 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 
 	"cloud.google.com/go/firestore"
-	"gitlab.slade360emr.com/go/base"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -65,7 +65,7 @@ const (
 func NewFirebaseRepository(
 	ctx context.Context,
 ) (repository.Repository, error) {
-	fc := base.FirebaseClient{}
+	fc := firebasetools.FirebaseClient{}
 	fa, err := fc.InitFirebase()
 	if err != nil {
 		log.Fatalf("unable to initialize Firestore for the Feed: %s", err)
@@ -843,7 +843,7 @@ func (fr Repository) SaveIncomingEvent(
 		return fmt.Errorf("event failed validation: %w", err)
 	}
 
-	collectionName := base.SuffixCollection(incomingEventsCollectionName)
+	collectionName := firebasetools.SuffixCollection(incomingEventsCollectionName)
 	coll := fr.firestoreClient.Collection(collectionName)
 	doc := coll.Doc(event.ID)
 	_, err = doc.Set(ctx, event)
@@ -872,7 +872,7 @@ func (fr Repository) SaveOutgoingEvent(
 		return fmt.Errorf("event failed validation: %w", err)
 	}
 
-	collectionName := base.SuffixCollection(outgoingEventsCollectionName)
+	collectionName := firebasetools.SuffixCollection(outgoingEventsCollectionName)
 	coll := fr.firestoreClient.Collection(collectionName)
 	doc := coll.Doc(event.ID)
 	_, err = doc.Set(ctx, event)
@@ -884,37 +884,37 @@ func (fr Repository) SaveOutgoingEvent(
 }
 
 func (fr Repository) getFeedCollectionName() string {
-	suffixed := base.SuffixCollection(feedCollectionName)
+	suffixed := firebasetools.SuffixCollection(feedCollectionName)
 	return suffixed
 }
 
 func (fr Repository) getMaretingSMSCollectionName() string {
-	suffixed := base.SuffixCollection(AITMarketingMessageName)
+	suffixed := firebasetools.SuffixCollection(AITMarketingMessageName)
 	return suffixed
 }
 
 func (fr Repository) getNotificationCollectionName() string {
-	suffixed := base.SuffixCollection(notificationCollectionName)
+	suffixed := firebasetools.SuffixCollection(notificationCollectionName)
 	return suffixed
 }
 
 func (fr Repository) getNPSResponseCollectionName() string {
-	suffixed := base.SuffixCollection(NPSResponseCollectionName)
+	suffixed := firebasetools.SuffixCollection(NPSResponseCollectionName)
 	return suffixed
 }
 
 func (fr Repository) getTwilioCallbackCollectionName() string {
-	suffixed := base.SuffixCollection(twilioCallbackCollectionName)
+	suffixed := firebasetools.SuffixCollection(twilioCallbackCollectionName)
 	return suffixed
 }
 
 func (fr Repository) getMarketingDataCollectionName() string {
-	suffixed := base.SuffixCollection(marketingDataCollectionName)
+	suffixed := firebasetools.SuffixCollection(marketingDataCollectionName)
 	return suffixed
 }
 
 func (fr Repository) getOutgoingEmailsCollectionName() string {
-	return base.SuffixCollection(outgoingEmails)
+	return firebasetools.SuffixCollection(outgoingEmails)
 }
 
 func (fr Repository) getUserCollection(

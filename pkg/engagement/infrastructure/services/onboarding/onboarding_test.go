@@ -4,18 +4,19 @@ import (
 	"context"
 	"testing"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 )
 
 func TestNewRemoteProfileService(t *testing.T) {
-	deps, err := base.LoadDepsFromYAML()
+	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
 		return
 	}
 
-	profileClient, err := base.SetupISCclient(*deps, "profile")
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
 		return
@@ -38,20 +39,20 @@ func TestNewRemoteProfileService(t *testing.T) {
 }
 
 func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
-	deps, err := base.LoadDepsFromYAML()
+	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
 		return
 	}
 
-	profileClient, err := base.SetupISCclient(*deps, "profile")
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
 		return
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		profileClient,
 	)
@@ -111,20 +112,20 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 }
 
 func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
-	deps, err := base.LoadDepsFromYAML()
+	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
 		return
 	}
 
-	profileClient, err := base.SetupISCclient(*deps, "profile")
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
 		return
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		profileClient,
 	)
@@ -184,20 +185,20 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 }
 
 func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
-	deps, err := base.LoadDepsFromYAML()
+	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
 		return
 	}
 
-	profileClient, err := base.SetupISCclient(*deps, "profile")
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
 		return
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		profileClient,
 	)
@@ -257,20 +258,20 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 }
 
 func TestRemoteProfileService_GetUserProfile(t *testing.T) {
-	deps, err := base.LoadDepsFromYAML()
+	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
 		return
 	}
 
-	profileClient, err := base.SetupISCclient(*deps, "profile")
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
 		return
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
-	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, _, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		profileClient,
 	)
@@ -283,7 +284,7 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 		uid string
 	}
 
-	UID, err := base.GetLoggedInUserUID(ctx)
+	UID, err := firebasetools.GetLoggedInUserUID(ctx)
 	if err != nil {
 		t.Errorf("can't get logged in user: %v", err)
 		return

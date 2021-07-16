@@ -7,7 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/interserviceclient"
+	"github.com/savannahghi/profileutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"go.opentelemetry.io/otel"
@@ -46,7 +47,7 @@ type ProfileService interface {
 		ctx context.Context,
 		uid UserUIDs,
 	) (map[string][]string, error)
-	GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error)
+	GetUserProfile(ctx context.Context, uid string) (*profileutils.UserProfile, error)
 	IsOptedOut(ctx context.Context, phoneNumber string) (bool, error)
 	PhonesWithoutOptOut(ctx context.Context, phones []string) ([]string, error)
 }
@@ -54,7 +55,7 @@ type ProfileService interface {
 // NewRemoteProfileService initializes a connection to a remote profile service
 // that we will invoke via inter-service communication
 func NewRemoteProfileService(
-	profileClient *base.InterServiceClient,
+	profileClient *interserviceclient.InterServiceClient,
 ) ProfileService {
 	return &RemoteProfileService{
 		profileClient: profileClient,
@@ -64,11 +65,11 @@ func NewRemoteProfileService(
 // RemoteProfileService uses inter-service REST APIs to fetch information
 // from a remote profile service
 type RemoteProfileService struct {
-	profileClient *base.InterServiceClient
+	profileClient *interserviceclient.InterServiceClient
 }
 
 // NewOnboardingClient initializes a new interservice client for onboarding
-func NewOnboardingClient() *base.InterServiceClient {
+func NewOnboardingClient() *interserviceclient.InterServiceClient {
 	return helpers.InitializeInterServiceClient(onboardingService)
 }
 
@@ -148,7 +149,7 @@ func (rps RemoteProfileService) GetDeviceTokens(
 func (rps RemoteProfileService) GetUserProfile(
 	ctx context.Context,
 	uid string,
-) (*base.UserProfile, error) {
+) (*profileutils.UserProfile, error) {
 	ctx, span := tracer.Start(ctx, "GetUserProfile")
 	defer span.End()
 	uidPayoload := dto.UIDPayload{
@@ -178,7 +179,7 @@ func (rps RemoteProfileService) GetUserProfile(
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error reading profile response body: %w", err)
 	}
-	user := base.UserProfile{}
+	user := profileutils.UserProfile{}
 	err = json.Unmarshal(data, &user)
 	if err != nil {
 		helpers.RecordSpanError(span, err)

@@ -15,9 +15,10 @@ import (
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/storage"
 	"github.com/rs/xid"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"go.opentelemetry.io/otel"
 )
@@ -35,13 +36,13 @@ const (
 type ServiceUploads interface {
 	Upload(
 		ctx context.Context,
-		inp base.UploadInput,
-	) (*base.Upload, error)
+		inp profileutils.UploadInput,
+	) (*profileutils.Upload, error)
 
 	FindUploadByID(
 		ctx context.Context,
 		id string,
-	) (*base.Upload, error)
+	) (*profileutils.Upload, error)
 }
 
 func getBucketName() string {
@@ -95,7 +96,7 @@ func NewUploadsService() *Service {
 			"unable to initialize GCS client for upload service: %s", err)
 	}
 
-	fc := &base.FirebaseClient{}
+	fc := &firebasetools.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
 		log.Panicf(
@@ -154,8 +155,8 @@ func (s Service) FirestoreClient() *firestore.Client {
 // Upload uploads the file to cloud storage
 func (s Service) Upload(
 	ctx context.Context,
-	inp base.UploadInput,
-) (*base.Upload, error) {
+	inp profileutils.UploadInput,
+) (*profileutils.Upload, error) {
 	ctx, span := tracer.Start(ctx, "Upload")
 	defer span.End()
 	s.enforcePreconditions()
@@ -199,7 +200,7 @@ func (s Service) Upload(
 	)
 
 	id := ksuid.New().String()
-	u := &base.Upload{
+	u := &profileutils.Upload{
 		ID:          id,
 		Title:       inp.Title,
 		Creation:    time.Now(),
@@ -211,7 +212,7 @@ func (s Service) Upload(
 		Base64data:  inp.Base64data,
 	}
 
-	_, _, err = base.CreateNode(ctx, u)
+	_, _, err = firebasetools.CreateNode(ctx, u)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't save upload: %w", err)
@@ -223,15 +224,15 @@ func (s Service) Upload(
 func (s Service) FindUploadByID(
 	ctx context.Context,
 	id string,
-) (*base.Upload, error) {
+) (*profileutils.Upload, error) {
 	ctx, span := tracer.Start(ctx, "FindUploadByID")
 	defer span.End()
-	node, err := base.RetrieveNode(ctx, id, &base.Upload{})
+	node, err := firebasetools.RetrieveNode(ctx, id, &profileutils.Upload{})
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to retrieve upload: %w", err)
 	}
-	upload, ok := node.(*base.Upload)
+	upload, ok := node.(*profileutils.Upload)
 	if !ok {
 		return nil, fmt.Errorf("unable to cast node to upload")
 	}

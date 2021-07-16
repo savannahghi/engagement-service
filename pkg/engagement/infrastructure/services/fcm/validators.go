@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/errorcodeutil"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/serverutils"
 )
 
 // ValidateFCMData checks that the supplied FCM data does not use re
@@ -31,19 +33,19 @@ func ValidateFCMData(data map[string]string) error {
 }
 
 // ValidateSendNotificationPayload checks that the request payload supplied in the indicated request are valid
-func ValidateSendNotificationPayload(w http.ResponseWriter, r *http.Request) (*base.SendNotificationPayload, error) {
-	payload := &base.SendNotificationPayload{}
-	base.DecodeJSONToTargetStruct(w, r, payload)
+func ValidateSendNotificationPayload(w http.ResponseWriter, r *http.Request) (*firebasetools.SendNotificationPayload, error) {
+	payload := &firebasetools.SendNotificationPayload{}
+	serverutils.DecodeJSONToTargetStruct(w, r, payload)
 
 	if payload.RegistrationTokens == nil {
 		err := fmt.Errorf("can't send FCM notifications to nil registration tokens")
-		base.ReportErr(w, err, http.StatusBadRequest)
+		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
 		return nil, err
 	}
 
 	err := ValidateFCMData(payload.Data)
 	if err != nil {
-		base.ReportErr(w, err, http.StatusBadRequest)
+		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
 		return nil, err
 	}
 

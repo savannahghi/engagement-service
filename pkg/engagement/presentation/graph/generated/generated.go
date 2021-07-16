@@ -16,9 +16,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/profileutils"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -299,7 +300,7 @@ type ComplexityRoot struct {
 		RecordNPSResponse               func(childComplexity int, input dto.NPSInput) int
 		ResolveFeedItem                 func(childComplexity int, flavour feedlib.Flavour, itemID string) int
 		Send                            func(childComplexity int, to string, message string) int
-		SendNotification                func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) int
+		SendNotification                func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) int
 		SendToMany                      func(childComplexity int, message string, to []string) int
 		ShowFeedItem                    func(childComplexity int, flavour feedlib.Flavour, itemID string) int
 		ShowNudge                       func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
@@ -307,7 +308,7 @@ type ComplexityRoot struct {
 		SladeOtp                        func(childComplexity int, to string, name string, otp string, marketingMessage string) int
 		UnpinFeedItem                   func(childComplexity int, flavour feedlib.Flavour, itemID string) int
 		UnresolveFeedItem               func(childComplexity int, flavour feedlib.Flavour, itemID string) int
-		Upload                          func(childComplexity int, input base.UploadInput) int
+		Upload                          func(childComplexity int, input profileutils.UploadInput) int
 		VerifyEmailOtp                  func(childComplexity int, email string, otp string) int
 		VerifyOtp                       func(childComplexity int, msisdn string, otp string) int
 		VirtualCards                    func(childComplexity int, to string, wellnessCardFamily string, virtualCardLink string, marketingMessage string) int
@@ -427,7 +428,7 @@ type EntityResolver interface {
 	FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error)
 }
 type MutationResolver interface {
-	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) (bool, error)
+	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error)
 	ResolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
 	UnresolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
 	PinFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
@@ -445,7 +446,7 @@ type MutationResolver interface {
 	Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error)
 	SendToMany(ctx context.Context, message string, to []string) (*dto.SendMessageResponse, error)
 	RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error)
-	Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error)
+	Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error)
 	PhoneNumberVerificationCode(ctx context.Context, to string, code string, marketingMessage string) (bool, error)
 	WellnessCardActivationDependant(ctx context.Context, to string, memberName string, cardName string, marketingMessage string) (bool, error)
 	WellnessCardActivationPrincipal(ctx context.Context, to string, memberName string, cardName string, minorAgeThreshold string, marketingMessage string) (bool, error)
@@ -470,7 +471,7 @@ type QueryResolver interface {
 	EmailVerificationOtp(ctx context.Context, email string) (string, error)
 	ListNPSResponse(ctx context.Context) ([]*dto.NPSResponse, error)
 	TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error)
-	FindUploadByID(ctx context.Context, id string) (*base.Upload, error)
+	FindUploadByID(ctx context.Context, id string) (*profileutils.Upload, error)
 }
 
 type executableSchema struct {
@@ -1813,7 +1814,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SendNotification(childComplexity, args["registrationTokens"].([]string), args["data"].(map[string]interface{}), args["notification"].(base.FirebaseSimpleNotificationInput), args["android"].(*base.FirebaseAndroidConfigInput), args["ios"].(*base.FirebaseAPNSConfigInput), args["web"].(*base.FirebaseWebpushConfigInput)), true
+		return e.complexity.Mutation.SendNotification(childComplexity, args["registrationTokens"].([]string), args["data"].(map[string]interface{}), args["notification"].(firebasetools.FirebaseSimpleNotificationInput), args["android"].(*firebasetools.FirebaseAndroidConfigInput), args["ios"].(*firebasetools.FirebaseAPNSConfigInput), args["web"].(*firebasetools.FirebaseWebpushConfigInput)), true
 
 	case "Mutation.sendToMany":
 		if e.complexity.Mutation.SendToMany == nil {
@@ -1909,7 +1910,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Upload(childComplexity, args["input"].(base.UploadInput)), true
+		return e.complexity.Mutation.Upload(childComplexity, args["input"].(profileutils.UploadInput)), true
 
 	case "Mutation.verifyEmailOTP":
 		if e.complexity.Mutation.VerifyEmailOtp == nil {
@@ -3906,37 +3907,37 @@ func (ec *executionContext) field_Mutation_sendNotification_args(ctx context.Con
 		}
 	}
 	args["data"] = arg1
-	var arg2 base.FirebaseSimpleNotificationInput
+	var arg2 firebasetools.FirebaseSimpleNotificationInput
 	if tmp, ok := rawArgs["notification"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notification"))
-		arg2, err = ec.unmarshalNFirebaseSimpleNotificationInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseSimpleNotificationInput(ctx, tmp)
+		arg2, err = ec.unmarshalNFirebaseSimpleNotificationInput2githubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseSimpleNotificationInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["notification"] = arg2
-	var arg3 *base.FirebaseAndroidConfigInput
+	var arg3 *firebasetools.FirebaseAndroidConfigInput
 	if tmp, ok := rawArgs["android"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("android"))
-		arg3, err = ec.unmarshalOFirebaseAndroidConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAndroidConfigInput(ctx, tmp)
+		arg3, err = ec.unmarshalOFirebaseAndroidConfigInput2ᚖgithubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseAndroidConfigInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["android"] = arg3
-	var arg4 *base.FirebaseAPNSConfigInput
+	var arg4 *firebasetools.FirebaseAPNSConfigInput
 	if tmp, ok := rawArgs["ios"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ios"))
-		arg4, err = ec.unmarshalOFirebaseAPNSConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAPNSConfigInput(ctx, tmp)
+		arg4, err = ec.unmarshalOFirebaseAPNSConfigInput2ᚖgithubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseAPNSConfigInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["ios"] = arg4
-	var arg5 *base.FirebaseWebpushConfigInput
+	var arg5 *firebasetools.FirebaseWebpushConfigInput
 	if tmp, ok := rawArgs["web"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("web"))
-		arg5, err = ec.unmarshalOFirebaseWebpushConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseWebpushConfigInput(ctx, tmp)
+		arg5, err = ec.unmarshalOFirebaseWebpushConfigInput2ᚖgithubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseWebpushConfigInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4167,10 +4168,10 @@ func (ec *executionContext) field_Mutation_unresolveFeedItem_args(ctx context.Co
 func (ec *executionContext) field_Mutation_upload_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.UploadInput
+	var arg0 profileutils.UploadInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUploadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUploadInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUploadInput2githubᚗcomᚋsavannahghiᚋprofileutilsᚐUploadInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -10340,7 +10341,7 @@ func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SendNotification(rctx, args["registrationTokens"].([]string), args["data"].(map[string]interface{}), args["notification"].(base.FirebaseSimpleNotificationInput), args["android"].(*base.FirebaseAndroidConfigInput), args["ios"].(*base.FirebaseAPNSConfigInput), args["web"].(*base.FirebaseWebpushConfigInput))
+		return ec.resolvers.Mutation().SendNotification(rctx, args["registrationTokens"].([]string), args["data"].(map[string]interface{}), args["notification"].(firebasetools.FirebaseSimpleNotificationInput), args["android"].(*firebasetools.FirebaseAndroidConfigInput), args["ios"].(*firebasetools.FirebaseAPNSConfigInput), args["web"].(*firebasetools.FirebaseWebpushConfigInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11096,7 +11097,7 @@ func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Upload(rctx, args["input"].(base.UploadInput))
+		return ec.resolvers.Mutation().Upload(rctx, args["input"].(profileutils.UploadInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11108,9 +11109,9 @@ func (ec *executionContext) _Mutation_upload(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Upload)
+	res := resTmp.(*profileutils.Upload)
 	fc.Result = res
-	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
+	return ec.marshalNUpload2ᚖgithubᚗcomᚋsavannahghiᚋprofileutilsᚐUpload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_phoneNumberVerificationCode(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -12968,9 +12969,9 @@ func (ec *executionContext) _Query_findUploadByID(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Upload)
+	res := resTmp.(*profileutils.Upload)
 	fc.Result = res
-	return ec.marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx, field.Selections, res)
+	return ec.marshalNUpload2ᚖgithubᚗcomᚋsavannahghiᚋprofileutilsᚐUpload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -13631,7 +13632,7 @@ func (ec *executionContext) _SendMessageResponse_SMSMessageData(ctx context.Cont
 	return ec.marshalNSMS2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSMS(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13666,7 +13667,7 @@ func (ec *executionContext) _Upload_id(ctx context.Context, field graphql.Collec
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_url(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_url(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13701,7 +13702,7 @@ func (ec *executionContext) _Upload_url(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_size(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_size(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13736,7 +13737,7 @@ func (ec *executionContext) _Upload_size(ctx context.Context, field graphql.Coll
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_hash(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_hash(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13771,7 +13772,7 @@ func (ec *executionContext) _Upload_hash(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_creation(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_creation(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13806,7 +13807,7 @@ func (ec *executionContext) _Upload_creation(ctx context.Context, field graphql.
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_title(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_title(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13841,7 +13842,7 @@ func (ec *executionContext) _Upload_title(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_contentType(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_contentType(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13876,7 +13877,7 @@ func (ec *executionContext) _Upload_contentType(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_language(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_language(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -13911,7 +13912,7 @@ func (ec *executionContext) _Upload_language(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Upload_base64data(ctx context.Context, field graphql.CollectedField, obj *base.Upload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Upload_base64data(ctx context.Context, field graphql.CollectedField, obj *profileutils.Upload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -15193,8 +15194,8 @@ func (ec *executionContext) unmarshalInputFilterParamsInput(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputFirebaseAPNSConfigInput(ctx context.Context, obj interface{}) (base.FirebaseAPNSConfigInput, error) {
-	var it base.FirebaseAPNSConfigInput
+func (ec *executionContext) unmarshalInputFirebaseAPNSConfigInput(ctx context.Context, obj interface{}) (firebasetools.FirebaseAPNSConfigInput, error) {
+	var it firebasetools.FirebaseAPNSConfigInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15213,8 +15214,8 @@ func (ec *executionContext) unmarshalInputFirebaseAPNSConfigInput(ctx context.Co
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputFirebaseAndroidConfigInput(ctx context.Context, obj interface{}) (base.FirebaseAndroidConfigInput, error) {
-	var it base.FirebaseAndroidConfigInput
+func (ec *executionContext) unmarshalInputFirebaseAndroidConfigInput(ctx context.Context, obj interface{}) (firebasetools.FirebaseAndroidConfigInput, error) {
+	var it firebasetools.FirebaseAndroidConfigInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15257,8 +15258,8 @@ func (ec *executionContext) unmarshalInputFirebaseAndroidConfigInput(ctx context
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputFirebaseSimpleNotificationInput(ctx context.Context, obj interface{}) (base.FirebaseSimpleNotificationInput, error) {
-	var it base.FirebaseSimpleNotificationInput
+func (ec *executionContext) unmarshalInputFirebaseSimpleNotificationInput(ctx context.Context, obj interface{}) (firebasetools.FirebaseSimpleNotificationInput, error) {
+	var it firebasetools.FirebaseSimpleNotificationInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15301,8 +15302,8 @@ func (ec *executionContext) unmarshalInputFirebaseSimpleNotificationInput(ctx co
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputFirebaseWebpushConfigInput(ctx context.Context, obj interface{}) (base.FirebaseWebpushConfigInput, error) {
-	var it base.FirebaseWebpushConfigInput
+func (ec *executionContext) unmarshalInputFirebaseWebpushConfigInput(ctx context.Context, obj interface{}) (firebasetools.FirebaseWebpushConfigInput, error) {
+	var it firebasetools.FirebaseWebpushConfigInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15477,8 +15478,8 @@ func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUploadInput(ctx context.Context, obj interface{}) (base.UploadInput, error) {
-	var it base.UploadInput
+func (ec *executionContext) unmarshalInputUploadInput(ctx context.Context, obj interface{}) (profileutils.UploadInput, error) {
+	var it profileutils.UploadInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -17601,7 +17602,7 @@ func (ec *executionContext) _SendMessageResponse(ctx context.Context, sel ast.Se
 
 var uploadImplementors = []string{"Upload"}
 
-func (ec *executionContext) _Upload(ctx context.Context, sel ast.SelectionSet, obj *base.Upload) graphql.Marshaler {
+func (ec *executionContext) _Upload(ctx context.Context, sel ast.SelectionSet, obj *profileutils.Upload) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, uploadImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -18178,7 +18179,7 @@ func (ec *executionContext) marshalNFeed2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋen
 	return ec._Feed(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNFirebaseSimpleNotificationInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseSimpleNotificationInput(ctx context.Context, v interface{}) (base.FirebaseSimpleNotificationInput, error) {
+func (ec *executionContext) unmarshalNFirebaseSimpleNotificationInput2githubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseSimpleNotificationInput(ctx context.Context, v interface{}) (firebasetools.FirebaseSimpleNotificationInput, error) {
 	res, err := ec.unmarshalInputFirebaseSimpleNotificationInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -18766,11 +18767,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNUpload2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx context.Context, sel ast.SelectionSet, v base.Upload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpload2githubᚗcomᚋsavannahghiᚋprofileutilsᚐUpload(ctx context.Context, sel ast.SelectionSet, v profileutils.Upload) graphql.Marshaler {
 	return ec._Upload(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUpload(ctx context.Context, sel ast.SelectionSet, v *base.Upload) graphql.Marshaler {
+func (ec *executionContext) marshalNUpload2ᚖgithubᚗcomᚋsavannahghiᚋprofileutilsᚐUpload(ctx context.Context, sel ast.SelectionSet, v *profileutils.Upload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18780,7 +18781,7 @@ func (ec *executionContext) marshalNUpload2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋ
 	return ec._Upload(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUploadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐUploadInput(ctx context.Context, v interface{}) (base.UploadInput, error) {
+func (ec *executionContext) unmarshalNUploadInput2githubᚗcomᚋsavannahghiᚋprofileutilsᚐUploadInput(ctx context.Context, v interface{}) (profileutils.UploadInput, error) {
 	res, err := ec.unmarshalInputUploadInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -19391,7 +19392,7 @@ func (ec *executionContext) marshalOFirebaseAPNSConfig2ᚖgitlabᚗslade360emr�
 	return ec._FirebaseAPNSConfig(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOFirebaseAPNSConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAPNSConfigInput(ctx context.Context, v interface{}) (*base.FirebaseAPNSConfigInput, error) {
+func (ec *executionContext) unmarshalOFirebaseAPNSConfigInput2ᚖgithubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseAPNSConfigInput(ctx context.Context, v interface{}) (*firebasetools.FirebaseAPNSConfigInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19406,7 +19407,7 @@ func (ec *executionContext) marshalOFirebaseAndroidConfig2ᚖgitlabᚗslade360em
 	return ec._FirebaseAndroidConfig(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOFirebaseAndroidConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseAndroidConfigInput(ctx context.Context, v interface{}) (*base.FirebaseAndroidConfigInput, error) {
+func (ec *executionContext) unmarshalOFirebaseAndroidConfigInput2ᚖgithubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseAndroidConfigInput(ctx context.Context, v interface{}) (*firebasetools.FirebaseAndroidConfigInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19428,7 +19429,7 @@ func (ec *executionContext) marshalOFirebaseWebpushConfig2ᚖgitlabᚗslade360em
 	return ec._FirebaseWebpushConfig(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOFirebaseWebpushConfigInput2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFirebaseWebpushConfigInput(ctx context.Context, v interface{}) (*base.FirebaseWebpushConfigInput, error) {
+func (ec *executionContext) unmarshalOFirebaseWebpushConfigInput2ᚖgithubᚗcomᚋsavannahghiᚋfirebasetoolsᚐFirebaseWebpushConfigInput(ctx context.Context, v interface{}) (*firebasetools.FirebaseWebpushConfigInput, error) {
 	if v == nil {
 		return nil, nil
 	}

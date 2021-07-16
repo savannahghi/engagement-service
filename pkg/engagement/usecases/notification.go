@@ -9,6 +9,8 @@ import (
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/profileutils"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
@@ -18,7 +20,6 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 
 	"github.com/savannahghi/pubsubtools"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
@@ -179,7 +180,7 @@ type NotificationUsecases interface {
 		uids []string,
 		sender string,
 		pl dto.NotificationEnvelope,
-		notification *base.FirebaseSimpleNotificationInput,
+		notification *firebasetools.FirebaseSimpleNotificationInput,
 	) error
 
 	HandleSendNotification(
@@ -238,7 +239,7 @@ func (n NotificationImpl) HandleItemPublish(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemPublish")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -274,7 +275,7 @@ func (n NotificationImpl) HandleItemDelete(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemDelete")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -311,7 +312,7 @@ func (n NotificationImpl) HandleItemResolve(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemResolve")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -348,7 +349,7 @@ func (n NotificationImpl) HandleItemUnresolve(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemUnresolve")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -385,7 +386,7 @@ func (n NotificationImpl) HandleItemHide(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemHide")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -419,7 +420,7 @@ func (n NotificationImpl) HandleItemShow(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemShow")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -453,7 +454,7 @@ func (n NotificationImpl) HandleItemPin(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemPin")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -487,7 +488,7 @@ func (n NotificationImpl) HandleItemUnpin(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleItemUnpin")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -521,7 +522,7 @@ func (n NotificationImpl) HandleNudgePublish(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgePublish")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -558,7 +559,7 @@ func (n NotificationImpl) HandleNudgeDelete(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeDelete")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -595,7 +596,7 @@ func (n NotificationImpl) HandleNudgeResolve(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeResolve")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -632,7 +633,7 @@ func (n NotificationImpl) HandleNudgeUnresolve(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeUnresolve")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -669,7 +670,7 @@ func (n NotificationImpl) HandleNudgeHide(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeHide")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -703,7 +704,7 @@ func (n NotificationImpl) HandleNudgeShow(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeShow")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -737,7 +738,7 @@ func (n NotificationImpl) HandleActionPublish(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleActionPublish")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -770,7 +771,7 @@ func (n NotificationImpl) HandleActionDelete(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleActionDelete")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -803,7 +804,7 @@ func (n NotificationImpl) HandleMessagePost(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleMessagePost")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -836,7 +837,7 @@ func (n NotificationImpl) HandleMessageDelete(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleMessageDelete")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -869,7 +870,7 @@ func (n NotificationImpl) HandleIncomingEvent(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleIncomingEvent")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -905,7 +906,7 @@ func (n NotificationImpl) HandleSendNotification(
 ) error {
 	ctx, span := tracer.Start(ctx, "HandleSendNotification")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -926,7 +927,7 @@ func (n NotificationImpl) HandleSendNotification(
 		return fmt.Errorf("nil pub sub payload")
 	}
 
-	payload := &base.SendNotificationPayload{}
+	payload := &firebasetools.SendNotificationPayload{}
 	err = json.Unmarshal(m.Message.Data, payload)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -962,7 +963,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 ) error {
 	ctx, span := tracer.Start(ctx, "NotifyItemUpdate")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -994,11 +995,11 @@ func (n NotificationImpl) NotifyItemUpdate(
 		return fmt.Errorf("can't unmarshal item from pubsub data: %w", err)
 	}
 	// include notifications for persistent items
-	var notification *base.FirebaseSimpleNotificationInput
+	var notification *firebasetools.FirebaseSimpleNotificationInput
 	iconURL := common.DefaultIconPath
 	if item.Persistent && includeNotification {
 		// also include a notification
-		notification = &base.FirebaseSimpleNotificationInput{
+		notification = &firebasetools.FirebaseSimpleNotificationInput{
 			Title:    item.Tagline,
 			Body:     item.Summary,
 			ImageURL: &iconURL,
@@ -1076,7 +1077,7 @@ func (n NotificationImpl) UpdateInbox(
 ) error {
 	ctx, span := tracer.Start(ctx, "UpdateInbox")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1124,7 +1125,7 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 ) error {
 	ctx, span := tracer.Start(ctx, "NotifyNudgeUpdate")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1164,18 +1165,18 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		imageURL = link.Thumbnail
 	}
 
-	var notification *base.FirebaseSimpleNotificationInput
+	var notification *firebasetools.FirebaseSimpleNotificationInput
 
 	switch sender {
 	case nudgePublishSender:
-		notification = &base.FirebaseSimpleNotificationInput{
+		notification = &firebasetools.FirebaseSimpleNotificationInput{
 			Title:    nudge.Title,
 			Body:     nudge.NotificationBody.PublishMessage,
 			ImageURL: &imageURL,
 		}
 
 	case nudgeResolveSender:
-		notification = &base.FirebaseSimpleNotificationInput{
+		notification = &firebasetools.FirebaseSimpleNotificationInput{
 			Title:    nudge.Title,
 			Body:     nudge.NotificationBody.ResolveMessage,
 			ImageURL: &imageURL,
@@ -1217,7 +1218,7 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 ) error {
 	ctx, span := tracer.Start(ctx, "NotifyInboxCountUpdate")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1244,7 +1245,7 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 		},
 	}
 
-	notification := &base.FirebaseSimpleNotificationInput{
+	notification := &firebasetools.FirebaseSimpleNotificationInput{
 		Title: "Be.Well Inbox",
 		Body:  fmt.Sprintf("You have %v unread notification(s).", count),
 	}
@@ -1287,11 +1288,11 @@ func (n NotificationImpl) SendNotificationViaFCM(
 	uids []string,
 	sender string,
 	pl dto.NotificationEnvelope,
-	notification *base.FirebaseSimpleNotificationInput,
+	notification *firebasetools.FirebaseSimpleNotificationInput,
 ) error {
 	ctx, span := tracer.Start(ctx, "SendNotificationViaFCM")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1326,12 +1327,12 @@ func (n NotificationImpl) SendNotificationViaFCM(
 		return fmt.Errorf(
 			"can't send element that failed validation over FCM: %w", err)
 	}
-	payload := base.SendNotificationPayload{
+	payload := firebasetools.SendNotificationPayload{
 		RegistrationTokens: tokens,
 		Data: map[string]string{
 			sender: string(marshalled),
 		},
-		Notification: &base.FirebaseSimpleNotificationInput{
+		Notification: &firebasetools.FirebaseSimpleNotificationInput{
 			Title:    notification.Title,
 			Body:     notification.Body,
 			Data:     notification.Data,
@@ -1354,7 +1355,7 @@ func (n NotificationImpl) SendEmail(
 ) error {
 	ctx, span := tracer.Start(ctx, "SendEmail")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)

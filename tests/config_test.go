@@ -17,6 +17,8 @@ import (
 	"github.com/imroc/req"
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -79,7 +81,7 @@ func GetTestAction() feedlib.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: GetTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		ActionType:     feedlib.ActionTypePrimary,
 		Handling:       feedlib.HandlingFullPage,
 	}
@@ -105,7 +107,7 @@ func getTestItem() feedlib.Item {
 		Persistent:     true,
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
@@ -114,15 +116,15 @@ func getTestItem() feedlib.Item {
 		Text:           "This bot can speak",
 		TextType:       feedlib.TextTypePlain,
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
+			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", feedlib.LogoURL),
 		},
 		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 				ActionType:     feedlib.ActionTypeSecondary,
 				Handling:       feedlib.HandlingFullPage,
 			},
@@ -130,7 +132,7 @@ func getTestItem() feedlib.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 				ActionType:     feedlib.ActionTypePrimary,
 				Handling:       feedlib.HandlingInline,
 			},
@@ -163,12 +165,12 @@ func getTestItem() feedlib.Item {
 	}
 }
 
-func GetInterserviceClient(t *testing.T, rootDomain string) *base.InterServiceClient {
-	service := base.ISCService{
+func GetInterserviceClient(t *testing.T, rootDomain string) *interserviceclient.InterServiceClient {
+	service := interserviceclient.ISCService{
 		Name:       "feed",
 		RootDomain: rootDomain,
 	}
-	isc, err := base.NewInterserviceClient(service)
+	isc, err := interserviceclient.NewInterserviceClient(service)
 	assert.Nil(t, err)
 	assert.NotNil(t, isc)
 	return isc
@@ -201,7 +203,7 @@ func getGraphQLHeaders(t *testing.T) map[string]string {
 
 func GetBearerTokenHeader(t *testing.T) string {
 	ctx := context.Background()
-	user, err := base.GetOrCreateFirebaseUser(ctx, converterandformatter.TestUserEmail)
+	user, err := firebasetools.GetOrCreateFirebaseUser(ctx, converterandformatter.TestUserEmail)
 	if err != nil {
 		t.Errorf("can't get or create firebase user: %s", err)
 		return ""
@@ -212,7 +214,7 @@ func GetBearerTokenHeader(t *testing.T) string {
 		return ""
 	}
 
-	customToken, err := base.CreateFirebaseCustomToken(ctx, user.UID)
+	customToken, err := firebasetools.CreateFirebaseCustomToken(ctx, user.UID)
 	if err != nil {
 		t.Errorf("can't create custom token: %s", err)
 		return ""
@@ -223,7 +225,7 @@ func GetBearerTokenHeader(t *testing.T) string {
 		return ""
 	}
 
-	idTokens, err := base.AuthenticateCustomFirebaseToken(customToken)
+	idTokens, err := firebasetools.AuthenticateCustomFirebaseToken(customToken)
 	if err != nil {
 		t.Errorf("can't authenticate custom token: %s", err)
 		return ""
@@ -245,7 +247,7 @@ func testNudge() *feedlib.Nudge {
 		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		},
 		Text: ksuid.New().String(),
 		Actions: []feedlib.Action{

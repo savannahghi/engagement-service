@@ -10,6 +10,7 @@ import (
 
 	"github.com/casbin/casbin/v2"
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/profileutils"
 )
 
 var (
@@ -35,7 +36,7 @@ func initEnforcer() {
 }
 
 // CheckPemissions is used to check whether the permissions of a subject are set
-func CheckPemissions(subject string, input base.PermissionInput) (bool, error) {
+func CheckPemissions(subject string, input profileutils.PermissionInput) (bool, error) {
 
 	ok, err := enforcer.Enforce(subject, input.Resource, input.Action)
 	if err != nil {
@@ -48,7 +49,7 @@ func CheckPemissions(subject string, input base.PermissionInput) (bool, error) {
 }
 
 // CheckAuthorization is used to check the user permissions
-func CheckAuthorization(subject string, permission base.PermissionInput) (bool, error) {
+func CheckAuthorization(subject string, permission profileutils.PermissionInput) (bool, error) {
 	isAuthorized, err := CheckPemissions(subject, permission)
 	if err != nil {
 		return false, fmt.Errorf("internal server error: can't authorize user: %w", err)
@@ -66,7 +67,7 @@ func CheckAuthorization(subject string, permission base.PermissionInput) (bool, 
 // currently only known internal anonymous users and external API Integrations emails are checked, internal and default logged in users
 // have access by default.
 // for subjects identified by their phone number normalize the phone and omit the first (+) character
-func IsAuthorized(user *base.UserInfo, permission base.PermissionInput) (bool, error) {
+func IsAuthorized(user *profileutils.UserInfo, permission profileutils.PermissionInput) (bool, error) {
 	if user.PhoneNumber != "" && converterandformatter.StringSliceContains(base.AuthorizedPhones, user.PhoneNumber) {
 		return CheckAuthorization(user.PhoneNumber[1:], permission)
 	}

@@ -20,7 +20,7 @@ const waitSeconds = 30
 
 func main() {
 	ctx := context.Background()
-	err := base.Sentry()
+	err := serverutils.Sentry()
 	if err != nil {
 		serverutils.LogStartupError(ctx, err)
 	}

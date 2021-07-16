@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -161,7 +161,7 @@ func TestService_AccessToken(t *testing.T) {
 		{
 			name: "valid case",
 			args: args{
-				ctx: base.GetAuthenticatedContext(t),
+				ctx: firebasetools.GetAuthenticatedContext(t),
 			},
 			wantErr: false,
 		},

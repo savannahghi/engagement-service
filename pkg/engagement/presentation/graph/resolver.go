@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"firebase.google.com/go/auth"
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
@@ -52,7 +52,7 @@ func (r Resolver) checkPreconditions() {
 }
 
 func (r Resolver) getLoggedInUserUID(ctx context.Context) (string, error) {
-	authToken, err := base.GetUserTokenFromContext(ctx)
+	authToken, err := firebasetools.GetUserTokenFromContext(ctx)
 	if err != nil {
 		return "", fmt.Errorf("auth token not found in context: %w", err)
 	}
@@ -61,7 +61,7 @@ func (r Resolver) getLoggedInUserUID(ctx context.Context) (string, error) {
 
 // CheckUserTokenInContext ensures that the context has a valid Firebase auth token
 func (r *Resolver) CheckUserTokenInContext(ctx context.Context) *auth.Token {
-	token, err := base.GetUserTokenFromContext(ctx)
+	token, err := firebasetools.GetUserTokenFromContext(ctx)
 	if err != nil {
 		log.Panicf("graph.Resolver: context user token is nil")
 	}

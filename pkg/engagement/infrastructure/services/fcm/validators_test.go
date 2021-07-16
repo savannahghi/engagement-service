@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 )
 
@@ -72,19 +72,19 @@ func Test_validateFCMData(t *testing.T) {
 	}
 }
 
-func GetSendNotificationPayload() *base.SendNotificationPayload {
+func GetSendNotificationPayload() *firebasetools.SendNotificationPayload {
 
 	img := "https://www.wxpr.org/sites/wxpr/files/styles/medium/public/202007/chipmunk-5401165_1920.jpg"
 	key := uuid.New().String()
 	fakeToken := uuid.New().String()
 	pckg := "video"
 
-	return &base.SendNotificationPayload{
+	return &firebasetools.SendNotificationPayload{
 		RegistrationTokens: []string{fakeToken},
 		Data: map[string]string{
 			"some": "data",
 		},
-		Notification: &base.FirebaseSimpleNotificationInput{
+		Notification: &firebasetools.FirebaseSimpleNotificationInput{
 			Title:    "Test Notification",
 			Body:     "From Integration Tests",
 			ImageURL: &img,
@@ -92,7 +92,7 @@ func GetSendNotificationPayload() *base.SendNotificationPayload {
 				"more": "data",
 			},
 		},
-		Android: &base.FirebaseAndroidConfigInput{
+		Android: &firebasetools.FirebaseAndroidConfigInput{
 			Priority:              "high",
 			CollapseKey:           &key,
 			RestrictedPackageName: &pckg,
@@ -126,7 +126,7 @@ func TestValidateSendNotificationPayload(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *base.SendNotificationPayload
+		want    *firebasetools.SendNotificationPayload
 		wantErr bool
 	}{
 		{

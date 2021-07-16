@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 )
 
-func (r *mutationResolver) Upload(ctx context.Context, input base.UploadInput) (*base.Upload, error) {
+func (r *mutationResolver) Upload(ctx context.Context, input profileutils.UploadInput) (*profileutils.Upload, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
@@ -31,7 +31,7 @@ func (r *mutationResolver) Upload(ctx context.Context, input base.UploadInput) (
 	return upload, nil
 }
 
-func (r *queryResolver) FindUploadByID(ctx context.Context, id string) (*base.Upload, error) {
+func (r *queryResolver) FindUploadByID(ctx context.Context, id string) (*profileutils.Upload, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()

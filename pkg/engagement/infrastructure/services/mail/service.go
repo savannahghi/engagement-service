@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -90,7 +89,7 @@ func NewService(repository repository.Repository) *Service {
 	return &Service{
 		Mg:                mg,
 		From:              from,
-		SendInBlueAPIKey:  base.MustGetEnvVar(SendInBlueAPIKeyEnvVarName),
+		SendInBlueAPIKey:  serverutils.MustGetEnvVar(SendInBlueAPIKeyEnvVarName),
 		SendInBlueEnabled: sendInBlueEnabled,
 		Repository:        repository,
 	}

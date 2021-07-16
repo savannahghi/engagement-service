@@ -23,12 +23,16 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/base"
+
+	"github.com/savannahghi/interserviceclient"
 	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -86,14 +90,14 @@ func startTestServer(ctx context.Context) (*http.Server, string, error) {
 	return srv, baseURL, nil
 }
 
-func onboardingISCClient(t *testing.T) *base.InterServiceClient {
-	deps, err := base.LoadDepsFromYAML()
+func onboardingISCClient(t *testing.T) *interserviceclient.InterServiceClient {
+	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
 		return nil
 	}
 
-	profileClient, err := base.SetupISCclient(*deps, "profile")
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
 		return nil
@@ -106,7 +110,7 @@ func RegisterPushToken(
 	ctx context.Context,
 	t *testing.T,
 	UID string,
-	onboardingClient *base.InterServiceClient,
+	onboardingClient *interserviceclient.InterServiceClient,
 ) (bool, error) {
 	token := "random"
 	if onboardingClient == nil {
@@ -221,7 +225,7 @@ func TestRouter(t *testing.T) {
 		{
 			name: "default case - should succeed",
 			args: args{
-				ctx: base.GetAuthenticatedContext(t),
+				ctx: firebasetools.GetAuthenticatedContext(t),
 			},
 			wantErr: false,
 		},
@@ -268,12 +272,12 @@ func TestHealthStatusCheck(t *testing.T) {
 }
 
 func TestRoutes(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	router, err := presentation.Router(ctx)
 	assert.Nil(t, err)
 	assert.NotNil(t, router)
 
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	_, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -679,12 +683,15 @@ func TestGetFeed(t *testing.T) {
 		return
 	}
 
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -902,12 +909,15 @@ func TestGetFeed(t *testing.T) {
 }
 
 func TestGetFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1034,12 +1044,15 @@ func TestGetFeedItem(t *testing.T) {
 }
 
 func TestGetNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1165,12 +1178,15 @@ func TestGetNudge(t *testing.T) {
 }
 
 func TestGetAction(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1296,12 +1312,15 @@ func TestGetAction(t *testing.T) {
 }
 
 func TestPublishFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1418,12 +1437,15 @@ func TestPublishFeedItem(t *testing.T) {
 }
 
 func TestDeleteFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1549,12 +1571,15 @@ func TestDeleteFeedItem(t *testing.T) {
 }
 
 func TestDeleteNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1680,12 +1705,15 @@ func TestDeleteNudge(t *testing.T) {
 }
 
 func TestDeleteAction(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1811,12 +1839,15 @@ func TestDeleteAction(t *testing.T) {
 }
 
 func TestPostMessage(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -1951,12 +1982,15 @@ func TestPostMessage(t *testing.T) {
 }
 
 func TestDeleteMessage(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2100,12 +2134,15 @@ func TestDeleteMessage(t *testing.T) {
 }
 
 func TestProcessEvent(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2222,12 +2259,15 @@ func TestProcessEvent(t *testing.T) {
 }
 
 func TestPublishNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2344,12 +2384,15 @@ func TestPublishNudge(t *testing.T) {
 }
 
 func TestResolveNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2475,12 +2518,15 @@ func TestResolveNudge(t *testing.T) {
 }
 
 func TestUnresolveNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2606,12 +2652,15 @@ func TestUnresolveNudge(t *testing.T) {
 }
 
 func TestShowNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2737,12 +2786,15 @@ func TestShowNudge(t *testing.T) {
 }
 
 func TestHideNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2868,12 +2920,15 @@ func TestHideNudge(t *testing.T) {
 }
 
 func TestPublishAction(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -2990,12 +3045,15 @@ func TestPublishAction(t *testing.T) {
 }
 
 func TestResolveFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -3121,12 +3179,15 @@ func TestResolveFeedItem(t *testing.T) {
 }
 
 func TestUnresolveFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -3252,12 +3313,15 @@ func TestUnresolveFeedItem(t *testing.T) {
 }
 
 func TestPinFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -3383,12 +3447,15 @@ func TestPinFeedItem(t *testing.T) {
 }
 
 func TestUnpinFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -3514,12 +3581,15 @@ func TestUnpinFeedItem(t *testing.T) {
 }
 
 func TestHideFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -3645,12 +3715,15 @@ func TestHideFeedItem(t *testing.T) {
 }
 
 func TestShowFeedItem(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -3792,12 +3865,12 @@ func getDefaultHeaders(ctx context.Context, t *testing.T, rootDomain string) map
 	}
 }
 
-func getInterserviceClient(t *testing.T, rootDomain string) *base.InterServiceClient {
-	service := base.ISCService{
+func getInterserviceClient(t *testing.T, rootDomain string) *interserviceclient.InterServiceClient {
+	service := interserviceclient.ISCService{
 		Name:       "feed",
 		RootDomain: rootDomain,
 	}
-	isc, err := base.NewInterserviceClient(service)
+	isc, err := interserviceclient.NewInterserviceClient(service)
 	assert.Nil(t, err)
 	assert.NotNil(t, isc)
 	return isc
@@ -3982,7 +4055,7 @@ func postMessage(
 }
 
 func getTestItem(t *testing.T) *feedlib.Item {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -4002,7 +4075,7 @@ func getTestItem(t *testing.T) *feedlib.Item {
 		Persistent:     true,
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
@@ -4011,15 +4084,15 @@ func getTestItem(t *testing.T) *feedlib.Item {
 		Text:           "This bot can speak",
 		TextType:       feedlib.TextTypePlain,
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
+			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", feedlib.LogoURL),
 		},
 		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 				ActionType:     feedlib.ActionTypeSecondary,
 				Handling:       feedlib.HandlingFullPage,
 			},
@@ -4027,7 +4100,7 @@ func getTestItem(t *testing.T) *feedlib.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 				ActionType:     feedlib.ActionTypePrimary,
 				Handling:       feedlib.HandlingInline,
 			},
@@ -4060,7 +4133,7 @@ func getTestItem(t *testing.T) *feedlib.Item {
 }
 
 func testNudge(t *testing.T) *feedlib.Nudge {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -4081,7 +4154,7 @@ func testNudge(t *testing.T) *feedlib.Nudge {
 		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		},
 		Text: ksuid.New().String(),
 		Actions: []feedlib.Action{
@@ -4125,7 +4198,7 @@ func getTestAction() feedlib.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		ActionType:     feedlib.ActionTypePrimary,
 		Handling:       feedlib.HandlingFullPage,
 	}
@@ -4170,7 +4243,7 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 // 		return
 // 	}
-// 	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+// 	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 // 	if err != nil {
 // 		t.Errorf("cant get authenticated context from UID: %v", err)
 // 		return
@@ -5390,7 +5463,7 @@ func TestPostUpload(t *testing.T) {
 	}
 
 	b64 := base64.StdEncoding.EncodeToString(imgData)
-	uploadInput := base.UploadInput{
+	uploadInput := profileutils.UploadInput{
 		Title:       itemID,
 		ContentType: "image/png",
 		Language:    "en",
@@ -5494,7 +5567,7 @@ func TestPostUpload(t *testing.T) {
 
 			if resp.StatusCode == tt.wantStatus && tt.wantStatus == http.StatusOK {
 				// find the upload again
-				upload := &base.Upload{}
+				upload := &profileutils.Upload{}
 				err = json.Unmarshal(data, &upload)
 				if err != nil {
 					t.Errorf("can't unmarshal returned upload to JSON: %v", err)
@@ -5532,7 +5605,7 @@ func TestPostUpload(t *testing.T) {
 					t.Errorf("can't read request body: %s", err)
 					return
 				}
-				fetchedUpload := base.Upload{}
+				fetchedUpload := profileutils.Upload{}
 				err = json.Unmarshal(uploadData, &fetchedUpload)
 				if err != nil {
 					t.Errorf("can't unmarshal returned upload to JSON: %v", err)
@@ -5585,12 +5658,15 @@ func resolveTestNudge(
 }
 
 func TestResolveDefaultNudge(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -6638,7 +6714,7 @@ func TestGetMarketingData(t *testing.T) {
 // }
 
 func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
-	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, _, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)

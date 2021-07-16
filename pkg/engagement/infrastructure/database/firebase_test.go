@@ -64,7 +64,7 @@ func getTestAction() feedlib.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		ActionType:     feedlib.ActionTypePrimary,
 		Handling:       feedlib.HandlingFullPage,
 	}
@@ -78,7 +78,7 @@ func testNudge() *feedlib.Nudge {
 		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		},
 		Text: ksuid.New().String(),
 		Actions: []feedlib.Action{
@@ -1566,7 +1566,7 @@ func getTestItem() feedlib.Item {
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
 		Icon: feedlib.GetPNGImageLink(
-			base.LogoURL, "title", "description", base.BlankImageURL),
+			feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		Author:    "Bot 1",
 		Tagline:   "Bot speaks...",
 		Label:     "DRUGS",
@@ -1576,7 +1576,7 @@ func getTestItem() feedlib.Item {
 		TextType:  feedlib.TextTypePlain,
 		Links: []feedlib.Link{
 			feedlib.GetYoutubeVideoLink(
-				sampleVideoURL, "title", "description", base.BlankImageURL),
+				sampleVideoURL, "title", "description", feedlib.BlankImageURL),
 		},
 		Actions: []feedlib.Action{
 			{
@@ -1584,7 +1584,7 @@ func getTestItem() feedlib.Item {
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
 				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL, "title", "description", base.BlankImageURL),
+					feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				ActionType: feedlib.ActionTypeSecondary,
 				Handling:   feedlib.HandlingFullPage,
 			},
@@ -1593,7 +1593,7 @@ func getTestItem() feedlib.Item {
 				SequenceNumber: 1,
 				Name:           "First action",
 				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL, "title", "description", base.BlankImageURL),
+					feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				ActionType: feedlib.ActionTypePrimary,
 				Handling:   feedlib.HandlingInline,
 			},

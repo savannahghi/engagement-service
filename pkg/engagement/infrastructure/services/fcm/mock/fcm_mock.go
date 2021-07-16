@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
 )
 
 // FakeServiceFcm simulates the behavior of our FCM push implementation
@@ -11,7 +11,7 @@ type FakeServiceFcm struct {
 	PushFn func(
 		ctx context.Context,
 		sender string,
-		payload base.SendNotificationPayload,
+		payload firebasetools.SendNotificationPayload,
 	) error
 }
 
@@ -21,7 +21,7 @@ type FakeServiceFcm struct {
 func (f *FakeServiceFcm) Push(
 	ctx context.Context,
 	sender string,
-	payload base.SendNotificationPayload,
+	payload firebasetools.SendNotificationPayload,
 ) error {
 	return f.PushFn(ctx, sender, payload)
 }

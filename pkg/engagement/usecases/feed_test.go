@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -131,33 +131,23 @@ func getTestItem() feedlib.Item {
 		Persistent:     true,
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
-		Icon: feedlib.GetPNGImageLink(
-			base.LogoURL,
-			"title",
-			"description",
-			base.BlankImageURL,
-		),
-		Author:    "Bot 1",
-		Tagline:   "Bot speaks...",
-		Label:     "DRUGS",
-		Timestamp: time.Now(),
-		Summary:   "I am a bot...",
-		Text:      "This bot can speak",
-		TextType:  feedlib.TextTypePlain,
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
+		Author:         "Bot 1",
+		Tagline:        "Bot speaks...",
+		Label:          "DRUGS",
+		Timestamp:      time.Now(),
+		Summary:        "I am a bot...",
+		Text:           "This bot can speak",
+		TextType:       feedlib.TextTypePlain,
 		Links: []feedlib.Link{
-			feedlib.GetYoutubeVideoLink(sampleVideoURL, "title", "description", base.BlankImageURL),
+			feedlib.GetYoutubeVideoLink(sampleVideoURL, "title", "description", feedlib.BlankImageURL),
 		},
 		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL,
-					"title",
-					"description",
-					base.BlankImageURL,
-				),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				ActionType:     feedlib.ActionTypeSecondary,
 				Handling:       feedlib.HandlingFullPage,
 				AllowAnonymous: false,
@@ -166,12 +156,7 @@ func getTestItem() feedlib.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL,
-					"title",
-					"description",
-					base.BlankImageURL,
-				),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				ActionType:     feedlib.ActionTypePrimary,
 				Handling:       feedlib.HandlingInline,
 				AllowAnonymous: true,
@@ -269,48 +254,33 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		Persistent:     true,
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
-		Icon: feedlib.GetPNGImageLink(
-			base.LogoURL,
-			"title",
-			"description",
-			base.BlankImageURL,
-		),
-		Author:    "Bot 1",
-		Tagline:   "Bot speaks...",
-		Label:     "DRUGS",
-		Timestamp: time.Now(),
-		Summary:   "I am a bot...",
-		Text:      "This bot can speak",
-		TextType:  feedlib.TextTypeMarkdown,
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
+		Author:         "Bot 1",
+		Tagline:        "Bot speaks...",
+		Label:          "DRUGS",
+		Timestamp:      time.Now(),
+		Summary:        "I am a bot...",
+		Text:           "This bot can speak",
+		TextType:       feedlib.TextTypeMarkdown,
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		},
 		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL,
-					"title",
-					"description",
-					base.BlankImageURL,
-				),
-				ActionType: feedlib.ActionTypeSecondary,
-				Handling:   feedlib.HandlingFullPage,
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
+				ActionType:     feedlib.ActionTypeSecondary,
+				Handling:       feedlib.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL,
-					"title",
-					"description",
-					base.BlankImageURL,
-				),
-				ActionType: feedlib.ActionTypePrimary,
-				Handling:   feedlib.HandlingInline,
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
+				ActionType:     feedlib.ActionTypePrimary,
+				Handling:       feedlib.HandlingInline,
 			},
 		},
 		Conversations: []feedlib.Message{
@@ -432,7 +402,7 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 		Status:         feedlib.StatusPending,
 		Title:          "Update your profile!",
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		},
 		Text: "An up to date profile will help us serve you better!",
 		Actions: []feedlib.Action{
@@ -440,14 +410,9 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL,
-					"title",
-					"description",
-					base.BlankImageURL,
-				),
-				ActionType: feedlib.ActionTypePrimary,
-				Handling:   feedlib.HandlingInline,
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
+				ActionType:     feedlib.ActionTypePrimary,
+				Handling:       feedlib.HandlingInline,
 			},
 		},
 		Groups: []string{
@@ -539,12 +504,7 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Name:           "ACTION_NAME",
-		Icon: feedlib.GetPNGImageLink(
-			base.LogoURL,
-			"title",
-			"description",
-			base.BlankImageURL,
-		),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		ActionType:     feedlib.ActionTypeSecondary,
 		Handling:       feedlib.HandlingFullPage,
 		AllowAnonymous: false,
@@ -616,7 +576,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
 				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL, "title", "description", base.BlankImageURL),
+					feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				ActionType:     feedlib.ActionTypeSecondary,
 				Handling:       feedlib.HandlingFullPage,
 				AllowAnonymous: false,
@@ -626,7 +586,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				SequenceNumber: 1,
 				Name:           "First action",
 				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL, "title", "description", base.BlankImageURL),
+					feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				ActionType:     feedlib.ActionTypePrimary,
 				Handling:       feedlib.HandlingInline,
 				AllowAnonymous: false,
@@ -641,7 +601,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Title:          "Update your profile!",
 				Links: []feedlib.Link{
 					feedlib.GetPNGImageLink(
-						base.LogoURL, "title", "description", base.BlankImageURL),
+						feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				},
 				Text: "An up to date profile will help us serve you better!",
 				Actions: []feedlib.Action{
@@ -650,7 +610,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "First action",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypePrimary,
 						Handling:       feedlib.HandlingInline,
 						AllowAnonymous: false,
@@ -681,10 +641,10 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 				Status:         feedlib.StatusPending,
 				Visibility:     feedlib.VisibilityShow,
 				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL, "title", "description", base.BlankImageURL),
+					feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				Links: []feedlib.Link{
 					feedlib.GetPNGImageLink(
-						base.LogoURL, "title", "description", base.BlankImageURL),
+						feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				},
 				Author:    "Bot 1",
 				Tagline:   "Bot speaks...",
@@ -699,7 +659,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypeSecondary,
 						Handling:       feedlib.HandlingFullPage,
 						AllowAnonymous: false,
@@ -709,7 +669,7 @@ func TestFeed_ValidateAndUnmarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "First action",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypePrimary,
 						Handling:       feedlib.HandlingInline,
 						AllowAnonymous: false,
@@ -831,7 +791,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypeSecondary,
 						Handling:       feedlib.HandlingFullPage,
 						AllowAnonymous: false,
@@ -841,7 +801,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "First action",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypePrimary,
 						Handling:       feedlib.HandlingInline,
 						AllowAnonymous: false,
@@ -856,7 +816,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Title:          "Update your profile!",
 						Links: []feedlib.Link{
 							feedlib.GetPNGImageLink(
-								base.LogoURL, "title", "description", base.BlankImageURL),
+								feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						},
 						Text: "Help us serve you better!",
 						Actions: []feedlib.Action{
@@ -865,7 +825,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								SequenceNumber: 1,
 								Name:           "First action",
 								Icon: feedlib.GetPNGImageLink(
-									base.LogoURL, "title", "description", base.BlankImageURL),
+									feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypePrimary,
 								Handling:       feedlib.HandlingInline,
 								AllowAnonymous: false,
@@ -896,10 +856,10 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 						Status:         feedlib.StatusPending,
 						Visibility:     feedlib.VisibilityShow,
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						Links: []feedlib.Link{
 							feedlib.GetPNGImageLink(
-								base.LogoURL, "title", "description", base.BlankImageURL),
+								feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						},
 						Author:    "Bot 1",
 						Tagline:   "Bot speaks...",
@@ -914,7 +874,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								SequenceNumber: 1,
 								Name:           "ACTION_NAME",
 								Icon: feedlib.GetPNGImageLink(
-									base.LogoURL, "title", "description", base.BlankImageURL),
+									feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -924,7 +884,7 @@ func TestFeed_ValidateAndMarshal(t *testing.T) {
 								SequenceNumber: 1,
 								Name:           "First action",
 								Icon: feedlib.GetPNGImageLink(
-									base.LogoURL, "title", "description", base.BlankImageURL),
+									feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypePrimary,
 								Handling:       feedlib.HandlingInline,
 								AllowAnonymous: false,
@@ -1013,7 +973,7 @@ func TestAction_ValidateAndMarshal(t *testing.T) {
 				SequenceNumber: 1,
 				Name:           "First action",
 				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL, "title", "description", base.BlankImageURL),
+					feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				ActionType: feedlib.ActionTypePrimary,
 				Handling:   feedlib.HandlingInline,
 			},
@@ -1079,7 +1039,7 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 				Title:          "Update your profile!",
 				Links: []feedlib.Link{
 					feedlib.GetPNGImageLink(
-						base.LogoURL, "title", "description", base.BlankImageURL),
+						feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				},
 				Text: "An up to date profile will help us serve you better!",
 				Actions: []feedlib.Action{
@@ -1088,7 +1048,7 @@ func TestNudge_ValidateAndMarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "First action",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypePrimary,
 						Handling:       feedlib.HandlingInline,
 						AllowAnonymous: false,
@@ -1185,7 +1145,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				Status:         feedlib.StatusPending,
 				Visibility:     feedlib.VisibilityShow,
 				Icon: feedlib.GetPNGImageLink(
-					base.LogoURL, "title", "description", base.BlankImageURL),
+					feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				Author:    "Bot 1",
 				Tagline:   "Bot speaks...",
 				Label:     "DRUGS",
@@ -1195,7 +1155,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 				TextType:  feedlib.TextTypeMarkdown,
 				Links: []feedlib.Link{
 					feedlib.GetPNGImageLink(
-						base.LogoURL, "title", "description", base.BlankImageURL),
+						feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 				},
 				Actions: []feedlib.Action{
 					{
@@ -1203,7 +1163,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "ACTION_NAME",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypeSecondary,
 						Handling:       feedlib.HandlingFullPage,
 						AllowAnonymous: false,
@@ -1213,7 +1173,7 @@ func TestItem_ValidateAndMarshal(t *testing.T) {
 						SequenceNumber: 1,
 						Name:           "First action",
 						Icon: feedlib.GetPNGImageLink(
-							base.LogoURL, "title", "description", base.BlankImageURL),
+							feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 						ActionType:     feedlib.ActionTypePrimary,
 						Handling:       feedlib.HandlingInline,
 						AllowAnonymous: false,
@@ -1691,7 +1651,7 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 }
 
 func TestFeed_GetItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -1766,7 +1726,7 @@ func TestFeed_GetItem(t *testing.T) {
 }
 
 func TestFeed_GetNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -1833,7 +1793,7 @@ func TestFeed_GetNudge(t *testing.T) {
 }
 
 func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	if err != nil {
 		t.Errorf("failed to initialize a new feed")
@@ -1905,7 +1865,7 @@ func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 	}
 }
 func TestFeed_GetAction(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -1971,7 +1931,7 @@ func TestFeed_GetAction(t *testing.T) {
 
 func TestFeed_PublishFeedItem(t *testing.T) {
 
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2042,7 +2002,7 @@ func TestFeed_PublishFeedItem(t *testing.T) {
 }
 
 func TestFeed_DeleteFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2103,7 +2063,7 @@ func TestFeed_DeleteFeedItem(t *testing.T) {
 }
 
 func TestFeed_ResolveFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2166,7 +2126,7 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 }
 
 func TestFeed_UnresolveFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2229,7 +2189,7 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 }
 
 func TestFeed_PinFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2287,7 +2247,7 @@ func TestFeed_PinFeedItem(t *testing.T) {
 }
 
 func TestFeed_UnpinFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2345,7 +2305,7 @@ func TestFeed_UnpinFeedItem(t *testing.T) {
 }
 
 func TestFeed_HideFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2403,7 +2363,7 @@ func TestFeed_HideFeedItem(t *testing.T) {
 }
 
 func TestFeed_ShowFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2461,7 +2421,7 @@ func TestFeed_ShowFeedItem(t *testing.T) {
 }
 
 func TestFeed_PublishNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2519,7 +2479,7 @@ func TestFeed_PublishNudge(t *testing.T) {
 }
 
 func TestFeed_DeleteNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2577,7 +2537,7 @@ func TestFeed_DeleteNudge(t *testing.T) {
 }
 
 func TestFeed_ResolveNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2632,7 +2592,7 @@ func TestFeed_ResolveNudge(t *testing.T) {
 }
 
 func TestFeed_UnresolveNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2692,7 +2652,7 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 }
 
 func TestFeed_HideNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2747,7 +2707,7 @@ func TestFeed_HideNudge(t *testing.T) {
 }
 
 func TestFeed_ShowNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2802,7 +2762,7 @@ func TestFeed_ShowNudge(t *testing.T) {
 }
 
 func TestFeed_PublishAction(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2862,7 +2822,7 @@ func TestFeed_PublishAction(t *testing.T) {
 }
 
 func TestFeed_DeleteAction(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -2919,7 +2879,7 @@ func TestFeed_DeleteAction(t *testing.T) {
 }
 
 func TestFeed_PostMessage(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -3016,7 +2976,7 @@ func TestFeed_PostMessage(t *testing.T) {
 }
 
 func TestFeed_DeleteMessage(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -3090,7 +3050,7 @@ func TestFeed_DeleteMessage(t *testing.T) {
 }
 
 func TestFeed_ProcessEvent(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -3201,7 +3161,7 @@ func testItem() *feedlib.Item {
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
 		Icon: feedlib.GetPNGImageLink(
-			base.LogoURL, "title", "description", base.BlankImageURL),
+			feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		Author:    ksuid.New().String(),
 		Tagline:   ksuid.New().String(),
 		Label:     ksuid.New().String(),
@@ -3211,7 +3171,7 @@ func testItem() *feedlib.Item {
 		TextType:  feedlib.TextTypeMarkdown,
 		Links: []feedlib.Link{
 			feedlib.GetPNGImageLink(
-				base.LogoURL, "title", "description", base.BlankImageURL),
+				feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		},
 		Actions: []feedlib.Action{
 			getTestAction(),
@@ -3272,7 +3232,7 @@ func getTestAction() feedlib.Action {
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
 		Icon: feedlib.GetPNGImageLink(
-			base.LogoURL, "title", "description", base.BlankImageURL),
+			feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		ActionType: feedlib.ActionTypePrimary,
 		Handling:   feedlib.HandlingFullPage,
 	}
@@ -3286,7 +3246,7 @@ func testNudge() *feedlib.Nudge {
 		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 		},
 		Text: ksuid.New().String(),
 		Actions: []feedlib.Action{
@@ -3315,7 +3275,7 @@ func TestLink_ValidateAndUnmarshal(t *testing.T) {
 		LinkType:    feedlib.LinkTypeYoutubeVideo,
 		Title:       "title",
 		Description: "description",
-		Thumbnail:   base.BlankImageURL,
+		Thumbnail:   feedlib.BlankImageURL,
 	}
 	validLinkJSONBytes, err := json.Marshal(validLink)
 	assert.Nil(t, err)
@@ -3328,7 +3288,7 @@ func TestLink_ValidateAndUnmarshal(t *testing.T) {
 		LinkType:    feedlib.LinkTypeYoutubeVideo,
 		Title:       "title",
 		Description: "description",
-		Thumbnail:   base.BlankImageURL,
+		Thumbnail:   feedlib.BlankImageURL,
 	}
 	invalidLinkJSONBytes, err := json.Marshal(invalidVideoLink)
 	assert.Nil(t, err)
@@ -3397,7 +3357,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 				Type:        feedlib.LinkTypeYoutubeVideo,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   base.BlankImageURL,
+				Thumbnail:   feedlib.BlankImageURL,
 			},
 			wantErr: false,
 		},
@@ -3409,7 +3369,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 				Type:        feedlib.LinkTypeYoutubeVideo,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   base.BlankImageURL,
+				Thumbnail:   feedlib.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -3421,7 +3381,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 				Type:        feedlib.LinkTypeYoutubeVideo,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   base.BlankImageURL,
+				Thumbnail:   feedlib.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -3433,7 +3393,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 				Type:        feedlib.LinkTypePngImage,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   base.BlankImageURL,
+				Thumbnail:   feedlib.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -3445,7 +3405,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 				Type:        feedlib.LinkTypePdfDocument,
 				Title:       "title",
 				Description: "description",
-				Thumbnail:   base.BlankImageURL,
+				Thumbnail:   feedlib.BlankImageURL,
 			},
 			wantErr: true,
 		},
@@ -3473,7 +3433,7 @@ func TestLink_ValidateAndMarshal(t *testing.T) {
 }
 
 func TestFeed_Labels(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -3521,7 +3481,7 @@ func TestFeed_Labels(t *testing.T) {
 }
 
 func TestFeed_SaveLabel(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -3564,7 +3524,7 @@ func TestFeed_SaveLabel(t *testing.T) {
 }
 
 func TestFeed_UnreadPersistentItems(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer
@@ -3612,7 +3572,7 @@ func TestFeed_UnreadPersistentItems(t *testing.T) {
 }
 
 func TestFeed_UpdateUnreadPersistentItemsCount(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	agg, err := InitializeTestNewFeed(ctx)
 	assert.Nil(t, err)
 	fl := feedlib.FlavourConsumer

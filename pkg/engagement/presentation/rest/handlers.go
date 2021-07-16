@@ -17,12 +17,12 @@ import (
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 
 	errorcode "github.com/savannahghi/errorcodeutil"
-	"gitlab.slade360emr.com/go/base"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -156,13 +156,13 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 
 	m, err := pubsubtools.VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
-		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(w, errorcode.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 
 	topicID, err := pubsubtools.GetPubSubTopic(m)
 	if err != nil {
-		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(w, errorcode.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 
@@ -170,7 +170,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	var envelope dto.NotificationEnvelope
 	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
-		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(w, errorcode.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 	ctx = addUIDToContext(ctx, envelope.UID)
@@ -181,7 +181,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -191,7 +191,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -201,7 +201,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -211,7 +211,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -221,7 +221,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -231,7 +231,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -241,7 +241,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -251,7 +251,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -261,7 +261,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -271,7 +271,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -281,7 +281,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -291,7 +291,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -301,7 +301,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -311,7 +311,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -321,7 +321,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -331,7 +331,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -341,7 +341,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -351,7 +351,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -361,7 +361,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -371,7 +371,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -381,7 +381,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -391,7 +391,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusBadRequest,
 			)
 			return
@@ -1181,7 +1181,7 @@ func (p PresentationHandlersImpl) Upload() http.HandlerFunc {
 			return
 		}
 
-		uploadInput := base.UploadInput{}
+		uploadInput := profileutils.UploadInput{}
 		err = json.Unmarshal(data, &uploadInput)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1486,7 +1486,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler() http.HandlerFunc {
 			log.Printf("Twilio callback error: %s", err)
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
 			return
@@ -1499,7 +1499,7 @@ func (p PresentationHandlersImpl) GetNotificationHandler() http.HandlerFunc {
 			log.Printf("Twilio callback error: %s", err)
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
 			return
@@ -1527,7 +1527,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler() http.HandlerFunc {
 			log.Printf("Twilio callback error: %s", err)
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
 			return
@@ -1540,7 +1540,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler() http.HandlerFunc {
 			log.Printf("Twilio callback error: %s", err)
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(err),
+				errorcode.ErrorMap(err),
 				http.StatusInternalServerError,
 			)
 			return
@@ -1559,7 +1559,7 @@ func (p PresentationHandlersImpl) GetFallbackHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO ErrorCode and ErrorURL sent here as params
 		// TODO Implement WhatsAPP fallback handler: serverutils.DecodeJSONToTargetStruct(w, r, notificationPayload)
-		// base.ErrorMap(fmt.Errorf("unbound mandatory notification payload fields")),
+		// errorcode.ErrorMap(fmt.Errorf("unbound mandatory notification payload fields")),
 		// serverutils.WriteJSONResponse(w, okResp{Status: "ok"}, http.StatusOK)
 	}
 }
@@ -1586,7 +1586,7 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler() http.Hand
 			payloadRequest.MarketingMessage,
 		)
 		if err != nil {
-			base.RespondWithError(rw, http.StatusInternalServerError, err)
+			errorcode.RespondWithError(rw, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -1606,7 +1606,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 
 		msisdn, err := otp.ValidateSendOTPPayload(w, r)
 		if err != nil {
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 
@@ -1614,7 +1614,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
-				base.ErrorMap(
+				errorcode.ErrorMap(
 					fmt.Errorf("unable to generate and send otp: %v", err),
 				),
 				http.StatusInternalServerError,
@@ -1634,7 +1634,7 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler() http.HandlerFunc {
 
 		payload, err := otp.ValidateGenerateRetryOTPPayload(w, r)
 		if err != nil {
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 		code, err := p.interactor.OTP.GenerateRetryOTP(
@@ -1643,7 +1643,7 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler() http.HandlerFunc {
 			payload.RetryStep,
 		)
 		if err != nil {
-			err := base.ErrorMap(
+			err := errorcode.ErrorMap(
 				fmt.Errorf(
 					"unable to generate and send a fallback OTP: %v",
 					err,
@@ -1664,7 +1664,7 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler() http.HandlerFunc {
 
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, false)
 		if err != nil {
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 		isVerified, err := p.interactor.OTP.VerifyOtp(
@@ -1673,7 +1673,7 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler() http.HandlerFunc {
 			payload.VerificationCode,
 		)
 		if err != nil {
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 		type otpResponse struct {
@@ -1695,7 +1695,7 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler() http.HandlerFunc 
 
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, true)
 		if err != nil {
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 		isVerified, err := p.interactor.OTP.VerifyEmailOtp(
@@ -1704,7 +1704,7 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler() http.HandlerFunc 
 			payload.VerificationCode,
 		)
 		if err != nil {
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 		type otpResponse struct {
@@ -1726,7 +1726,7 @@ func (p PresentationHandlersImpl) SendNotificationHandler() http.HandlerFunc {
 
 		payload, payloadErr := fcm.ValidateSendNotificationPayload(w, r)
 		if payloadErr != nil {
-			base.ReportErr(w, payloadErr, http.StatusBadRequest)
+			errorcode.ReportErr(w, payloadErr, http.StatusBadRequest)
 			return
 		}
 
@@ -1745,11 +1745,11 @@ func (p PresentationHandlersImpl) SendNotificationHandler() http.HandlerFunc {
 			isBadReq := strings.Contains(err.Error(), "http error status: 400")
 
 			if isBadReq {
-				base.ReportErr(w, err, http.StatusBadRequest)
+				errorcode.ReportErr(w, err, http.StatusBadRequest)
 				return
 			}
 
-			base.ReportErr(w, err, http.StatusInternalServerError)
+			errorcode.ReportErr(w, err, http.StatusInternalServerError)
 			return
 		}
 
@@ -1766,7 +1766,7 @@ func (p PresentationHandlersImpl) GetContactLists() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contactLists, err := p.interactor.CRM.GetContactLists()
 		if err != nil {
-			base.RespondWithError(w, http.StatusBadRequest, err)
+			errorcode.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
 		serverutils.WriteJSONResponse(w, contactLists, http.StatusOK)
@@ -1781,7 +1781,7 @@ func (p PresentationHandlersImpl) GetContactListByID() http.HandlerFunc {
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		contactList, err := p.interactor.CRM.GetContactListByID(payload.ListID)
 		if err != nil {
-			base.RespondWithError(w, http.StatusBadRequest, err)
+			errorcode.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
 		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
@@ -1796,7 +1796,7 @@ func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		contactList, err := p.interactor.CRM.GetContactsInAList(payload.ListID)
 		if err != nil {
-			base.RespondWithError(w, http.StatusBadRequest, err)
+			errorcode.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
 		serverutils.WriteJSONResponse(w, contactList, http.StatusOK)
@@ -1817,7 +1817,7 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 			payload.EmailAddress,
 		)
 		if err != nil {
-			base.RespondWithError(w, http.StatusBadRequest, err)
+			errorcode.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
 		resp := map[string]string{"status": "success"}
@@ -1862,7 +1862,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 			payload.PhoneNumber,
 		)
 		if err != nil {
-			base.RespondWithError(w, http.StatusBadRequest, err)
+			errorcode.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
 		name := "Kevin From Be.Well"
@@ -1923,7 +1923,7 @@ func (p PresentationHandlersImpl) GetMarketingData() http.HandlerFunc {
 			payload,
 		)
 		if err != nil {
-			base.RespondWithError(
+			errorcode.RespondWithError(
 				w,
 				http.StatusBadRequest,
 				fmt.Errorf("failed to retrieve data %v", err),
@@ -1976,7 +1976,7 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc
 		ctx := r.Context()
 
 		payload := &dto.MailgunEvent{}
-		base.DecodeJSONToTargetStruct(rw, r, payload)
+		serverutils.DecodeJSONToTargetStruct(rw, r, payload)
 
 		emailLog, err := p.interactor.Mail.UpdateMailgunDeliveryStatus(ctx, payload)
 		if err != nil {
@@ -2007,7 +2007,7 @@ func (p PresentationHandlersImpl) GetSladerData() http.HandlerFunc {
 			return
 		}
 
-		phone, err := base.NormalizeMSISDN(phoneNumber)
+		phone, err := converterandformatter.NormalizeMSISDN(phoneNumber)
 		if err != nil {
 			err := fmt.Errorf("failed to normalize phone number: %s", err)
 			respondWithError(w, http.StatusInternalServerError, err)

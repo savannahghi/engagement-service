@@ -14,8 +14,8 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/profileutils"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/base"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -267,7 +267,7 @@ func (fe FeedUseCaseImpl) GetFeed(
 ) (*domain.Feed, error) {
 	ctx, span := tracer.Start(ctx, "GetFeed")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -317,7 +317,7 @@ func (fe FeedUseCaseImpl) GetThinFeed(
 ) (*domain.Feed, error) {
 	ctx, span := tracer.Start(ctx, "GetThinFeed")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -356,7 +356,7 @@ func (fe FeedUseCaseImpl) GetFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "GetFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -393,7 +393,7 @@ func (fe FeedUseCaseImpl) GetNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetNudge")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -428,7 +428,7 @@ func (fe FeedUseCaseImpl) GetAction(
 ) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "GetAction")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -465,7 +465,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "PublishFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -532,7 +532,7 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -584,7 +584,7 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "ResolveFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -651,7 +651,7 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "PinFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -718,7 +718,7 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "UnpinFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -785,7 +785,7 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "UnresolveFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -852,7 +852,7 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "HideFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -919,7 +919,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 ) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "ShowFeedItem")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -984,7 +984,7 @@ func (fe FeedUseCaseImpl) Labels(
 ) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "Labels")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1010,7 +1010,7 @@ func (fe FeedUseCaseImpl) SaveLabel(
 ) error {
 	ctx, span := tracer.Start(ctx, "SaveLabel")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1035,7 +1035,7 @@ func (fe FeedUseCaseImpl) UnreadPersistentItems(
 ) (int, error) {
 	ctx, span := tracer.Start(ctx, "UnreadPersistentItems")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return 0, fmt.Errorf("unable to get user: %w", err)
@@ -1060,7 +1060,7 @@ func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
 ) error {
 	ctx, span := tracer.Start(ctx, "UpdateUnreadPersistentItemsCount")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1098,7 +1098,7 @@ func (fe FeedUseCaseImpl) PublishNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "PublishNudge")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1164,7 +1164,7 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "ResolveNudge")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1230,7 +1230,7 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "UnresolveNudge")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1296,7 +1296,7 @@ func (fe FeedUseCaseImpl) HideNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "HideNudge")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1361,7 +1361,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "ShowNudge")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1427,7 +1427,7 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteNudge")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1492,7 +1492,7 @@ func (fe FeedUseCaseImpl) PublishAction(
 ) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "PublishAction")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1553,7 +1553,7 @@ func (fe FeedUseCaseImpl) DeleteAction(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteAction")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1605,7 +1605,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 ) (*feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "PostMessage")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -1677,7 +1677,7 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteMessage")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1749,7 +1749,7 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 ) error {
 	ctx, span := tracer.Start(ctx, "ProcessEvent")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
@@ -1826,7 +1826,7 @@ func (fe FeedUseCaseImpl) GetDefaultNudgeByTitle(
 ) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetDefaultNudgeByTitle")
 	defer span.End()
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)

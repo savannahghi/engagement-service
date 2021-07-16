@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/profileutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 )
 
@@ -12,7 +12,7 @@ type FakeServiceOnboarding struct {
 	GetEmailAddressesFn   func(ctx context.Context, uids onboarding.UserUIDs) (map[string][]string, error)
 	GetPhoneNumbersFn     func(ctx context.Context, uids onboarding.UserUIDs) (map[string][]string, error)
 	GetDeviceTokensFn     func(ctx context.Context, uid onboarding.UserUIDs) (map[string][]string, error)
-	GetUserProfileFn      func(ctx context.Context, uid string) (*base.UserProfile, error)
+	GetUserProfileFn      func(ctx context.Context, uid string) (*profileutils.UserProfile, error)
 	IsOptedOutFn          func(ctx context.Context, phoneNumber string) (bool, error)
 	PhonesWithoutOptOutFn func(ctx context.Context, phones []string) ([]string, error)
 }
@@ -33,7 +33,7 @@ func (f *FakeServiceOnboarding) GetDeviceTokens(ctx context.Context, uid onboard
 }
 
 // GetUserProfile ...
-func (f *FakeServiceOnboarding) GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error) {
+func (f *FakeServiceOnboarding) GetUserProfile(ctx context.Context, uid string) (*profileutils.UserProfile, error) {
 	return f.GetUserProfileFn(ctx, uid)
 }
 

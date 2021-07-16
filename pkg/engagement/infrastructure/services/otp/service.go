@@ -12,9 +12,10 @@ import (
 	"github.com/pquerna/otp/totp"
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
@@ -78,7 +79,7 @@ func NewService(
 	sms sms.ServiceSMS,
 	twilio twilio.ServiceTwilio,
 ) *Service {
-	fc := &base.FirebaseClient{}
+	fc := &firebasetools.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
 
@@ -124,7 +125,7 @@ func (s Service) checkPreconditions() {
 }
 
 func (s Service) getOTPCollectionName() string {
-	return base.SuffixCollection(converterandformatter.OTPCollectionName)
+	return firebasetools.SuffixCollection(converterandformatter.OTPCollectionName)
 }
 
 func cleanITPhoneNumber() (*string, error) {
@@ -142,7 +143,7 @@ func (s Service) SendOTP(
 
 	msg := fmt.Sprintf("%s is your Be.Well verification code %s", code, appIdentifier)
 
-	if base.IsKenyanNumber(normalizedPhoneNumber) {
+	if interserviceclient.IsKenyanNumber(normalizedPhoneNumber) {
 		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg, enumutils.SenderIDBewell)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -304,7 +305,7 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 	for _, doc := range docs {
 		otpData := doc.Data()
 		otpData["isValid"] = false
-		err = base.UpdateRecordOnFirestore(
+		err = firebasetools.UpdateRecordOnFirestore(
 			s.firestoreClient, s.getOTPCollectionName(), doc.Ref.ID, otpData)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -351,7 +352,7 @@ func (s Service) VerifyEmailOtp(
 	for _, doc := range docs {
 		otpData := doc.Data()
 		otpData["isValid"] = false
-		err = base.UpdateRecordOnFirestore(
+		err = firebasetools.UpdateRecordOnFirestore(
 			s.firestoreClient, s.getOTPCollectionName(), doc.Ref.ID, otpData)
 		if err != nil {
 			helpers.RecordSpanError(span, err)

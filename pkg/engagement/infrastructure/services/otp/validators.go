@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/savannahghi/errorcodeutil"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
@@ -15,7 +15,7 @@ func ValidateSendOTPPayload(w http.ResponseWriter, r *http.Request) (string, err
 	serverutils.DecodeJSONToTargetStruct(w, r, payload)
 	if payload.Msisdn == "" {
 		err := fmt.Errorf("invalid generate and send otp payload")
-		base.ReportErr(w, err, http.StatusBadRequest)
+		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
 		return "", err
 	}
 	return payload.Msisdn, nil
@@ -27,7 +27,7 @@ func ValidateGenerateRetryOTPPayload(w http.ResponseWriter, r *http.Request) (*d
 	serverutils.DecodeJSONToTargetStruct(w, r, payload)
 	if payload.Msisdn == nil || payload.RetryStep == 0 {
 		err := fmt.Errorf("invalid generate retry and fallback otp payload")
-		base.ReportErr(w, err, http.StatusBadRequest)
+		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
 		return nil, err
 	}
 	return payload, nil
@@ -40,13 +40,13 @@ func ValidateVerifyOTPPayload(w http.ResponseWriter, r *http.Request, isEmail bo
 	if isEmail {
 		if payload.Email == nil || payload.VerificationCode == nil {
 			err := fmt.Errorf("invalid verify otp payload")
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
 			return nil, err
 		}
 	} else {
 		if payload.Msisdn == nil || payload.VerificationCode == nil {
 			err := fmt.Errorf("invalid verify otp payload")
-			base.ReportErr(w, err, http.StatusBadRequest)
+			errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
 			return nil, err
 		}
 	}

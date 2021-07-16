@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
 )
 
 // NotificationEnvelope is used to "wrap" elements with context and metadata
@@ -67,8 +67,8 @@ type Message struct {
 func (c *Message) IsNode() {}
 
 // GetID returns the struct's ID value
-func (c *Message) GetID() base.ID {
-	return base.IDValue(c.ID)
+func (c *Message) GetID() firebasetools.ID {
+	return firebasetools.IDValue(c.ID)
 }
 
 // SetID sets the struct's ID value
@@ -233,8 +233,8 @@ type NPSResponse struct {
 func (e *NPSResponse) IsNode() {}
 
 // GetID returns the struct's ID value
-func (e *NPSResponse) GetID() base.ID {
-	return base.IDValue(e.ID)
+func (e *NPSResponse) GetID() firebasetools.ID {
+	return firebasetools.IDValue(e.ID)
 }
 
 // SetID sets the struct's ID value

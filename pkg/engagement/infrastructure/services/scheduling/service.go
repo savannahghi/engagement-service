@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/api/calendar/v3"
@@ -62,7 +62,7 @@ func NewService() *Service {
 		}
 	}
 
-	fc := &base.FirebaseClient{}
+	fc := &firebasetools.FirebaseClient{}
 	fa, err := fc.InitFirebase()
 	if err != nil {
 

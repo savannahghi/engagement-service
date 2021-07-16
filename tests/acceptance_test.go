@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
 func TestGraphQLProcessEvent(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -129,7 +129,7 @@ func TestGraphQLProcessEvent(t *testing.T) {
 }
 
 func TestGraphQLDeleteMessage(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -256,7 +256,7 @@ func TestGraphQLDeleteMessage(t *testing.T) {
 }
 
 func TestGraphQLPostMessage(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -391,7 +391,7 @@ func TestGraphQLPostMessage(t *testing.T) {
 }
 
 func TestGraphQLHideNudge(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -529,7 +529,7 @@ func TestGraphQLHideNudge(t *testing.T) {
 }
 
 func TestGraphQLShowNudge(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -667,7 +667,7 @@ func TestGraphQLShowNudge(t *testing.T) {
 }
 
 func TestGraphQLResolveFeedItem(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -824,7 +824,7 @@ func TestGraphQLResolveFeedItem(t *testing.T) {
 }
 
 func TestGraphQLUnresolveFeedItem(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -980,7 +980,7 @@ func TestGraphQLUnresolveFeedItem(t *testing.T) {
 	}
 }
 func TestGraphQLPinFeedItem(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -1135,7 +1135,7 @@ func TestGraphQLPinFeedItem(t *testing.T) {
 	}
 }
 func TestGraphQLUnpinFeedItem(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -1290,7 +1290,7 @@ func TestGraphQLUnpinFeedItem(t *testing.T) {
 	}
 }
 func TestGraphQLHideFeedItem(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -1446,7 +1446,7 @@ func TestGraphQLHideFeedItem(t *testing.T) {
 	}
 }
 func TestGraphQLShowFeedItem(t *testing.T) {
-	ctx, authToken := base.GetAuthenticatedContextAndToken(t)
+	ctx, authToken := firebasetools.GetAuthenticatedContextAndToken(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return
@@ -1603,7 +1603,7 @@ func TestGraphQLShowFeedItem(t *testing.T) {
 }
 
 func TestGraphQLGetFeed(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	if ctx == nil {
 		t.Errorf("nil context")
 		return

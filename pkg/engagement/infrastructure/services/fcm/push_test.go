@@ -7,18 +7,18 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 
 	"github.com/rs/xid"
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
 )
 
-func getNotificationPayload(t *testing.T) base.SendNotificationPayload {
+func getNotificationPayload(t *testing.T) firebasetools.SendNotificationPayload {
 	imgURL := "https://example.com/img.png"
-	return base.SendNotificationPayload{
+	return firebasetools.SendNotificationPayload{
 		RegistrationTokens: []string{xid.New().String(), xid.New().String()},
 		Data: map[string]string{
 			xid.New().String(): xid.New().String(),
 			xid.New().String(): xid.New().String(),
 		},
-		Notification: &base.FirebaseSimpleNotificationInput{
+		Notification: &firebasetools.FirebaseSimpleNotificationInput{
 			Title:    xid.New().String(),
 			Body:     xid.New().String(),
 			ImageURL: &imgURL,
@@ -58,7 +58,7 @@ func TestRemotePushService_Push(t *testing.T) {
 	type args struct {
 		ctx                 context.Context
 		sender              string
-		notificationPayload base.SendNotificationPayload
+		notificationPayload firebasetools.SendNotificationPayload
 	}
 	tests := []struct {
 		name    string

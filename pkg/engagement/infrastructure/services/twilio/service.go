@@ -15,8 +15,8 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/kevinburke/twilio-go"
 	"github.com/kevinburke/twilio-go/token"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -261,7 +261,7 @@ func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error
 	defer span.End()
 	s.checkPreconditions()
 
-	uid, err := base.GetLoggedInUserUID(ctx)
+	uid, err := firebasetools.GetLoggedInUserUID(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get logged in user uid: %w", err)

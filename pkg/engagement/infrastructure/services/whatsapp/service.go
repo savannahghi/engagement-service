@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -287,7 +287,7 @@ func (s Service) PhoneNumberVerificationCode(
 	}
 
 	// save Twilio response for audit purposes
-	_, _, err = base.CreateNode(ctx, &target)
+	_, _, err = firebasetools.CreateNode(ctx, &target)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("unable to save Twilio response: %w", err)

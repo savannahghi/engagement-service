@@ -7,13 +7,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 )
 
 func TestPublishFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -230,7 +230,7 @@ func TestPublishFeedItem(t *testing.T) {
 }
 
 func TestDeleteFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -418,7 +418,7 @@ func TestDeleteFeedItem(t *testing.T) {
 }
 
 func TestResolveFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -499,7 +499,7 @@ func TestResolveFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ResolveItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -627,7 +627,7 @@ func TestResolveFeedItem(t *testing.T) {
 }
 
 func TestPinFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -724,7 +724,7 @@ func TestPinFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.PinItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -805,7 +805,7 @@ func TestPinFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.PinItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -884,7 +884,7 @@ func TestPinFeedItem(t *testing.T) {
 }
 
 func TestUnpinFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -981,7 +981,7 @@ func TestUnpinFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.UnPinItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -1062,7 +1062,7 @@ func TestUnpinFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.PinItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -1141,7 +1141,7 @@ func TestUnpinFeedItem(t *testing.T) {
 }
 
 func TestUnresolveFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -1231,7 +1231,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.UnResolveItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -1369,7 +1369,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 }
 
 func TestHideFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -1452,7 +1452,7 @@ func TestHideFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.HideItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -1579,7 +1579,7 @@ func TestHideFeedItem(t *testing.T) {
 }
 
 func TestShowFeedItem(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -1662,7 +1662,7 @@ func TestShowFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ShowItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -1719,7 +1719,7 @@ func TestShowFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ShowItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -1752,7 +1752,7 @@ func TestShowFeedItem(t *testing.T) {
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ShowItemActionName,
-								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.BlankImageURL),
 								ActionType:     feedlib.ActionTypeSecondary,
 								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
@@ -1811,7 +1811,7 @@ func TestShowFeedItem(t *testing.T) {
 }
 
 func TestLabels(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -1883,7 +1883,7 @@ func TestLabels(t *testing.T) {
 }
 
 func TestSaveLabel(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -1952,7 +1952,7 @@ func TestSaveLabel(t *testing.T) {
 }
 
 func TestUnreadPersistentItems(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -2018,7 +2018,7 @@ func TestUnreadPersistentItems(t *testing.T) {
 }
 
 func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -2084,7 +2084,7 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 }
 
 func TestPublishNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -2301,7 +2301,7 @@ func TestPublishNudge(t *testing.T) {
 }
 
 func TestResolveNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {
@@ -2517,7 +2517,7 @@ func TestResolveNudge(t *testing.T) {
 }
 
 func TestUnresolveNudge(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	i, err := InitializeFakeEngagementInteractor()
 	if err != nil {

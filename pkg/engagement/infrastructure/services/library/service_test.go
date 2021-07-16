@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
@@ -28,7 +29,7 @@ func TestService_GetFeedContent(t *testing.T) {
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	s := library.NewLibraryService(onboarding)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	type args struct {
 		ctx     context.Context
@@ -69,12 +70,12 @@ func TestService_GetFaqsContent(t *testing.T) {
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	s := library.NewLibraryService(onboarding)
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingClient)
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingClient)
 	if err != nil {
 		t.Errorf("cant get phone number authenticated context token: %v", err)
 		return
 	}
-	_, err = base.GetAuthenticatedContextFromUID(ctx, token.UID)
+	_, err = firebasetools.GetAuthenticatedContextFromUID(ctx, token.UID)
 	if err != nil {
 		t.Errorf("cant get authenticated context from UID: %v", err)
 		return
@@ -154,7 +155,7 @@ func TestService_GetLibraryContent(t *testing.T) {
 	onboardingClient := helpers.InitializeInterServiceClient(onboardingService)
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	s := library.NewLibraryService(onboarding)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	type args struct {
 		ctx context.Context
 	}

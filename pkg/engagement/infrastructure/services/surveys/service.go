@@ -8,7 +8,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/firebasetools"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -27,7 +27,7 @@ type ServiceSurveys interface {
 
 // NewService initializes a surveys service
 func NewService(repository repository.Repository) *Service {
-	fc := &base.FirebaseClient{}
+	fc := &firebasetools.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
 		log.Panicf("unable to initialize Firebase app for Surveys service: %s", err)

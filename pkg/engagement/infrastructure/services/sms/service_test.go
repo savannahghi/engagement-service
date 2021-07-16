@@ -8,8 +8,8 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
@@ -190,7 +190,7 @@ func TestSend(t *testing.T) {
 }
 
 func TestService_SendMarketingSMS(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	s, err := newTestSMSService()
 	if err != nil {
 		t.Errorf("unable to initialize test service with error %v", err)

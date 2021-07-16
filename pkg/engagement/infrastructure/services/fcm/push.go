@@ -7,9 +7,9 @@ import (
 	"log"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
@@ -24,7 +24,7 @@ type PushService interface {
 	Push(
 		ctx context.Context,
 		sender string,
-		payload base.SendNotificationPayload,
+		payload firebasetools.SendNotificationPayload,
 	) error
 }
 
@@ -70,7 +70,7 @@ func (rfs RemotePushService) checkPreconditions() {
 func (rfs RemotePushService) Push(
 	ctx context.Context,
 	sender string,
-	notificationPayload base.SendNotificationPayload,
+	notificationPayload firebasetools.SendNotificationPayload,
 ) error {
 	ctx, span := tracer.Start(ctx, "Push")
 	defer span.End()

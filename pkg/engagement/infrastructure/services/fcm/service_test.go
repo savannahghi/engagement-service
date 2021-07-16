@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 )
@@ -46,7 +46,7 @@ func TestNewService(t *testing.T) {
 }
 
 func TestService_Notifications(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
@@ -94,7 +94,7 @@ func TestService_Notifications(t *testing.T) {
 }
 
 func TestService_SendNotification(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
@@ -111,10 +111,10 @@ func TestService_SendNotification(t *testing.T) {
 		ctx                context.Context
 		registrationTokens []string
 		data               map[string]string
-		notification       *base.FirebaseSimpleNotificationInput
-		android            *base.FirebaseAndroidConfigInput
-		ios                *base.FirebaseAPNSConfigInput
-		web                *base.FirebaseWebpushConfigInput
+		notification       *firebasetools.FirebaseSimpleNotificationInput
+		android            *firebasetools.FirebaseAndroidConfigInput
+		ios                *firebasetools.FirebaseAPNSConfigInput
+		web                *firebasetools.FirebaseWebpushConfigInput
 	}
 	tests := []struct {
 		name    string
@@ -130,7 +130,7 @@ func TestService_SendNotification(t *testing.T) {
 				data: map[string]string{
 					"some": "data",
 				},
-				notification: &base.FirebaseSimpleNotificationInput{
+				notification: &firebasetools.FirebaseSimpleNotificationInput{
 					Title:    "Test Notification",
 					Body:     "From Integration Tests",
 					ImageURL: &imgURL,

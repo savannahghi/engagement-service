@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"go.opentelemetry.io/otel"
@@ -217,7 +217,7 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([
 	}
 
 	// get profile from onboarding service
-	user, err := base.GetLoggedInUser(ctx)
+	user, err := profileutils.GetLoggedInUser(ctx)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
@@ -231,9 +231,9 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([
 	}
 
 	switch profile.Role {
-	case base.RoleTypeEmployee:
+	case profileutils.RoleTypeEmployee:
 		return s.getCMSPosts(ctx, employeeHelpRequest)
-	case base.RoleTypeAgent:
+	case profileutils.RoleTypeAgent:
 		return s.getCMSPosts(ctx, agentHelpRequest)
 	default:
 		return s.getCMSPosts(ctx, faqsRequestPro)

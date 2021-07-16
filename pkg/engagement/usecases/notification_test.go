@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -70,14 +72,14 @@ func InitializeTestNewNotification(ctx context.Context) (*usecases.NotificationI
 	return notification, nil
 }
 
-func onboardingISCClient(t *testing.T) *base.InterServiceClient {
-	deps, err := base.LoadDepsFromYAML()
+func onboardingISCClient(t *testing.T) *interserviceclient.InterServiceClient {
+	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
 		return nil
 	}
 
-	profileClient, err := base.SetupISCclient(*deps, "profile")
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
 		return nil
@@ -90,7 +92,7 @@ func RegisterPushToken(
 	ctx context.Context,
 	t *testing.T,
 	UID string,
-	onboardingClient *base.InterServiceClient,
+	onboardingClient *interserviceclient.InterServiceClient,
 ) (bool, error) {
 	token := "random"
 	if onboardingClient == nil {
@@ -131,7 +133,7 @@ func getATestMessage() feedlib.Message {
 }
 
 func getTheTestItem(t *testing.T) feedlib.Item {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	_, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -147,7 +149,7 @@ func getTheTestItem(t *testing.T) feedlib.Item {
 		Persistent:     true,
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
@@ -156,15 +158,15 @@ func getTheTestItem(t *testing.T) feedlib.Item {
 		Text:           "This bot can speak",
 		TextType:       feedlib.TextTypePlain,
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
+			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", feedlib.LogoURL),
 		},
 		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 				ActionType:     feedlib.ActionTypeSecondary,
 				Handling:       feedlib.HandlingFullPage,
 			},
@@ -172,7 +174,7 @@ func getTheTestItem(t *testing.T) feedlib.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 				ActionType:     feedlib.ActionTypePrimary,
 				Handling:       feedlib.HandlingInline,
 			},
@@ -227,7 +229,7 @@ func getATestAction() feedlib.Action {
 		ID:             ksuid.New().String(),
 		SequenceNumber: getATestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Icon:           feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		ActionType:     feedlib.ActionTypePrimary,
 		Handling:       feedlib.HandlingFullPage,
 	}
@@ -240,7 +242,7 @@ func getTestPubsubPayload(t *testing.T, el feedlib.Element) *pubsubtools.PubSubP
 		return nil
 	}
 
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	_, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -277,7 +279,7 @@ func getTestPubsubPayload(t *testing.T, el feedlib.Element) *pubsubtools.PubSubP
 }
 
 func aTestNudge(t *testing.T) *feedlib.Nudge {
-	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	_, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -293,7 +295,7 @@ func aTestNudge(t *testing.T) *feedlib.Nudge {
 		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
 		Links: []feedlib.Link{
-			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
 		},
 		Text: ksuid.New().String(),
 		Actions: []feedlib.Action{
@@ -316,7 +318,7 @@ func aTestNudge(t *testing.T) *feedlib.Nudge {
 
 // func TestHandleItemPublish(t *testing.T) {
 // 	item := getTheTestItem(t)
-// 	ctx := base.GetAuthenticatedContext(t)
+// 	ctx := firebasetools.GetAuthenticatedContext(t)
 // 	notify, err := InitializeTestNewNotification(ctx)
 // 	assert.Nil(t, err)
 // 	type args struct {
@@ -353,7 +355,7 @@ func aTestNudge(t *testing.T) *feedlib.Nudge {
 
 func TestHandleItemDelete(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -390,7 +392,7 @@ func TestHandleItemDelete(t *testing.T) {
 
 func TestHandleItemResolve(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -427,7 +429,7 @@ func TestHandleItemResolve(t *testing.T) {
 
 func TestHandleItemUnresolve(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -464,7 +466,7 @@ func TestHandleItemUnresolve(t *testing.T) {
 
 func TestHandleItemHide(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -501,7 +503,7 @@ func TestHandleItemHide(t *testing.T) {
 
 func TestHandleItemShow(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -538,7 +540,7 @@ func TestHandleItemShow(t *testing.T) {
 
 func TestHandleItemPin(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -575,7 +577,7 @@ func TestHandleItemPin(t *testing.T) {
 
 func TestHandleItemUnpin(t *testing.T) {
 	item := getTheTestItem(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -612,7 +614,7 @@ func TestHandleItemUnpin(t *testing.T) {
 
 func TestHandleNudgePublish(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -649,7 +651,7 @@ func TestHandleNudgePublish(t *testing.T) {
 
 func TestHandleNudgeDelete(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -686,7 +688,7 @@ func TestHandleNudgeDelete(t *testing.T) {
 
 func TestHandleNudgeResolve(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -723,7 +725,7 @@ func TestHandleNudgeResolve(t *testing.T) {
 
 func TestHandleNudgeUnresolve(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -760,7 +762,7 @@ func TestHandleNudgeUnresolve(t *testing.T) {
 
 func TestHandleNudgeHide(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -797,7 +799,7 @@ func TestHandleNudgeHide(t *testing.T) {
 
 func TestHandleNudgeShow(t *testing.T) {
 	nudge := aTestNudge(t)
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -834,7 +836,7 @@ func TestHandleNudgeShow(t *testing.T) {
 
 func TestHandleActionPublish(t *testing.T) {
 	action := getATestAction()
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -871,7 +873,7 @@ func TestHandleActionPublish(t *testing.T) {
 
 func TestHandleActionDelete(t *testing.T) {
 	action := getATestAction()
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -908,7 +910,7 @@ func TestHandleActionDelete(t *testing.T) {
 
 func TestHandleMessagePost(t *testing.T) {
 	message := getATestMessage()
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -945,7 +947,7 @@ func TestHandleMessagePost(t *testing.T) {
 
 func TestHandleMessageDelete(t *testing.T) {
 	message := getATestMessage()
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -982,7 +984,7 @@ func TestHandleMessageDelete(t *testing.T) {
 
 func TestHandleIncomingEvent(t *testing.T) {
 	event := getATestEvent()
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
@@ -1021,7 +1023,7 @@ func TestNotifyItemUpdate(t *testing.T) {
 	item := getTheTestItem(t)
 	invalidItem := getTheTestItem(t)
 	invalidItem.Label = "new-label"
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1126,8 +1128,8 @@ func TestNotifyItemUpdate(t *testing.T) {
 }
 
 func TestSendNotificationViaFCM(t *testing.T) {
-	_ = base.RemoveTestPhoneNumberUser(t, onboardingISCClient(t))
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	_ = interserviceclient.RemoveTestPhoneNumberUser(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1149,7 +1151,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 		uids         []string
 		sender       string
 		pl           dto.NotificationEnvelope
-		notification *base.FirebaseSimpleNotificationInput
+		notification *firebasetools.FirebaseSimpleNotificationInput
 	}
 	tests := []struct {
 		name    string
@@ -1170,7 +1172,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 						"language": "en",
 					},
 				},
-				notification: &base.FirebaseSimpleNotificationInput{
+				notification: &firebasetools.FirebaseSimpleNotificationInput{
 					Title:    "Scheduled visit",
 					Body:     "Your visit has been scheduled for Thursday morning",
 					ImageURL: &imageurl,
@@ -1195,7 +1197,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 						"language": "en",
 					},
 				},
-				notification: &base.FirebaseSimpleNotificationInput{
+				notification: &firebasetools.FirebaseSimpleNotificationInput{
 					Title:    "Scheduled visit",
 					Body:     "Your visit has been scheduled for Thursday morning",
 					ImageURL: &imageurl,
@@ -1220,7 +1222,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 						"language": "en",
 					},
 				},
-				notification: &base.FirebaseSimpleNotificationInput{
+				notification: &firebasetools.FirebaseSimpleNotificationInput{
 					Title:    "Scheduled visit",
 					Body:     "Your visit has been scheduled for Thursday morning",
 					ImageURL: &imageurl,
@@ -1243,8 +1245,8 @@ func TestSendNotificationViaFCM(t *testing.T) {
 
 func TestGetUserTokens(t *testing.T) {
 	// clean up
-	_ = base.RemoveTestPhoneNumberUser(t, onboardingISCClient(t))
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	_ = interserviceclient.RemoveTestPhoneNumberUser(t, onboardingISCClient(t))
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1317,7 +1319,7 @@ func TestGetUserTokens(t *testing.T) {
 }
 
 func TestNotifyInboxCountUpdate(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1371,7 +1373,7 @@ func TestNotifyInboxCountUpdate(t *testing.T) {
 func TestNotifyNudgeUpdate(t *testing.T) {
 	nudge := aTestNudge(t)
 	action := getATestAction()
-	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, _, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1430,7 +1432,7 @@ func TestNotifyNudgeUpdate(t *testing.T) {
 }
 
 func TestUpdateInbox(t *testing.T) {
-	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
@@ -1490,7 +1492,7 @@ func TestUpdateInbox(t *testing.T) {
 }
 
 func TestNotificationImpl_SendEmail(t *testing.T) {
-	ctx := base.GetAuthenticatedContext(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
 
 	notify, err := InitializeTestNewNotification(ctx)
 	if err != nil {

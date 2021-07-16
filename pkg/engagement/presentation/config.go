@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
@@ -19,6 +20,8 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
@@ -39,7 +42,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
 
@@ -66,7 +68,7 @@ var allowedHeaders = []string{
 
 // Router sets up the ginContext router
 func Router(ctx context.Context) (*mux.Router, error) {
-	fc := &base.FirebaseClient{}
+	fc := &firebasetools.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
 		return nil, err
@@ -235,7 +237,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Authenticated routes
 	authR := r.Path("/graphql").Subrouter()
-	authR.Use(base.AuthenticationMiddleware(firebaseApp))
+	authR.Use(apiclient.AuthenticationMiddleware(firebaseApp))
 	authR.Methods(
 		http.MethodPost,
 		http.MethodGet,
@@ -245,11 +247,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Bulk routes
 	bulk := r.PathPrefix("/bulk/").Subrouter()
-	bulk.Use(base.InterServiceAuthenticationMiddleware())
+	bulk.Use(interserviceclient.InterServiceAuthenticationMiddleware())
 
 	// Interservice Authenticated routes
 	feedISC := r.PathPrefix("/feed/{uid}/{flavour}/{isAnonymous}/").Subrouter()
-	feedISC.Use(base.InterServiceAuthenticationMiddleware())
+	feedISC.Use(interserviceclient.InterServiceAuthenticationMiddleware())
 
 	// retrieval
 	feedISC.Methods(
@@ -400,7 +402,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).Name("hideNudge")
 
 	isc := r.PathPrefix("/internal/").Subrouter()
-	isc.Use(base.InterServiceAuthenticationMiddleware())
+	isc.Use(interserviceclient.InterServiceAuthenticationMiddleware())
 
 	isc.Methods(
 		http.MethodGet,

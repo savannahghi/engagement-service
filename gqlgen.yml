@@ -28,6 +28,9 @@ autobind:
   - "github.com/savannahghi/scalarutils"
   - "github.com/savannahghi/enumutils"
   - "github.com/savannahghi/feedlib"
+  - "github.com/savannahghi/profileutils"
+  - "github.com/savannahghi/firebasetools"
+  - "github.com/savannahghi/interserviceclient"
   - "gitlab.slade360emr.com/go/base"
   - "google.golang.org/api/calendar/v3"
 

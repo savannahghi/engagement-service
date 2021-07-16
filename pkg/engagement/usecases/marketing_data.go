@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/profileutils"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/base"
@@ -209,7 +210,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		sendMail(res)
 		return
 	}
-	isAuthorized, err := authorization.IsAuthorized(&base.UserInfo{
+	isAuthorized, err := authorization.IsAuthorized(&profileutils.UserInfo{
 		PhoneNumber: phone,
 	}, permission.LoadMarketingData)
 	if err != nil {
