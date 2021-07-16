@@ -18,7 +18,11 @@ import (
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/uploads")
 
 // Constants used to save and retrieve upload content
 const (
@@ -49,10 +53,13 @@ func getBucketName() string {
 
 // GCSClient initializes a new Google Cloud Storage client
 // and ensures that the bucket(s) we need exists
-func GCSClient() (*storage.Client, error) {
-	ctx := context.Background()
+func GCSClient(ctx context.Context) (*storage.Client, error) {
+	ctx, span := tracer.Start(ctx, "GCSClient")
+	defer span.End()
+
 	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't initialize storage client: %w", err)
 	}
 
@@ -72,6 +79,7 @@ func GCSClient() (*storage.Client, error) {
 		}
 		err := bucket.Create(ctx, projectID, bucketAttrs)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("can't create bucket: %w", err)
 		}
 	}
@@ -80,7 +88,8 @@ func GCSClient() (*storage.Client, error) {
 
 // NewUploadsService initializes an upload service
 func NewUploadsService() *Service {
-	client, err := GCSClient()
+	ctx := context.Background()
+	client, err := GCSClient(ctx)
 	if err != nil {
 		log.Panicf(
 			"unable to initialize GCS client for upload service: %s", err)
@@ -92,7 +101,6 @@ func NewUploadsService() *Service {
 		log.Panicf(
 			"unable to initialize Firebase  for upload service: %s", err)
 	}
-	ctx := context.Background()
 	firestoreClient, err := firebaseApp.Firestore(ctx)
 	if err != nil {
 		log.Panicf(
@@ -148,11 +156,14 @@ func (s Service) Upload(
 	ctx context.Context,
 	inp base.UploadInput,
 ) (*base.Upload, error) {
+	ctx, span := tracer.Start(ctx, "Upload")
+	defer span.End()
 	s.enforcePreconditions()
 
 	// data decoding
 	data, err := base64.StdEncoding.DecodeString(inp.Base64data)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("upload base64 decode error: %w", err)
 	}
 
@@ -160,6 +171,7 @@ func (s Service) Upload(
 	h := sha512.New()
 	_, err = h.Write(data)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to calculate upload hash: %w", err)
 	}
 	hash := base64.StdEncoding.EncodeToString(h.Sum(nil))
@@ -173,9 +185,11 @@ func (s Service) Upload(
 		getBucketName()).Object(objectName).NewWriter(ctx)
 	source := bytes.NewReader(data)
 	if _, err = io.Copy(dest, source); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if err := dest.Close(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	url := fmt.Sprintf(
@@ -199,6 +213,7 @@ func (s Service) Upload(
 
 	_, _, err = base.CreateNode(ctx, u)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("can't save upload: %w", err)
 	}
 	return u, nil
@@ -209,8 +224,11 @@ func (s Service) FindUploadByID(
 	ctx context.Context,
 	id string,
 ) (*base.Upload, error) {
+	ctx, span := tracer.Start(ctx, "FindUploadByID")
+	defer span.End()
 	node, err := base.RetrieveNode(ctx, id, &base.Upload{})
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to retrieve upload: %w", err)
 	}
 	upload, ok := node.(*base.Upload)

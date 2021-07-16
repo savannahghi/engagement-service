@@ -276,3 +276,11 @@ type MarketingDataLoadEntriesOutput struct {
 	FirebaseLoadError           error  `json:"firebase_load_error"`
 	CRMLoadError                error  `json:"crm_load_error"`
 }
+
+// MailgunEventOutput represents the MailGun's event name and delivery time in standardized time
+// since mailgun gives us time as unixtimestamp
+type MailgunEventOutput struct {
+	// EventName is the name of every event that happens to your emails e.g delivered, rejected etc
+	EventName   string    `json:"event" firestore:"event"`
+	DeliveredOn time.Time `json:"timestamp" firestore:"deliveredOn"`
+}

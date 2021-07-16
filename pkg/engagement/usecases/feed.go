@@ -7,6 +7,7 @@ import (
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
+	"go.opentelemetry.io/otel"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 
@@ -20,6 +21,8 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases")
 
 // FeedUseCases represents all the profile business logic
 type FeedUseCases interface {
@@ -261,12 +264,16 @@ func (fe FeedUseCaseImpl) GetFeed(
 	expired *base.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
+	ctx, span := tracer.Start(ctx, "GetFeed")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.FeedView)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -285,6 +292,7 @@ func (fe FeedUseCaseImpl) GetFeed(
 		filterParams,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("feed retrieval error: %w", err)
 	}
 
@@ -306,12 +314,16 @@ func (fe FeedUseCaseImpl) GetThinFeed(
 	isAnonymous *bool,
 	flavour base.Flavour,
 ) (*domain.Feed, error) {
+	ctx, span := tracer.Start(ctx, "GetThinFeed")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.ThinFeedView)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -341,12 +353,16 @@ func (fe FeedUseCaseImpl) GetFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "GetFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.FeedItemView)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -355,6 +371,7 @@ func (fe FeedUseCaseImpl) GetFeedItem(
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to retrieve feed item %s: %w", itemID, err)
 	}
@@ -373,12 +390,16 @@ func (fe FeedUseCaseImpl) GetNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "GetNudge")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.NudgeView)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -386,6 +407,7 @@ func (fe FeedUseCaseImpl) GetNudge(
 	}
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to retrieve nudge %s: %w", nudgeID, err)
 	}
 
@@ -403,12 +425,16 @@ func (fe FeedUseCaseImpl) GetAction(
 	flavour base.Flavour,
 	actionID string,
 ) (*base.Action, error) {
+	ctx, span := tracer.Start(ctx, "GetAction")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.ActionView)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -417,6 +443,7 @@ func (fe FeedUseCaseImpl) GetAction(
 
 	action, err := fe.Repository.GetAction(ctx, uid, flavour, actionID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to retrieve action %s: %w", actionID, err)
 	}
@@ -435,12 +462,16 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 	flavour base.Flavour,
 	item *base.Item,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "PublishFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -457,6 +488,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 
 	err = helpers.ValidateElement(item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid item: %w", err)
 	}
 
@@ -468,6 +500,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 
 	item, err = fe.Repository.SaveFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to publish feed item %s: %w", item.ID, err)
 	}
@@ -482,6 +515,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to notify item to channel: %w", err)
 	}
 
@@ -495,12 +529,16 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	if !isAuthorized {
@@ -515,6 +553,7 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 
 	err = fe.Repository.DeleteFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to delete item: %s", err)
 	}
 
@@ -528,6 +567,7 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to notify item to channel: %w", err)
 	}
 
@@ -541,12 +581,16 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "ResolveFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -555,6 +599,7 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
 	}
 
@@ -574,6 +619,7 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
 	}
 
@@ -587,6 +633,7 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to notify resolved item to channel: %w", err)
 	}
@@ -601,12 +648,16 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "PinFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.PinItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -615,6 +666,7 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
 	}
 
@@ -634,6 +686,7 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to resolve feed item: %w", err)
 	}
 
@@ -647,6 +700,7 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to notify resolved item to channel: %w", err)
 	}
@@ -661,12 +715,16 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "UnpinFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.UnpinItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -675,6 +733,7 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
 	}
 
@@ -694,6 +753,7 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to pin feed item: %w", err)
 	}
 
@@ -707,6 +767,7 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to notify pinned item to channel: %w", err)
 	}
@@ -721,12 +782,16 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "UnresolveFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -735,6 +800,7 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
 	}
 
@@ -754,6 +820,7 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to unresolve feed item: %w", err)
 	}
 
@@ -767,6 +834,7 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to notify unresolved item to channel: %w", err)
 	}
@@ -781,12 +849,16 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "HideFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -795,6 +867,7 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
 	}
 
@@ -814,6 +887,7 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to hide feed item: %w", err)
 	}
 
@@ -827,6 +901,7 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to notify hidden item to channel: %w", err)
 	}
@@ -841,12 +916,16 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "ShowFeedItem")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -855,6 +934,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 
 	item, err := fe.Repository.GetFeedItem(ctx, uid, flavour, itemID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get feed item with ID %s", itemID)
 	}
 
@@ -874,6 +954,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 
 	item, err = fe.Repository.UpdateFeedItem(ctx, uid, flavour, item)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to show feed item: %w", err)
 	}
 
@@ -887,6 +968,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 			"itemID": item.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to notify revealed/shown item to channel: %w", err)
 	}
@@ -899,12 +981,16 @@ func (fe FeedUseCaseImpl) Labels(
 	ctx context.Context,
 	uid string, flavour base.Flavour,
 ) ([]string, error) {
+	ctx, span := tracer.Start(ctx, "Labels")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.GetLabel)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -921,12 +1007,16 @@ func (fe FeedUseCaseImpl) SaveLabel(
 	flavour base.Flavour,
 	label string,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveLabel")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.CreateLabel)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	if !isAuthorized {
@@ -942,12 +1032,16 @@ func (fe FeedUseCaseImpl) UnreadPersistentItems(
 	uid string,
 	flavour base.Flavour,
 ) (int, error) {
+	ctx, span := tracer.Start(ctx, "UnreadPersistentItems")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return 0, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.UnreadPersistentItems)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return 0, err
 	}
 	if !isAuthorized {
@@ -963,12 +1057,16 @@ func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
 	uid string,
 	flavour base.Flavour,
 ) error {
+	ctx, span := tracer.Start(ctx, "UpdateUnreadPersistentItemsCount")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.UpdateUnreadPersistentItems)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	if !isAuthorized {
@@ -997,12 +1095,16 @@ func (fe FeedUseCaseImpl) PublishNudge(
 	flavour base.Flavour,
 	nudge *base.Nudge,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "PublishNudge")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1019,6 +1121,7 @@ func (fe FeedUseCaseImpl) PublishNudge(
 
 	err = helpers.ValidateElement(nudge)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid nudge: %w", err)
 	}
 
@@ -1030,6 +1133,7 @@ func (fe FeedUseCaseImpl) PublishNudge(
 
 	nudge, err = fe.Repository.SaveNudge(ctx, uid, flavour, nudge)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to publish nudge: %w", err)
 	}
 
@@ -1043,6 +1147,7 @@ func (fe FeedUseCaseImpl) PublishNudge(
 			"nudgeID": nudge.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -1056,12 +1161,16 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "ResolveNudge")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1070,6 +1179,7 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
 	}
 
@@ -1089,6 +1199,7 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to resolve nudge: %w", err)
 	}
 
@@ -1102,6 +1213,7 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 			"nudgeID": nudge.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -1115,12 +1227,16 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "UnresolveNudge")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1129,6 +1245,7 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
 	}
 
@@ -1148,6 +1265,7 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to unresolve nudge: %w", err)
 	}
 
@@ -1161,6 +1279,7 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 			"nudgeID": nudge.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -1174,12 +1293,16 @@ func (fe FeedUseCaseImpl) HideNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "HideNudge")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.HideItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1188,6 +1311,7 @@ func (fe FeedUseCaseImpl) HideNudge(
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
 	}
 
@@ -1207,6 +1331,7 @@ func (fe FeedUseCaseImpl) HideNudge(
 
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to hide nudge: %w", err)
 	}
 
@@ -1220,6 +1345,7 @@ func (fe FeedUseCaseImpl) HideNudge(
 			"nudgeID": nudge.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 	return nudge, nil
@@ -1232,12 +1358,16 @@ func (fe FeedUseCaseImpl) ShowNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "ShowNudge")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.ShowItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1246,6 +1376,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 
 	nudge, err := fe.Repository.GetNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge with ID %s", nudgeID)
 	}
 
@@ -1265,6 +1396,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 
 	nudge, err = fe.Repository.UpdateNudge(ctx, uid, flavour, nudge)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to show nudge: %w", err)
 	}
 
@@ -1278,6 +1410,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 			"nudgeID": nudge.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -1291,12 +1424,16 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteNudge")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	if !isAuthorized {
@@ -1310,6 +1447,7 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 
 	err = fe.Repository.DeleteNudge(ctx, uid, flavour, nudgeID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't delete nudge: %w", err)
 	}
 
@@ -1323,6 +1461,7 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 			"nudgeID": nudge.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to notify nudge to channel: %w", err)
 	}
 
@@ -1350,12 +1489,16 @@ func (fe FeedUseCaseImpl) PublishAction(
 	flavour base.Flavour,
 	action *base.Action,
 ) (*base.Action, error) {
+	ctx, span := tracer.Start(ctx, "PublishAction")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1372,11 +1515,13 @@ func (fe FeedUseCaseImpl) PublishAction(
 
 	err = helpers.ValidateElement(action)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid action: %w", err)
 	}
 
 	action, err = fe.Repository.SaveAction(ctx, uid, flavour, action)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to publish action: %w", err)
 	}
 
@@ -1390,6 +1535,7 @@ func (fe FeedUseCaseImpl) PublishAction(
 			"actionID": action.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to notify action to channel: %w", err)
 	}
@@ -1404,12 +1550,16 @@ func (fe FeedUseCaseImpl) DeleteAction(
 	flavour base.Flavour,
 	actionID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteAction")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	if !isAuthorized {
@@ -1423,6 +1573,7 @@ func (fe FeedUseCaseImpl) DeleteAction(
 
 	err = fe.Repository.DeleteAction(ctx, uid, flavour, actionID)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to delete action: %w", err)
 	}
 
@@ -1436,6 +1587,7 @@ func (fe FeedUseCaseImpl) DeleteAction(
 			"actionID": action.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to notify action to channel: %w", err)
 	}
 
@@ -1450,12 +1602,16 @@ func (fe FeedUseCaseImpl) PostMessage(
 	itemID string,
 	message *base.Message,
 ) (*base.Message, error) {
+	ctx, span := tracer.Start(ctx, "PostMessage")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.PostMessage)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1476,6 +1632,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 
 	err = helpers.ValidateElement(message)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid message: %w", err)
 	}
 
@@ -1487,6 +1644,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 		message,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to post a message: %w", err)
 	}
 
@@ -1501,6 +1659,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 			"messageID": message.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to notify message to channel: %w", err)
 	}
 
@@ -1515,12 +1674,16 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 	itemID string,
 	messageID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteMessage")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteMessage)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	if !isAuthorized {
@@ -1545,6 +1708,7 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 		messageID,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to delete message: %w", err)
 	}
 
@@ -1559,6 +1723,7 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 			"messageID": message.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to notify message delete to channel: %w", err)
 	}
 
@@ -1581,12 +1746,16 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 	flavour base.Flavour,
 	event *base.Event,
 ) error {
+	ctx, span := tracer.Start(ctx, "ProcessEvent")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.ProcessEvent)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	if !isAuthorized {
@@ -1611,6 +1780,7 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 
 	err = helpers.ValidateElement(event)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("invalid event: %w", err)
 	}
 
@@ -1624,6 +1794,7 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 
 	err = fe.Repository.SaveIncomingEvent(ctx, event)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't save incoming event: %w", err)
 	}
 
@@ -1637,6 +1808,7 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 			"eventID": event.ID,
 		},
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"unable to publish incoming event to channel: %w", err)
 	}
@@ -1651,12 +1823,16 @@ func (fe FeedUseCaseImpl) GetDefaultNudgeByTitle(
 	flavour base.Flavour,
 	title string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "GetDefaultNudgeByTitle")
+	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get user: %w", err)
 	}
 	isAuthorized, err := authorization.IsAuthorized(user, permission.NudgeView)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	if !isAuthorized {
@@ -1665,6 +1841,7 @@ func (fe FeedUseCaseImpl) GetDefaultNudgeByTitle(
 
 	nudge, err := fe.Repository.GetDefaultNudgeByTitle(ctx, uid, flavour, title)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to retrieve verify email nudge: %w", err)
 	}
 

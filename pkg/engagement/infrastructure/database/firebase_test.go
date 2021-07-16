@@ -18,6 +18,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 )
 
 const (
@@ -2353,6 +2354,123 @@ func TestRepository_RollBackMarketingData(t *testing.T) {
 			err = repository.RollBackMarketingData(ctx, marketingData1)
 			if !tt.wantErr && err != nil {
 				t.Errorf("failed to rollback marketing data: %s", err)
+				return
+			}
+		})
+	}
+}
+
+func TestService_SaveOutgoingEmails(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("an error ocurred")
+	}
+
+	to := "kathurima@healthcloud.co.ke"
+	subject := "Test subject"
+	text := "Hello test"
+	messageID := "123456"
+
+	outgoingEmail := &dto.OutgoingEmailsLog{
+		UUID:        uuid.NewString(),
+		To:          []string{to},
+		From:        mail.MailGunFromEnvVarName,
+		Subject:     subject,
+		Text:        text,
+		MessageID:   messageID,
+		EmailSentOn: time.Now(),
+	}
+
+	type args struct {
+		ctx     context.Context
+		payload *dto.OutgoingEmailsLog
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Happy case",
+			args: args{
+				ctx:     ctx,
+				payload: outgoingEmail,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Sad case",
+			args: args{
+				ctx:     ctx,
+				payload: nil,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := fr.SaveOutgoingEmails(tt.args.ctx, tt.args.payload); (err != nil) != tt.wantErr {
+				t.Errorf("Service.MailgunDeliveryWebhook() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRepository_UpdateMailgunDeliveryStatus(t *testing.T) {
+	ctx := context.Background()
+	fr, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("an error ocurred")
+	}
+
+	type args struct {
+		ctx     context.Context
+		payload *dto.MailgunEvent
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *dto.OutgoingEmailsLog
+		wantErr bool
+	}{
+		{
+			name: "Happy case",
+			args: args{
+				ctx: ctx,
+				payload: &dto.MailgunEvent{
+					EventName:   "delivered",
+					DeliveredOn: "123456789.12456",
+					MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Sad case",
+			args: args{
+				ctx: ctx,
+				payload: &dto.MailgunEvent{
+					EventName:   "delivered",
+					DeliveredOn: "123456789.12456",
+					MessageID:   "",
+				},
+			},
+			want:    &dto.OutgoingEmailsLog{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = helpers.EpochTimetoStandardTime("123456789.12456")
+
+			got, err := fr.UpdateMailgunDeliveryStatus(tt.args.ctx, tt.args.payload)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.UpdateMailgunDeliveryStatus() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && got == nil {
+				t.Errorf("expected to get a nudge")
 				return
 			}
 		})

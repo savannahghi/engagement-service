@@ -10,18 +10,23 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp/totp"
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/otp")
 
 const (
 	issuer        = "Savannah Informatics Limited"
@@ -50,7 +55,7 @@ type ServiceOTP interface {
 	VerifyEmailOtp(ctx context.Context, email, verificationCode *string) (bool, error)
 	GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int) (string, error)
 	EmailVerificationOtp(ctx context.Context, email *string) (string, error)
-	GenerateOTP() (string, error)
+	GenerateOTP(ctx context.Context) (string, error)
 }
 
 // Service is an OTP generation and validation service
@@ -74,7 +79,7 @@ func NewService() *Service {
 
 	whatsapp := whatsapp.NewService()
 
-	mail := mail.NewService()
+	mail := mail.NewService(repository)
 
 	crm := hubspot.NewHubSpotService()
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
@@ -85,16 +90,19 @@ func NewService() *Service {
 	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
+
 		log.Panicf("unable to initialize Firebase app for OTP service: %s", err)
 	}
 	ctx := context.Background()
 
 	firestoreClient, err := firebaseApp.Firestore(ctx)
 	if err != nil {
+
 		log.Panicf("unable to initialize Firestore client: %s", err)
 	}
 
 	if err != nil {
+
 		log.Errorf("occurred while opening deps file %v", err)
 		os.Exit(1)
 	}
@@ -129,22 +137,27 @@ func (s Service) getOTPCollectionName() string {
 }
 
 func cleanITPhoneNumber() (*string, error) {
-	return base.NormalizeMSISDN(ITPhoneNumber)
+	return converterandformatter.NormalizeMSISDN(ITPhoneNumber)
 }
 
 // SendOTP sends otp code message to specified number
 func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code string) (string, error) {
+	ctx, span := tracer.Start(ctx, "SendOTP")
+	defer span.End()
+
 	msg := fmt.Sprintf("%s is your Be.Well verification code %s", code, appIdentifier)
 
 	if base.IsKenyanNumber(normalizedPhoneNumber) {
-		_, err := s.sms.Send(normalizedPhoneNumber, msg, base.SenderIDBewell)
+		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg, base.SenderIDBewell)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return "", fmt.Errorf("failed to send OTP verification message to recipient")
 		}
 	} else {
 		// Make request to twilio
 		err := s.twilio.SendSMS(ctx, normalizedPhoneNumber, msg)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return "", fmt.Errorf("sms not sent: %v", err)
 		}
 	}
@@ -155,8 +168,9 @@ func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code
 // GenerateAndSendOTP creates an OTP and sends it to the
 // supplied phone number as a text message
 func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
-	cleanNo, err := base.NormalizeMSISDN(msisdn)
+	cleanNo, err := converterandformatter.NormalizeMSISDN(msisdn)
 	if err != nil {
+
 		return "", errors.Wrap(err, "generateOTP > NormalizeMSISDN")
 	}
 
@@ -165,6 +179,7 @@ func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
 	// This path returns a constant OTP familiar to both the teams.
 	cleanITPhoneNumber, err := cleanITPhoneNumber()
 	if err != nil {
+
 		return "", errors.Wrap(err, "failed to normalize Integration Test number")
 	}
 
@@ -173,8 +188,9 @@ func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
 	}
 
 	ctx := context.Background()
-	code, err := s.GenerateOTP()
+	code, err := s.GenerateOTP(ctx)
 	if err != nil {
+
 		return "", errors.Wrap(err, "Unable to generate OTP")
 	}
 
@@ -188,11 +204,13 @@ func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
 	}
 	err = s.SaveOTPToFirestore(otp)
 	if err != nil {
+
 		return code, fmt.Errorf("unable to save OTP: %v", err)
 	}
 
 	code, err = s.SendOTP(ctx, *cleanNo, code)
 	if err != nil {
+
 		log.Printf("OTP send error: %s", err)
 		return code, err
 	}
@@ -202,8 +220,11 @@ func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
 //SendOTPToEmail is a companion to GenerateAndSendOTP function
 //It will send the generated OTP to the provided email address
 func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string) (string, error) {
+	_, span := tracer.Start(ctx, "SendOTPToEmail")
+	defer span.End()
 	code, err := s.GenerateAndSendOTP(*msisdn)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		log.Printf("error: %s", err)
 		return code, err
 	}
@@ -226,8 +247,9 @@ func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string) (str
 		return code, fmt.Errorf("%s is not a valid email", emailstr)
 	}
 
-	_, _, err = s.mail.SendEmail(subject, text, nil, emailstr)
+	_, _, err = s.mail.SendEmail(ctx, subject, text, nil, emailstr)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return code, fmt.Errorf("unable to send OTP to email: %w", err)
 	}
 
@@ -243,11 +265,14 @@ func (s Service) SaveOTPToFirestore(otp dto.OTP) error {
 
 // VerifyOtp checks for the validity of the supplied OTP but does not invalidate it
 func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string) (bool, error) {
+	ctx, span := tracer.Start(ctx, "VerifyOtp")
+	defer span.End()
 	s.checkPreconditions()
 
 	// ensure the phone number passed is correct
-	normalizeMsisdn, err := base.NormalizeMSISDN(*msisdn)
+	normalizeMsisdn, err := converterandformatter.NormalizeMSISDN(*msisdn)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, errors.Wrap(err, "VerifyOtp > NormalizeMSISDN")
 	}
 
@@ -257,6 +282,7 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 	// returns a true and a nil.
 	cleanITPhoneNumber, err := cleanITPhoneNumber()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, errors.Wrap(err, "failed to normalize Integration Test number")
 	}
 
@@ -275,6 +301,7 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 	)
 	docs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("unable to retrieve verification codes: %v", err)
 	}
 	if len(docs) == 0 {
@@ -286,6 +313,7 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 		err = base.UpdateRecordOnFirestore(
 			s.firestoreClient, s.getOTPCollectionName(), doc.Ref.ID, otpData)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return false, fmt.Errorf("unable to save updated OTP document: %v", err)
 		}
 	}
@@ -294,6 +322,8 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 
 // VerifyEmailOtp checks for the validity of the supplied OTP but does not invalidate it
 func (s Service) VerifyEmailOtp(ctx context.Context, email, verificationCode *string) (bool, error) {
+	ctx, span := tracer.Start(ctx, "VerifyEmailOtp")
+	defer span.End()
 	s.checkPreconditions()
 
 	// This is an alternate path that checks for the Constant
@@ -315,6 +345,7 @@ func (s Service) VerifyEmailOtp(ctx context.Context, email, verificationCode *st
 	)
 	docs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("unable to retrieve verification codes: %v", err)
 	}
 	if len(docs) == 0 {
@@ -326,6 +357,7 @@ func (s Service) VerifyEmailOtp(ctx context.Context, email, verificationCode *st
 		err = base.UpdateRecordOnFirestore(
 			s.firestoreClient, s.getOTPCollectionName(), doc.Ref.ID, otpData)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return false, fmt.Errorf("unable to save updated OTP document: %v", err)
 		}
 	}
@@ -334,8 +366,11 @@ func (s Service) VerifyEmailOtp(ctx context.Context, email, verificationCode *st
 
 // GenerateRetryOTP generates fallback OTPs when Africa is talking sms fails
 func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int) (string, error) {
-	cleanNo, err := base.NormalizeMSISDN(*msisdn)
+	ctx, span := tracer.Start(ctx, "GenerateRetryOTP")
+	defer span.End()
+	cleanNo, err := converterandformatter.NormalizeMSISDN(*msisdn)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return "", errors.Wrap(err, "generateOTP > NormalizeMSISDN")
 	}
 
@@ -344,6 +379,7 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 	// This path returns a constant retry OTP familiar to both the teams.
 	cleanITPhoneNumber, err := cleanITPhoneNumber()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return "", errors.Wrap(err, "failed to normalize Integration Test number")
 	}
 
@@ -351,8 +387,9 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 		return ITCode, nil
 	}
 
-	code, err := s.GenerateOTP()
+	code, err := s.GenerateOTP(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		log.Printf("error: %s", err)
 		return "", fmt.Errorf("OTP generation failed: %w", err)
 	}
@@ -369,6 +406,7 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 
 	err = s.SaveOTPToFirestore(otp)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return code, fmt.Errorf("unable to save OTP: %v", err)
 	}
 
@@ -376,6 +414,7 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 
 		sent, err := s.whatsapp.PhoneNumberVerificationCode(ctx, otp.MSISDN, otp.AuthorizationCode, otp.Message)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return code, fmt.Errorf("unable to send a phone verification code :%w", err)
 		}
 
@@ -388,6 +427,7 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 	} else if retryStep == twilioStep {
 		err := s.twilio.SendSMS(ctx, otp.MSISDN, otp.Message)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return code, fmt.Errorf("otp send retry failed: %w", err)
 		}
 		return code, nil
@@ -400,14 +440,17 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 
 // EmailVerificationOtp generates an OTP to the supplied email for verification
 func (s Service) EmailVerificationOtp(ctx context.Context, email *string) (string, error) {
+	_, span := tracer.Start(ctx, "EmailVerificationOtp")
+	defer span.End()
 	// This is an alternate path that checks for the Constant
 	// email used by our Frontend's Integration Testing.
 	// This path returns a constant OTP familiar to both the teams.
 	if *email == ITEmail {
 		return ITCode, nil
 	}
-	code, err := s.GenerateOTP()
+	code, err := s.GenerateOTP(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return "", errors.Wrap(err, "Unable to generate OTP")
 	}
 
@@ -427,13 +470,15 @@ func (s Service) EmailVerificationOtp(ctx context.Context, email *string) (strin
 	}
 	err = s.SaveOTPToFirestore(otp)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return code, fmt.Errorf("unable to save OTP: %v", err)
 	}
 
 	emailstr := *email
 
-	_, _, err = s.mail.SendEmail(subject, text, nil, emailstr)
+	_, _, err = s.mail.SendEmail(ctx, subject, text, nil, emailstr)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return code, fmt.Errorf("unable to send OTP to email: %w", err)
 	}
 
@@ -441,14 +486,18 @@ func (s Service) EmailVerificationOtp(ctx context.Context, email *string) (strin
 }
 
 //GenerateOTP generates an OTP
-func (s Service) GenerateOTP() (string, error) {
+func (s Service) GenerateOTP(ctx context.Context) (string, error) {
+	_, span := tracer.Start(ctx, "GenerateOTP")
+	defer span.End()
 	key, err := totp.Generate(s.totpOpts)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return "", errors.Wrap(err, "generateOTP")
 	}
 
 	code, err := totp.GenerateCode(key.Secret(), time.Now())
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return "", errors.Wrap(err, "generateOTP > GenerateCode")
 	}
 	return code, nil

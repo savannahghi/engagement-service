@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
@@ -23,8 +24,11 @@ func getJSONGoogleApplicationCredentials() ([]byte, error) {
 // GetTokenSource gets a token source to be used in Google Cloud APIs that
 // require impersonation of a user e.g Google Calendar
 func GetTokenSource(ctx context.Context) (oauth2.TokenSource, error) {
+	ctx, span := tracer.Start(ctx, "GetTokenSource")
+	defer span.End()
 	jsonCredentials, err := getJSONGoogleApplicationCredentials()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 	config, err := google.JWTConfigFromJSON(
@@ -32,6 +36,7 @@ func GetTokenSource(ctx context.Context) (oauth2.TokenSource, error) {
 		calendar.CalendarScope,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("JWTConfigFromJSON: %v", err)
 	}
 	config.Subject = DefaultCalendarEmail

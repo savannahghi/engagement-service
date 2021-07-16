@@ -98,7 +98,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Initialize new instances of the infrastructure services
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 	fcm := fcm.NewService(fr)
-	mail := mail.NewService()
+	mail := mail.NewService(fr)
 	notification := usecases.NewNotification(
 		fr,
 		fcmNotification,
@@ -417,6 +417,12 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).Path("/send_email").HandlerFunc(
 		h.SendEmail(ctx),
 	).Name("sendEmail")
+
+	isc.Methods(
+		http.MethodPost,
+	).Path("/mailgun_delivery_webhook").HandlerFunc(
+		h.UpdateMailgunDeliveryStatus(ctx),
+	).Name("mailgun_delivery_webhook")
 
 	isc.Methods(
 		http.MethodPost,

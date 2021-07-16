@@ -135,3 +135,24 @@ type ContactLeadInput struct {
 	ContactChannel string                   `json:"contact_channel,omitempty"`
 	IsRegistered   bool                     `json:"is_registered,omitempty"`
 }
+
+// OutgoingEmailsLog contains the content of the sent email message sent via MailGun
+type OutgoingEmailsLog struct {
+	UUID    string   `json:"uuid" firestore:"uuid"`
+	To      []string `json:"to" firestore:"to"`
+	From    string   `json:"from" firestore:"from"`
+	Subject string   `json:"subject" firestore:"subject"`
+	Text    string   `json:"text" firestore:"text"`
+	// MessageID is a unique identifier of mailgun's message
+	MessageID   string              `json:"message-id" firestore:"messageID"`
+	EmailSentOn time.Time           `json:"emailSentOn" firestore:"emailSentOn"`
+	Event       *MailgunEventOutput `json:"mailgunEvent" firestore:"mailgunEvent"`
+}
+
+// EventInput represents mailgun event input e.g deliveresd, rejected etc
+type MailgunEvent struct {
+	EventName   string `json:"event" firestore:"event"`
+	DeliveredOn string `json:"timestamp" firestore:"deliveredOn"`
+	// MessageID is a unique identifier of mailgun's message
+	MessageID string `json:"message-id" firestore:"messageID"`
+}

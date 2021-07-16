@@ -7,6 +7,7 @@ import (
 
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"go.opentelemetry.io/otel"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 
@@ -15,6 +16,8 @@ import (
 	"cloud.google.com/go/pubsub"
 	"gitlab.slade360emr.com/go/base"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/messaging")
 
 // messaging related constants
 const (
@@ -126,7 +129,10 @@ func (ps PubSubNotificationService) Notify(
 	el base.Element,
 	metadata map[string]interface{},
 ) error {
+	ctx, span := tracer.Start(ctx, "Notify")
+	defer span.End()
 	if err := ps.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"pubsub service precondition check failed when notifying: %w", err)
 	}
@@ -137,6 +143,7 @@ func (ps PubSubNotificationService) Notify(
 
 	payload, err := el.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("validation of element failed: %w", err)
 	}
 
@@ -148,6 +155,7 @@ func (ps PubSubNotificationService) Notify(
 	}
 	envelopePayload, err := json.Marshal(envelope)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"can't marshal notification envelope to JSON: %w", err)
 	}

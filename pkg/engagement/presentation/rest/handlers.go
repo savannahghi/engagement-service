@@ -16,9 +16,11 @@ import (
 
 	"net/http"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 
+	errorcode "github.com/savannahghi/errorcodeutil"
 	"gitlab.slade360emr.com/go/base"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -177,6 +179,7 @@ type PresentationHandlers interface {
 	GetMarketingData(ctx context.Context) http.HandlerFunc
 
 	LoadCampaignData(ctx context.Context) http.HandlerFunc
+	UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1313,6 +1316,7 @@ func (p PresentationHandlersImpl) SendEmail(
 		}
 
 		resp, _, err := p.interactor.Mail.SendEmail(
+			ctx,
 			payload.Subject,
 			payload.Text,
 			nil,
@@ -1342,7 +1346,7 @@ func (p PresentationHandlersImpl) SendToMany(
 		payload := &dto.SendSMSPayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		for _, phoneNo := range payload.To {
-			_, err := base.NormalizeMSISDN(phoneNo)
+			_, err := converterandformatter.NormalizeMSISDN(phoneNo)
 			if err != nil {
 				err := fmt.Errorf(
 					"can't send sms, expected a valid phone number",
@@ -1359,6 +1363,7 @@ func (p PresentationHandlersImpl) SendToMany(
 		}
 
 		resp, err := p.interactor.SMS.SendToMany(
+			ctx,
 			payload.Message,
 			payload.To,
 			payload.Sender,
@@ -1867,7 +1872,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.PhoneNumber == "" {
 			err := fmt.Errorf("expected `phone` to be defined")
-			serverutils.WriteJSONResponse(w, base.CustomError{
+			serverutils.WriteJSONResponse(w, errorcode.CustomError{
 				Err:     err,
 				Message: err.Error(),
 			}, http.StatusBadRequest)
@@ -1875,7 +1880,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 		}
 		if payload.EmailAddress == "" {
 			err := fmt.Errorf("expected `email` to be defined")
-			serverutils.WriteJSONResponse(w, base.CustomError{
+			serverutils.WriteJSONResponse(w, errorcode.CustomError{
 				Err:     err,
 				Message: err.Error(),
 			}, http.StatusBadRequest)
@@ -1895,6 +1900,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 		body := GenerateCollectEmailFunc(name)
 		subject := "Download the new Be.Well app to manage your insurance benefits"
 		sendEmail, _, err := p.interactor.Mail.SendEmail(
+			ctx,
 			subject,
 			marketingText,
 			&body,
@@ -1987,4 +1993,26 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 		respondWithJSON(w, http.StatusOK, res)
 	}
 
+}
+
+// UpdateMailgunDeliveryStatusWebhook gets the status of the sent emails and logs them in the database
+func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		payload := &dto.MailgunEvent{}
+		base.DecodeJSONToTargetStruct(rw, r, payload)
+
+		emailLog, err := p.interactor.Mail.UpdateMailgunDeliveryStatus(ctx, payload)
+		if err != nil {
+			err := fmt.Errorf("email not sent: %s", err)
+			respondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+
+		marshalled, err := json.Marshal(emailLog)
+		if err != nil {
+			respondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(rw, http.StatusOK, marshalled)
+	}
 }

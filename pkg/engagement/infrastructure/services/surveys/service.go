@@ -10,8 +10,12 @@ import (
 	"github.com/google/uuid"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/surveys")
 
 // NPSResponseCollectionName firestore collection name where nps responses are stored
 const NPSResponseCollectionName = "nps_response"
@@ -57,6 +61,8 @@ type Service struct {
 
 // RecordNPSResponse ...
 func (s Service) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (bool, error) {
+	ctx, span := tracer.Start(ctx, "RecordNPSResponse")
+	defer span.End()
 	s.checkPreconditions()
 	response := &dto.NPSResponse{
 		Name:      input.Name,
@@ -92,6 +98,7 @@ func (s Service) RecordNPSResponse(ctx context.Context, input dto.NPSInput) (boo
 
 	err := s.Repository.SaveNPSResponse(ctx, response)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("cannot save nps response to firestore: %w", err)
 	}
 

@@ -58,7 +58,7 @@ package otp_test
 // 	}
 // 	for name, tc := range tests {
 // 		t.Run(name, func(t *testing.T) {
-// 			got, err := base.NormalizeMSISDN(tc.input)
+// 			got, err := converterandformatter.NormalizeMSISDN(tc.input)
 // 			if tc.expectError {
 // 				assert.NotNil(t, err)
 // 				assert.Equal(t, tc.expectedErrorMessage, err.Error())

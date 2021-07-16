@@ -75,7 +75,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 
 	feed := usecases.NewFeed(r, messagingSvc)
 	fcm := fcm.NewService(r)
-	mail := mail.NewService()
+	mail := mail.NewService(r)
 	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail)
 	uploads := uploads.NewUploadsService()
 	crm := hubspot.NewHubSpotService()

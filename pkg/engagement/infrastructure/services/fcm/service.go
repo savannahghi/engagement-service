@@ -12,8 +12,12 @@ import (
 	"github.com/google/uuid"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/fcm")
 
 // Service provides methods for sending Firebase Cloud Messaging notifications
 type Service struct {
@@ -141,6 +145,8 @@ func (s Service) SendNotification(
 	ios *base.FirebaseAPNSConfigInput,
 	web *base.FirebaseWebpushConfigInput,
 ) (bool, error) {
+	ctx, span := tracer.Start(ctx, "SendNotification")
+	defer span.End()
 	s.checkPreconditions()
 
 	if registrationTokens == nil {
@@ -152,6 +158,7 @@ func (s Service) SendNotification(
 	if data != nil {
 		err := ValidateFCMData(data)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return false, err
 		}
 		message.Data = data
@@ -191,6 +198,7 @@ func (s Service) SendNotification(
 
 	batchResp, err := s.fcmClient.SendMulticast(ctx, message)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("unable to send FCM messages: %w", err)
 	}
 
@@ -242,6 +250,7 @@ func (s Service) SendNotification(
 			}
 			err = s.Repository.SaveNotification(ctx, s.firestoreClient, savedNotification)
 			if err != nil {
+				helpers.RecordSpanError(span, err)
 				log.Printf("unable to save notification: %v", err)
 			}
 		}

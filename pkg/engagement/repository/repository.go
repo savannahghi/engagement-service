@@ -271,4 +271,6 @@ type Repository interface {
 	LoadMarketingData(ctx context.Context, data dto.Segment) (int, error)
 
 	RollBackMarketingData(ctx context.Context, data dto.Segment) error
+	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
+	UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
 }

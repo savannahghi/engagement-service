@@ -10,7 +10,10 @@ import (
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/onboarding")
 
 // specific endpoint paths for ISC
 const (
@@ -72,6 +75,8 @@ func (rps RemoteProfileService) callProfileService(
 	ctx context.Context,
 	uids UserUIDs, path string,
 ) (map[string][]string, error) {
+	ctx, span := tracer.Start(ctx, "callProfileService")
+	defer span.End()
 	resp, err := rps.profileClient.MakeRequest(
 		ctx,
 		http.MethodPost,
@@ -79,11 +84,13 @@ func (rps RemoteProfileService) callProfileService(
 		uids,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error calling profile service: %w", err)
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error reading profile response body: %w", err)
 	}
 
@@ -98,6 +105,7 @@ func (rps RemoteProfileService) callProfileService(
 	var contacts map[string][]string
 	err = json.Unmarshal(data, &contacts)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"can't unmarshal profile response data \n(\n%s\n)\n: %w",
 			string(data),
@@ -140,6 +148,8 @@ func (rps RemoteProfileService) GetUserProfile(
 	ctx context.Context,
 	uid string,
 ) (*base.UserProfile, error) {
+	ctx, span := tracer.Start(ctx, "GetUserProfile")
+	defer span.End()
 	uidPayoload := dto.UIDPayload{
 		UID: &uid,
 	}
@@ -151,6 +161,7 @@ func (rps RemoteProfileService) GetUserProfile(
 	)
 
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error calling profile service: %w", err)
 	}
 
@@ -163,11 +174,13 @@ func (rps RemoteProfileService) GetUserProfile(
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error reading profile response body: %w", err)
 	}
 	user := base.UserProfile{}
 	err = json.Unmarshal(data, &user)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("error parsing user profile data: %w", err)
 	}
 	return &user, nil
@@ -178,6 +191,8 @@ func (rps RemoteProfileService) IsOptedOut(
 	ctx context.Context,
 	phoneNumber string,
 ) (bool, error) {
+	ctx, span := tracer.Start(ctx, "IsOptedOut")
+	defer span.End()
 	payload := map[string]interface{}{
 		"phoneNumber": phoneNumber,
 	}
@@ -188,6 +203,7 @@ func (rps RemoteProfileService) IsOptedOut(
 		payload,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf(
 			"unable to make remote profile call with error: %v",
 			err,
@@ -202,6 +218,7 @@ func (rps RemoteProfileService) IsOptedOut(
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf(
 			"error reading profile response body: %w",
 			err,
@@ -211,6 +228,7 @@ func (rps RemoteProfileService) IsOptedOut(
 	body := map[string]bool{}
 	err = json.Unmarshal(data, &body)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("error parsing user profile data: %w", err)
 	}
 

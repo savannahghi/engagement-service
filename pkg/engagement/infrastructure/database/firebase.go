@@ -8,10 +8,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
+	"go.opentelemetry.io/otel"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -24,6 +26,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/database")
 
 const (
 	feedCollectionName           = "feed"
@@ -50,6 +54,9 @@ const (
 	unreadInboxCountsDocID = "unread_inbox_counts"
 
 	itemsLimit = 1000
+
+	// outgoingEmails represent all the sent emails
+	outgoingEmails = "outgoing_emails"
 )
 
 // NewFirebaseRepository initializes a Firebase repository
@@ -129,6 +136,8 @@ func (fr Repository) GetFeed(
 	expired *base.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
+	ctx, span := tracer.Start(ctx, "GetFeed")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
@@ -136,6 +145,7 @@ func (fr Repository) GetFeed(
 
 	actions, err := fr.GetActions(ctx, *uid, flavour)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 
@@ -148,6 +158,7 @@ func (fr Repository) GetFeed(
 		expired,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 
@@ -162,6 +173,7 @@ func (fr Repository) GetFeed(
 		filterParams,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get items: %w", err)
 	}
 
@@ -178,6 +190,7 @@ func (fr Repository) GetFeed(
 	if noFilters && noActions && noNudges && noItems {
 		err = fr.initializeDefaultFeed(ctx, *uid, flavour)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"unable to initialize default feed: %w",
 				err,
@@ -217,20 +230,25 @@ func (fr Repository) initializeDefaultFeed(
 	uid string,
 	flavour base.Flavour,
 ) error {
+	ctx, span := tracer.Start(ctx, "initializeDefaultFeed")
+	defer span.End()
 	fr.mu.Lock() // create default data once
 
 	_, err := SetDefaultActions(ctx, uid, flavour, fr)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to set default actions: %w", err)
 	}
 
 	_, err = SetDefaultNudges(ctx, uid, flavour, fr)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to set default nudges: %w", err)
 	}
 
 	_, err = SetDefaultItems(ctx, uid, flavour, fr)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to set default items: %w", err)
 	}
 
@@ -245,7 +263,10 @@ func (fr Repository) GetFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "GetFeedItem")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -253,6 +274,7 @@ func (fr Repository) GetFeedItem(
 	itemsCollection := fr.getItemsCollection(uid, flavour)
 	el, err := fr.getSingleElement(ctx, itemsCollection, itemID, &base.Item{})
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get items: %w", err)
 	}
 	if el == nil {
@@ -265,6 +287,7 @@ func (fr Repository) GetFeedItem(
 
 	messages, err := fr.GetMessages(ctx, uid, flavour, itemID)
 	if err != nil || messages == nil {
+		helpers.RecordSpanError(span, err)
 		// the thread may not have been initiated yet
 		item.Conversations = []base.Message{}
 	} else {
@@ -284,7 +307,10 @@ func (fr Repository) SaveFeedItem(
 	flavour base.Flavour,
 	item *base.Item,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "SaveFeedItem")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -295,6 +321,7 @@ func (fr Repository) SaveFeedItem(
 
 	_, err := item.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("item failed validation: %w", err)
 	}
 
@@ -307,11 +334,13 @@ func (fr Repository) SaveFeedItem(
 		coll,
 		true,
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save item: %w", err)
 	}
 
 	messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 	if err != nil || messages == nil {
+		helpers.RecordSpanError(span, err)
 		// the thread may not have been initiated yet
 		item.Conversations = []base.Message{}
 	} else {
@@ -328,7 +357,10 @@ func (fr Repository) UpdateFeedItem(
 	flavour base.Flavour,
 	item *base.Item,
 ) (*base.Item, error) {
+	ctx, span := tracer.Start(ctx, "UpdateFeedItem")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -339,6 +371,7 @@ func (fr Repository) UpdateFeedItem(
 
 	_, err := item.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("invalid item: %w", err)
 	}
 
@@ -351,11 +384,13 @@ func (fr Repository) UpdateFeedItem(
 		coll,
 		false, // not a new item, skip existing checks
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save item: %w", err)
 	}
 
 	messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 	if err != nil || messages == nil {
+		helpers.RecordSpanError(span, err)
 		// the thread may not have been initiated yet
 		item.Conversations = []base.Message{}
 	} else {
@@ -372,13 +407,17 @@ func (fr Repository) DeleteFeedItem(
 	flavour base.Flavour,
 	itemID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteFeedItem")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
 
 	_, err := fr.getItemsCollection(uid, flavour).Doc(itemID).Delete(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't delete item: %w", err)
 	}
 
@@ -392,7 +431,10 @@ func (fr Repository) GetNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "GetNudge")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -405,6 +447,7 @@ func (fr Repository) GetNudge(
 		&base.Nudge{},
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 	if el == nil {
@@ -428,7 +471,10 @@ func (fr Repository) SaveNudge(
 	flavour base.Flavour,
 	nudge *base.Nudge,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "SaveNudge")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -436,6 +482,7 @@ func (fr Repository) SaveNudge(
 	// find an existing nudge with the same title
 	existingNudge, err := fr.GetDefaultNudgeByTitle(ctx, uid, flavour, nudge.Title)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		// error means an existing nudge wasn't found
 		log.Printf("nudge doesn't exist error: %v", err.Error())
 	}
@@ -453,6 +500,7 @@ func (fr Repository) SaveNudge(
 		coll,
 		true, // a new nudge
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save nudge: %w", err)
 	}
 
@@ -466,7 +514,10 @@ func (fr Repository) UpdateNudge(
 	flavour base.Flavour,
 	nudge *base.Nudge,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "UpdateNudge")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -477,6 +528,7 @@ func (fr Repository) UpdateNudge(
 
 	_, err := nudge.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("nudge failed validation: %w", err)
 	}
 
@@ -489,6 +541,7 @@ func (fr Repository) UpdateNudge(
 		coll,
 		false, // not a new nudge, should not check for existence
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save nudge: %w", err)
 	}
 
@@ -502,13 +555,17 @@ func (fr Repository) DeleteNudge(
 	flavour base.Flavour,
 	nudgeID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteNudge")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
 
 	_, err := fr.getNudgesCollection(uid, flavour).Doc(nudgeID).Delete(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't delete nudge: %w", err)
 	}
 
@@ -522,7 +579,10 @@ func (fr Repository) GetAction(
 	flavour base.Flavour,
 	actionID string,
 ) (*base.Action, error) {
+	ctx, span := tracer.Start(ctx, "GetAction")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -535,6 +595,7 @@ func (fr Repository) GetAction(
 		&base.Action{},
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 	if el == nil {
@@ -558,7 +619,10 @@ func (fr Repository) SaveAction(
 	flavour base.Flavour,
 	action *base.Action,
 ) (*base.Action, error) {
+	ctx, span := tracer.Start(ctx, "SaveAction")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -569,6 +633,7 @@ func (fr Repository) SaveAction(
 
 	_, err := action.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("action failed validation: %w", err)
 	}
 
@@ -581,6 +646,7 @@ func (fr Repository) SaveAction(
 		coll,
 		true,
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save action: %w", err)
 	}
 
@@ -594,13 +660,17 @@ func (fr Repository) DeleteAction(
 	flavour base.Flavour,
 	actionID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteAction")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
 
 	_, err := fr.getActionsCollection(uid, flavour).Doc(actionID).Delete(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't delete action: %w", err)
 	}
 
@@ -615,7 +685,10 @@ func (fr Repository) PostMessage(
 	itemID string,
 	message *base.Message,
 ) (*base.Message, error) {
+	ctx, span := tracer.Start(ctx, "PostMessage")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -629,6 +702,7 @@ func (fr Repository) PostMessage(
 		coll,
 		true,
 	); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to save message: %w", err)
 	}
 
@@ -642,7 +716,10 @@ func (fr Repository) GetMessages(
 	flavour base.Flavour,
 	itemID string,
 ) ([]base.Message, error) {
+	ctx, span := tracer.Start(ctx, "GetMessages")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -652,16 +729,18 @@ func (fr Repository) GetMessages(
 	query := fr.getMessagesQuery(uid, flavour, itemID)
 	msgDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get messages: %w", err)
 	}
 	for _, msgDoc := range msgDocs {
 		msg := &base.Message{}
 		err := msgDoc.DataTo(msg)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"unable to unmarshal message from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenMessageIDs, msg.ID) {
+		if !converterandformatter.StringSliceContains(seenMessageIDs, msg.ID) {
 			messages = append(messages, *msg)
 			if msg.Timestamp.IsZero() {
 				msg.Timestamp = time.Now() // backwards compat after schema change
@@ -680,6 +759,8 @@ func (fr Repository) GetMessage(
 	itemID string,
 	messageID string,
 ) (*base.Message, error) {
+	ctx, span := tracer.Start(ctx, "GetMessage")
+	defer span.End()
 	messageCollection := fr.getMessagesCollection(uid, flavour, itemID)
 	el, err := fr.getSingleElement(
 		ctx,
@@ -711,7 +792,10 @@ func (fr Repository) DeleteMessage(
 	itemID string,
 	messageID string,
 ) error {
+	ctx, span := tracer.Start(ctx, "DeleteMessage")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -720,6 +804,7 @@ func (fr Repository) DeleteMessage(
 		Doc(messageID).
 		Delete(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't delete message: %w", err)
 	}
 
@@ -732,12 +817,15 @@ func (fr Repository) SaveIncomingEvent(
 	ctx context.Context,
 	event *base.Event,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveIncomingEvent")
+	defer span.End()
 	if event == nil {
 		return fmt.Errorf("nil event")
 	}
 
 	_, err := event.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("event failed validation: %w", err)
 	}
 
@@ -746,6 +834,7 @@ func (fr Repository) SaveIncomingEvent(
 	doc := coll.Doc(event.ID)
 	_, err = doc.Set(ctx, event)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to save event: %w", err)
 	}
 	return nil
@@ -757,12 +846,15 @@ func (fr Repository) SaveOutgoingEvent(
 	ctx context.Context,
 	event *base.Event,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveOutgoingEvent")
+	defer span.End()
 	if event == nil {
 		return fmt.Errorf("nil event")
 	}
 
 	_, err := event.ValidateAndMarshal()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("event failed validation: %w", err)
 	}
 
@@ -771,6 +863,7 @@ func (fr Repository) SaveOutgoingEvent(
 	doc := coll.Doc(event.ID)
 	_, err = doc.Set(ctx, event)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to save event: %w", err)
 	}
 	return nil
@@ -804,6 +897,10 @@ func (fr Repository) getTwilioCallbackCollectionName() string {
 func (fr Repository) getMarketingDataCollectionName() string {
 	suffixed := base.SuffixCollection(marketingDataCollectionName)
 	return suffixed
+}
+
+func (fr Repository) getOutgoingEmailsCollectionName() string {
+	return base.SuffixCollection(outgoingEmails)
 }
 
 func (fr Repository) getUserCollection(
@@ -863,7 +960,10 @@ func (fr Repository) elementExists(
 	id string,
 	sequenceNumber int,
 ) (bool, error) {
+	ctx, span := tracer.Start(ctx, "elementExists")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf(
 			"repository precondition check failed: %w", err)
 	}
@@ -876,6 +976,7 @@ func (fr Repository) elementExists(
 
 	docs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("unable to fetch firestore docs: %w", err)
 	}
 	return len(docs) > 0, nil
@@ -965,6 +1066,8 @@ func (fr Repository) GetItems(
 	expired *base.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) ([]base.Item, error) {
+	ctx, span := tracer.Start(ctx, "GetItems")
+	defer span.End()
 	query, err := fr.getItemsQuery(
 		uid,
 		flavour,
@@ -975,6 +1078,7 @@ func (fr Repository) GetItems(
 		filterParams,
 	)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to compose items query: %w", err)
 	}
 
@@ -982,18 +1086,21 @@ func (fr Repository) GetItems(
 	seenItemIDs := []string{}
 	itemDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get items: %w", err)
 	}
 	for _, itemDoc := range itemDocs {
 		item := &base.Item{}
 		err := itemDoc.DataTo(item)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"unable to unmarshal item from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenItemIDs, item.ID) {
+		if !converterandformatter.StringSliceContains(seenItemIDs, item.ID) {
 			messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 			if err != nil {
+				helpers.RecordSpanError(span, err)
 				return nil, fmt.Errorf("can't get feed item messages: %w", err)
 			}
 			item.Conversations = messages
@@ -1010,22 +1117,26 @@ func (fr Repository) GetActions(
 	uid string,
 	flavour base.Flavour,
 ) ([]base.Action, error) {
+	ctx, span := tracer.Start(ctx, "GetActions")
+	defer span.End()
 	actions := []base.Action{}
 	seenActionIDs := []string{}
 
 	query := fr.getActionsQuery(uid, flavour)
 	actionDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 	for _, actionDoc := range actionDocs {
 		action := &base.Action{}
 		err := actionDoc.DataTo(action)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"unable to unmarshal action from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenActionIDs, action.ID) {
+		if !converterandformatter.StringSliceContains(seenActionIDs, action.ID) {
 			actions = append(actions, *action)
 			seenActionIDs = append(seenActionIDs, action.ID)
 		}
@@ -1039,9 +1150,12 @@ func (fr Repository) Labels(
 	uid string,
 	flavour base.Flavour,
 ) ([]string, error) {
+	ctx, span := tracer.Start(ctx, "Labels")
+	defer span.End()
 	labelDoc := fr.getUserCollection(uid, flavour).Doc(labelsDocID)
 	lDoc, err := labelDoc.Get(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		if status.Code(err) != codes.NotFound {
 			return nil, fmt.Errorf("error fetching labels collection: %w", err)
 		}
@@ -1051,6 +1165,7 @@ func (fr Repository) Labels(
 		}
 		_, err := labelDoc.Set(ctx, defaultLabel)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("can't set default label: %w", err)
 		}
 
@@ -1061,6 +1176,7 @@ func (fr Repository) Labels(
 	var labels map[string][]string
 	err = lDoc.DataTo(&labels)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"can't unmarshal labels from Firestore doc to list: %w", err)
 	}
@@ -1080,18 +1196,22 @@ func (fr Repository) SaveLabel(
 	flavour base.Flavour,
 	label string,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveLabel")
+	defer span.End()
 	labels, err := fr.Labels(ctx, uid, flavour)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to retrieve labels: %w", err)
 	}
 
-	if !base.StringSliceContains(labels, label) {
+	if !converterandformatter.StringSliceContains(labels, label) {
 		labelDoc := fr.getUserCollection(uid, flavour).Doc(labelsDocID)
 		l := map[string][]string{
 			"labels": {label},
 		}
 		_, err := labelDoc.Set(ctx, l)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return fmt.Errorf("can't save label: %w", err)
 		}
 	}
@@ -1105,10 +1225,13 @@ func (fr Repository) UnreadPersistentItems(
 	uid string,
 	flavour base.Flavour,
 ) (int, error) {
+	ctx, span := tracer.Start(ctx, "UnreadPersistentItems")
+	defer span.End()
 	// unreadInboxCountsDocID
 	unreadDoc := fr.getUserCollection(uid, flavour).Doc(unreadInboxCountsDocID)
 	uDoc, err := unreadDoc.Get(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		if status.Code(err) != codes.NotFound {
 			return -1, fmt.Errorf(
 				"error fetching unread docs collection: %w",
@@ -1121,6 +1244,7 @@ func (fr Repository) UnreadPersistentItems(
 		}
 		_, err := unreadDoc.Set(ctx, defaultCount)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return -1, fmt.Errorf("can't set default unread count: %w", err)
 		}
 
@@ -1131,6 +1255,7 @@ func (fr Repository) UnreadPersistentItems(
 	var counts map[string]int
 	err = uDoc.DataTo(&counts)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return -1, fmt.Errorf(
 			"can't unmarshal unread counts from Firestore doc to list: %w",
 			err,
@@ -1151,11 +1276,14 @@ func (fr Repository) UpdateUnreadPersistentItemsCount(
 	uid string,
 	flavour base.Flavour,
 ) error {
+	ctx, span := tracer.Start(ctx, "UpdateUnreadPersistentItemsCount")
+	defer span.End()
 	unreadDoc := fr.getUserCollection(uid, flavour).Doc(unreadInboxCountsDocID)
 
 	persistentItemsQ, err := fr.getItemsQuery(
 		uid, flavour, base.BooleanFilterTrue, nil, nil, nil, nil)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't compose persistent items query: %w", err)
 	}
 
@@ -1181,6 +1309,7 @@ func (fr Repository) UpdateUnreadPersistentItemsCount(
 	}
 	_, err = unreadDoc.Set(ctx, count)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't set unread count: %w", err)
 	}
 
@@ -1267,6 +1396,8 @@ func (fr Repository) GetNudges(
 	visibility *base.Visibility,
 	expired *base.BooleanFilter,
 ) ([]base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "GetNudges")
+	defer span.End()
 	nudges := []base.Nudge{}
 	seenNudgeIDs := []string{}
 
@@ -1279,16 +1410,18 @@ func (fr Repository) GetNudges(
 	)
 	nudgeDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 	for _, nudgeDoc := range nudgeDocs {
 		nudge := &base.Nudge{}
 		err := nudgeDoc.DataTo(nudge)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"unable to unmarshal nudge from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenNudgeIDs, nudge.ID) {
+		if !converterandformatter.StringSliceContains(seenNudgeIDs, nudge.ID) {
 			nudges = append(nudges, *nudge)
 			seenNudgeIDs = append(seenNudgeIDs, nudge.ID)
 		}
@@ -1312,22 +1445,22 @@ func (fr Repository) getSingleElement(
 	id string,
 	el base.Element,
 ) (base.Element, error) {
+	ctx, span := tracer.Start(ctx, "getSingleElement")
+	defer span.End()
 	query := orderAndLimitBySequence(collection.Where(
 		"id", "==", id,
 	))
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to get element with ID %s: %w", id, err)
 	}
 
-	if len(docs) == 0 {
-		return nil, nil
-	}
-
 	el, err = docToElement(docs[0], el)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to unmarshal feed item from doc snapshot: %w", err)
 	}
@@ -1343,13 +1476,17 @@ func (fr Repository) saveElement(
 	coll *firestore.CollectionRef,
 	isNewElement bool,
 ) error {
+	ctx, span := tracer.Start(ctx, "saveElement")
+	defer span.End()
 	if err := validateElement(el); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("%T failed validation: %w", el, err)
 	}
 
 	if isNewElement {
 		exists, err := fr.elementExists(ctx, coll, id, sequenceNumber)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return fmt.Errorf("can't determine if item exists: %w", err)
 		}
 
@@ -1362,6 +1499,7 @@ func (fr Repository) saveElement(
 	doc := coll.Doc(id)
 	_, err := doc.Set(ctx, el)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to save item: %w", err)
 	}
 
@@ -1388,8 +1526,11 @@ func fetchQueryDocs(
 	query firestore.Query,
 	requireAtLeastOne bool,
 ) ([]*firestore.DocumentSnapshot, error) {
+	ctx, span := tracer.Start(ctx, "fetchQueryDocs")
+	defer span.End()
 	docs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to fetch documents: %w", err)
 	}
@@ -1431,10 +1572,13 @@ func (fr Repository) GetDefaultNudgeByTitle(
 	flavour base.Flavour,
 	title string,
 ) (*base.Nudge, error) {
+	ctx, span := tracer.Start(ctx, "GetDefaultNudgeByTitle")
+	defer span.End()
 	collection := fr.getNudgesCollection(uid, flavour)
 	query := collection.Where("title", "==", title)
 	nudgeDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get nudge: %w", err)
 	}
 
@@ -1447,6 +1591,7 @@ func (fr Repository) GetDefaultNudgeByTitle(
 		nudgeData := &base.Nudge{}
 		err = nudgeDoc.DataTo(nudgeData)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"unable to unmarshal nudge from firebase doc: %w", err)
 		}
@@ -1460,13 +1605,17 @@ func (fr Repository) SaveMarketingMessage(
 	ctx context.Context,
 	data dto.MarketingSMS,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveMarketingMessage")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("repository precondition check failed: %w", err)
 	}
 
 	collectionName := fr.getMaretingSMSCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to save callback response")
 	}
 
@@ -1479,22 +1628,22 @@ func (fr Repository) UpdateMarketingMessage(
 	phoneNumber string,
 	deliveryReport *dto.ATDeliveryReport,
 ) (*dto.MarketingSMS, error) {
+	ctx, span := tracer.Start(ctx, "UpdateMarketingMessage")
+	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
 		Where("PhoneNumber", "==", phoneNumber).
 		OrderBy("MessageSentTimeStamp", firestore.Desc)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
-	}
-	if len(docs) == 0 {
-		log.Printf("marketing sms for phone number %s not found", phoneNumber)
-		return nil, nil
 	}
 
 	var marketingSMS dto.MarketingSMS
 	err = docs[0].DataTo(&marketingSMS)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf(
 			"unable to unmarshal marketing SMS from doc snapshot: %w", err)
 	}
@@ -1503,6 +1652,7 @@ func (fr Repository) UpdateMarketingMessage(
 	doc := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
 		Doc(docs[0].Ref.ID)
 	if _, err = doc.Set(ctx, marketingSMS); err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
@@ -1514,13 +1664,17 @@ func (fr Repository) SaveTwilioResponse(
 	ctx context.Context,
 	data dto.Message,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveTwilioResponse")
+	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("repository precondition check failed: %w", err)
 	}
 
 	collectionName := fr.getTwilioCallbackCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to save callback response")
 	}
 
@@ -1533,10 +1687,13 @@ func (fr Repository) SaveNotification(
 	firestoreClient *firestore.Client,
 	notification dto.SavedNotification,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveNotification")
+	defer span.End()
 	collectionName := fr.getNotificationCollectionName()
 	_, _, err := firestoreClient.Collection(collectionName).
 		Add(ctx, notification)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't save notification: %w", err)
 	}
 	return nil
@@ -1550,6 +1707,8 @@ func (fr Repository) RetrieveNotification(
 	newerThan time.Time,
 	limit int,
 ) ([]*dto.SavedNotification, error) {
+	ctx, span := tracer.Start(ctx, "RetrieveNotification")
+	defer span.End()
 	collectionName := fr.getNotificationCollectionName()
 
 	docs, err := firestoreClient.Collection(
@@ -1560,6 +1719,7 @@ func (fr Repository) RetrieveNotification(
 		"Timestamp", ">=", newerThan,
 	).Limit(limit).Documents(ctx).GetAll()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to retrieve notifications: %w", err)
 	}
 	notifications := []*dto.SavedNotification{}
@@ -1567,6 +1727,7 @@ func (fr Repository) RetrieveNotification(
 		var notification dto.SavedNotification
 		err = doc.DataTo(&notification)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"error unmarshalling saved notification: %w",
 				err,
@@ -1582,9 +1743,12 @@ func (fr Repository) SaveNPSResponse(
 	ctx context.Context,
 	response *dto.NPSResponse,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveNPSResponse")
+	defer span.End()
 	collection := fr.getNPSResponseCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, response)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't save nps response: %w", err)
 	}
 	return nil
@@ -1596,12 +1760,15 @@ func (fr Repository) SaveNPSResponse(
 // 1 =? record exists. Means it should be created or checked for existence on the crm
 // -1 =? a record was created on firebase correctly. Means it should be created or checked for existence on the crm
 func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (int, error) {
+	ctx, span := tracer.Start(ctx, "LoadMarketingData")
+	defer span.End()
 	// check the data does not exist
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("properties.Email", "==", data.Properties.Email).Where("properties.InitialSegment", "==", data.Properties.InitialSegment)
 
 	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return 0, err
 	}
 	if len(docs) >= 1 {
@@ -1610,6 +1777,7 @@ func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (i
 	// create a new record
 	_, _, err = fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Add(ctx, data)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return 0, fmt.Errorf("unable create marketing record: %v", err)
 	}
 
@@ -1618,16 +1786,20 @@ func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (i
 
 // RollBackMarketingData remove the record that was creatded. This happens only when the same record fails to the created on the crm
 func (fr Repository) RollBackMarketingData(ctx context.Context, data dto.Segment) error {
+	ctx, span := tracer.Start(ctx, "RollBackMarketingData")
+	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("properties.Email", "==", data.Properties.Email)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 
 	// delete the record
 	if _, err := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Doc(docs[0].Ref.ID).Delete(ctx); err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to delete marketing record: %v", err)
 	}
 	return nil
@@ -1638,17 +1810,16 @@ func (fr Repository) RetrieveMarketingData(
 	ctx context.Context,
 	data *dto.MarketingMessagePayload,
 ) ([]*dto.Segment, error) {
+	ctx, span := tracer.Start(ctx, "RetrieveMarketingData")
+	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("message_sent", "==", "FALSE").Where("wing", "==", data.Wing).
 		Where("properties.InitialSegment", "==", data.InitialSegment)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, err
-	}
-
-	if len(docs) == 0 {
-		return nil, nil
 	}
 
 	marketingData := []*dto.Segment{}
@@ -1656,6 +1827,7 @@ func (fr Repository) RetrieveMarketingData(
 		var data dto.Segment
 		err := doc.DataTo(&data)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf(
 				"error unmarshalling saved data: %w",
 				err,
@@ -1672,21 +1844,21 @@ func (fr Repository) UpdateMessageSentStatus(
 	phonenumber string,
 	segment string,
 ) error {
+	ctx, span := tracer.Start(ctx, "UpdateMessageSentStatus")
+	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("message_sent", "==", "FALSE").Where("properties.Phone", "==", phonenumber).Where("properties.InitialSegment", "==", segment)
 
 	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
-	}
-
-	if len(docs) == 0 {
-		return nil
 	}
 
 	var marketingData dto.Segment
 	err = docs[0].DataTo(&marketingData)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"unable to unmarshal marketing Data from doc snapshot: %w", err)
 	}
@@ -1696,6 +1868,7 @@ func (fr Repository) UpdateMessageSentStatus(
 	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Doc(docs[0].Ref.ID)
 	if _, err = doc.Set(ctx, marketingData); err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	return nil
@@ -1703,20 +1876,20 @@ func (fr Repository) UpdateMessageSentStatus(
 
 // UpdateUserCRMData updates user CRM contact properties with the supplied data
 func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
+	ctx, span := tracer.Start(ctx, "UpdateUserCRMEmail")
+	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Phone", "==", phoneNumber)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
-	}
-
-	if len(docs) == 0 {
-		return nil
 	}
 
 	var marketingData dto.Segment
 	err = docs[0].DataTo(&marketingData)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
 			"unable to unmarshal marketing Data from doc snapshot: %w", err)
 	}
@@ -1726,6 +1899,7 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Doc(docs[0].Ref.ID)
 	if _, err = doc.Set(ctx, marketingData); err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 	return nil
@@ -1733,24 +1907,24 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 
 // UpdateUserCRMBewellAware updates user CMR data with provided email= as bewell-aware on the CRM
 func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
+	ctx, span := tracer.Start(ctx, "UpdateUserCRMBewellAware")
+	defer span.End()
 	logrus.Printf("collection name %v", fr.getMarketingDataCollectionName())
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Email", "==", email).Where("properties.BeWellAware", "==", "NO")
 
 	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return err
 	}
 
 	logrus.Printf("documents found %v", docs)
 
-	if len(docs) == 0 {
-		return nil
-	}
-
 	for _, doc := range docs {
 		var marketingData dto.Segment
 		err = doc.DataTo(&marketingData)
 		if err != nil {
+			helpers.RecordSpanError(span, err)
 			return fmt.Errorf(
 				"unable to unmarshal marketing Data from doc snapshot: %w", err)
 		}
@@ -1764,9 +1938,56 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 		doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 			Doc(doc.Ref.ID)
 		if _, err = doc.Set(ctx, marketingData); err != nil {
+			helpers.RecordSpanError(span, err)
 			return err
 		}
 	}
 
 	return nil
+}
+
+// SaveOutgoingEmails saves all the outgoing emails
+func (fr Repository) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
+	collection := fr.getOutgoingEmailsCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, payload)
+	if err != nil {
+		return fmt.Errorf("unable to save ougoing email logs")
+	}
+	return nil
+}
+
+// UpdateMailgunDeliveryStatus updates the status and delivery time of the sent email message
+func (fr Repository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
+
+	collection := fr.getOutgoingEmailsCollectionName()
+
+	query := fr.firestoreClient.Collection(collection).Where("messageID", "==", payload.MessageID)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return nil, err
+	}
+
+	var emailLogData dto.OutgoingEmailsLog
+	err = docs[0].DataTo(&emailLogData)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal data from docs snapshot: %w", err)
+	}
+
+	timeOfDelivery := helpers.EpochTimetoStandardTime(payload.DeliveredOn)
+
+	eventOutput := dto.MailgunEventOutput{
+		EventName:   payload.EventName,
+		DeliveredOn: timeOfDelivery,
+	}
+
+	emailLogData.Event = &eventOutput
+
+	doc := fr.firestoreClient.Collection(fr.getOutgoingEmailsCollectionName()).Doc(docs[0].Ref.ID)
+	if _, err = doc.Set(ctx, emailLogData); err != nil {
+		logrus.Print("an error occurred while updating data: ", err)
+		return nil, fmt.Errorf("unable to update data")
+	}
+
+	return &emailLogData, nil
 }

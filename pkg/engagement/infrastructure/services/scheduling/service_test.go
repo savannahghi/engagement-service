@@ -1,6 +1,7 @@
 package scheduling
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -24,6 +25,7 @@ func TestNewService(t *testing.T) {
 }
 
 func TestService_CreateCalendar(t *testing.T) {
+	ctx := context.Background()
 	srv := NewService()
 	assert.NotNil(t, srv)
 	srv.checkPreconditions()
@@ -46,7 +48,7 @@ func TestService_CreateCalendar(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
-			got, err := s.CreateCalendar(tt.args.name)
+			got, err := s.CreateCalendar(ctx, tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.CreateCalendar() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -61,11 +63,12 @@ func TestService_CreateCalendar(t *testing.T) {
 }
 
 func TestService_AddEvent(t *testing.T) {
+	ctx := context.Background()
 	srv := NewService()
 	assert.NotNil(t, srv)
 	srv.checkPreconditions()
 
-	cal, err := srv.CreateCalendar("integration test calendar")
+	cal, err := srv.CreateCalendar(ctx, "integration test calendar")
 	assert.Nil(t, err)
 	assert.NotNil(t, cal)
 
@@ -111,6 +114,7 @@ func TestService_AddEvent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService()
 			got, err := s.AddEvent(
+				ctx,
 				tt.args.title,
 				tt.args.description,
 				tt.args.start,

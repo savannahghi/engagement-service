@@ -19,11 +19,15 @@ import (
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"go.opentelemetry.io/otel"
 	"moul.io/http2curl"
 )
+
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/twilio")
 
 /* #nosec */
 // DefaultTwilioRegion is set to global low latency auto-selection
@@ -230,6 +234,8 @@ func (s Service) MakeTwilioRequest(
 // Because of confidentiality issues in healthcare, we do not enable recording
 // for these meetings.
 func (s Service) Room(ctx context.Context) (*dto.Room, error) {
+	ctx, span := tracer.Start(ctx, "Room")
+	defer span.End()
 	s.checkPreconditions()
 
 	roomReqData := url.Values{}
@@ -242,6 +248,7 @@ func (s Service) Room(ctx context.Context) (*dto.Room, error) {
 	var room dto.Room
 	err := s.MakeTwilioRequest("POST", "/v1/Rooms", roomReqData, &room)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("twilio room API call error: %w", err)
 	}
 	return &room, nil
@@ -257,15 +264,19 @@ func (s Service) Room(ctx context.Context) (*dto.Room, error) {
 //
 // Access tokens are JSON Web Tokens (JWTs).
 func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {
+	ctx, span := tracer.Start(ctx, "TwilioAccessToken")
+	defer span.End()
 	s.checkPreconditions()
 
 	uid, err := base.GetLoggedInUserUID(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get logged in user uid: %w", err)
 	}
 
 	room, err := s.Room(ctx)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get room to issue a grant to: %w", err)
 	}
 
@@ -276,6 +287,7 @@ func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error
 
 	jwt, err := accessToken.JWT()
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to generate JWT for Twilio access token: %w", err)
 	}
 	payload := dto.AccessToken{
@@ -293,10 +305,13 @@ func (s Service) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error
 
 // SendSMS sends a text message through Twilio's programmable SMS
 func (s Service) SendSMS(ctx context.Context, to string, msg string) error {
+	ctx, span := tracer.Start(ctx, "SendSMS")
+	defer span.End()
 	s.checkPreconditions()
 
 	t, err := s.twilioClient.Messages.SendMessage(s.smsNumber, to, msg, nil)
 	if err != nil {
+		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("twilio SMS API error: %w", err)
 	}
 
