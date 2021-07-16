@@ -24,8 +24,8 @@ import (
 	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/base"
-
 	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -132,8 +132,8 @@ func RegisterPushToken(
 	return true, nil
 }
 
-func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) *dto.Segment {
-	return &dto.Segment{
+func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) *apiclient.Segment {
+	return &apiclient.Segment{
 		Properties: CRMDomain.ContactProperties{
 			BeWellEnrolled:        "NO",
 			OptOut:                "NO",
@@ -157,7 +157,7 @@ func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string
 	}
 }
 
-func loadTestMarketingData(ctx context.Context, marketingData dto.Segment) error {
+func loadTestMarketingData(ctx context.Context, marketingData apiclient.Segment) error {
 	repository, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to initialize Firebase Repository: %s", err)
@@ -171,7 +171,7 @@ func loadTestMarketingData(ctx context.Context, marketingData dto.Segment) error
 	return nil
 }
 
-func rollBackTestMarketingData(ctx context.Context, marketingData dto.Segment) error {
+func rollBackTestMarketingData(ctx context.Context, marketingData apiclient.Segment) error {
 	repository, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to initialize Firebase Repository: %s", err)
@@ -6546,5 +6546,124 @@ func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
+	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	headers := getDefaultHeaders(ctx, t, baseURL)
+
+	testNumber := base.TestUserPhoneNumber
+	invalidNumber := uuid.New().String()
+	// Setup test data
+	marketingData := composeMarketingDataPayload(
+		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		testNumber,
+		gofakeit.Email(),
+	)
+	err = loadTestMarketingData(ctx, *marketingData)
+	if err != nil {
+		t.Errorf("failed to create test data")
+		return
+	}
+
+	type args struct {
+		url        string
+		httpMethod string
+		body       io.Reader
+	}
+
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "Happy Case: Successfully retrieve data",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/slader_data/%s", baseURL, base.TestUserPhoneNumber),
+				httpMethod: http.MethodGet,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "Sad Case: Fail to retrieve data",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/slader_data/%s", baseURL, invalidNumber),
+				httpMethod: http.MethodGet,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
+
+			for k, v := range headers {
+				r.Header.Add(k, v)
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantStatus != resp.StatusCode {
+				t.Errorf("expected %v, but got %v", tt.wantStatus, resp.StatusCode)
+				return
+			}
+		})
+	}
+
+	// Teardown test data
+	err = rollBackTestMarketingData(ctx, *marketingData)
+	if err != nil {
+		t.Errorf("failed to teardown test data")
+		return
 	}
 }

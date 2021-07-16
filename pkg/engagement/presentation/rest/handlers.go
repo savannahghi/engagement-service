@@ -180,6 +180,8 @@ type PresentationHandlers interface {
 
 	LoadCampaignData(ctx context.Context) http.HandlerFunc
 	UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc
+
+	GetSladerData(ctx context.Context) http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1922,6 +1924,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 	}
 }
 
+// GetMarketingData retrieves all the marketing data from the collection
 func (p PresentationHandlersImpl) GetMarketingData(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload := &dto.MarketingMessagePayload{}
@@ -2014,5 +2017,36 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(ctx context.Contex
 			return
 		}
 		respondWithJSON(rw, http.StatusOK, marshalled)
+	}
+}
+
+// GetSladerData get the details of a single slader by their phonenumber
+func (p PresentationHandlersImpl) GetSladerData(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		phoneNumber, err := getStringVar(r, "phoneNumber")
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+
+		sladerData, err := p.interactor.Marketing.GetUserMarketingData(
+			ctx,
+			phoneNumber,
+		)
+
+		if err != nil {
+			respondWithError(
+				w,
+				http.StatusBadRequest,
+				fmt.Errorf("failed to retrieve data %v", err),
+			)
+			return
+		}
+		marshalled, err := json.Marshal(sladerData)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }

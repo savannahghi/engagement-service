@@ -98,17 +98,6 @@ type MarketingMessagePayload struct {
 	InitialSegment string `json:"initialSegment" firestore:"initialSegment"`
 }
 
-// Segment represents the Segments data
-type Segment struct {
-	Properties     domain.ContactProperties `json:"properties" firestore:"properties"`
-	Wing           string                   `json:"wing" firestore:"wing"`
-	MessageSent    string                   `json:"message_sent" firestore:"message_sent"`
-	IsSynced       string                   `json:"is_synced" firestore:"is_synced"`
-	TimeSynced     string                   `json:"time_synced" firestore:"time_synced"`
-	PayerSladeCode string                   `json:"payer_slade_code" firestore:"payersladecode"`
-	MemberNumber   string                   `json:"member_number" firestore:"membernumber"`
-}
-
 // UpdateContactPSMessage represents CRM update contact Pub/Sub message
 type UpdateContactPSMessage struct {
 	Properties domain.ContactProperties `json:"properties"`

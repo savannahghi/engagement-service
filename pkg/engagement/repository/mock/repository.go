@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -254,7 +255,7 @@ type FakeEngagementRepository struct {
 	RetrieveMarketingDataFn func(
 		ctx context.Context,
 		data *dto.MarketingMessagePayload,
-	) ([]*dto.Segment, error)
+	) ([]*apiclient.Segment, error)
 
 	UpdateMessageSentStatusFn func(
 		ctx context.Context,
@@ -265,11 +266,15 @@ type FakeEngagementRepository struct {
 	UpdateUserCRMEmailFn       func(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
 	UpdateUserCRMBewellAwareFn func(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
 
-	LoadMarketingDataFn     func(ctx context.Context, data dto.Segment) (int, error)
-	RollBackMarketingDataFn func(ctx context.Context, data dto.Segment) error
+	LoadMarketingDataFn     func(ctx context.Context, data apiclient.Segment) (int, error)
+	RollBackMarketingDataFn func(ctx context.Context, data apiclient.Segment) error
 
 	SaveOutgoingEmailsFn          func(ctx context.Context, payload *dto.OutgoingEmailsLog) error
 	UpdateMailgunDeliveryStatusFn func(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
+	GetSladerDataByPhoneFn        func(
+		ctx context.Context,
+		phonenumber string,
+	) (*apiclient.Segment, error)
 }
 
 // GetFeed ...
@@ -595,7 +600,7 @@ func (f *FakeEngagementRepository) UpdateMarketingMessage(
 func (f *FakeEngagementRepository) RetrieveMarketingData(
 	ctx context.Context,
 	data *dto.MarketingMessagePayload,
-) ([]*dto.Segment, error) {
+) ([]*apiclient.Segment, error) {
 	return f.RetrieveMarketingDataFn(ctx, data)
 }
 
@@ -619,12 +624,12 @@ func (f *FakeEngagementRepository) UpdateUserCRMBewellAware(ctx context.Context,
 }
 
 // LoadMarketingData ...
-func (f *FakeEngagementRepository) LoadMarketingData(ctx context.Context, data dto.Segment) (int, error) {
+func (f *FakeEngagementRepository) LoadMarketingData(ctx context.Context, data apiclient.Segment) (int, error) {
 	return f.LoadMarketingDataFn(ctx, data)
 }
 
 // RollBackMarketingData ...
-func (f *FakeEngagementRepository) RollBackMarketingData(ctx context.Context, data dto.Segment) error {
+func (f *FakeEngagementRepository) RollBackMarketingData(ctx context.Context, data apiclient.Segment) error {
 	return f.RollBackMarketingDataFn(ctx, data)
 }
 
@@ -636,4 +641,12 @@ func (f *FakeEngagementRepository) SaveOutgoingEmails(ctx context.Context, paylo
 // RollBackMarketingData ...
 func (f *FakeEngagementRepository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
 	return f.UpdateMailgunDeliveryStatusFn(ctx, payload)
+}
+
+// GetSladerDataByPhone ...
+func (f *FakeEngagementRepository) GetSladerDataByPhone(
+	ctx context.Context,
+	phonenumber string,
+) (*apiclient.Segment, error) {
+	return f.GetSladerDataByPhoneFn(ctx, phonenumber)
 }

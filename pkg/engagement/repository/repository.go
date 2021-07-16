@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -257,7 +258,7 @@ type Repository interface {
 	RetrieveMarketingData(
 		ctx context.Context,
 		data *dto.MarketingMessagePayload,
-	) ([]*dto.Segment, error)
+	) ([]*apiclient.Segment, error)
 
 	UpdateMessageSentStatus(
 		ctx context.Context,
@@ -268,9 +269,14 @@ type Repository interface {
 	UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
 	UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
 
-	LoadMarketingData(ctx context.Context, data dto.Segment) (int, error)
+	LoadMarketingData(ctx context.Context, data apiclient.Segment) (int, error)
 
-	RollBackMarketingData(ctx context.Context, data dto.Segment) error
+	RollBackMarketingData(ctx context.Context, data apiclient.Segment) error
 	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
 	UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
+
+	GetSladerDataByPhone(
+		ctx context.Context,
+		phonenumber string,
+	) (*apiclient.Segment, error)
 }

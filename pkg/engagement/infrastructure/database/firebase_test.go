@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -96,8 +97,8 @@ func testNudge() *base.Nudge {
 	}
 }
 
-func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) dto.Segment {
-	return dto.Segment{
+func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) apiclient.Segment {
+	return apiclient.Segment{
 		Properties: domain.ContactProperties{
 			BeWellEnrolled:        "NO",
 			OptOut:                "NO",
@@ -2265,7 +2266,7 @@ func TestRepository_LoadMarketingData(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		marketingData dto.Segment
+		marketingData apiclient.Segment
 		wantStatus    int
 	}{
 		{
@@ -2334,7 +2335,7 @@ func TestRepository_RollBackMarketingData(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		marketingData dto.Segment
+		marketingData apiclient.Segment
 		wantErr       bool
 	}{
 		{
@@ -2475,4 +2476,71 @@ func TestRepository_UpdateMailgunDeliveryStatus(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRepository_RetrieveSingleSladerData(t *testing.T) {
+	ctx := context.Background()
+	repository, err := db.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("failed to initialize Firebase repository: %s", err)
+		return
+	}
+	if repository == nil {
+		t.Errorf("nil Firebase repository returned")
+		return
+	}
+
+	// Compose the Test user payload
+	marketingData := composeMarketingDataPayload(
+		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		base.TestUserPhoneNumber,
+		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
+	)
+
+	// Create the test user
+	_, err = repository.LoadMarketingData(ctx, marketingData)
+	if err != nil {
+		t.Errorf("failed to setup test data: %s", err)
+	}
+
+	type args struct {
+		ctx         context.Context
+		phonenumber string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Happy Case: Successfully retrieve a slader data",
+			args: args{
+				ctx:         ctx,
+				phonenumber: base.TestUserPhoneNumber,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Happy Case: Attempt to retrieve non-existent data",
+			args: args{
+				ctx:         ctx,
+				phonenumber: "",
+			},
+			// This should not return an error
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := repository.GetSladerDataByPhone(tt.args.ctx, tt.args.phonenumber)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Repository.RetrieveSingleSladerData() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+	// Tear down the created user
+	repository.RollBackMarketingData(ctx, marketingData)
 }

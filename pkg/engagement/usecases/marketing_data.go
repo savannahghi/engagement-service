@@ -12,6 +12,7 @@ import (
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/sirupsen/logrus"
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
@@ -75,10 +76,11 @@ const dataLoadingTemaplate = `
 `
 
 type MarketingDataUseCases interface {
-	GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*dto.Segment, error)
+	GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*apiclient.Segment, error)
 	UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error
 	BeWellAware(ctx context.Context, email string) error
 	LoadCampaignDataset(ctx context.Context, phone string, emails []string)
+	GetUserMarketingData(ctx context.Context, phonenumber string) (*apiclient.Segment, error)
 }
 
 // MarketingDataImpl represents the marketing usecase implementation
@@ -99,7 +101,8 @@ func NewMarketing(
 	}
 }
 
-func (m MarketingDataImpl) GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*dto.Segment, error) {
+// GetMarketingData fetches all the marketing data from a collection
+func (m MarketingDataImpl) GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*apiclient.Segment, error) {
 	ctx, span := tracer.Start(ctx, "GetMarketingData")
 	defer span.End()
 	segmentData, err := m.repository.RetrieveMarketingData(ctx, data)
@@ -247,7 +250,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 
 		entry := dto.MarketingDataLoadEntriesOutput{}
 
-		data := dto.Segment{
+		data := apiclient.Segment{
 			Properties: domain.ContactProperties{
 				BeWellEnrolled:        domain.GeneralOptionType(line[0]),
 				OptOut:                domain.GeneralOptionType(line[1]),
@@ -392,4 +395,14 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 	}(res.Entries)
 
 	sendMail(res)
+}
+
+// GetUserMarketingData is used to retrieve the data of a targeted slader using their phonenumber
+func (m MarketingDataImpl) GetUserMarketingData(ctx context.Context, phonenumber string) (*apiclient.Segment, error) {
+	sladerData, err := m.repository.GetSladerDataByPhone(ctx, phonenumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve the user's marketing data: %w", err)
+	}
+
+	return sladerData, nil
 }

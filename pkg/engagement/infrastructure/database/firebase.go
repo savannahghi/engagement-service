@@ -10,6 +10,7 @@ import (
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/sirupsen/logrus"
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
@@ -1759,7 +1760,7 @@ func (fr Repository) SaveNPSResponse(
 // 0 =? generic error. 1
 // 1 =? record exists. Means it should be created or checked for existence on the crm
 // -1 =? a record was created on firebase correctly. Means it should be created or checked for existence on the crm
-func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (int, error) {
+func (fr Repository) LoadMarketingData(ctx context.Context, data apiclient.Segment) (int, error) {
 	ctx, span := tracer.Start(ctx, "LoadMarketingData")
 	defer span.End()
 	// check the data does not exist
@@ -1785,7 +1786,7 @@ func (fr Repository) LoadMarketingData(ctx context.Context, data dto.Segment) (i
 }
 
 // RollBackMarketingData remove the record that was creatded. This happens only when the same record fails to the created on the crm
-func (fr Repository) RollBackMarketingData(ctx context.Context, data dto.Segment) error {
+func (fr Repository) RollBackMarketingData(ctx context.Context, data apiclient.Segment) error {
 	ctx, span := tracer.Start(ctx, "RollBackMarketingData")
 	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
@@ -1809,7 +1810,7 @@ func (fr Repository) RollBackMarketingData(ctx context.Context, data dto.Segment
 func (fr Repository) RetrieveMarketingData(
 	ctx context.Context,
 	data *dto.MarketingMessagePayload,
-) ([]*dto.Segment, error) {
+) ([]*apiclient.Segment, error) {
 	ctx, span := tracer.Start(ctx, "RetrieveMarketingData")
 	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
@@ -1822,9 +1823,9 @@ func (fr Repository) RetrieveMarketingData(
 		return nil, err
 	}
 
-	marketingData := []*dto.Segment{}
+	marketingData := []*apiclient.Segment{}
 	for _, doc := range docs {
-		var data dto.Segment
+		var data apiclient.Segment
 		err := doc.DataTo(&data)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -1855,7 +1856,7 @@ func (fr Repository) UpdateMessageSentStatus(
 		return err
 	}
 
-	var marketingData dto.Segment
+	var marketingData apiclient.Segment
 	err = docs[0].DataTo(&marketingData)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1886,7 +1887,7 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 		return err
 	}
 
-	var marketingData dto.Segment
+	var marketingData apiclient.Segment
 	err = docs[0].DataTo(&marketingData)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1918,10 +1919,8 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 		return err
 	}
 
-	logrus.Printf("documents found %v", docs)
-
 	for _, doc := range docs {
-		var marketingData dto.Segment
+		var marketingData apiclient.Segment
 		err = doc.DataTo(&marketingData)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -1990,4 +1989,31 @@ func (fr Repository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *d
 	}
 
 	return &emailLogData, nil
+}
+
+// GetSladerDataByPhone is used to retrieve a slader data by the phonenumber
+func (fr Repository) GetSladerDataByPhone(
+	ctx context.Context,
+	phonenumber string,
+) (*apiclient.Segment, error) {
+	ctx, span := tracer.Start(ctx, "GetSladerDataByPhone")
+	defer span.End()
+	query := fr.firestoreClient.Collection(
+		fr.getMarketingDataCollectionName(),
+	).Where("properties.Phone", "==", phonenumber)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
+		return nil, err
+	}
+
+	var data apiclient.Segment
+	err = docs[0].DataTo(&data)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"error unmarshalling saved data: %w",
+			err,
+		)
+	}
+	return &data, nil
 }

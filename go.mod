@@ -32,7 +32,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/xid v1.3.0
-	github.com/savannahghi/converterandformatter v0.0.3 // indirect
+	github.com/savannahghi/converterandformatter v0.0.3
 	github.com/savannahghi/errorcodeutil v0.0.0-20210715070815-98283e9f49c6
 	github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad
 	github.com/savannahghi/serverutils v0.0.2
@@ -41,6 +41,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.2.0
+	gitlab.slade360emr.com/go/apiclient v0.0.7
 	gitlab.slade360emr.com/go/base v0.0.204
 	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210713131930-5d534146c0fc
 	go.opencensus.io v0.23.0
