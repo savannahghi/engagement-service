@@ -139,7 +139,7 @@ type OutgoingEmailsLog struct {
 	Event       *MailgunEventOutput `json:"mailgunEvent" firestore:"mailgunEvent"`
 }
 
-// MailgunEvent represents mailgun event input e.g deliveresd, rejected etc
+// MailgunEvent represents mailgun event input e.g delivered, rejected etc
 type MailgunEvent struct {
 	EventName   string `json:"event" firestore:"event"`
 	DeliveredOn string `json:"timestamp" firestore:"deliveredOn"`
