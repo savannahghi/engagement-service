@@ -21,6 +21,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
+	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
@@ -5896,7 +5897,7 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 		ID:          uuid.New().String(),
 		PhoneNumber: gofakeit.Phone(),
 		Message:     gofakeit.FarmAnimal(),
-		SenderID:    base.SenderIDBewell,
+		SenderID:    enumutils.SenderIDBewell,
 	}
 
 	fr, err := database.NewFirebaseRepository(ctx)

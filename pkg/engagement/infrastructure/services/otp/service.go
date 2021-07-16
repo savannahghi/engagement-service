@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp/totp"
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
@@ -148,7 +149,7 @@ func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code
 	msg := fmt.Sprintf("%s is your Be.Well verification code %s", code, appIdentifier)
 
 	if base.IsKenyanNumber(normalizedPhoneNumber) {
-		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg, base.SenderIDBewell)
+		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg, enumutils.SenderIDBewell)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return "", fmt.Errorf("failed to send OTP verification message to recipient")

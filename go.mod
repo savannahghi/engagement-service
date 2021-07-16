@@ -34,6 +34,7 @@ require (
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/xid v1.3.0
 	github.com/savannahghi/converterandformatter v0.0.3
+	github.com/savannahghi/enumutils v0.0.0-20210629053908-b2082a4ab6b3 // indirect
 	github.com/savannahghi/errorcodeutil v0.0.0-20210715070815-98283e9f49c6
 	github.com/savannahghi/pubsubtools v0.0.0-20210624135722-0393c6ad97a0
 	github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad
@@ -42,7 +43,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasttemplate v1.2.1 // indirect
-	github.com/vektah/gqlparser/v2 v2.2.0
+	github.com/vektah/gqlparser/v2 v2.1.0
 	gitlab.slade360emr.com/go/apiclient v0.0.7
 	gitlab.slade360emr.com/go/base v0.0.204
 	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210713131930-5d534146c0fc

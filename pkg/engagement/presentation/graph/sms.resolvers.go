@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
@@ -18,7 +18,7 @@ func (r *mutationResolver) Send(ctx context.Context, to string, message string) 
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	smsResponse, err := r.interactor.SMS.Send(ctx, to, message, base.SenderIDBewell)
+	smsResponse, err := r.interactor.SMS.Send(ctx, to, message, enumutils.SenderIDBewell)
 	if err != nil {
 		return nil, fmt.Errorf("unable send SMS: %v", err)
 	}
@@ -38,7 +38,7 @@ func (r *mutationResolver) SendToMany(ctx context.Context, message string, to []
 
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
-	smsResponse, err := r.interactor.SMS.SendToMany(ctx, message, to, base.SenderIDBewell)
+	smsResponse, err := r.interactor.SMS.SendToMany(ctx, message, to, enumutils.SenderIDBewell)
 	if err != nil {
 		return nil, fmt.Errorf("unable to send SMS to many: %v", err)
 	}

@@ -6,7 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/brianvoe/gofakeit"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/savannahghi/enumutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -42,7 +43,7 @@ func TestSendToMany(t *testing.T) {
 	type args struct {
 		message string
 		to      []string
-		sender  base.SenderID
+		sender  enumutils.SenderID
 	}
 
 	tests := []struct {
@@ -56,7 +57,7 @@ func TestSendToMany(t *testing.T) {
 			args: args{
 				message: "This is a test",
 				to:      []string{"+254711223344", "+254700990099"},
-				sender:  base.SenderIDBewell,
+				sender:  enumutils.SenderIDBewell,
 			},
 			wantErr: false,
 		},
@@ -65,7 +66,7 @@ func TestSendToMany(t *testing.T) {
 			args: args{
 				message: "This is a test",
 				to:      []string{"+254711223344", "+254700990099"},
-				sender:  base.SenderIDSLADE360,
+				sender:  enumutils.SenderIDSLADE360,
 			},
 			wantErr: false,
 		},
@@ -73,7 +74,7 @@ func TestSendToMany(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := service.SendToMany(ctx, tt.args.message, tt.args.to, base.SenderIDBewell)
+			got, err := service.SendToMany(ctx, tt.args.message, tt.args.to, enumutils.SenderIDBewell)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SendToMany() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -111,7 +112,7 @@ func TestSend(t *testing.T) {
 	type args struct {
 		to      string
 		message string
-		sender  base.SenderID
+		sender  enumutils.SenderID
 	}
 
 	tests := []struct {
@@ -125,7 +126,7 @@ func TestSend(t *testing.T) {
 			args: args{
 				message: "This is a test",
 				to:      "+254711223344",
-				sender:  base.SenderIDSLADE360,
+				sender:  enumutils.SenderIDSLADE360,
 			},
 			wantErr: false,
 		},
@@ -134,7 +135,7 @@ func TestSend(t *testing.T) {
 			args: args{
 				message: "",
 				to:      "+",
-				sender:  base.SenderIDSLADE360,
+				sender:  enumutils.SenderIDSLADE360,
 			},
 			wantErr: true,
 		},
@@ -190,7 +191,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 		ctx     context.Context
 		to      []string
 		message string
-		from    base.SenderID
+		from    enumutils.SenderID
 		segment string
 	}
 	tests := []struct {
@@ -205,20 +206,19 @@ func TestService_SendMarketingSMS(t *testing.T) {
 				ctx:     ctx,
 				to:      []string{"+254711223344", "+254700990099"},
 				message: gofakeit.HipsterSentence(10),
-				from:    base.SenderIDBewell,
+				from:    enumutils.SenderIDBewell,
 				segment: "WING A",
 			},
 			wantErr: false,
 		},
-
 		{
 			name: "Sad Case missing message :(",
 			args: args{
 				ctx:     ctx,
 				to:      []string{"+254711223344", "+254700990099"},
 				message: "",
-				from:    base.SenderIDBewell,
-				segment: "WING A",
+				from:    enumutils.SenderIDBewell,
+				segment: gofakeit.UUID(),
 			},
 			wantErr: true,
 		},
@@ -250,7 +250,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 				ctx:     ctx,
 				to:      []string{""},
 				message: gofakeit.HipsterSentence(10),
-				from:    base.SenderIDBewell,
+				from:    enumutils.SenderIDBewell,
 				segment: "WING A",
 			},
 			wantErr: true,

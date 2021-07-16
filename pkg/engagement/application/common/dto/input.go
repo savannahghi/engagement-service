@@ -3,17 +3,17 @@ package dto
 import (
 	"time"
 
+	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/scalarutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // SendSMSPayload is used to serialise an SMS sent through the AIT service REST API
 type SendSMSPayload struct {
-	To      []string      `json:"to"`
-	Message string        `json:"message"`
-	Sender  base.SenderID `json:"sender"`
-	Segment *string       `json:"segment"`
+	To      []string           `json:"to"`
+	Message string             `json:"message"`
+	Sender  enumutils.SenderID `json:"sender"`
+	Segment *string            `json:"segment"`
 }
 
 // EMailMessage holds data required to send emails
@@ -67,7 +67,7 @@ type LoadCampgainDataInput struct {
 type MarketingSMS struct {
 	ID                   string                `json:"id"`
 	PhoneNumber          string                `json:"phoneNumber"`
-	SenderID             base.SenderID         `json:"senderId"`
+	SenderID             enumutils.SenderID    `json:"senderId"`
 	MessageSentTimeStamp time.Time             `json:"messageSentTimeStamp"`
 	Message              string                `json:"message"`
 	DeliveryReport       *ATDeliveryReport     `json:"deliveryReport"`

@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -50,18 +50,18 @@ type ServiceSMS interface {
 		ctx context.Context,
 		message string,
 		to []string,
-		from base.SenderID,
+		from enumutils.SenderID,
 	) (*dto.SendMessageResponse, error)
 	Send(
 		ctx context.Context,
 		to, message string,
-		from base.SenderID,
+		from enumutils.SenderID,
 	) (*dto.SendMessageResponse, error)
 	SendMarketingSMS(
 		ctx context.Context,
 		to []string,
 		message string,
-		from base.SenderID,
+		from enumutils.SenderID,
 		segment string,
 	) (*dto.SendMessageResponse, error)
 	SaveMarketingMessage(
@@ -142,7 +142,7 @@ func (s Service) SendToMany(
 	ctx context.Context,
 	message string,
 	to []string,
-	from base.SenderID,
+	from enumutils.SenderID,
 ) (*dto.SendMessageResponse, error) {
 	recipients := strings.Join(to, ",")
 	return s.Send(ctx, recipients, message, from)
@@ -152,11 +152,11 @@ func (s Service) SendToMany(
 func (s Service) Send(
 	ctx context.Context,
 	to, message string,
-	from base.SenderID,
+	from enumutils.SenderID,
 ) (*dto.SendMessageResponse, error) {
 
 	switch from {
-	case base.SenderIDSLADE360:
+	case enumutils.SenderIDSLADE360:
 		return s.SendSMS(
 			ctx,
 			to,
@@ -165,7 +165,7 @@ func (s Service) Send(
 			serverutils.MustGetEnvVar(APIUsernameEnvVarName),
 			serverutils.MustGetEnvVar(APIKeyEnvVarName),
 		)
-	case base.SenderIDBewell:
+	case enumutils.SenderIDBewell:
 		return s.SendSMS(
 			ctx,
 			to,
@@ -271,7 +271,7 @@ func (s Service) SendMarketingSMS(
 	ctx context.Context,
 	to []string,
 	message string,
-	from base.SenderID,
+	from enumutils.SenderID,
 	segment string,
 ) (*dto.SendMessageResponse, error) {
 	ctx, span := tracer.Start(ctx, "SendMarketingSMS")
