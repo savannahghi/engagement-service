@@ -19,6 +19,7 @@ import (
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 
+	errorcode "github.com/savannahghi/errorcodeutil"
 	"gitlab.slade360emr.com/go/base"
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -1867,7 +1868,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.PhoneNumber == "" {
 			err := fmt.Errorf("expected `phone` to be defined")
-			serverutils.WriteJSONResponse(w, base.CustomError{
+			serverutils.WriteJSONResponse(w, errorcode.CustomError{
 				Err:     err,
 				Message: err.Error(),
 			}, http.StatusBadRequest)
@@ -1875,7 +1876,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 		}
 		if payload.EmailAddress == "" {
 			err := fmt.Errorf("expected `email` to be defined")
-			serverutils.WriteJSONResponse(w, base.CustomError{
+			serverutils.WriteJSONResponse(w, errorcode.CustomError{
 				Err:     err,
 				Message: err.Error(),
 			}, http.StatusBadRequest)
