@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
@@ -199,7 +200,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		}
 	}
 
-	if p := base.StringSliceContains(base.AuthorizedPhones, phone); !p {
+	if p := converterandformatter.StringSliceContains(base.AuthorizedPhones, phone); !p {
 		res.LoadingError = fmt.Errorf("not authorized to access this resource")
 		sendMail(res)
 		return

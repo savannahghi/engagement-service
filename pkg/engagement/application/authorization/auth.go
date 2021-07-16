@@ -9,6 +9,7 @@ import (
 	"gitlab.slade360emr.com/go/base"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/savannahghi/converterandformatter"
 )
 
 var (
@@ -66,10 +67,10 @@ func CheckAuthorization(subject string, permission base.PermissionInput) (bool, 
 // have access by default.
 // for subjects identified by their phone number normalize the phone and omit the first (+) character
 func IsAuthorized(user *base.UserInfo, permission base.PermissionInput) (bool, error) {
-	if user.PhoneNumber != "" && base.StringSliceContains(base.AuthorizedPhones, user.PhoneNumber) {
+	if user.PhoneNumber != "" && converterandformatter.StringSliceContains(base.AuthorizedPhones, user.PhoneNumber) {
 		return CheckAuthorization(user.PhoneNumber[1:], permission)
 	}
-	if user.Email != "" && base.StringSliceContains(base.AuthorizedEmails, user.Email) {
+	if user.Email != "" && converterandformatter.StringSliceContains(base.AuthorizedEmails, user.Email) {
 		return CheckAuthorization(user.Email, permission)
 
 	}

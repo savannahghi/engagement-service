@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/savannahghi/converterandformatter"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -901,7 +902,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 			return fmt.Errorf("can't fetch existing labels: %w", err)
 		}
 
-		if !base.StringSliceContains(existingLabels, item.Label) {
+		if !converterandformatter.StringSliceContains(existingLabels, item.Label) {
 			err = n.repository.SaveLabel(ctx, envelope.UID, envelope.Flavour, item.Label)
 			if err != nil {
 				helpers.RecordSpanError(span, err)

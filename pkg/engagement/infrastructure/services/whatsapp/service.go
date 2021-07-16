@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -256,7 +257,7 @@ func (s Service) PhoneNumberVerificationCode(
 	defer span.End()
 	s.CheckPreconditions()
 
-	normalizedPhoneNo, err := base.NormalizeMSISDN(to)
+	normalizedPhoneNo, err := converterandformatter.NormalizeMSISDN(to)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return false, fmt.Errorf("%s is not a valid E164 phone number: %w", to, err)

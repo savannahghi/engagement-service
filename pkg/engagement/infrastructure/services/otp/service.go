@@ -10,6 +10,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp/totp"
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
@@ -136,7 +137,7 @@ func (s Service) getOTPCollectionName() string {
 }
 
 func cleanITPhoneNumber() (*string, error) {
-	return base.NormalizeMSISDN(ITPhoneNumber)
+	return converterandformatter.NormalizeMSISDN(ITPhoneNumber)
 }
 
 // SendOTP sends otp code message to specified number
@@ -167,7 +168,7 @@ func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code
 // GenerateAndSendOTP creates an OTP and sends it to the
 // supplied phone number as a text message
 func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
-	cleanNo, err := base.NormalizeMSISDN(msisdn)
+	cleanNo, err := converterandformatter.NormalizeMSISDN(msisdn)
 	if err != nil {
 
 		return "", errors.Wrap(err, "generateOTP > NormalizeMSISDN")
@@ -269,7 +270,7 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 	s.checkPreconditions()
 
 	// ensure the phone number passed is correct
-	normalizeMsisdn, err := base.NormalizeMSISDN(*msisdn)
+	normalizeMsisdn, err := converterandformatter.NormalizeMSISDN(*msisdn)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return false, errors.Wrap(err, "VerifyOtp > NormalizeMSISDN")
@@ -367,7 +368,7 @@ func (s Service) VerifyEmailOtp(ctx context.Context, email, verificationCode *st
 func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int) (string, error) {
 	ctx, span := tracer.Start(ctx, "GenerateRetryOTP")
 	defer span.End()
-	cleanNo, err := base.NormalizeMSISDN(*msisdn)
+	cleanNo, err := converterandformatter.NormalizeMSISDN(*msisdn)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return "", errors.Wrap(err, "generateOTP > NormalizeMSISDN")

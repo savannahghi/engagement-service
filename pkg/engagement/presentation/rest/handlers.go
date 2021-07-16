@@ -16,6 +16,7 @@ import (
 
 	"net/http"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 
@@ -1344,7 +1345,7 @@ func (p PresentationHandlersImpl) SendToMany(
 		payload := &dto.SendSMSPayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		for _, phoneNo := range payload.To {
-			_, err := base.NormalizeMSISDN(phoneNo)
+			_, err := converterandformatter.NormalizeMSISDN(phoneNo)
 			if err != nil {
 				err := fmt.Errorf(
 					"can't send sms, expected a valid phone number",

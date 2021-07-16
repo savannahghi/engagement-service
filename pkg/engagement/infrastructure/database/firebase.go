@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -736,7 +737,7 @@ func (fr Repository) GetMessages(
 			return nil, fmt.Errorf(
 				"unable to unmarshal message from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenMessageIDs, msg.ID) {
+		if !converterandformatter.StringSliceContains(seenMessageIDs, msg.ID) {
 			messages = append(messages, *msg)
 			if msg.Timestamp.IsZero() {
 				msg.Timestamp = time.Now() // backwards compat after schema change
@@ -1089,7 +1090,7 @@ func (fr Repository) GetItems(
 			return nil, fmt.Errorf(
 				"unable to unmarshal item from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenItemIDs, item.ID) {
+		if !converterandformatter.StringSliceContains(seenItemIDs, item.ID) {
 			messages, err := fr.GetMessages(ctx, uid, flavour, item.ID)
 			if err != nil {
 				helpers.RecordSpanError(span, err)
@@ -1128,7 +1129,7 @@ func (fr Repository) GetActions(
 			return nil, fmt.Errorf(
 				"unable to unmarshal action from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenActionIDs, action.ID) {
+		if !converterandformatter.StringSliceContains(seenActionIDs, action.ID) {
 			actions = append(actions, *action)
 			seenActionIDs = append(seenActionIDs, action.ID)
 		}
@@ -1196,7 +1197,7 @@ func (fr Repository) SaveLabel(
 		return fmt.Errorf("unable to retrieve labels: %w", err)
 	}
 
-	if !base.StringSliceContains(labels, label) {
+	if !converterandformatter.StringSliceContains(labels, label) {
 		labelDoc := fr.getUserCollection(uid, flavour).Doc(labelsDocID)
 		l := map[string][]string{
 			"labels": {label},
@@ -1413,7 +1414,7 @@ func (fr Repository) GetNudges(
 			return nil, fmt.Errorf(
 				"unable to unmarshal nudge from firebase doc: %w", err)
 		}
-		if !base.StringSliceContains(seenNudgeIDs, nudge.ID) {
+		if !converterandformatter.StringSliceContains(seenNudgeIDs, nudge.ID) {
 			nudges = append(nudges, *nudge)
 			seenNudgeIDs = append(seenNudgeIDs, nudge.ID)
 		}
