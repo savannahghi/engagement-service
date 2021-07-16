@@ -21,6 +21,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
+	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -4140,13 +4141,13 @@ func getTestMessage() base.Message {
 	}
 }
 
-func GetPayloadRequest(data base.PubSubPayload) (*http.Request, error) {
+func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 	testDataJSON, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("can't marshal JSON: %w", err)
 	}
 
-	pubsubURL := fmt.Sprintf("%s%s", baseURL, base.PubSubHandlerPath)
+	pubsubURL := fmt.Sprintf("%s%s", baseURL, pubsubtools.PubSubHandlerPath)
 	req, err := http.NewRequest(
 		http.MethodPost,
 		pubsubURL,

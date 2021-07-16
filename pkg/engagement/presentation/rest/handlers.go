@@ -17,6 +17,7 @@ import (
 	"net/http"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 
@@ -199,13 +200,13 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	m, err := base.VerifyPubSubJWTAndDecodePayload(w, r)
+	m, err := pubsubtools.VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
 		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
 
-	topicID, err := base.GetPubSubTopic(m)
+	topicID, err := pubsubtools.GetPubSubTopic(m)
 	if err != nil {
 		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return

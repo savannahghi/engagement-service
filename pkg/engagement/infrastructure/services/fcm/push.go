@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -81,7 +82,7 @@ func (rfs RemotePushService) Push(
 		return fmt.Errorf("can't marshal notification payload: %w", err)
 	}
 
-	err = base.PublishToPubsub(
+	err = pubsubtools.PublishToPubsub(
 		ctx,
 		rfs.pubsubClient,
 		helpers.AddPubSubNamespace(common.FcmPublishTopic),

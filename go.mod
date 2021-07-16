@@ -35,6 +35,7 @@ require (
 	github.com/rs/xid v1.3.0
 	github.com/savannahghi/converterandformatter v0.0.3
 	github.com/savannahghi/errorcodeutil v0.0.0-20210715070815-98283e9f49c6
+	github.com/savannahghi/pubsubtools v0.0.0-20210624135722-0393c6ad97a0
 	github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad
 	github.com/savannahghi/serverutils v0.0.2
 	github.com/segmentio/ksuid v1.0.4

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
 	"go.opentelemetry.io/otel/codes"
@@ -22,7 +23,7 @@ const (
 // AddPubSubNamespace creates a namespaced topic name
 func AddPubSubNamespace(topicName string) string {
 	environment := serverutils.GetRunningEnvironment()
-	return base.NamespacePubsubIdentifier(
+	return pubsubtools.NamespacePubsubIdentifier(
 		ServiceName,
 		topicName,
 		environment,

@@ -10,6 +10,7 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/google/uuid"
+	"github.com/savannahghi/converterandformatter"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/apiclient"
@@ -2080,7 +2081,7 @@ func TestRepository_SaveNPSResponse(t *testing.T) {
 		Question: "How is it",
 		Answer:   "It is what it is",
 	}
-	email := base.TestUserEmail
+	email := converterandformatter.TestUserEmail
 	phoneNumber := base.TestUserPhoneNumber
 
 	response := &dto.NPSResponse{

@@ -133,7 +133,7 @@ func (s Service) checkPreconditions() {
 }
 
 func (s Service) getOTPCollectionName() string {
-	return base.SuffixCollection(base.OTPCollectionName)
+	return base.SuffixCollection(converterandformatter.OTPCollectionName)
 }
 
 func cleanITPhoneNumber() (*string, error) {

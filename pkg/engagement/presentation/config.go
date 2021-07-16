@@ -19,6 +19,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
@@ -166,7 +167,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware(ctx))
 	r.Path("/load_data").Methods(http.MethodPost).HandlerFunc(h.LoadCampaignData(ctx))
 
-	r.Path(base.PubSubHandlerPath).Methods(
+	r.Path(pubsubtools.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
 
 	// Expose a bulk SMS sending endpoint

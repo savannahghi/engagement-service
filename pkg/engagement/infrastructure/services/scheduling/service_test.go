@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 )
 
-const calendarTestEmail = base.TestUserEmail
+const calendarTestEmail = converterandformatter.TestUserEmail
 
 func TestMain(m *testing.M) {
 	os.Setenv("ROOT_COLLECTION_SUFFIX", "testing")

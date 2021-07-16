@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -200,7 +201,7 @@ func TestValidateVerifyOTPPayload_Phone(t *testing.T) {
 
 func TestValidateVerifyOTPPayload_Email(t *testing.T) {
 	phoneNumber := base.TestUserPhoneNumber
-	email := base.TestUserEmail
+	email := converterandformatter.TestUserEmail
 	verificationCode := "45225"
 
 	goodData := &dto.VerifyOTP{

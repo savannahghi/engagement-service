@@ -26,7 +26,7 @@ func TestService_RecordNPSResponse(t *testing.T) {
 	// 	Question: "How is it",
 	// 	Answer:   "It is what it is",
 	// }
-	// email := base.TestUserEmail
+	// email := converterandformatter.TestUserEmail
 	// phoneNumber := base.TestUserPhoneNumber
 
 	tests := []struct {

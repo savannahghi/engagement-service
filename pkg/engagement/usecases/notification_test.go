@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -229,7 +230,7 @@ func getATestAction() base.Action {
 	}
 }
 
-func getTestPubsubPayload(t *testing.T, el base.Element) *base.PubSubPayload {
+func getTestPubsubPayload(t *testing.T, el base.Element) *pubsubtools.PubSubPayload {
 	elData, err := el.ValidateAndMarshal()
 	if err != nil {
 		t.Errorf("invalid element: %w", err)
@@ -260,9 +261,9 @@ func getTestPubsubPayload(t *testing.T, el base.Element) *base.PubSubPayload {
 		return nil
 	}
 
-	return &base.PubSubPayload{
+	return &pubsubtools.PubSubPayload{
 		Subscription: ksuid.New().String(),
-		Message: base.PubSubMessage{
+		Message: pubsubtools.PubSubMessage{
 			MessageID: ksuid.New().String(),
 			Data:      data,
 			Attributes: map[string]string{
@@ -353,7 +354,7 @@ func TestHandleItemDelete(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -390,7 +391,7 @@ func TestHandleItemResolve(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -427,7 +428,7 @@ func TestHandleItemUnresolve(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -464,7 +465,7 @@ func TestHandleItemHide(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -501,7 +502,7 @@ func TestHandleItemShow(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -538,7 +539,7 @@ func TestHandleItemPin(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -575,7 +576,7 @@ func TestHandleItemUnpin(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -612,7 +613,7 @@ func TestHandleNudgePublish(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -649,7 +650,7 @@ func TestHandleNudgeDelete(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -686,7 +687,7 @@ func TestHandleNudgeResolve(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -723,7 +724,7 @@ func TestHandleNudgeUnresolve(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -760,7 +761,7 @@ func TestHandleNudgeHide(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -797,7 +798,7 @@ func TestHandleNudgeShow(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -834,7 +835,7 @@ func TestHandleActionPublish(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -871,7 +872,7 @@ func TestHandleActionDelete(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -908,7 +909,7 @@ func TestHandleMessagePost(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -945,7 +946,7 @@ func TestHandleMessageDelete(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -982,7 +983,7 @@ func TestHandleIncomingEvent(t *testing.T) {
 	notify, err := InitializeTestNewNotification(ctx)
 	assert.Nil(t, err)
 	type args struct {
-		m *base.PubSubPayload
+		m *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -1037,7 +1038,7 @@ func TestNotifyItemUpdate(t *testing.T) {
 		ctx                 context.Context
 		sender              string
 		includeNotification bool
-		m                   *base.PubSubPayload
+		m                   *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -1070,9 +1071,9 @@ func TestNotifyItemUpdate(t *testing.T) {
 				ctx:                 ctx,
 				sender:              "ITEM_PUBLISHED",
 				includeNotification: true,
-				m: &base.PubSubPayload{
+				m: &pubsubtools.PubSubPayload{
 					Subscription: ksuid.New().String(),
-					Message: base.PubSubMessage{
+					Message: pubsubtools.PubSubMessage{
 						MessageID: ksuid.New().String(),
 						Data:      nil,
 						Attributes: map[string]string{
@@ -1089,9 +1090,9 @@ func TestNotifyItemUpdate(t *testing.T) {
 				ctx:                 ctx,
 				sender:              "ITEM_PUBLISHED",
 				includeNotification: true,
-				m: &base.PubSubPayload{
+				m: &pubsubtools.PubSubPayload{
 					Subscription: ksuid.New().String(),
-					Message: base.PubSubMessage{
+					Message: pubsubtools.PubSubMessage{
 						MessageID: "invalid id",
 						Data:      []byte("data"),
 					},
@@ -1380,7 +1381,7 @@ func TestNotifyNudgeUpdate(t *testing.T) {
 	type args struct {
 		ctx    context.Context
 		sender string
-		m      *base.PubSubPayload
+		m      *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string
@@ -1506,19 +1507,19 @@ func TestNotificationImpl_SendEmail(t *testing.T) {
 		return
 	}
 
-	pubSubMessage := base.PubSubMessage{
+	pubSubMessage := pubsubtools.PubSubMessage{
 		Data: payloadData,
 		Attributes: map[string]string{
 			"topicID": "mails.send",
 		},
 	}
 
-	payload := &base.PubSubPayload{
+	payload := &pubsubtools.PubSubPayload{
 		Message: pubSubMessage,
 	}
 	type args struct {
 		ctx context.Context
-		m   *base.PubSubPayload
+		m   *pubsubtools.PubSubPayload
 	}
 	tests := []struct {
 		name    string

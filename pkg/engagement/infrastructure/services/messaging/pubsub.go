@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"go.opentelemetry.io/otel"
@@ -66,7 +67,7 @@ func NewPubSubNotificationService(
 		return nil, fmt.Errorf("unable to get the %s environment variable: %w", hostNameEnvVarName, err)
 	}
 
-	callbackURL := fmt.Sprintf("%s%s", hostName, base.PubSubHandlerPath)
+	callbackURL := fmt.Sprintf("%s%s", hostName, pubsubtools.PubSubHandlerPath)
 	ns := &PubSubNotificationService{
 		client:      client,
 		environment: environment,
@@ -78,13 +79,13 @@ func NewPubSubNotificationService(
 	}
 
 	topicIDs := ns.TopicIDs()
-	if err := base.EnsureTopicsExist(ctx, client, topicIDs); err != nil {
+	if err := pubsubtools.EnsureTopicsExist(ctx, client, topicIDs); err != nil {
 		return nil, fmt.Errorf(
 			"error when ensuring that pubsub topics exist: %w", err)
 	}
 
-	subscriptionIDs := base.SubscriptionIDs(topicIDs)
-	if err := base.EnsureSubscriptionsExist(
+	subscriptionIDs := pubsubtools.SubscriptionIDs(topicIDs)
+	if err := pubsubtools.EnsureSubscriptionsExist(
 		ctx,
 		client,
 		subscriptionIDs,
@@ -160,7 +161,7 @@ func (ps PubSubNotificationService) Notify(
 			"can't marshal notification envelope to JSON: %w", err)
 	}
 
-	return base.PublishToPubsub(
+	return pubsubtools.PublishToPubsub(
 		ctx,
 		ps.client,
 		topicID,

@@ -13,6 +13,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 
+	"github.com/savannahghi/pubsubtools"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -45,104 +46,104 @@ const (
 type NotificationUsecases interface {
 	HandleItemPublish(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleItemDelete(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleItemResolve(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleItemUnresolve(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleItemHide(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleItemShow(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleItemPin(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleItemUnpin(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleNudgePublish(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleNudgeDelete(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleNudgeResolve(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleNudgeUnresolve(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleNudgeHide(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleNudgeShow(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleActionPublish(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleActionDelete(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleMessagePost(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleMessageDelete(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	HandleIncomingEvent(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	NotifyItemUpdate(
 		ctx context.Context,
 		sender string,
 		includeNotification bool, // whether to show a tray notification
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	UpdateInbox(
@@ -154,7 +155,7 @@ type NotificationUsecases interface {
 	NotifyNudgeUpdate(
 		ctx context.Context,
 		sender string,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	NotifyInboxCountUpdate(
@@ -179,18 +180,18 @@ type NotificationUsecases interface {
 
 	HandleSendNotification(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 
 	SendEmail(
 		ctx context.Context,
-		m *base.PubSubPayload,
+		m *pubsubtools.PubSubPayload,
 	) error
 }
 
 // HandlePubsubPayload defines the signature of a function that handles
 // payloads received from Google Cloud Pubsub
-type HandlePubsubPayload func(ctx context.Context, m *base.PubSubPayload) error
+type HandlePubsubPayload func(ctx context.Context, m *pubsubtools.PubSubPayload) error
 
 // NotificationImpl represents the notification usecase implementation
 type NotificationImpl struct {
@@ -219,7 +220,7 @@ func NewNotification(
 }
 
 // HandleItemPublish responds to item publish messages
-func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemPublish")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -249,7 +250,7 @@ func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *base.PubSubP
 }
 
 // HandleItemDelete responds to item delete messages
-func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -280,7 +281,7 @@ func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *base.PubSubPa
 }
 
 // HandleItemResolve responds to item resolve messages
-func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemResolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -311,7 +312,7 @@ func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *base.PubSubP
 }
 
 // HandleItemUnresolve responds to item unresolve messages
-func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemUnresolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -342,7 +343,7 @@ func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *base.PubSu
 }
 
 // HandleItemHide responds to item hide messages
-func (n NotificationImpl) HandleItemHide(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemHide(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemHide")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -373,7 +374,7 @@ func (n NotificationImpl) HandleItemHide(ctx context.Context, m *base.PubSubPayl
 }
 
 // HandleItemShow responds to item show messages
-func (n NotificationImpl) HandleItemShow(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemShow(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemShow")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -404,7 +405,7 @@ func (n NotificationImpl) HandleItemShow(ctx context.Context, m *base.PubSubPayl
 }
 
 // HandleItemPin responds to item pin messages
-func (n NotificationImpl) HandleItemPin(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemPin(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemPin")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -435,7 +436,7 @@ func (n NotificationImpl) HandleItemPin(ctx context.Context, m *base.PubSubPaylo
 }
 
 // HandleItemUnpin responds to item unpin messages
-func (n NotificationImpl) HandleItemUnpin(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleItemUnpin(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleItemUnpin")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -466,7 +467,7 @@ func (n NotificationImpl) HandleItemUnpin(ctx context.Context, m *base.PubSubPay
 }
 
 // HandleNudgePublish responds to nudge publish messages
-func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgePublish")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -497,7 +498,7 @@ func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *base.PubSub
 }
 
 // HandleNudgeDelete responds to nudge delete messages
-func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -528,7 +529,7 @@ func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *base.PubSubP
 }
 
 // HandleNudgeResolve responds to nudge resolve messages
-func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeResolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -559,7 +560,7 @@ func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *base.PubSub
 }
 
 // HandleNudgeUnresolve responds to nudge unresolve messages
-func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeUnresolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -590,7 +591,7 @@ func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *base.PubS
 }
 
 // HandleNudgeHide responds to nudge hide messages
-func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeHide")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -621,7 +622,7 @@ func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *base.PubSubPay
 }
 
 // HandleNudgeShow responds to nudge hide messages
-func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeShow")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -652,7 +653,7 @@ func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *base.PubSubPay
 }
 
 // HandleActionPublish responds to action publish messages
-func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleActionPublish")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -679,7 +680,7 @@ func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *base.PubSu
 }
 
 // HandleActionDelete responds to action publish messages
-func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleActionDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -706,7 +707,7 @@ func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *base.PubSub
 }
 
 // HandleMessagePost responds to message post pubsub messages
-func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleMessagePost")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -733,7 +734,7 @@ func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *base.PubSubP
 }
 
 // HandleMessageDelete responds to message delete pubsub messages
-func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleMessageDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -760,7 +761,7 @@ func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *base.PubSu
 }
 
 // HandleIncomingEvent responds to message delete pubsub messages
-func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleIncomingEvent")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -790,7 +791,7 @@ func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *base.PubSu
 }
 
 // HandleSendNotification responds to send notification messages
-func (n NotificationImpl) HandleSendNotification(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) HandleSendNotification(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "HandleSendNotification")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -841,7 +842,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 	ctx context.Context,
 	sender string,
 	includeNotification bool, // whether to show a tray notification
-	m *base.PubSubPayload,
+	m *pubsubtools.PubSubPayload,
 ) error {
 	ctx, span := tracer.Start(ctx, "NotifyItemUpdate")
 	defer span.End()
@@ -975,7 +976,7 @@ func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour b
 func (n NotificationImpl) NotifyNudgeUpdate(
 	ctx context.Context,
 	sender string,
-	m *base.PubSubPayload,
+	m *pubsubtools.PubSubPayload,
 ) error {
 	ctx, span := tracer.Start(ctx, "NotifyNudgeUpdate")
 	defer span.End()
@@ -1182,7 +1183,7 @@ func (n NotificationImpl) SendNotificationViaFCM(
 }
 
 // SendEmail sends an email
-func (n NotificationImpl) SendEmail(ctx context.Context, m *base.PubSubPayload) error {
+func (n NotificationImpl) SendEmail(ctx context.Context, m *pubsubtools.PubSubPayload) error {
 	ctx, span := tracer.Start(ctx, "SendEmail")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)

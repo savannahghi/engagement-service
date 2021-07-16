@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/imroc/req"
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -199,7 +200,7 @@ func getGraphQLHeaders(t *testing.T) map[string]string {
 
 func GetBearerTokenHeader(t *testing.T) string {
 	ctx := context.Background()
-	user, err := base.GetOrCreateFirebaseUser(ctx, base.TestUserEmail)
+	user, err := base.GetOrCreateFirebaseUser(ctx, converterandformatter.TestUserEmail)
 	if err != nil {
 		t.Errorf("can't get or create firebase user: %s", err)
 		return ""
