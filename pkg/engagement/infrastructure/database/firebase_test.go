@@ -2199,76 +2199,76 @@ func TestRepository_RetrieveMarketingData(t *testing.T) {
 	}
 }
 
-// func TestRepository_UpdateMessageSentStatus(t *testing.T) {
-// 	assert := assert.New(t)
-// 	ctx := context.Background()
-// 	repository, err := db.NewFirebaseRepository(ctx)
-// 	if !assert.Nilf(err, "Error initializing Firebase repository: %s", err) {
-// 		return
-// 	}
-// 	if !assert.NotNil(repository, "nil Firebase repository") {
-// 		return
-// 	}
+func TestRepository_UpdateMessageSentStatus(t *testing.T) {
+	assert := assert.New(t)
+	ctx := context.Background()
+	repository, err := db.NewFirebaseRepository(ctx)
+	if !assert.Nilf(err, "Error initializing Firebase repository: %s", err) {
+		return
+	}
+	if !assert.NotNil(repository, "nil Firebase repository") {
+		return
+	}
 
-// 	// Setup test data
-// 	segment := composeMarketingDataPayload(
-// 		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
-// 		fmt.Sprintf("WING %s", ksuid.New().String()),
-// 		gofakeit.PhoneFormatted(),
-// 		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
-// 	)
-// 	_, err = repository.LoadMarketingData(ctx, segment)
-// 	if !assert.Nilf(err, "Error loading marketing data: %s", err) {
-// 		return
-// 	}
+	// Setup test data
+	segment := composeMarketingDataPayload(
+		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		gofakeit.PhoneFormatted(),
+		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
+	)
+	_, err = repository.LoadMarketingData(ctx, segment)
+	if !assert.Nilf(err, "Error loading marketing data: %s", err) {
+		return
+	}
 
-// 	payload1 := dto.MarketingMessagePayload{
-// 		InitialSegment: segment.Properties.InitialSegment,
-// 		Wing:           segment.Wing,
-// 	}
-// 	payload2 := dto.MarketingMessagePayload{
-// 		InitialSegment: fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
-// 		Wing:           fmt.Sprintf("WING %s", ksuid.New().String()),
-// 	}
+	payload1 := dto.MarketingMessagePayload{
+		InitialSegment: segment.Properties.InitialSegment,
+		Wing:           segment.Wing,
+	}
+	payload2 := dto.MarketingMessagePayload{
+		InitialSegment: fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
+		Wing:           fmt.Sprintf("WING %s", ksuid.New().String()),
+	}
 
-// 	// Make sure that segment was loaded in the repository
-// 	segments, err := repository.RetrieveMarketingData(ctx, &payload1)
-// 	if !assert.Nilf(err, "Error, unable to retrieve loaded marketing data: %s", err) {
-// 		return
-// 	}
-// 	if !assert.Equalf(len(segments), 1, "Error, expected exactly 1 segment with wing '%s'", err) {
-// 		return
-// 	}
+	// Make sure that segment was loaded in the repository
+	segments, err := repository.RetrieveMarketingData(ctx, &payload1)
+	if !assert.Nilf(err, "Error, unable to retrieve loaded marketing data: %s", err) {
+		return
+	}
+	if !assert.Equalf(len(segments), 1, "Error, expected exactly 1 segment with wing '%s'", err) {
+		return
+	}
 
-// 	tests := []struct {
-// 		name    string
-// 		payload dto.MarketingMessagePayload
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name:    "Update message sent status of an existing segment",
-// 			payload: payload1,
-// 			wantErr: true, // TODO: fix and make false
-// 		},
-// 		{
-// 			name:    "Update message sent status of an non-existing segment",
-// 			payload: payload2,
-// 			wantErr: true,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			err = repository.UpdateMessageSentStatus(ctx, segment.Properties.Phone, segment.Properties.InitialSegment)
-// 			assert.False(!tt.wantErr && err != nil, "Error, unable to update message sent status: %s", err)
-// 		})
-// 	}
+	tests := []struct {
+		name    string
+		payload dto.MarketingMessagePayload
+		wantErr bool
+	}{
+		{
+			name:    "Update message sent status of an existing segment",
+			payload: payload1,
+			wantErr: true, // TODO: fix and make false
+		},
+		{
+			name:    "Update message sent status of an non-existing segment",
+			payload: payload2,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err = repository.UpdateMessageSentStatus(ctx, segment.Properties.Phone, segment.Properties.InitialSegment)
+			assert.False(!tt.wantErr && err != nil, "Error, unable to update message sent status: %s", err)
+		})
+	}
 
-// 	// Teardown test data
-// 	err = repository.RollBackMarketingData(ctx, segment)
-// 	if !assert.Nilf(err, "Error, unable to roll back market data: %s", err) {
-// 		return
-// 	}
-// }
+	// Teardown test data
+	err = repository.RollBackMarketingData(ctx, segment)
+	if !assert.Nilf(err, "Error, unable to roll back market data: %s", err) {
+		return
+	}
+}
 
 func TestRepository_LoadMarketingData(t *testing.T) {
 	ctx := context.Background()

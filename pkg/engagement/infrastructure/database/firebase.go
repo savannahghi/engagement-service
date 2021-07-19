@@ -1851,7 +1851,7 @@ func (fr Repository) UpdateMessageSentStatus(
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("message_sent", "==", "FALSE").Where("properties.Phone", "==", phonenumber).Where("properties.InitialSegment", "==", segment)
 
-	docs, err := fetchQueryDocs(ctx, query, false)
+	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
