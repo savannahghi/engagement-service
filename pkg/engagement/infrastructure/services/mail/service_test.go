@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
@@ -38,56 +39,62 @@ func TestNewService(t *testing.T) {
 	}
 }
 
-// func TestService_SendEmail(t *testing.T) {
-// 	testUserMail := "test@bewell.co.ke"
-// 	ctx := context.Background()
-// 	var repo repository.Repository
-// 	service := mail.NewService(repo)
-// 	tests := []struct {
-// 		name    string
-// 		service *mail.Service
-// 		subject string
-// 		text    string
-// 		to      []string
+func TestService_SendEmail(t *testing.T) {
+	testUserMail := "test@bewell.co.ke"
+	ctx := context.Background()
 
-// 		expectMsg bool
-// 		expectID  bool
-// 		expectErr bool
-// 	}{
-// 		{
-// 			name:    "valid email",
-// 			service: service,
-// 			subject: "Test Email",
-// 			text:    "Test Email",
-// 			to:      []string{testUserMail},
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			msg, id, err := tt.service.SendEmail(ctx, tt.subject, tt.text, nil, tt.to...)
-// 			if tt.expectErr {
-// 				if err == nil {
-// 					t.Errorf("an error was expected")
-// 					return
-// 				}
-// 				if msg != "" && id != "" {
-// 					t.Errorf("expected no message and message ID")
-// 					return
-// 				}
-// 			}
-// 			if !tt.expectErr {
-// 				if err != nil {
-// 					t.Errorf("an error was not expected")
-// 					return
-// 				}
-// 				if msg == "" && id == "" {
-// 					t.Errorf("expected a message and message ID")
-// 					return
-// 				}
-// 			}
-// 		})
-// 	}
-// }
+	fr, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("error initializing new firebase repo:%v", err)
+		return
+	}
+
+	service := mail.NewService(fr)
+	tests := []struct {
+		name    string
+		service *mail.Service
+		subject string
+		text    string
+		to      []string
+
+		expectMsg bool
+		expectID  bool
+		expectErr bool
+	}{
+		{
+			name:    "valid email",
+			service: service,
+			subject: "Test Email",
+			text:    "Test Email",
+			to:      []string{testUserMail},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			msg, id, err := tt.service.SendEmail(ctx, tt.subject, tt.text, nil, tt.to...)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("an error was expected")
+					return
+				}
+				if msg != "" && id != "" {
+					t.Errorf("expected no message and message ID")
+					return
+				}
+			}
+			if !tt.expectErr {
+				if err != nil {
+					t.Errorf("an error was not expected")
+					return
+				}
+				if msg == "" && id == "" {
+					t.Errorf("expected a message and message ID")
+					return
+				}
+			}
+		})
+	}
+}
 
 func TestService_SendInBlue(t *testing.T) {
 	ctx := context.Background()
