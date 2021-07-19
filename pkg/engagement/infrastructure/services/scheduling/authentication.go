@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -18,7 +18,7 @@ const SecretPassPhraseEnvVarName = "SECRET_PASSPHRASE"
 func getJSONGoogleApplicationCredentials() ([]byte, error) {
 	// a future iteration of this needs to decrypt GPG encoded creds using the
 	// secret pass phrase
-	return base.GPGEncryptedJSONGoogleApplicationCredentials, nil
+	return apiclient.GPGEncryptedJSONGoogleApplicationCredentials, nil
 }
 
 // GetTokenSource gets a token source to be used in Google Cloud APIs that

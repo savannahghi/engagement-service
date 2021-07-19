@@ -328,6 +328,7 @@ github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGw
 github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfCI6z80xFu9LTZmf1ZRjMHUOPmWr69U=
 github.com/json-iterator/go v1.1.6/go.mod h1:+SdeFBvtyEkXs7REEP0seUULqWtbJapLOCVDaaPEHmU=
 github.com/json-iterator/go v1.1.9/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
+github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr68=
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
 github.com/json-iterator/go v1.1.11 h1:uVUAXhF2To8cbw/3xN3pxj6kk7TYKs98NIrTqPlMWAQ=
 github.com/json-iterator/go v1.1.11/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
@@ -399,6 +400,7 @@ github.com/mitchellh/gox v0.4.0/go.mod h1:Sd9lOJ0+aimLBi73mGofS1ycjY8lL3uZM3JPS4
 github.com/mitchellh/iochan v1.0.0/go.mod h1:JwYml1nuB7xOzsp52dPpHFffvOCDupsG0QubkSMEySY=
 github.com/mitchellh/mapstructure v0.0.0-20160808181253-ca63d7c062ee/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
+github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQzvN1EDeE=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/mitchellh/mapstructure v1.4.1 h1:CpVNEelQCZBooIPDn+AR3NpivK/TIKU8bDxdASFVQag=
 github.com/mitchellh/mapstructure v1.4.1/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
@@ -469,6 +471,8 @@ github.com/savannahghi/pubsubtools v0.0.0-20210624135722-0393c6ad97a0 h1:/e0YT2H
 github.com/savannahghi/pubsubtools v0.0.0-20210624135722-0393c6ad97a0/go.mod h1:FQ+BxO4uA1ZkcziY4dR0uT9CKHVHb+4L1lUURBV2UD0=
 github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad h1:v3QPK6KIGkOozqZ/DqMwbmF1LcqJO6k25arenLls9SY=
 github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad/go.mod h1:Z+Dl3wc3vy5zKvthctHAtYzol1p8w27zEVRfOYueoks=
+github.com/savannahghi/scalarutils v0.0.2 h1:naX6Zhv/tDbwKAKVY4bksyhnE43f2583xWesAKHb1CU=
+github.com/savannahghi/scalarutils v0.0.2/go.mod h1:Z+Dl3wc3vy5zKvthctHAtYzol1p8w27zEVRfOYueoks=
 github.com/savannahghi/server_utils v0.0.1 h1:q6SL4BRvkpYJujXvWwCl4vU1U+VTzKRGfNXnl0H6tfw=
 github.com/savannahghi/server_utils v0.0.1/go.mod h1:Tldm4Op4ARxk8xaP3BA0V52XVZEJenkq0ck4FCdEp+I=
 github.com/savannahghi/serverutils v0.0.2/go.mod h1:sLX0El0i0DKN/9cUkB8xqm5cVMP79qCZvK60EzB7Pa4=
@@ -560,6 +564,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 gitlab.slade360emr.com/go/apiclient v0.0.7 h1:hycaJHgNPxDL3SdN/ufd1EFvlx8iyRA6uq8OquVO6oU=
 gitlab.slade360emr.com/go/apiclient v0.0.7/go.mod h1:PrmukaZl5l1zyPr6A88IGrtzlJiOUo8c5Qu6IIpZNGg=
+gitlab.slade360emr.com/go/apiclient v0.0.11 h1:GCJhzEbuNJGkeLawU2bOsFEaIIa5QA3U/J6OaHER5RE=
+gitlab.slade360emr.com/go/apiclient v0.0.11/go.mod h1:L0nmAIIWAXgX+VBMmnPyYTx0E3l8YE+gTzxGMlwZOlA=
 gitlab.slade360emr.com/go/base v0.0.157/go.mod h1:2I0e87cNOQj2hT42jHER4MzXyW+kgGsKFoCFDvG99ro=
 gitlab.slade360emr.com/go/base v0.0.204 h1:UbxNvLhB+qz0zmltOwvjAp8Njh/R4L4UIGiLbUUKlLA=
 gitlab.slade360emr.com/go/base v0.0.204/go.mod h1:zrNvp+NbWIVkoF9eOcRA3taNTOu2xVhcEFIRtqpOpvc=
