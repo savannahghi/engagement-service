@@ -13,6 +13,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gorilla/mux"
 	"github.com/markbates/pkger"
+	"github.com/savannahghi/feedlib"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
@@ -41,7 +42,7 @@ func respondWithJSON(w http.ResponseWriter, code int, payload []byte) {
 	}
 }
 
-func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *base.Flavour, *bool, error) {
+func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *feedlib.Flavour, *bool, error) {
 	if r == nil {
 		return nil, nil, nil, fmt.Errorf("nil request")
 	}
@@ -56,7 +57,7 @@ func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *base.Flavour, *bool
 		return nil, nil, nil, fmt.Errorf("can't get `flavour` path var: %w", err)
 	}
 
-	flavour := base.Flavour(flavourStr)
+	flavour := feedlib.Flavour(flavourStr)
 	if !flavour.IsValid() {
 		return nil, nil, nil, fmt.Errorf("`%s` is not a valid feed flavour", err)
 	}
@@ -75,7 +76,7 @@ func getUIDFlavourAndIsAnonymous(r *http.Request) (*string, *base.Flavour, *bool
 
 }
 
-type patchItemFunc func(ctx context.Context, uid string, flavour base.Flavour, itemID string) (*base.Item, error)
+type patchItemFunc func(ctx context.Context, uid string, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
 
 func patchItem(
 	ctx context.Context,
@@ -115,7 +116,7 @@ func patchItem(
 	respondWithJSON(w, http.StatusOK, marshalled)
 }
 
-type patchNudgeFunc func(ctx context.Context, uid string, flavour base.Flavour, nudgeID string) (*base.Nudge, error)
+type patchNudgeFunc func(ctx context.Context, uid string, flavour feedlib.Flavour, nudgeID string) (*feedlib.Nudge, error)
 
 func patchNudge(
 	ctx context.Context,
@@ -158,13 +159,13 @@ func patchNudge(
 func getOptionalBooleanFilterQueryParam(
 	r *http.Request,
 	paramName string,
-) (*base.BooleanFilter, error) {
+) (*feedlib.BooleanFilter, error) {
 	val := r.FormValue(paramName)
 	if val == "" {
 		return nil, nil // optional
 	}
 
-	boolFilter := base.BooleanFilter(val)
+	boolFilter := feedlib.BooleanFilter(val)
 	if !boolFilter.IsValid() {
 		return nil, fmt.Errorf("optional bool: `%s` is not a valid boolean filter value", val)
 	}
@@ -175,13 +176,13 @@ func getOptionalBooleanFilterQueryParam(
 func getRequiredBooleanFilterQueryParam(
 	r *http.Request,
 	paramName string,
-) (base.BooleanFilter, error) {
+) (feedlib.BooleanFilter, error) {
 	val := r.FormValue(paramName)
 	if val == "" {
 		return "", fmt.Errorf("required BooleanFilter `%s` not set", paramName)
 	}
 
-	boolFilter := base.BooleanFilter(val)
+	boolFilter := feedlib.BooleanFilter(val)
 	if !boolFilter.IsValid() {
 		return "", fmt.Errorf("required bool: `%s` is not a valid boolean filter value", val)
 	}
@@ -192,13 +193,13 @@ func getRequiredBooleanFilterQueryParam(
 func getOptionalStatusQueryParam(
 	r *http.Request,
 	paramName string,
-) (*base.Status, error) {
+) (*feedlib.Status, error) {
 	val, err := getStringVar(r, paramName)
 	if err != nil {
 		return nil, nil // this is an optional param
 	}
 
-	status := base.Status(val)
+	status := feedlib.Status(val)
 	if !status.IsValid() {
 		return nil, fmt.Errorf("`%s` is not a valid status", val)
 	}
@@ -209,13 +210,13 @@ func getOptionalStatusQueryParam(
 func getOptionalVisibilityQueryParam(
 	r *http.Request,
 	paramName string,
-) (*base.Visibility, error) {
+) (*feedlib.Visibility, error) {
 	val, err := getStringVar(r, paramName)
 	if err != nil {
 		return nil, nil // this is an optional param
 	}
 
-	visibility := base.Visibility(val)
+	visibility := feedlib.Visibility(val)
 	if !visibility.IsValid() {
 		return nil, fmt.Errorf("`%s` is not a valid visibility value", val)
 	}

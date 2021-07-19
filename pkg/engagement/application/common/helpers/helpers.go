@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -32,7 +32,7 @@ func AddPubSubNamespace(topicName string) string {
 }
 
 // ValidateElement ensures that an element is non nil and valid
-func ValidateElement(el base.Element) error {
+func ValidateElement(el feedlib.Element) error {
 	if el == nil {
 		return fmt.Errorf("nil element")
 	}

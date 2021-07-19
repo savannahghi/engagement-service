@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
@@ -27,7 +27,7 @@ func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*library.Ghost
 	return ghostCMSPost, nil
 }
 
-func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*library.GhostCMSPost, error) {
+func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*library.GhostCMSPost, error) {
 	startTime := time.Now()
 
 	faqs, err := r.interactor.Library.GetFaqsContent(ctx, flavour)

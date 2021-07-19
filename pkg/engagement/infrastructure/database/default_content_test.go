@@ -6,8 +6,8 @@ import (
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/base"
 
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 )
@@ -22,7 +22,7 @@ func TestSetDefaultActions(t *testing.T) {
 	type args struct {
 		ctx        context.Context
 		uid        string
-		flavour    base.Flavour
+		flavour    feedlib.Flavour
 		repository repository.Repository
 	}
 	tests := []struct {
@@ -35,7 +35,7 @@ func TestSetDefaultActions(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    base.FlavourConsumer,
+				flavour:    feedlib.FlavourConsumer,
 				repository: fr,
 			},
 		},
@@ -44,7 +44,7 @@ func TestSetDefaultActions(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    base.FlavourPro,
+				flavour:    feedlib.FlavourPro,
 				repository: fr,
 			},
 		},
@@ -95,7 +95,7 @@ func TestSetDefaultNudges(t *testing.T) {
 	type args struct {
 		ctx        context.Context
 		uid        string
-		flavour    base.Flavour
+		flavour    feedlib.Flavour
 		repository repository.Repository
 	}
 	tests := []struct {
@@ -108,7 +108,7 @@ func TestSetDefaultNudges(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    base.FlavourConsumer,
+				flavour:    feedlib.FlavourConsumer,
 				repository: fr,
 			},
 		},
@@ -117,7 +117,7 @@ func TestSetDefaultNudges(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    base.FlavourPro,
+				flavour:    feedlib.FlavourPro,
 				repository: fr,
 			},
 		},
@@ -140,9 +140,9 @@ func TestSetDefaultNudges(t *testing.T) {
 				}
 
 				// refetch nudges
-				pending := base.StatusPending
-				show := base.VisibilityShow
-				expired := base.BooleanFilterFalse
+				pending := feedlib.StatusPending
+				show := feedlib.VisibilityShow
+				expired := feedlib.BooleanFilterFalse
 				nudges, err := fr.GetNudges(
 					ctx,
 					tt.args.uid,
@@ -174,7 +174,7 @@ func TestSetDefaultItems(t *testing.T) {
 	type args struct {
 		ctx        context.Context
 		uid        string
-		flavour    base.Flavour
+		flavour    feedlib.Flavour
 		repository repository.Repository
 	}
 	tests := []struct {
@@ -187,7 +187,7 @@ func TestSetDefaultItems(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    base.FlavourConsumer,
+				flavour:    feedlib.FlavourConsumer,
 				repository: fr,
 			},
 		},
@@ -196,7 +196,7 @@ func TestSetDefaultItems(t *testing.T) {
 			args: args{
 				ctx:        ctx,
 				uid:        ksuid.New().String(),
-				flavour:    base.FlavourPro,
+				flavour:    feedlib.FlavourPro,
 				repository: fr,
 			},
 		},
@@ -224,7 +224,7 @@ func TestSetDefaultItems(t *testing.T) {
 					ctx,
 					tt.args.uid,
 					tt.args.flavour,
-					base.BooleanFilterBoth,
+					feedlib.BooleanFilterBoth,
 					nil,
 					nil,
 					nil,

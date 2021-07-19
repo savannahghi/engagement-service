@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 )
 
@@ -59,8 +59,8 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 	type args struct {
 		channel  string
 		uid      string
-		flavour  base.Flavour
-		el       base.Element
+		flavour  feedlib.Flavour
+		el       feedlib.Element
 		metadata map[string]interface{}
 	}
 	tests := []struct {
@@ -73,7 +73,7 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 			pubsub: srv,
 			args: args{
 				channel: "message.post",
-				el: &base.Message{
+				el: &feedlib.Message{
 					ID:             ksuid.New().String(),
 					SequenceNumber: 1,
 					Text:           ksuid.New().String(),
@@ -83,7 +83,7 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 					Timestamp:      time.Now(),
 				},
 				uid:      ksuid.New().String(),
-				flavour:  base.FlavourConsumer,
+				flavour:  feedlib.FlavourConsumer,
 				metadata: map[string]interface{}{},
 			},
 			wantErr: false,
@@ -93,14 +93,14 @@ func TestPubSubNotificationService_Notify(t *testing.T) {
 			pubsub: srv,
 			args: args{
 				channel: "message.post",
-				el: &base.Message{
+				el: &feedlib.Message{
 					ID:        ksuid.New().String(),
 					Text:      ksuid.New().String(),
 					ReplyTo:   ksuid.New().String(),
 					Timestamp: time.Now(),
 				},
 				uid:      ksuid.New().String(),
-				flavour:  base.FlavourPro,
+				flavour:  feedlib.FlavourPro,
 				metadata: map[string]interface{}{},
 			},
 			wantErr: true,

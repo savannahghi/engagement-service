@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -25,8 +26,8 @@ func TestPublishFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
-		item    *base.Item
+		flavour feedlib.Flavour
+		item    *feedlib.Item
 	}
 	tests := []struct {
 		name    string
@@ -38,7 +39,7 @@ func TestPublishFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				item:    testItem,
 			},
 			wantErr: false,
@@ -48,7 +49,7 @@ func TestPublishFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				item:    testItem,
 			},
 			wantErr: true,
@@ -58,7 +59,7 @@ func TestPublishFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				item:    testItem,
 			},
 			wantErr: true,
@@ -68,7 +69,7 @@ func TestPublishFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				item:    nil,
 			},
 			wantErr: true,
@@ -78,8 +79,8 @@ func TestPublishFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
-				item:    &base.Item{},
+				flavour: feedlib.FlavourConsumer,
+				item:    &feedlib.Item{},
 			},
 			wantErr: true,
 		},
@@ -88,7 +89,7 @@ func TestPublishFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				item:    testItem,
 			},
 			wantErr: true,
@@ -101,10 +102,10 @@ func TestPublishFeedItem(t *testing.T) {
 				fakeEngagement.SaveFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -113,8 +114,8 @@ func TestPublishFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -125,10 +126,10 @@ func TestPublishFeedItem(t *testing.T) {
 				fakeEngagement.SaveFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, fmt.Errorf("unable to publish feed item")
 				}
@@ -138,10 +139,10 @@ func TestPublishFeedItem(t *testing.T) {
 				fakeEngagement.SaveFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -150,8 +151,8 @@ func TestPublishFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send a notification")
@@ -161,9 +162,9 @@ func TestPublishFeedItem(t *testing.T) {
 					fakeEngagement.SaveFeedItemFn = func(
 						ctx context.Context,
 						uid string,
-						flavour base.Flavour,
-						item *base.Item,
-					) (*base.Item, error) {
+						flavour feedlib.Flavour,
+						item *feedlib.Item,
+					) (*feedlib.Item, error) {
 						return nil, fmt.Errorf("can't publish nil feed item")
 					}
 				}
@@ -172,9 +173,9 @@ func TestPublishFeedItem(t *testing.T) {
 					fakeEngagement.SaveFeedItemFn = func(
 						ctx context.Context,
 						uid string,
-						flavour base.Flavour,
-						item *base.Item,
-					) (*base.Item, error) {
+						flavour feedlib.Flavour,
+						item *feedlib.Item,
+					) (*feedlib.Item, error) {
 						return nil, fmt.Errorf("unable to publish feed item")
 					}
 				}
@@ -183,16 +184,16 @@ func TestPublishFeedItem(t *testing.T) {
 					fakeEngagement.SaveFeedItemFn = func(
 						ctx context.Context,
 						uid string,
-						flavour base.Flavour,
-						item *base.Item,
-					) (*base.Item, error) {
-						return &base.Item{
+						flavour feedlib.Flavour,
+						item *feedlib.Item,
+					) (*feedlib.Item, error) {
+						return &feedlib.Item{
 							ID: uuid.New().String(),
-							Actions: []base.Action{
+							Actions: []feedlib.Action{
 								{
 									ID:         ksuid.New().String(),
 									Name:       "TEST_ACTION",
-									ActionType: base.ActionTypeFloating,
+									ActionType: feedlib.ActionTypeFloating,
 								},
 							},
 						}, fmt.Errorf("floating actions are only allowed at the global level")
@@ -243,7 +244,7 @@ func TestDeleteFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		itemID  string
 	}
 	tests := []struct {
@@ -256,7 +257,7 @@ func TestDeleteFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: false,
@@ -266,7 +267,7 @@ func TestDeleteFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  "",
 			},
 			wantErr: false,
@@ -276,7 +277,7 @@ func TestDeleteFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -286,7 +287,7 @@ func TestDeleteFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -300,10 +301,10 @@ func TestDeleteFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -311,7 +312,7 @@ func TestDeleteFeedItem(t *testing.T) {
 				fakeEngagement.DeleteFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
 				) error {
 					return nil
@@ -321,8 +322,8 @@ func TestDeleteFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -333,9 +334,9 @@ func TestDeleteFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("unable to retrieve feed item")
 				}
 			}
@@ -344,10 +345,10 @@ func TestDeleteFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -355,7 +356,7 @@ func TestDeleteFeedItem(t *testing.T) {
 				fakeEngagement.DeleteFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
 				) error {
 					return fmt.Errorf("failed to delete feed item")
@@ -366,10 +367,10 @@ func TestDeleteFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -377,7 +378,7 @@ func TestDeleteFeedItem(t *testing.T) {
 				fakeEngagement.DeleteFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
 				) error {
 					return nil
@@ -387,8 +388,8 @@ func TestDeleteFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send a notification")
@@ -431,7 +432,7 @@ func TestResolveFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		itemID  string
 	}
 	tests := []struct {
@@ -444,7 +445,7 @@ func TestResolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: false,
@@ -454,7 +455,7 @@ func TestResolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -464,7 +465,7 @@ func TestResolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -474,7 +475,7 @@ func TestResolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -488,19 +489,19 @@ func TestResolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ResolveItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -510,10 +511,10 @@ func TestResolveFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -522,8 +523,8 @@ func TestResolveFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -534,9 +535,9 @@ func TestResolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to get feed item")
 				}
 			}
@@ -545,10 +546,10 @@ func TestResolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -556,9 +557,9 @@ func TestResolveFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to update feed item")
 				}
 			}
@@ -567,10 +568,10 @@ func TestResolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -578,10 +579,10 @@ func TestResolveFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -590,8 +591,8 @@ func TestResolveFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send notification")
@@ -640,7 +641,7 @@ func TestPinFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		itemID  string
 	}
 	tests := []struct {
@@ -654,7 +655,7 @@ func TestPinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: true,
@@ -665,7 +666,7 @@ func TestPinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: false,
@@ -676,7 +677,7 @@ func TestPinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: false,
@@ -687,7 +688,7 @@ func TestPinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: false,
@@ -698,7 +699,7 @@ func TestPinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  "",
 			},
 			wantPersistent: false,
@@ -713,19 +714,19 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.PinItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -735,10 +736,10 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -747,8 +748,8 @@ func TestPinFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -759,10 +760,10 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, fmt.Errorf("failed to get feed item")
 				}
@@ -772,10 +773,10 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -783,9 +784,9 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to publish feed item")
 				}
 			}
@@ -794,19 +795,19 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.PinItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -816,10 +817,10 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -828,8 +829,8 @@ func TestPinFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send notification")
@@ -840,18 +841,18 @@ func TestPinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, nil
 				}
 
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to publish nil item")
 				}
 			}
@@ -897,7 +898,7 @@ func TestUnpinFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		itemID  string
 	}
 	tests := []struct {
@@ -911,7 +912,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: true,
@@ -922,7 +923,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: false,
@@ -933,7 +934,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: false,
@@ -944,7 +945,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantPersistent: false,
@@ -955,7 +956,7 @@ func TestUnpinFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  "",
 			},
 			wantPersistent: false,
@@ -970,19 +971,19 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.UnPinItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -992,10 +993,10 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1004,8 +1005,8 @@ func TestUnpinFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -1016,10 +1017,10 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, fmt.Errorf("failed to get feed item")
 				}
@@ -1029,10 +1030,10 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1040,9 +1041,9 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to publish feed item")
 				}
 			}
@@ -1051,19 +1052,19 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.PinItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -1073,10 +1074,10 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1085,8 +1086,8 @@ func TestUnpinFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send notification")
@@ -1097,18 +1098,18 @@ func TestUnpinFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, nil
 				}
 
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to publish nil item")
 				}
 			}
@@ -1154,7 +1155,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		itemID  string
 	}
 	tests := []struct {
@@ -1167,7 +1168,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: false,
@@ -1177,7 +1178,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1187,7 +1188,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1197,7 +1198,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1207,7 +1208,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 			},
 			wantErr: true,
 		},
@@ -1220,19 +1221,19 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.UnResolveItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -1242,10 +1243,10 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1254,8 +1255,8 @@ func TestUnresolveFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -1266,9 +1267,9 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to get feed item")
 				}
 			}
@@ -1277,10 +1278,10 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1288,9 +1289,9 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to update feed item")
 				}
 			}
@@ -1299,10 +1300,10 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1310,10 +1311,10 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1322,8 +1323,8 @@ func TestUnresolveFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send notification")
@@ -1334,9 +1335,9 @@ func TestUnresolveFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("nil item")
 				}
 			}
@@ -1382,13 +1383,13 @@ func TestHideFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		itemID  string
 	}
 	tests := []struct {
 		name           string
 		args           args
-		wantVisibility base.Visibility
+		wantVisibility feedlib.Visibility
 		wantErr        bool
 	}{
 		{
@@ -1396,10 +1397,10 @@ func TestHideFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
-			wantVisibility: base.VisibilityHide,
+			wantVisibility: feedlib.VisibilityHide,
 			wantErr:        false,
 		},
 		{
@@ -1407,7 +1408,7 @@ func TestHideFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1417,7 +1418,7 @@ func TestHideFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1427,7 +1428,7 @@ func TestHideFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1441,19 +1442,19 @@ func TestHideFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.HideItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -1463,10 +1464,10 @@ func TestHideFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1475,8 +1476,8 @@ func TestHideFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -1487,9 +1488,9 @@ func TestHideFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to get feed item")
 				}
 			}
@@ -1498,10 +1499,10 @@ func TestHideFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1509,9 +1510,9 @@ func TestHideFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to update feed item")
 				}
 			}
@@ -1520,10 +1521,10 @@ func TestHideFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1531,10 +1532,10 @@ func TestHideFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1543,8 +1544,8 @@ func TestHideFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send notification")
@@ -1592,13 +1593,13 @@ func TestShowFeedItem(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		itemID  string
 	}
 	tests := []struct {
 		name           string
 		args           args
-		wantVisibility base.Visibility
+		wantVisibility feedlib.Visibility
 		wantErr        bool
 	}{
 		{
@@ -1606,10 +1607,10 @@ func TestShowFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
-			wantVisibility: base.VisibilityShow,
+			wantVisibility: feedlib.VisibilityShow,
 			wantErr:        false,
 		},
 		{
@@ -1617,7 +1618,7 @@ func TestShowFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1627,7 +1628,7 @@ func TestShowFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1637,7 +1638,7 @@ func TestShowFeedItem(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				itemID:  testItem.ID,
 			},
 			wantErr: true,
@@ -1651,19 +1652,19 @@ func TestShowFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ShowItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -1673,10 +1674,10 @@ func TestShowFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1685,8 +1686,8 @@ func TestShowFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -1697,9 +1698,9 @@ func TestShowFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to get feed item")
 				}
 			}
@@ -1708,19 +1709,19 @@ func TestShowFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ShowItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -1730,9 +1731,9 @@ func TestShowFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
 					return nil, fmt.Errorf("failed to update feed item")
 				}
 			}
@@ -1741,19 +1742,19 @@ func TestShowFeedItem(t *testing.T) {
 				fakeEngagement.GetFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					itemID string,
-				) (*base.Item, error) {
-					return &base.Item{
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								ID:             ksuid.New().String(),
 								SequenceNumber: 1,
 								Name:           common.ShowItemActionName,
-								Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-								ActionType:     base.ActionTypeSecondary,
-								Handling:       base.HandlingFullPage,
+								Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+								ActionType:     feedlib.ActionTypeSecondary,
+								Handling:       feedlib.HandlingFullPage,
 								AllowAnonymous: false,
 							},
 						},
@@ -1763,10 +1764,10 @@ func TestShowFeedItem(t *testing.T) {
 				fakeEngagement.UpdateFeedItemFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					item *base.Item,
-				) (*base.Item, error) {
-					return &base.Item{
+					flavour feedlib.Flavour,
+					item *feedlib.Item,
+				) (*feedlib.Item, error) {
+					return &feedlib.Item{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -1775,8 +1776,8 @@ func TestShowFeedItem(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send notification")
@@ -1822,7 +1823,7 @@ func TestLabels(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 	}
 
 	tests := []struct {
@@ -1836,7 +1837,7 @@ func TestLabels(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 			},
 			want:    []string{common.DefaultLabel},
 			wantErr: false,
@@ -1849,7 +1850,7 @@ func TestLabels(t *testing.T) {
 				fakeEngagement.LabelsFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 				) ([]string, error) {
 					return []string{common.DefaultLabel}, nil
 				}
@@ -1894,7 +1895,7 @@ func TestSaveLabel(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		label   string
 	}
 
@@ -1909,7 +1910,7 @@ func TestSaveLabel(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				label:   ksuid.New().String(),
 			},
 			want:    []string{common.DefaultLabel},
@@ -1923,7 +1924,7 @@ func TestSaveLabel(t *testing.T) {
 				fakeEngagement.SaveLabelFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					label string,
 				) error {
 					return nil
@@ -1963,7 +1964,7 @@ func TestUnreadPersistentItems(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 	}
 
 	tests := []struct {
@@ -1977,7 +1978,7 @@ func TestUnreadPersistentItems(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 			},
 			want:    0,
 			wantErr: false,
@@ -1990,7 +1991,7 @@ func TestUnreadPersistentItems(t *testing.T) {
 				fakeEngagement.UnreadPersistentItemsFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 				) (int, error) {
 					return 0, nil
 				}
@@ -2029,7 +2030,7 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 	}
 
 	tests := []struct {
@@ -2043,7 +2044,7 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 			},
 			want:    0,
 			wantErr: false,
@@ -2056,7 +2057,7 @@ func TestUpdateUnreadPersistentItemsCount(t *testing.T) {
 				fakeEngagement.UpdateUnreadPersistentItemsCountFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 				) error {
 					return nil
 				}
@@ -2095,8 +2096,8 @@ func TestPublishNudge(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
-		nudge   *base.Nudge
+		flavour feedlib.Flavour
+		nudge   *feedlib.Nudge
 	}
 	tests := []struct {
 		name    string
@@ -2108,7 +2109,7 @@ func TestPublishNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudge:   nudge,
 			},
 			wantErr: false,
@@ -2118,7 +2119,7 @@ func TestPublishNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudge:   nil,
 			},
 			wantErr: true,
@@ -2128,7 +2129,7 @@ func TestPublishNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudge:   nudge,
 			},
 			wantErr: true,
@@ -2138,7 +2139,7 @@ func TestPublishNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudge:   nudge,
 			},
 			wantErr: true,
@@ -2148,8 +2149,8 @@ func TestPublishNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
-				nudge:   &base.Nudge{},
+				flavour: feedlib.FlavourConsumer,
+				nudge:   &feedlib.Nudge{},
 			},
 			wantErr: true,
 		},
@@ -2158,12 +2159,12 @@ func TestPublishNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
-				nudge: &base.Nudge{
+				flavour: feedlib.FlavourConsumer,
+				nudge: &feedlib.Nudge{
 					ID: uuid.New().String(),
-					Actions: []base.Action{
+					Actions: []feedlib.Action{
 						{
-							ActionType: base.ActionTypeFloating,
+							ActionType: feedlib.ActionTypeFloating,
 						},
 					},
 				},
@@ -2178,10 +2179,10 @@ func TestPublishNudge(t *testing.T) {
 				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
 						SequenceNumber: 0,
 					}, nil
@@ -2191,8 +2192,8 @@ func TestPublishNudge(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -2203,9 +2204,9 @@ func TestPublishNudge(t *testing.T) {
 				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
 					return nil, fmt.Errorf("can't publish nil nudge")
 				}
 			}
@@ -2214,9 +2215,9 @@ func TestPublishNudge(t *testing.T) {
 				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
 					return nil, fmt.Errorf("unable to publish nudge")
 				}
 			}
@@ -2225,10 +2226,10 @@ func TestPublishNudge(t *testing.T) {
 				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
 						SequenceNumber: 0,
 					}, nil
@@ -2238,8 +2239,8 @@ func TestPublishNudge(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("failed to send notification")
@@ -2250,9 +2251,9 @@ func TestPublishNudge(t *testing.T) {
 				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
 					return nil, fmt.Errorf("invalid nudge")
 				}
 			}
@@ -2260,14 +2261,14 @@ func TestPublishNudge(t *testing.T) {
 				fakeEngagement.SaveNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID: uuid.New().String(),
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
-								ActionType: base.ActionTypeFloating,
+								ActionType: feedlib.ActionTypeFloating,
 							},
 						},
 					}, fmt.Errorf("invalid nudge")
@@ -2312,13 +2313,13 @@ func TestResolveNudge(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		nudgeID string
 	}
 	tests := []struct {
 		name       string
 		args       args
-		wantStatus base.Status
+		wantStatus feedlib.Status
 		wantErr    bool
 	}{
 		{
@@ -2326,10 +2327,10 @@ func TestResolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
-			wantStatus: base.StatusDone,
+			wantStatus: feedlib.StatusDone,
 			wantErr:    false,
 		},
 		{
@@ -2337,7 +2338,7 @@ func TestResolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
 			wantErr: true,
@@ -2347,7 +2348,7 @@ func TestResolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
 			wantErr: true,
@@ -2357,7 +2358,7 @@ func TestResolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
 			wantErr: true,
@@ -2370,14 +2371,14 @@ func TestResolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
-						Status:         base.StatusDone,
+						Status:         feedlib.StatusDone,
 						SequenceNumber: 1,
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								Name: common.ResolveItemActionName,
 							},
@@ -2388,10 +2389,10 @@ func TestResolveNudge(t *testing.T) {
 				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -2400,8 +2401,8 @@ func TestResolveNudge(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -2412,9 +2413,9 @@ func TestResolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
+				) (*feedlib.Nudge, error) {
 					return nil, fmt.Errorf("unable to get nudge")
 				}
 			}
@@ -2423,14 +2424,14 @@ func TestResolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
-						Status:         base.StatusDone,
+						Status:         feedlib.StatusDone,
 						SequenceNumber: 1,
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								Name: common.ResolveItemActionName,
 							},
@@ -2441,9 +2442,9 @@ func TestResolveNudge(t *testing.T) {
 				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
 					return nil, fmt.Errorf("unable to resolve nudge")
 				}
 			}
@@ -2452,14 +2453,14 @@ func TestResolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
-						Status:         base.StatusDone,
+						Status:         feedlib.StatusDone,
 						SequenceNumber: 1,
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								Name: common.ResolveItemActionName,
 							},
@@ -2470,10 +2471,10 @@ func TestResolveNudge(t *testing.T) {
 				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -2482,8 +2483,8 @@ func TestResolveNudge(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("unable to send notification")
@@ -2528,13 +2529,13 @@ func TestUnresolveNudge(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		nudgeID string
 	}
 	tests := []struct {
 		name       string
 		args       args
-		wantStatus base.Status
+		wantStatus feedlib.Status
 		wantErr    bool
 	}{
 		{
@@ -2542,10 +2543,10 @@ func TestUnresolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
-			wantStatus: base.StatusDone,
+			wantStatus: feedlib.StatusDone,
 			wantErr:    false,
 		},
 		{
@@ -2553,7 +2554,7 @@ func TestUnresolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
 			wantErr: true,
@@ -2563,7 +2564,7 @@ func TestUnresolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
 			wantErr: true,
@@ -2573,7 +2574,7 @@ func TestUnresolveNudge(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				nudgeID: nudge.ID,
 			},
 			wantErr: true,
@@ -2586,14 +2587,14 @@ func TestUnresolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
-						Status:         base.StatusDone,
+						Status:         feedlib.StatusDone,
 						SequenceNumber: 1,
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								Name: common.UnResolveItemActionName,
 							},
@@ -2604,10 +2605,10 @@ func TestUnresolveNudge(t *testing.T) {
 				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -2616,8 +2617,8 @@ func TestUnresolveNudge(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return nil
@@ -2628,9 +2629,9 @@ func TestUnresolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
+				) (*feedlib.Nudge, error) {
 					return nil, fmt.Errorf("unable to get nudge")
 				}
 			}
@@ -2639,14 +2640,14 @@ func TestUnresolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
-						Status:         base.StatusDone,
+						Status:         feedlib.StatusDone,
 						SequenceNumber: 1,
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								Name: common.UnResolveItemActionName,
 							},
@@ -2657,9 +2658,9 @@ func TestUnresolveNudge(t *testing.T) {
 				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
 					return nil, fmt.Errorf("unable to Unresolve nudge")
 				}
 			}
@@ -2668,14 +2669,14 @@ func TestUnresolveNudge(t *testing.T) {
 				fakeEngagement.GetNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
+					flavour feedlib.Flavour,
 					nudgeID string,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID:             uuid.New().String(),
-						Status:         base.StatusDone,
+						Status:         feedlib.StatusDone,
 						SequenceNumber: 1,
-						Actions: []base.Action{
+						Actions: []feedlib.Action{
 							{
 								Name: common.UnResolveItemActionName,
 							},
@@ -2686,10 +2687,10 @@ func TestUnresolveNudge(t *testing.T) {
 				fakeEngagement.UpdateNudgeFn = func(
 					ctx context.Context,
 					uid string,
-					flavour base.Flavour,
-					nudge *base.Nudge,
-				) (*base.Nudge, error) {
-					return &base.Nudge{
+					flavour feedlib.Flavour,
+					nudge *feedlib.Nudge,
+				) (*feedlib.Nudge, error) {
+					return &feedlib.Nudge{
 						ID: uuid.New().String(),
 					}, nil
 				}
@@ -2698,8 +2699,8 @@ func TestUnresolveNudge(t *testing.T) {
 					ctx context.Context,
 					topicID string,
 					uid string,
-					flavour base.Flavour,
-					payload base.Element,
+					flavour feedlib.Flavour,
+					payload feedlib.Element,
 					metadata map[string]interface{},
 				) error {
 					return fmt.Errorf("unable to send notification")

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/apiclient"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -18,11 +18,11 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		uid *string,
 		isAnonymous *bool,
-		flavour base.Flavour,
-		persistent base.BooleanFilter,
-		status *base.Status,
-		visibility *base.Visibility,
-		expired *base.BooleanFilter,
+		flavour feedlib.Flavour,
+		persistent feedlib.BooleanFilter,
+		status *feedlib.Status,
+		visibility *feedlib.Visibility,
+		expired *feedlib.BooleanFilter,
 		filterParams *helpers.FilterParams,
 	) (*domain.Feed, error)
 
@@ -30,31 +30,31 @@ type FakeEngagementRepository struct {
 	GetFeedItemFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	// saving a new feed item
 	SaveFeedItemFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		item *base.Item,
-	) (*base.Item, error)
+		flavour feedlib.Flavour,
+		item *feedlib.Item,
+	) (*feedlib.Item, error)
 
 	// updating an existing feed item
 	UpdateFeedItemFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		item *base.Item,
-	) (*base.Item, error)
+		flavour feedlib.Flavour,
+		item *feedlib.Item,
+	) (*feedlib.Item, error)
 
 	// DeleteFeedItem permanently deletes a feed item and it's copies
 	DeleteFeedItemFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 	) error
 
@@ -62,31 +62,31 @@ type FakeEngagementRepository struct {
 	GetNudgeFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	// saving a new modified nudge
 	SaveNudgeFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		nudge *base.Nudge,
-	) (*base.Nudge, error)
+		flavour feedlib.Flavour,
+		nudge *feedlib.Nudge,
+	) (*feedlib.Nudge, error)
 
 	// updating an existing nudge
 	UpdateNudgeFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		nudge *base.Nudge,
-	) (*base.Nudge, error)
+		flavour feedlib.Flavour,
+		nudge *feedlib.Nudge,
+	) (*feedlib.Nudge, error)
 
 	// DeleteNudge permanently deletes a nudge and it's copies
 	DeleteNudgeFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
 	) error
 
@@ -94,23 +94,23 @@ type FakeEngagementRepository struct {
 	GetActionFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		actionID string,
-	) (*base.Action, error)
+	) (*feedlib.Action, error)
 
 	// saving a new action
 	SaveActionFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		action *base.Action,
-	) (*base.Action, error)
+		flavour feedlib.Flavour,
+		action *feedlib.Action,
+	) (*feedlib.Action, error)
 
 	// DeleteAction permanently deletes an action and it's copies
 	DeleteActionFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		actionID string,
 	) error
 
@@ -118,25 +118,25 @@ type FakeEngagementRepository struct {
 	PostMessageFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-		message *base.Message,
-	) (*base.Message, error)
+		message *feedlib.Message,
+	) (*feedlib.Message, error)
 
 	// GetMessage retrieves THE LATEST VERSION OF a message
 	GetMessageFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 		messageID string,
-	) (*base.Message, error)
+	) (*feedlib.Message, error)
 
 	// DeleteMessage deletes a message
 	DeleteMessageFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 		messageID string,
 	) error
@@ -145,77 +145,77 @@ type FakeEngagementRepository struct {
 	GetMessagesFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) ([]base.Message, error)
+	) ([]feedlib.Message, error)
 
 	SaveIncomingEventFn func(
 		ctx context.Context,
-		event *base.Event,
+		event *feedlib.Event,
 	) error
 
 	SaveOutgoingEventFn func(
 		ctx context.Context,
-		event *base.Event,
+		event *feedlib.Event,
 	) error
 
 	GetNudgesFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		status *base.Status,
-		visibility *base.Visibility,
-		expired *base.BooleanFilter,
-	) ([]base.Nudge, error)
+		flavour feedlib.Flavour,
+		status *feedlib.Status,
+		visibility *feedlib.Visibility,
+		expired *feedlib.BooleanFilter,
+	) ([]feedlib.Nudge, error)
 
 	GetActionsFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-	) ([]base.Action, error)
+		flavour feedlib.Flavour,
+	) ([]feedlib.Action, error)
 
 	GetItemsFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		persistent base.BooleanFilter,
-		status *base.Status,
-		visibility *base.Visibility,
-		expired *base.BooleanFilter,
+		flavour feedlib.Flavour,
+		persistent feedlib.BooleanFilter,
+		status *feedlib.Status,
+		visibility *feedlib.Visibility,
+		expired *feedlib.BooleanFilter,
 		filterParams *helpers.FilterParams,
-	) ([]base.Item, error)
+	) ([]feedlib.Item, error)
 
 	LabelsFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) ([]string, error)
 
 	SaveLabelFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		label string,
 	) error
 
 	UnreadPersistentItemsFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) (int, error)
 
 	UpdateUnreadPersistentItemsCountFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) error
 
 	GetDefaultNudgeByTitleFn func(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		title string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	SaveMarketingMessageFn func(
 		ctx context.Context,
@@ -282,11 +282,11 @@ func (f *FakeEngagementRepository) GetFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
-	flavour base.Flavour,
-	persistent base.BooleanFilter,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
+	flavour feedlib.Flavour,
+	persistent feedlib.BooleanFilter,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
 	return f.GetFeedFn(ctx, uid, isAnonymous, flavour, persistent, status, visibility, expired, filterParams)
@@ -296,9 +296,9 @@ func (f *FakeEngagementRepository) GetFeed(
 func (f *FakeEngagementRepository) GetFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	return f.GetFeedItemFn(ctx, uid, flavour, itemID)
 }
 
@@ -306,9 +306,9 @@ func (f *FakeEngagementRepository) GetFeedItem(
 func (f *FakeEngagementRepository) SaveFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	item *base.Item,
-) (*base.Item, error) {
+	flavour feedlib.Flavour,
+	item *feedlib.Item,
+) (*feedlib.Item, error) {
 	return f.SaveFeedItemFn(ctx, uid, flavour, item)
 }
 
@@ -316,9 +316,9 @@ func (f *FakeEngagementRepository) SaveFeedItem(
 func (f *FakeEngagementRepository) UpdateFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	item *base.Item,
-) (*base.Item, error) {
+	flavour feedlib.Flavour,
+	item *feedlib.Item,
+) (*feedlib.Item, error) {
 	return f.UpdateFeedItemFn(ctx, uid, flavour, item)
 }
 
@@ -326,7 +326,7 @@ func (f *FakeEngagementRepository) UpdateFeedItem(
 func (f *FakeEngagementRepository) DeleteFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 ) error {
 	return f.DeleteFeedItemFn(ctx, uid, flavour, itemID)
@@ -336,9 +336,9 @@ func (f *FakeEngagementRepository) DeleteFeedItem(
 func (f *FakeEngagementRepository) GetNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	return f.GetNudgeFn(ctx, uid, flavour, nudgeID)
 }
 
@@ -346,9 +346,9 @@ func (f *FakeEngagementRepository) GetNudge(
 func (f *FakeEngagementRepository) SaveNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	nudge *base.Nudge,
-) (*base.Nudge, error) {
+	flavour feedlib.Flavour,
+	nudge *feedlib.Nudge,
+) (*feedlib.Nudge, error) {
 	return f.SaveNudgeFn(ctx, uid, flavour, nudge)
 }
 
@@ -356,9 +356,9 @@ func (f *FakeEngagementRepository) SaveNudge(
 func (f *FakeEngagementRepository) UpdateNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	nudge *base.Nudge,
-) (*base.Nudge, error) {
+	flavour feedlib.Flavour,
+	nudge *feedlib.Nudge,
+) (*feedlib.Nudge, error) {
 	return f.UpdateNudgeFn(ctx, uid, flavour, nudge)
 }
 
@@ -366,7 +366,7 @@ func (f *FakeEngagementRepository) UpdateNudge(
 func (f *FakeEngagementRepository) DeleteNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
 ) error {
 	return f.DeleteNudgeFn(ctx, uid, flavour, nudgeID)
@@ -376,9 +376,9 @@ func (f *FakeEngagementRepository) DeleteNudge(
 func (f *FakeEngagementRepository) GetAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	actionID string,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	return f.GetActionFn(ctx, uid, flavour, actionID)
 }
 
@@ -386,9 +386,9 @@ func (f *FakeEngagementRepository) GetAction(
 func (f *FakeEngagementRepository) SaveAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	action *base.Action,
-) (*base.Action, error) {
+	flavour feedlib.Flavour,
+	action *feedlib.Action,
+) (*feedlib.Action, error) {
 	return f.SaveActionFn(ctx, uid, flavour, action)
 }
 
@@ -396,7 +396,7 @@ func (f *FakeEngagementRepository) SaveAction(
 func (f *FakeEngagementRepository) DeleteAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	actionID string,
 ) error {
 	return f.DeleteActionFn(ctx, uid, flavour, actionID)
@@ -406,10 +406,10 @@ func (f *FakeEngagementRepository) DeleteAction(
 func (f *FakeEngagementRepository) PostMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-	message *base.Message,
-) (*base.Message, error) {
+	message *feedlib.Message,
+) (*feedlib.Message, error) {
 	return f.PostMessageFn(ctx, uid, flavour, itemID, message)
 }
 
@@ -417,10 +417,10 @@ func (f *FakeEngagementRepository) PostMessage(
 func (f *FakeEngagementRepository) GetMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	messageID string,
-) (*base.Message, error) {
+) (*feedlib.Message, error) {
 	return f.GetMessageFn(ctx, uid, flavour, itemID, messageID)
 }
 
@@ -428,7 +428,7 @@ func (f *FakeEngagementRepository) GetMessage(
 func (f *FakeEngagementRepository) DeleteMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	messageID string,
 ) error {
@@ -439,16 +439,16 @@ func (f *FakeEngagementRepository) DeleteMessage(
 func (f *FakeEngagementRepository) GetMessages(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) ([]base.Message, error) {
+) ([]feedlib.Message, error) {
 	return f.GetMessagesFn(ctx, uid, flavour, itemID)
 }
 
 // SaveIncomingEvent ...
 func (f *FakeEngagementRepository) SaveIncomingEvent(
 	ctx context.Context,
-	event *base.Event,
+	event *feedlib.Event,
 ) error {
 	return f.SaveIncomingEventFn(ctx, event)
 }
@@ -456,7 +456,7 @@ func (f *FakeEngagementRepository) SaveIncomingEvent(
 // SaveOutgoingEvent ...
 func (f *FakeEngagementRepository) SaveOutgoingEvent(
 	ctx context.Context,
-	event *base.Event,
+	event *feedlib.Event,
 ) error {
 	return f.SaveOutgoingEventFn(ctx, event)
 }
@@ -465,11 +465,11 @@ func (f *FakeEngagementRepository) SaveOutgoingEvent(
 func (f *FakeEngagementRepository) GetNudges(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
-) ([]base.Nudge, error) {
+	flavour feedlib.Flavour,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
+) ([]feedlib.Nudge, error) {
 	return f.GetNudgesFn(ctx, uid, flavour, status, visibility, expired)
 }
 
@@ -477,8 +477,8 @@ func (f *FakeEngagementRepository) GetNudges(
 func (f *FakeEngagementRepository) GetActions(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-) ([]base.Action, error) {
+	flavour feedlib.Flavour,
+) ([]feedlib.Action, error) {
 	return f.GetActionsFn(ctx, uid, flavour)
 }
 
@@ -486,13 +486,13 @@ func (f *FakeEngagementRepository) GetActions(
 func (f *FakeEngagementRepository) GetItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	persistent base.BooleanFilter,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
+	flavour feedlib.Flavour,
+	persistent feedlib.BooleanFilter,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
-) ([]base.Item, error) {
+) ([]feedlib.Item, error) {
 	return f.GetItemsFn(ctx, uid, flavour, persistent, status, visibility, expired, filterParams)
 }
 
@@ -500,7 +500,7 @@ func (f *FakeEngagementRepository) GetItems(
 func (f *FakeEngagementRepository) Labels(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) ([]string, error) {
 	return f.LabelsFn(ctx, uid, flavour)
 }
@@ -509,7 +509,7 @@ func (f *FakeEngagementRepository) Labels(
 func (f *FakeEngagementRepository) SaveLabel(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	label string,
 ) error {
 	return f.SaveLabelFn(ctx, uid, flavour, label)
@@ -519,7 +519,7 @@ func (f *FakeEngagementRepository) SaveLabel(
 func (f *FakeEngagementRepository) UnreadPersistentItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) (int, error) {
 	return f.UnreadPersistentItemsFn(ctx, uid, flavour)
 }
@@ -528,7 +528,7 @@ func (f *FakeEngagementRepository) UnreadPersistentItems(
 func (f *FakeEngagementRepository) UpdateUnreadPersistentItemsCount(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) error {
 	return f.UpdateUnreadPersistentItemsCountFn(ctx, uid, flavour)
 }
@@ -537,9 +537,9 @@ func (f *FakeEngagementRepository) UpdateUnreadPersistentItemsCount(
 func (f *FakeEngagementRepository) GetDefaultNudgeByTitle(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	title string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	return f.GetDefaultNudgeByTitleFn(ctx, uid, flavour, title)
 }
 

@@ -25,9 +25,10 @@ autobind:
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
   - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-  - "gitlab.slade360emr.com/go/base"
   - "github.com/savannahghi/scalarutils"
   - "github.com/savannahghi/enumutils"
+  - "github.com/savannahghi/feedlib"
+  - "gitlab.slade360emr.com/go/base"
   - "google.golang.org/api/calendar/v3"
 
 models:
@@ -44,19 +45,19 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
   MsgInput:
     model:
-      - gitlab.slade360emr.com/go/base.Message
+      - github.com/savannahghi/feedlib.Message
   Msg:
     model:
-      - gitlab.slade360emr.com/go/base.Message
+      - github.com/savannahghi/feedlib.Message
   EventInput:
     model:
-      - gitlab.slade360emr.com/go/base.Event
+      - github.com/savannahghi/feedlib.Event
   PayloadInput:
     model:
-      - gitlab.slade360emr.com/go/base.Payload
+      - github.com/savannahghi/feedlib.Payload
   ContextInput:
     model:
-      - gitlab.slade360emr.com/go/base.Context
+      - github.com/savannahghi/feedlib.Context
   FilterParamsInput:
     model:
       - gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers.FilterParams

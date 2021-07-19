@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/feedlib"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -130,11 +131,11 @@ func (fr Repository) GetFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
-	flavour base.Flavour,
-	persistent base.BooleanFilter,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
+	flavour feedlib.Flavour,
+	persistent feedlib.BooleanFilter,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
 	ctx, span := tracer.Start(ctx, "GetFeed")
@@ -181,7 +182,7 @@ func (fr Repository) GetFeed(
 	// only add default content if...
 	// - the `persistent` filter is set to "BOTH"
 	// - all other filters are nil
-	noFilters := persistent == base.BooleanFilterBoth && status == nil &&
+	noFilters := persistent == feedlib.BooleanFilterBoth && status == nil &&
 		visibility == nil &&
 		expired == nil &&
 		filterParams == nil
@@ -229,7 +230,7 @@ func (fr Repository) GetFeed(
 func (fr Repository) initializeDefaultFeed(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) error {
 	ctx, span := tracer.Start(ctx, "initializeDefaultFeed")
 	defer span.End()
@@ -261,9 +262,9 @@ func (fr Repository) initializeDefaultFeed(
 func (fr Repository) GetFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "GetFeedItem")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -273,7 +274,7 @@ func (fr Repository) GetFeedItem(
 	}
 
 	itemsCollection := fr.getItemsCollection(uid, flavour)
-	el, err := fr.getSingleElement(ctx, itemsCollection, itemID, &base.Item{})
+	el, err := fr.getSingleElement(ctx, itemsCollection, itemID, &feedlib.Item{})
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get items: %w", err)
@@ -281,7 +282,7 @@ func (fr Repository) GetFeedItem(
 	if el == nil {
 		return nil, nil
 	}
-	item, ok := el.(*base.Item)
+	item, ok := el.(*feedlib.Item)
 	if !ok {
 		return nil, fmt.Errorf("expected an Item, got %T", el)
 	}
@@ -290,7 +291,7 @@ func (fr Repository) GetFeedItem(
 	if err != nil || messages == nil {
 		helpers.RecordSpanError(span, err)
 		// the thread may not have been initiated yet
-		item.Conversations = []base.Message{}
+		item.Conversations = []feedlib.Message{}
 	} else {
 		item.Conversations = messages
 	}
@@ -305,9 +306,9 @@ func (fr Repository) GetFeedItem(
 func (fr Repository) SaveFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	item *base.Item,
-) (*base.Item, error) {
+	flavour feedlib.Flavour,
+	item *feedlib.Item,
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "SaveFeedItem")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -343,7 +344,7 @@ func (fr Repository) SaveFeedItem(
 	if err != nil || messages == nil {
 		helpers.RecordSpanError(span, err)
 		// the thread may not have been initiated yet
-		item.Conversations = []base.Message{}
+		item.Conversations = []feedlib.Message{}
 	} else {
 		item.Conversations = messages
 	}
@@ -355,9 +356,9 @@ func (fr Repository) SaveFeedItem(
 func (fr Repository) UpdateFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	item *base.Item,
-) (*base.Item, error) {
+	flavour feedlib.Flavour,
+	item *feedlib.Item,
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "UpdateFeedItem")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -393,7 +394,7 @@ func (fr Repository) UpdateFeedItem(
 	if err != nil || messages == nil {
 		helpers.RecordSpanError(span, err)
 		// the thread may not have been initiated yet
-		item.Conversations = []base.Message{}
+		item.Conversations = []feedlib.Message{}
 	} else {
 		item.Conversations = messages
 	}
@@ -405,7 +406,7 @@ func (fr Repository) UpdateFeedItem(
 func (fr Repository) DeleteFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteFeedItem")
@@ -429,9 +430,9 @@ func (fr Repository) DeleteFeedItem(
 func (fr Repository) GetNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetNudge")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -445,7 +446,7 @@ func (fr Repository) GetNudge(
 		ctx,
 		nudgeCollection,
 		nudgeID,
-		&base.Nudge{},
+		&feedlib.Nudge{},
 	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -454,7 +455,7 @@ func (fr Repository) GetNudge(
 	if el == nil {
 		return nil, nil
 	}
-	nudge, ok := el.(*base.Nudge)
+	nudge, ok := el.(*feedlib.Nudge)
 	if !ok {
 		return nil, fmt.Errorf("expected an nudge, got %T", el)
 	}
@@ -469,9 +470,9 @@ func (fr Repository) GetNudge(
 func (fr Repository) SaveNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	nudge *base.Nudge,
-) (*base.Nudge, error) {
+	flavour feedlib.Flavour,
+	nudge *feedlib.Nudge,
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "SaveNudge")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -512,9 +513,9 @@ func (fr Repository) SaveNudge(
 func (fr Repository) UpdateNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	nudge *base.Nudge,
-) (*base.Nudge, error) {
+	flavour feedlib.Flavour,
+	nudge *feedlib.Nudge,
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "UpdateNudge")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -553,7 +554,7 @@ func (fr Repository) UpdateNudge(
 func (fr Repository) DeleteNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteNudge")
@@ -577,9 +578,9 @@ func (fr Repository) DeleteNudge(
 func (fr Repository) GetAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	actionID string,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "GetAction")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -593,7 +594,7 @@ func (fr Repository) GetAction(
 		ctx,
 		actionCollection,
 		actionID,
-		&base.Action{},
+		&feedlib.Action{},
 	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -602,7 +603,7 @@ func (fr Repository) GetAction(
 	if el == nil {
 		return nil, nil
 	}
-	action, ok := el.(*base.Action)
+	action, ok := el.(*feedlib.Action)
 	if !ok {
 		return nil, fmt.Errorf("expected an action, got %T", el)
 	}
@@ -617,9 +618,9 @@ func (fr Repository) GetAction(
 func (fr Repository) SaveAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	action *base.Action,
-) (*base.Action, error) {
+	flavour feedlib.Flavour,
+	action *feedlib.Action,
+) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "SaveAction")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -658,7 +659,7 @@ func (fr Repository) SaveAction(
 func (fr Repository) DeleteAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	actionID string,
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteAction")
@@ -682,10 +683,10 @@ func (fr Repository) DeleteAction(
 func (fr Repository) PostMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-	message *base.Message,
-) (*base.Message, error) {
+	message *feedlib.Message,
+) (*feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "PostMessage")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -714,9 +715,9 @@ func (fr Repository) PostMessage(
 func (fr Repository) GetMessages(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) ([]base.Message, error) {
+) ([]feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "GetMessages")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
@@ -725,7 +726,7 @@ func (fr Repository) GetMessages(
 			"repository precondition check failed: %w", err)
 	}
 
-	messages := []base.Message{}
+	messages := []feedlib.Message{}
 	seenMessageIDs := []string{}
 	query := fr.getMessagesQuery(uid, flavour, itemID)
 	msgDocs, err := query.Documents(ctx).GetAll()
@@ -734,7 +735,7 @@ func (fr Repository) GetMessages(
 		return nil, fmt.Errorf("unable to get messages: %w", err)
 	}
 	for _, msgDoc := range msgDocs {
-		msg := &base.Message{}
+		msg := &feedlib.Message{}
 		err := msgDoc.DataTo(msg)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -756,10 +757,10 @@ func (fr Repository) GetMessages(
 func (fr Repository) GetMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	messageID string,
-) (*base.Message, error) {
+) (*feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "GetMessage")
 	defer span.End()
 	messageCollection := fr.getMessagesCollection(uid, flavour, itemID)
@@ -767,7 +768,7 @@ func (fr Repository) GetMessage(
 		ctx,
 		messageCollection,
 		messageID,
-		&base.Message{},
+		&feedlib.Message{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get message: %w", err)
@@ -775,7 +776,7 @@ func (fr Repository) GetMessage(
 	if el == nil {
 		return nil, nil
 	}
-	message, ok := el.(*base.Message)
+	message, ok := el.(*feedlib.Message)
 	if !ok {
 		return nil, fmt.Errorf("expected a message, got %T", el)
 	}
@@ -789,7 +790,7 @@ func (fr Repository) GetMessage(
 func (fr Repository) DeleteMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	messageID string,
 ) error {
@@ -816,7 +817,7 @@ func (fr Repository) DeleteMessage(
 // before they are processed further
 func (fr Repository) SaveIncomingEvent(
 	ctx context.Context,
-	event *base.Event,
+	event *feedlib.Event,
 ) error {
 	ctx, span := tracer.Start(ctx, "SaveIncomingEvent")
 	defer span.End()
@@ -845,7 +846,7 @@ func (fr Repository) SaveIncomingEvent(
 // before they are sent
 func (fr Repository) SaveOutgoingEvent(
 	ctx context.Context,
-	event *base.Event,
+	event *feedlib.Event,
 ) error {
 	ctx, span := tracer.Start(ctx, "SaveOutgoingEvent")
 	defer span.End()
@@ -906,7 +907,7 @@ func (fr Repository) getOutgoingEmailsCollectionName() string {
 
 func (fr Repository) getUserCollection(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) *firestore.CollectionRef {
 	feedCollection := fr.firestoreClient.Collection(fr.getFeedCollectionName())
 	userCollection := feedCollection.Doc(flavour.String()).Collection(uid)
@@ -915,7 +916,7 @@ func (fr Repository) getUserCollection(
 
 func (fr Repository) getElementCollection(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	subCollectionName string,
 ) *firestore.CollectionRef {
 	return fr.getUserCollection(
@@ -926,28 +927,28 @@ func (fr Repository) getElementCollection(
 
 func (fr Repository) getActionsCollection(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) *firestore.CollectionRef {
 	return fr.getElementCollection(uid, flavour, actionsSubcollectionName)
 }
 
 func (fr Repository) getNudgesCollection(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) *firestore.CollectionRef {
 	return fr.getElementCollection(uid, flavour, nudgesSubcollectionName)
 }
 
 func (fr Repository) getItemsCollection(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) *firestore.CollectionRef {
 	return fr.getElementCollection(uid, flavour, itemsSubcollectionName)
 }
 
 func (fr Repository) getMessagesCollection(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 ) *firestore.CollectionRef {
 	itemsColl := fr.getElementCollection(uid, flavour, itemsSubcollectionName)
@@ -984,11 +985,11 @@ func (fr Repository) elementExists(
 }
 func (fr Repository) getItemsQuery(
 	uid string,
-	flavour base.Flavour,
-	persistent base.BooleanFilter,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
+	flavour feedlib.Flavour,
+	persistent feedlib.BooleanFilter,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*firestore.Query, error) {
 	itemsQuery := fr.getItemsCollection(
@@ -1005,7 +1006,7 @@ func (fr Repository) getItemsQuery(
 		itemsQuery = itemsQuery.Where(
 			"status",
 			"==",
-			base.StatusPending,
+			feedlib.StatusPending,
 		)
 	}
 
@@ -1013,7 +1014,7 @@ func (fr Repository) getItemsQuery(
 		itemsQuery = itemsQuery.Where(
 			"visibility",
 			"==",
-			base.VisibilityShow,
+			feedlib.VisibilityShow,
 		)
 	}
 
@@ -1026,12 +1027,12 @@ func (fr Repository) getItemsQuery(
 	}
 
 	switch persistent {
-	case base.BooleanFilterTrue:
+	case feedlib.BooleanFilterTrue:
 		itemsQuery = itemsQuery.Where("persistent", "==", true)
-	case base.BooleanFilterFalse:
+	case feedlib.BooleanFilterFalse:
 		itemsQuery = itemsQuery.Where("persistent", "==", false)
 
-		// base.BooleanFilterBoth is "passed": no filters added to the query
+		// feedlib.BooleanFilterBoth is "passed": no filters added to the query
 	}
 
 	if status != nil {
@@ -1041,11 +1042,11 @@ func (fr Repository) getItemsQuery(
 		itemsQuery = itemsQuery.Where("visibility", "==", visibility)
 	}
 	if expired != nil {
-		if *expired == base.BooleanFilterFalse {
+		if *expired == feedlib.BooleanFilterFalse {
 			itemsQuery = itemsQuery.Where("expiry", ">=", time.Now())
 		}
 
-		if *expired == base.BooleanFilterTrue {
+		if *expired == feedlib.BooleanFilterTrue {
 			itemsQuery = itemsQuery.Where("expiry", "<=", time.Now())
 		}
 	}
@@ -1060,13 +1061,13 @@ func (fr Repository) getItemsQuery(
 func (fr Repository) GetItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	persistent base.BooleanFilter,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
+	flavour feedlib.Flavour,
+	persistent feedlib.BooleanFilter,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
-) ([]base.Item, error) {
+) ([]feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "GetItems")
 	defer span.End()
 	query, err := fr.getItemsQuery(
@@ -1083,7 +1084,7 @@ func (fr Repository) GetItems(
 		return nil, fmt.Errorf("unable to compose items query: %w", err)
 	}
 
-	items := []base.Item{}
+	items := []feedlib.Item{}
 	seenItemIDs := []string{}
 	itemDocs, err := query.Documents(ctx).GetAll()
 	if err != nil {
@@ -1091,7 +1092,7 @@ func (fr Repository) GetItems(
 		return nil, fmt.Errorf("unable to get items: %w", err)
 	}
 	for _, itemDoc := range itemDocs {
-		item := &base.Item{}
+		item := &feedlib.Item{}
 		err := itemDoc.DataTo(item)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -1116,11 +1117,11 @@ func (fr Repository) GetItems(
 func (fr Repository) GetActions(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-) ([]base.Action, error) {
+	flavour feedlib.Flavour,
+) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "GetActions")
 	defer span.End()
-	actions := []base.Action{}
+	actions := []feedlib.Action{}
 	seenActionIDs := []string{}
 
 	query := fr.getActionsQuery(uid, flavour)
@@ -1130,7 +1131,7 @@ func (fr Repository) GetActions(
 		return nil, fmt.Errorf("unable to get actions: %w", err)
 	}
 	for _, actionDoc := range actionDocs {
-		action := &base.Action{}
+		action := &feedlib.Action{}
 		err := actionDoc.DataTo(action)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -1149,7 +1150,7 @@ func (fr Repository) GetActions(
 func (fr Repository) Labels(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "Labels")
 	defer span.End()
@@ -1194,7 +1195,7 @@ func (fr Repository) Labels(
 func (fr Repository) SaveLabel(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	label string,
 ) error {
 	ctx, span := tracer.Start(ctx, "SaveLabel")
@@ -1224,7 +1225,7 @@ func (fr Repository) SaveLabel(
 func (fr Repository) UnreadPersistentItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) (int, error) {
 	ctx, span := tracer.Start(ctx, "UnreadPersistentItems")
 	defer span.End()
@@ -1275,14 +1276,14 @@ func (fr Repository) UnreadPersistentItems(
 func (fr Repository) UpdateUnreadPersistentItemsCount(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) error {
 	ctx, span := tracer.Start(ctx, "UpdateUnreadPersistentItemsCount")
 	defer span.End()
 	unreadDoc := fr.getUserCollection(uid, flavour).Doc(unreadInboxCountsDocID)
 
 	persistentItemsQ, err := fr.getItemsQuery(
-		uid, flavour, base.BooleanFilterTrue, nil, nil, nil, nil)
+		uid, flavour, feedlib.BooleanFilterTrue, nil, nil, nil, nil)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("can't compose persistent items query: %w", err)
@@ -1319,10 +1320,10 @@ func (fr Repository) UpdateUnreadPersistentItemsCount(
 
 func (fr Repository) getNudgesQuery(
 	uid string,
-	flavour base.Flavour,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
+	flavour feedlib.Flavour,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
 ) *firestore.Query {
 	nudgesQuery := fr.getNudgesCollection(
 		uid, flavour,
@@ -1338,7 +1339,7 @@ func (fr Repository) getNudgesQuery(
 		nudgesQuery = nudgesQuery.Where(
 			"status",
 			"==",
-			base.StatusPending,
+			feedlib.StatusPending,
 		)
 	}
 
@@ -1346,7 +1347,7 @@ func (fr Repository) getNudgesQuery(
 		nudgesQuery = nudgesQuery.Where(
 			"visibility",
 			"==",
-			base.VisibilityShow,
+			feedlib.VisibilityShow,
 		)
 	}
 
@@ -1365,11 +1366,11 @@ func (fr Repository) getNudgesQuery(
 		nudgesQuery = nudgesQuery.Where("visibility", "==", visibility)
 	}
 	if expired != nil {
-		if *expired == base.BooleanFilterFalse {
+		if *expired == feedlib.BooleanFilterFalse {
 			nudgesQuery = nudgesQuery.Where("expiry", ">=", time.Now())
 		}
 
-		if *expired == base.BooleanFilterTrue {
+		if *expired == feedlib.BooleanFilterTrue {
 			nudgesQuery = nudgesQuery.Where("expiry", "<=", time.Now())
 		}
 	}
@@ -1378,7 +1379,7 @@ func (fr Repository) getNudgesQuery(
 
 func (fr Repository) getMessagesQuery(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 ) *firestore.Query {
 	messagesQuery := fr.getMessagesCollection(uid, flavour, itemID).
@@ -1392,14 +1393,14 @@ func (fr Repository) getMessagesQuery(
 func (fr Repository) GetNudges(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
-) ([]base.Nudge, error) {
+	flavour feedlib.Flavour,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
+) ([]feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetNudges")
 	defer span.End()
-	nudges := []base.Nudge{}
+	nudges := []feedlib.Nudge{}
 	seenNudgeIDs := []string{}
 
 	query := fr.getNudgesQuery(
@@ -1415,7 +1416,7 @@ func (fr Repository) GetNudges(
 		return nil, fmt.Errorf("unable to get nudges: %w", err)
 	}
 	for _, nudgeDoc := range nudgeDocs {
-		nudge := &base.Nudge{}
+		nudge := &feedlib.Nudge{}
 		err := nudgeDoc.DataTo(nudge)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -1432,7 +1433,7 @@ func (fr Repository) GetNudges(
 
 func (fr Repository) getActionsQuery(
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) *firestore.Query {
 	query := fr.getActionsCollection(uid, flavour).Query.OrderBy(
 		"id", firestore.Desc,
@@ -1444,8 +1445,8 @@ func (fr Repository) getSingleElement(
 	ctx context.Context,
 	collection *firestore.CollectionRef,
 	id string,
-	el base.Element,
-) (base.Element, error) {
+	el feedlib.Element,
+) (feedlib.Element, error) {
 	ctx, span := tracer.Start(ctx, "getSingleElement")
 	defer span.End()
 	query := orderAndLimitBySequence(collection.Where(
@@ -1471,7 +1472,7 @@ func (fr Repository) getSingleElement(
 
 func (fr Repository) saveElement(
 	ctx context.Context,
-	el base.Element,
+	el feedlib.Element,
 	id string,
 	sequenceNumber int,
 	coll *firestore.CollectionRef,
@@ -1507,7 +1508,7 @@ func (fr Repository) saveElement(
 	return nil
 }
 
-func validateElement(el base.Element) error {
+func validateElement(el feedlib.Element) error {
 	if el == nil {
 		return fmt.Errorf("failed validation: nil element")
 	}
@@ -1543,8 +1544,8 @@ func fetchQueryDocs(
 
 func docToElement(
 	doc *firestore.DocumentSnapshot,
-	el base.Element,
-) (base.Element, error) {
+	el feedlib.Element,
+) (feedlib.Element, error) {
 	if el == nil {
 		return nil, fmt.Errorf("nil element")
 	}
@@ -1570,9 +1571,9 @@ func isPointer(i interface{}) bool {
 func (fr Repository) GetDefaultNudgeByTitle(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	title string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetDefaultNudgeByTitle")
 	defer span.End()
 	collection := fr.getNudgesCollection(uid, flavour)
@@ -1587,9 +1588,9 @@ func (fr Repository) GetDefaultNudgeByTitle(
 		return nil, exceptions.ErrNilNudge
 	}
 
-	var nudge *base.Nudge
+	var nudge *feedlib.Nudge
 	for _, nudgeDoc := range nudgeDocs {
-		nudgeData := &base.Nudge{}
+		nudgeData := &feedlib.Nudge{}
 		err = nudgeDoc.DataTo(nudgeData)
 		if err != nil {
 			helpers.RecordSpanError(span, err)

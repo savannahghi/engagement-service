@@ -22,6 +22,7 @@ import (
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
 	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
@@ -281,7 +282,7 @@ func TestRoutes(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	itemID := ksuid.New().String()
 	nudgeID := ksuid.New().String()
 	actionID := ksuid.New().String()
@@ -689,7 +690,7 @@ func TestGetFeed(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	consumer := base.FlavourConsumer
+	consumer := feedlib.FlavourConsumer
 	invalidConsumer := "invalidConsumer"
 	client := http.Client{
 		Timeout: time.Minute * 10, // set high when troubleshooting
@@ -912,7 +913,7 @@ func TestGetFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -1044,7 +1045,7 @@ func TestGetNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge(t)
 	err = postElement(
 		ctx,
@@ -1175,7 +1176,7 @@ func TestGetAction(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testAction := getTestAction()
 	err = postElement(
 		ctx,
@@ -1306,7 +1307,7 @@ func TestPublishFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	headers := getDefaultHeaders(ctx, t, baseURL)
 	testItem := getTestItem(t)
 
@@ -1428,7 +1429,7 @@ func TestDeleteFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -1559,7 +1560,7 @@ func TestDeleteNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge(t)
 	err = postElement(
 		ctx,
@@ -1690,7 +1691,7 @@ func TestDeleteAction(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testAction := getTestAction()
 	err = postElement(
 		ctx,
@@ -1821,7 +1822,7 @@ func TestPostMessage(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -1961,7 +1962,7 @@ func TestDeleteMessage(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -2110,7 +2111,7 @@ func TestProcessEvent(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	headers := getDefaultHeaders(ctx, t, baseURL)
 	event := getTestEvent()
 
@@ -2232,7 +2233,7 @@ func TestPublishNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	headers := getDefaultHeaders(ctx, t, baseURL)
 	nudge := testNudge(t)
 
@@ -2354,7 +2355,7 @@ func TestResolveNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge(t)
 	err = postElement(
 		ctx,
@@ -2485,7 +2486,7 @@ func TestUnresolveNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge(t)
 	err = postElement(
 		ctx,
@@ -2616,7 +2617,7 @@ func TestShowNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge(t)
 	err = postElement(
 		ctx,
@@ -2747,7 +2748,7 @@ func TestHideNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge(t)
 	err = postElement(
 		ctx,
@@ -2878,7 +2879,7 @@ func TestPublishAction(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	headers := getDefaultHeaders(ctx, t, baseURL)
 	action := getTestAction()
 
@@ -3000,7 +3001,7 @@ func TestResolveFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -3131,7 +3132,7 @@ func TestUnresolveFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -3262,7 +3263,7 @@ func TestPinFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -3393,7 +3394,7 @@ func TestUnpinFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -3524,7 +3525,7 @@ func TestHideFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -3655,7 +3656,7 @@ func TestShowFeedItem(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem(t)
 	err = postElement(
 		ctx,
@@ -3814,8 +3815,8 @@ func postElement(
 	ctx context.Context,
 	t *testing.T,
 	uid string,
-	fl base.Flavour,
-	el base.Element,
+	fl feedlib.Flavour,
+	el feedlib.Element,
 	baseURL string,
 	routeName string,
 ) error {
@@ -3902,8 +3903,8 @@ func postMessage(
 	ctx context.Context,
 	t *testing.T,
 	uid string,
-	fl base.Flavour,
-	el base.Element,
+	fl feedlib.Flavour,
+	el feedlib.Element,
 	baseURL string,
 	itemID string,
 ) error {
@@ -3980,7 +3981,7 @@ func postMessage(
 	return nil
 }
 
-func getTestItem(t *testing.T) *base.Item {
+func getTestItem(t *testing.T) *feedlib.Item {
 	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
@@ -3994,44 +3995,44 @@ func getTestItem(t *testing.T) *base.Item {
 		t.Errorf("failed to get user push tokens: %v", err)
 		return nil
 	}
-	return &base.Item{
+	return &feedlib.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
-		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
+		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
-		TextType:       base.TextTypePlain,
-		Links: []base.Link{
-			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-			base.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
+		TextType:       feedlib.TextTypePlain,
+		Links: []feedlib.Link{
+			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
 		},
-		Actions: []base.Action{
+		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-				ActionType:     base.ActionTypeSecondary,
-				Handling:       base.HandlingFullPage,
+				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     feedlib.ActionTypeSecondary,
+				Handling:       feedlib.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-				ActionType:     base.ActionTypePrimary,
-				Handling:       base.HandlingInline,
+				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     feedlib.ActionTypePrimary,
+				Handling:       feedlib.HandlingInline,
 			},
 		},
-		Conversations: []base.Message{
+		Conversations: []feedlib.Message{
 			{
 				ID:             "msg-2",
 				Text:           "hii ni reply",
@@ -4049,41 +4050,41 @@ func getTestItem(t *testing.T) *base.Item {
 			"group-1",
 			"group-2",
 		},
-		NotificationChannels: []base.Channel{
-			base.ChannelFcm,
-			base.ChannelEmail,
-			base.ChannelSms,
-			base.ChannelWhatsapp,
+		NotificationChannels: []feedlib.Channel{
+			feedlib.ChannelFcm,
+			feedlib.ChannelEmail,
+			feedlib.ChannelSms,
+			feedlib.ChannelWhatsapp,
 		},
 	}
 }
 
-func testNudge(t *testing.T) *base.Nudge {
+func testNudge(t *testing.T) *feedlib.Nudge {
 	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
 	if err != nil {
 		t.Errorf("failed to create a test user: %v", err)
-		return &base.Nudge{}
+		return &feedlib.Nudge{}
 	}
 	_, err = RegisterPushToken(ctx, t, token.UID, onboardingISCClient(t))
 	if err != nil {
 		t.Errorf("failed to get user push tokens: %v", err)
 		return nil
 	}
-	return &base.Nudge{
+	return &feedlib.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Expiry:         time.Now().Add(time.Hour * 24),
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
-		Links: []base.Link{
-			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Links: []feedlib.Link{
+			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		},
 		Text: ksuid.New().String(),
-		Actions: []base.Action{
+		Actions: []feedlib.Action{
 			getTestAction(),
 		},
 		Users: []string{
@@ -4092,11 +4093,11 @@ func testNudge(t *testing.T) *base.Nudge {
 		Groups: []string{
 			ksuid.New().String(),
 		},
-		NotificationChannels: []base.Channel{
-			base.ChannelEmail,
-			base.ChannelFcm,
-			base.ChannelSms,
-			base.ChannelWhatsapp,
+		NotificationChannels: []feedlib.Channel{
+			feedlib.ChannelEmail,
+			feedlib.ChannelFcm,
+			feedlib.ChannelSms,
+			feedlib.ChannelWhatsapp,
 		},
 	}
 }
@@ -4105,13 +4106,13 @@ func getTestSequenceNumber() int {
 	return rand.Intn(intMax)
 }
 
-func getTestEvent() base.Event {
-	return base.Event{
+func getTestEvent() feedlib.Event {
+	return feedlib.Event{
 		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
-		Context: base.Context{
+		Context: feedlib.Context{
 			UserID:         ksuid.New().String(),
-			Flavour:        base.FlavourConsumer,
+			Flavour:        feedlib.FlavourConsumer,
 			OrganizationID: ksuid.New().String(),
 			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
@@ -4119,19 +4120,19 @@ func getTestEvent() base.Event {
 	}
 }
 
-func getTestAction() base.Action {
-	return base.Action{
+func getTestAction() feedlib.Action {
+	return feedlib.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-		ActionType:     base.ActionTypePrimary,
-		Handling:       base.HandlingFullPage,
+		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		ActionType:     feedlib.ActionTypePrimary,
+		Handling:       feedlib.HandlingFullPage,
 	}
 }
 
-func getTestMessage() base.Message {
-	return base.Message{
+func getTestMessage() feedlib.Message {
+	return feedlib.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getTestSequenceNumber(),
 		Text:           ksuid.New().String(),
@@ -4190,7 +4191,7 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 
 // 	notification := dto.NotificationEnvelope{
 // 		UID:     token.UID,
-// 		Flavour: base.FlavourConsumer,
+// 		Flavour: feedlib.FlavourConsumer,
 // 		Payload: itemData,
 // 	}
 
@@ -4209,7 +4210,7 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 
 // 	nudgeNotification := dto.NotificationEnvelope{
 // 		UID:     token.UID,
-// 		Flavour: base.FlavourConsumer,
+// 		Flavour: feedlib.FlavourConsumer,
 // 		Payload: nudgeDataJSON,
 // 	}
 
@@ -4239,7 +4240,7 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 	}
 // 	actionNotification := dto.NotificationEnvelope{
 // 		UID:     token.UID,
-// 		Flavour: base.FlavourConsumer,
+// 		Flavour: feedlib.FlavourConsumer,
 // 		Payload: actionDataJSON,
 // 	}
 // 	actionData, err := json.Marshal(actionNotification)
@@ -4256,7 +4257,7 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 	}
 // 	messageNotification := dto.NotificationEnvelope{
 // 		UID:     token.UID,
-// 		Flavour: base.FlavourConsumer,
+// 		Flavour: feedlib.FlavourConsumer,
 // 		Payload: messageDataJSON,
 // 	}
 // 	messageData, err := json.Marshal(messageNotification)
@@ -4273,7 +4274,7 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 	}
 // 	eventNotification := dto.NotificationEnvelope{
 // 		UID:     token.UID,
-// 		Flavour: base.FlavourConsumer,
+// 		Flavour: feedlib.FlavourConsumer,
 // 		Payload: eventDataJSON,
 // 	}
 // 	eventData, err := json.Marshal(eventNotification)
@@ -5564,15 +5565,15 @@ func TestPostUpload(t *testing.T) {
 func resolveTestNudge(
 	ctx context.Context,
 	uid string,
-	fl base.Flavour,
-	nudge *base.Nudge,
+	fl feedlib.Flavour,
+	nudge *feedlib.Nudge,
 ) error {
 
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		return fmt.Errorf("can't initialize Firebase Repository: %s", err)
 	}
-	nudge.Status = base.StatusDone
+	nudge.Status = feedlib.StatusDone
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 	_, err = fr.UpdateNudge(ctx, uid, fl, nudge)
 	if err != nil {
@@ -5595,7 +5596,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 		return
 	}
 	uid := token.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't initialize Firebase Repository: %s", err)

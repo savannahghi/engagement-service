@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
@@ -37,8 +38,8 @@ const (
 
 // ServiceLibrary ...
 type ServiceLibrary interface {
-	GetFeedContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error)
-	GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error)
+	GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error)
 	GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error)
 }
 
@@ -193,13 +194,13 @@ func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*G
 }
 
 // GetFeedContent fetches posts that should be added to the feed.
-func (s Service) GetFeedContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error) {
+func (s Service) GetFeedContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error) {
 	var request requestType
 
 	switch flavour {
-	case base.FlavourConsumer:
+	case feedlib.FlavourConsumer:
 		request = feedRequestConsumer
-	case base.FlavourPro:
+	case feedlib.FlavourPro:
 		request = feedRequestConsumer
 
 	}
@@ -208,10 +209,10 @@ func (s Service) GetFeedContent(ctx context.Context, flavour base.Flavour) ([]*G
 }
 
 // GetFaqsContent fetches posts tagged as FAQs.
-func (s Service) GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*GhostCMSPost, error) {
+func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*GhostCMSPost, error) {
 	ctx, span := tracer.Start(ctx, "GetFaqsContent")
 	defer span.End()
-	if flavour == base.FlavourConsumer {
+	if flavour == feedlib.FlavourConsumer {
 		return s.getCMSPosts(ctx, faqsRequestConsumer)
 	}
 

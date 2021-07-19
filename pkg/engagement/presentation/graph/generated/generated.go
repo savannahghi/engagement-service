@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
+	"github.com/savannahghi/feedlib"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 	"gitlab.slade360emr.com/go/base"
@@ -286,26 +287,26 @@ type ComplexityRoot struct {
 	Mutation struct {
 		BillNotification                func(childComplexity int, to string, productName string, billingPeriod string, billAmount string, paymentInstruction string, marketingMessage string) int
 		ClaimNotification               func(childComplexity int, to string, claimReference string, claimTypeParenthesized string, provider string, visitType string, claimTime string, marketingMessage string) int
-		DeleteMessage                   func(childComplexity int, flavour base.Flavour, itemID string, messageID string) int
-		HideFeedItem                    func(childComplexity int, flavour base.Flavour, itemID string) int
-		HideNudge                       func(childComplexity int, flavour base.Flavour, nudgeID string) int
+		DeleteMessage                   func(childComplexity int, flavour feedlib.Flavour, itemID string, messageID string) int
+		HideFeedItem                    func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		HideNudge                       func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
 		PhoneNumberVerificationCode     func(childComplexity int, to string, code string, marketingMessage string) int
-		PinFeedItem                     func(childComplexity int, flavour base.Flavour, itemID string) int
-		PostMessage                     func(childComplexity int, flavour base.Flavour, itemID string, message base.Message) int
+		PinFeedItem                     func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		PostMessage                     func(childComplexity int, flavour feedlib.Flavour, itemID string, message feedlib.Message) int
 		PreauthApproval                 func(childComplexity int, to string, currency string, amount string, benefit string, provider string, member string, careContact string, marketingMessage string) int
 		PreauthRequest                  func(childComplexity int, to string, currency string, amount string, benefit string, provider string, requestTime string, member string, careContact string, marketingMessage string) int
-		ProcessEvent                    func(childComplexity int, flavour base.Flavour, event base.Event) int
+		ProcessEvent                    func(childComplexity int, flavour feedlib.Flavour, event feedlib.Event) int
 		RecordNPSResponse               func(childComplexity int, input dto.NPSInput) int
-		ResolveFeedItem                 func(childComplexity int, flavour base.Flavour, itemID string) int
+		ResolveFeedItem                 func(childComplexity int, flavour feedlib.Flavour, itemID string) int
 		Send                            func(childComplexity int, to string, message string) int
 		SendNotification                func(childComplexity int, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) int
 		SendToMany                      func(childComplexity int, message string, to []string) int
-		ShowFeedItem                    func(childComplexity int, flavour base.Flavour, itemID string) int
-		ShowNudge                       func(childComplexity int, flavour base.Flavour, nudgeID string) int
+		ShowFeedItem                    func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		ShowNudge                       func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
 		SimpleEmail                     func(childComplexity int, subject string, text string, to []string) int
 		SladeOtp                        func(childComplexity int, to string, name string, otp string, marketingMessage string) int
-		UnpinFeedItem                   func(childComplexity int, flavour base.Flavour, itemID string) int
-		UnresolveFeedItem               func(childComplexity int, flavour base.Flavour, itemID string) int
+		UnpinFeedItem                   func(childComplexity int, flavour feedlib.Flavour, itemID string) int
+		UnresolveFeedItem               func(childComplexity int, flavour feedlib.Flavour, itemID string) int
 		Upload                          func(childComplexity int, input base.UploadInput) int
 		VerifyEmailOtp                  func(childComplexity int, email string, otp string) int
 		VerifyOtp                       func(childComplexity int, msisdn string, otp string) int
@@ -360,14 +361,14 @@ type ComplexityRoot struct {
 		GenerateAndEmailOtp   func(childComplexity int, msisdn string, email *string) int
 		GenerateOtp           func(childComplexity int, msisdn string) int
 		GenerateRetryOtp      func(childComplexity int, msisdn string, retryStep int) int
-		GetFaqsContent        func(childComplexity int, flavour base.Flavour) int
-		GetFeed               func(childComplexity int, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) int
+		GetFaqsContent        func(childComplexity int, flavour feedlib.Flavour) int
+		GetFeed               func(childComplexity int, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
-		Labels                func(childComplexity int, flavour base.Flavour) int
+		Labels                func(childComplexity int, flavour feedlib.Flavour) int
 		ListNPSResponse       func(childComplexity int) int
 		Notifications         func(childComplexity int, registrationToken string, newerThan time.Time, limit int) int
 		TwilioAccessToken     func(childComplexity int) int
-		UnreadPersistentItems func(childComplexity int, flavour base.Flavour) int
+		UnreadPersistentItems func(childComplexity int, flavour feedlib.Flavour) int
 		__resolve__service    func(childComplexity int) int
 		__resolve_entities    func(childComplexity int, representations []map[string]interface{}) int
 	}
@@ -427,17 +428,17 @@ type EntityResolver interface {
 }
 type MutationResolver interface {
 	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification base.FirebaseSimpleNotificationInput, android *base.FirebaseAndroidConfigInput, ios *base.FirebaseAPNSConfigInput, web *base.FirebaseWebpushConfigInput) (bool, error)
-	ResolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
-	UnresolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
-	PinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
-	UnpinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
-	HideFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
-	ShowFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error)
-	HideNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error)
-	ShowNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error)
-	PostMessage(ctx context.Context, flavour base.Flavour, itemID string, message base.Message) (*base.Message, error)
-	DeleteMessage(ctx context.Context, flavour base.Flavour, itemID string, messageID string) (bool, error)
-	ProcessEvent(ctx context.Context, flavour base.Flavour, event base.Event) (bool, error)
+	ResolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
+	UnresolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
+	PinFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
+	UnpinFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
+	HideFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
+	ShowFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
+	HideNudge(ctx context.Context, flavour feedlib.Flavour, nudgeID string) (*feedlib.Nudge, error)
+	ShowNudge(ctx context.Context, flavour feedlib.Flavour, nudgeID string) (*feedlib.Nudge, error)
+	PostMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, message feedlib.Message) (*feedlib.Message, error)
+	DeleteMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, messageID string) (bool, error)
+	ProcessEvent(ctx context.Context, flavour feedlib.Flavour, event feedlib.Event) (bool, error)
 	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
 	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
@@ -458,11 +459,11 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error)
-	GetFaqsContent(ctx context.Context, flavour base.Flavour) ([]*library.GhostCMSPost, error)
+	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*library.GhostCMSPost, error)
 	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error)
-	GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
-	Labels(ctx context.Context, flavour base.Flavour) ([]string, error)
-	UnreadPersistentItems(ctx context.Context, flavour base.Flavour) (int, error)
+	GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
+	Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error)
+	UnreadPersistentItems(ctx context.Context, flavour feedlib.Flavour) (int, error)
 	GenerateOtp(ctx context.Context, msisdn string) (string, error)
 	GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string) (string, error)
 	GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int) (string, error)
@@ -1668,7 +1669,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteMessage(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string), args["messageID"].(string)), true
+		return e.complexity.Mutation.DeleteMessage(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string), args["messageID"].(string)), true
 
 	case "Mutation.hideFeedItem":
 		if e.complexity.Mutation.HideFeedItem == nil {
@@ -1680,7 +1681,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.HideFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.HideFeedItem(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.hideNudge":
 		if e.complexity.Mutation.HideNudge == nil {
@@ -1692,7 +1693,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.HideNudge(childComplexity, args["flavour"].(base.Flavour), args["nudgeID"].(string)), true
+		return e.complexity.Mutation.HideNudge(childComplexity, args["flavour"].(feedlib.Flavour), args["nudgeID"].(string)), true
 
 	case "Mutation.phoneNumberVerificationCode":
 		if e.complexity.Mutation.PhoneNumberVerificationCode == nil {
@@ -1716,7 +1717,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.PinFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.PinFeedItem(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.postMessage":
 		if e.complexity.Mutation.PostMessage == nil {
@@ -1728,7 +1729,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.PostMessage(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string), args["message"].(base.Message)), true
+		return e.complexity.Mutation.PostMessage(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string), args["message"].(feedlib.Message)), true
 
 	case "Mutation.preauthApproval":
 		if e.complexity.Mutation.PreauthApproval == nil {
@@ -1764,7 +1765,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ProcessEvent(childComplexity, args["flavour"].(base.Flavour), args["event"].(base.Event)), true
+		return e.complexity.Mutation.ProcessEvent(childComplexity, args["flavour"].(feedlib.Flavour), args["event"].(feedlib.Event)), true
 
 	case "Mutation.recordNPSResponse":
 		if e.complexity.Mutation.RecordNPSResponse == nil {
@@ -1788,7 +1789,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ResolveFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.ResolveFeedItem(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.send":
 		if e.complexity.Mutation.Send == nil {
@@ -1836,7 +1837,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ShowFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.ShowFeedItem(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.showNudge":
 		if e.complexity.Mutation.ShowNudge == nil {
@@ -1848,7 +1849,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ShowNudge(childComplexity, args["flavour"].(base.Flavour), args["nudgeID"].(string)), true
+		return e.complexity.Mutation.ShowNudge(childComplexity, args["flavour"].(feedlib.Flavour), args["nudgeID"].(string)), true
 
 	case "Mutation.simpleEmail":
 		if e.complexity.Mutation.SimpleEmail == nil {
@@ -1884,7 +1885,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UnpinFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.UnpinFeedItem(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.unresolveFeedItem":
 		if e.complexity.Mutation.UnresolveFeedItem == nil {
@@ -1896,7 +1897,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UnresolveFeedItem(childComplexity, args["flavour"].(base.Flavour), args["itemID"].(string)), true
+		return e.complexity.Mutation.UnresolveFeedItem(childComplexity, args["flavour"].(feedlib.Flavour), args["itemID"].(string)), true
 
 	case "Mutation.upload":
 		if e.complexity.Mutation.Upload == nil {
@@ -2241,7 +2242,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFaqsContent(childComplexity, args["flavour"].(base.Flavour)), true
+		return e.complexity.Query.GetFaqsContent(childComplexity, args["flavour"].(feedlib.Flavour)), true
 
 	case "Query.getFeed":
 		if e.complexity.Query.GetFeed == nil {
@@ -2253,7 +2254,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(base.Flavour), args["isAnonymous"].(bool), args["persistent"].(base.BooleanFilter), args["status"].(*base.Status), args["visibility"].(*base.Visibility), args["expired"].(*base.BooleanFilter), args["filterParams"].(*helpers.FilterParams)), true
+		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feedlib.Flavour), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams)), true
 
 	case "Query.getLibraryContent":
 		if e.complexity.Query.GetLibraryContent == nil {
@@ -2272,7 +2273,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Labels(childComplexity, args["flavour"].(base.Flavour)), true
+		return e.complexity.Query.Labels(childComplexity, args["flavour"].(feedlib.Flavour)), true
 
 	case "Query.listNPSResponse":
 		if e.complexity.Query.ListNPSResponse == nil {
@@ -2310,7 +2311,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.UnreadPersistentItems(childComplexity, args["flavour"].(base.Flavour)), true
+		return e.complexity.Query.UnreadPersistentItems(childComplexity, args["flavour"].(feedlib.Flavour)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -3488,10 +3489,10 @@ func (ec *executionContext) field_Mutation_claimNotification_args(ctx context.Co
 func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3521,10 +3522,10 @@ func (ec *executionContext) field_Mutation_deleteMessage_args(ctx context.Contex
 func (ec *executionContext) field_Mutation_hideFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3545,10 +3546,10 @@ func (ec *executionContext) field_Mutation_hideFeedItem_args(ctx context.Context
 func (ec *executionContext) field_Mutation_hideNudge_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3602,10 +3603,10 @@ func (ec *executionContext) field_Mutation_phoneNumberVerificationCode_args(ctx 
 func (ec *executionContext) field_Mutation_pinFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3626,10 +3627,10 @@ func (ec *executionContext) field_Mutation_pinFeedItem_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3644,10 +3645,10 @@ func (ec *executionContext) field_Mutation_postMessage_args(ctx context.Context,
 		}
 	}
 	args["itemID"] = arg1
-	var arg2 base.Message
+	var arg2 feedlib.Message
 	if tmp, ok := rawArgs["message"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("message"))
-		arg2, err = ec.unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, tmp)
+		arg2, err = ec.unmarshalNMsgInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3824,19 +3825,19 @@ func (ec *executionContext) field_Mutation_preauthRequest_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_processEvent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["flavour"] = arg0
-	var arg1 base.Event
+	var arg1 feedlib.Event
 	if tmp, ok := rawArgs["event"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("event"))
-		arg1, err = ec.unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐEvent(ctx, tmp)
+		arg1, err = ec.unmarshalNEventInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐEvent(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3863,10 +3864,10 @@ func (ec *executionContext) field_Mutation_recordNPSResponse_args(ctx context.Co
 func (ec *executionContext) field_Mutation_resolveFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3995,10 +3996,10 @@ func (ec *executionContext) field_Mutation_send_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Mutation_showFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4019,10 +4020,10 @@ func (ec *executionContext) field_Mutation_showFeedItem_args(ctx context.Context
 func (ec *executionContext) field_Mutation_showNudge_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4118,10 +4119,10 @@ func (ec *executionContext) field_Mutation_sladeOTP_args(ctx context.Context, ra
 func (ec *executionContext) field_Mutation_unpinFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4142,10 +4143,10 @@ func (ec *executionContext) field_Mutation_unpinFeedItem_args(ctx context.Contex
 func (ec *executionContext) field_Mutation_unresolveFeedItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4556,10 +4557,10 @@ func (ec *executionContext) field_Query_generateRetryOTP_args(ctx context.Contex
 func (ec *executionContext) field_Query_getFaqsContent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4571,10 +4572,10 @@ func (ec *executionContext) field_Query_getFaqsContent_args(ctx context.Context,
 func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4589,37 +4590,37 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 		}
 	}
 	args["isAnonymous"] = arg1
-	var arg2 base.BooleanFilter
+	var arg2 feedlib.BooleanFilter
 	if tmp, ok := rawArgs["persistent"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("persistent"))
-		arg2, err = ec.unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx, tmp)
+		arg2, err = ec.unmarshalNBooleanFilter2githubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["persistent"] = arg2
-	var arg3 *base.Status
+	var arg3 *feedlib.Status
 	if tmp, ok := rawArgs["status"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-		arg3, err = ec.unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx, tmp)
+		arg3, err = ec.unmarshalOStatus2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["status"] = arg3
-	var arg4 *base.Visibility
+	var arg4 *feedlib.Visibility
 	if tmp, ok := rawArgs["visibility"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-		arg4, err = ec.unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx, tmp)
+		arg4, err = ec.unmarshalOVisibility2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["visibility"] = arg4
-	var arg5 *base.BooleanFilter
+	var arg5 *feedlib.BooleanFilter
 	if tmp, ok := rawArgs["expired"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expired"))
-		arg5, err = ec.unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx, tmp)
+		arg5, err = ec.unmarshalOBooleanFilter2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4640,10 +4641,10 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Query_labels_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4688,10 +4689,10 @@ func (ec *executionContext) field_Query_notifications_args(ctx context.Context, 
 func (ec *executionContext) field_Query_unreadPersistentItems_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 base.Flavour
+	var arg0 feedlib.Flavour
 	if tmp, ok := rawArgs["flavour"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flavour"))
-		arg0, err = ec.unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, tmp)
+		arg0, err = ec.unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5015,7 +5016,7 @@ func (ec *executionContext) _AccessToken_duration(ctx context.Context, field gra
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_id(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5050,7 +5051,7 @@ func (ec *executionContext) _Action_id(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feedlib.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5085,7 +5086,7 @@ func (ec *executionContext) _Action_sequenceNumber(ctx context.Context, field gr
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_name(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_name(ctx context.Context, field graphql.CollectedField, obj *feedlib.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5120,7 +5121,7 @@ func (ec *executionContext) _Action_name(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_icon(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_icon(ctx context.Context, field graphql.CollectedField, obj *feedlib.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5150,12 +5151,12 @@ func (ec *executionContext) _Action_icon(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Link)
+	res := resTmp.(feedlib.Link)
 	fc.Result = res
-	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
+	return ec.marshalNLink2githubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_actionType(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_actionType(ctx context.Context, field graphql.CollectedField, obj *feedlib.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5185,12 +5186,12 @@ func (ec *executionContext) _Action_actionType(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.ActionType)
+	res := resTmp.(feedlib.ActionType)
 	fc.Result = res
-	return ec.marshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionType(ctx, field.Selections, res)
+	return ec.marshalNActionType2githubᚗcomᚋsavannahghiᚋfeedlibᚐActionType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.CollectedField, obj *feedlib.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5220,12 +5221,12 @@ func (ec *executionContext) _Action_handling(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Handling)
+	res := resTmp.(feedlib.Handling)
 	fc.Result = res
-	return ec.marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐHandling(ctx, field.Selections, res)
+	return ec.marshalNHandling2githubᚗcomᚋsavannahghiᚋfeedlibᚐHandling(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Action_allowAnonymous(ctx context.Context, field graphql.CollectedField, obj *base.Action) (ret graphql.Marshaler) {
+func (ec *executionContext) _Action_allowAnonymous(ctx context.Context, field graphql.CollectedField, obj *feedlib.Action) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6295,7 +6296,7 @@ func (ec *executionContext) _CalendarEvent_visibility(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.CollectedField, obj *feedlib.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6330,7 +6331,7 @@ func (ec *executionContext) _Context_userID(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_flavour(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_flavour(ctx context.Context, field graphql.CollectedField, obj *feedlib.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6360,12 +6361,12 @@ func (ec *executionContext) _Context_flavour(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Flavour)
+	res := resTmp.(feedlib.Flavour)
 	fc.Result = res
-	return ec.marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, field.Selections, res)
+	return ec.marshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_organizationID(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_organizationID(ctx context.Context, field graphql.CollectedField, obj *feedlib.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6400,7 +6401,7 @@ func (ec *executionContext) _Context_organizationID(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_locationID(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_locationID(ctx context.Context, field graphql.CollectedField, obj *feedlib.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6435,7 +6436,7 @@ func (ec *executionContext) _Context_locationID(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphql.CollectedField, obj *base.Context) (ret graphql.Marshaler) {
+func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphql.CollectedField, obj *feedlib.Context) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6670,7 +6671,7 @@ func (ec *executionContext) _Entity_findSavedNotificationByID(ctx context.Contex
 	return ec.marshalNSavedNotification2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6705,7 +6706,7 @@ func (ec *executionContext) _Event_id(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_name(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_name(ctx context.Context, field graphql.CollectedField, obj *feedlib.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6740,7 +6741,7 @@ func (ec *executionContext) _Event_name(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_context(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_context(ctx context.Context, field graphql.CollectedField, obj *feedlib.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6767,12 +6768,12 @@ func (ec *executionContext) _Event_context(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(base.Context)
+	res := resTmp.(feedlib.Context)
 	fc.Result = res
-	return ec.marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx, field.Selections, res)
+	return ec.marshalOContext2githubᚗcomᚋsavannahghiᚋfeedlibᚐContext(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.CollectedField, obj *base.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.CollectedField, obj *feedlib.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6799,9 +6800,9 @@ func (ec *executionContext) _Event_payload(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(base.Payload)
+	res := resTmp.(feedlib.Payload)
 	fc.Result = res
-	return ec.marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx, field.Selections, res)
+	return ec.marshalOPayload2githubᚗcomᚋsavannahghiᚋfeedlibᚐPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _EventAttachment_fileID(ctx context.Context, field graphql.CollectedField, obj *calendar.EventAttachment) (ret graphql.Marshaler) {
@@ -7569,9 +7570,9 @@ func (ec *executionContext) _Feed_flavour(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Flavour)
+	res := resTmp.(feedlib.Flavour)
 	fc.Result = res
-	return ec.marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx, field.Selections, res)
+	return ec.marshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_actions(ctx context.Context, field graphql.CollectedField, obj *domain.Feed) (ret graphql.Marshaler) {
@@ -7604,9 +7605,9 @@ func (ec *executionContext) _Feed_actions(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]base.Action)
+	res := resTmp.([]feedlib.Action)
 	fc.Result = res
-	return ec.marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionᚄ(ctx, field.Selections, res)
+	return ec.marshalNAction2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐActionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_nudges(ctx context.Context, field graphql.CollectedField, obj *domain.Feed) (ret graphql.Marshaler) {
@@ -7639,9 +7640,9 @@ func (ec *executionContext) _Feed_nudges(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]base.Nudge)
+	res := resTmp.([]feedlib.Nudge)
 	fc.Result = res
-	return ec.marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNNudge2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐNudgeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_items(ctx context.Context, field graphql.CollectedField, obj *domain.Feed) (ret graphql.Marshaler) {
@@ -7674,9 +7675,9 @@ func (ec *executionContext) _Feed_items(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]base.Item)
+	res := resTmp.([]feedlib.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItemᚄ(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐItemᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql.CollectedField, obj *domain.Feed) (ret graphql.Marshaler) {
@@ -9180,7 +9181,7 @@ func (ec *executionContext) _GhostCMSTag_url(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_id(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9215,7 +9216,7 @@ func (ec *executionContext) _Item_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9250,7 +9251,7 @@ func (ec *executionContext) _Item_sequenceNumber(ctx context.Context, field grap
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_expiry(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_expiry(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9285,7 +9286,7 @@ func (ec *executionContext) _Item_expiry(ctx context.Context, field graphql.Coll
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_persistent(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_persistent(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9320,7 +9321,7 @@ func (ec *executionContext) _Item_persistent(ctx context.Context, field graphql.
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_status(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_status(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9350,12 +9351,12 @@ func (ec *executionContext) _Item_status(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Status)
+	res := resTmp.(feedlib.Status)
 	fc.Result = res
-	return ec.marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNStatus2githubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_visibility(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_visibility(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9385,12 +9386,12 @@ func (ec *executionContext) _Item_visibility(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Visibility)
+	res := resTmp.(feedlib.Visibility)
 	fc.Result = res
-	return ec.marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx, field.Selections, res)
+	return ec.marshalNVisibility2githubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_icon(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_icon(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9420,12 +9421,12 @@ func (ec *executionContext) _Item_icon(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Link)
+	res := resTmp.(feedlib.Link)
 	fc.Result = res
-	return ec.marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
+	return ec.marshalNLink2githubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_author(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_author(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9460,7 +9461,7 @@ func (ec *executionContext) _Item_author(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_tagline(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_tagline(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9495,7 +9496,7 @@ func (ec *executionContext) _Item_tagline(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_label(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_label(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9530,7 +9531,7 @@ func (ec *executionContext) _Item_label(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_timestamp(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_timestamp(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9565,7 +9566,7 @@ func (ec *executionContext) _Item_timestamp(ctx context.Context, field graphql.C
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_summary(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_summary(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9600,7 +9601,7 @@ func (ec *executionContext) _Item_summary(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_text(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_text(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9635,7 +9636,7 @@ func (ec *executionContext) _Item_text(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_textType(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_textType(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9665,12 +9666,12 @@ func (ec *executionContext) _Item_textType(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.TextType)
+	res := resTmp.(feedlib.TextType)
 	fc.Result = res
-	return ec.marshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐTextType(ctx, field.Selections, res)
+	return ec.marshalNTextType2githubᚗcomᚋsavannahghiᚋfeedlibᚐTextType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_links(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_links(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9697,12 +9698,12 @@ func (ec *executionContext) _Item_links(ctx context.Context, field graphql.Colle
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]base.Link)
+	res := resTmp.([]feedlib.Link)
 	fc.Result = res
-	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_actions(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_actions(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9729,12 +9730,12 @@ func (ec *executionContext) _Item_actions(ctx context.Context, field graphql.Col
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]base.Action)
+	res := resTmp.([]feedlib.Action)
 	fc.Result = res
-	return ec.marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx, field.Selections, res)
+	return ec.marshalOAction2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐAction(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_conversations(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_conversations(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9761,12 +9762,12 @@ func (ec *executionContext) _Item_conversations(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]base.Message)
+	res := resTmp.([]feedlib.Message)
 	fc.Result = res
-	return ec.marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, field.Selections, res)
+	return ec.marshalOMsg2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_users(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_users(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9798,7 +9799,7 @@ func (ec *executionContext) _Item_users(ctx context.Context, field graphql.Colle
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_groups(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_groups(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9830,7 +9831,7 @@ func (ec *executionContext) _Item_groups(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Item_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *base.Item) (ret graphql.Marshaler) {
+func (ec *executionContext) _Item_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9857,12 +9858,12 @@ func (ec *executionContext) _Item_notificationChannels(ctx context.Context, fiel
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]base.Channel)
+	res := resTmp.([]feedlib.Channel)
 	fc.Result = res
-	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, field.Selections, res)
+	return ec.marshalOChannel2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_id(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9897,7 +9898,7 @@ func (ec *executionContext) _Link_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_url(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_url(ctx context.Context, field graphql.CollectedField, obj *feedlib.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9932,7 +9933,7 @@ func (ec *executionContext) _Link_url(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.CollectedField, obj *feedlib.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9962,12 +9963,12 @@ func (ec *executionContext) _Link_linkType(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.LinkType)
+	res := resTmp.(feedlib.LinkType)
 	fc.Result = res
-	return ec.marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLinkType(ctx, field.Selections, res)
+	return ec.marshalNLinkType2githubᚗcomᚋsavannahghiᚋfeedlibᚐLinkType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_title(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_title(ctx context.Context, field graphql.CollectedField, obj *feedlib.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10002,7 +10003,7 @@ func (ec *executionContext) _Link_title(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_description(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_description(ctx context.Context, field graphql.CollectedField, obj *feedlib.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10037,7 +10038,7 @@ func (ec *executionContext) _Link_description(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Link_thumbnail(ctx context.Context, field graphql.CollectedField, obj *base.Link) (ret graphql.Marshaler) {
+func (ec *executionContext) _Link_thumbnail(ctx context.Context, field graphql.CollectedField, obj *feedlib.Link) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10072,7 +10073,7 @@ func (ec *executionContext) _Link_thumbnail(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10107,7 +10108,7 @@ func (ec *executionContext) _Msg_id(ctx context.Context, field graphql.Collected
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feedlib.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10142,7 +10143,7 @@ func (ec *executionContext) _Msg_sequenceNumber(ctx context.Context, field graph
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_text(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_text(ctx context.Context, field graphql.CollectedField, obj *feedlib.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10177,7 +10178,7 @@ func (ec *executionContext) _Msg_text(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_replyTo(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_replyTo(ctx context.Context, field graphql.CollectedField, obj *feedlib.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10209,7 +10210,7 @@ func (ec *executionContext) _Msg_replyTo(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_postedByUID(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_postedByUID(ctx context.Context, field graphql.CollectedField, obj *feedlib.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10244,7 +10245,7 @@ func (ec *executionContext) _Msg_postedByUID(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql.CollectedField, obj *feedlib.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10279,7 +10280,7 @@ func (ec *executionContext) _Msg_postedByName(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Msg_timestamp(ctx context.Context, field graphql.CollectedField, obj *base.Message) (ret graphql.Marshaler) {
+func (ec *executionContext) _Msg_timestamp(ctx context.Context, field graphql.CollectedField, obj *feedlib.Message) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -10381,7 +10382,7 @@ func (ec *executionContext) _Mutation_resolveFeedItem(ctx context.Context, field
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ResolveFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().ResolveFeedItem(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10393,9 +10394,9 @@ func (ec *executionContext) _Mutation_resolveFeedItem(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Item)
+	res := resTmp.(*feedlib.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_unresolveFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10423,7 +10424,7 @@ func (ec *executionContext) _Mutation_unresolveFeedItem(ctx context.Context, fie
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UnresolveFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().UnresolveFeedItem(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10435,9 +10436,9 @@ func (ec *executionContext) _Mutation_unresolveFeedItem(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Item)
+	res := resTmp.(*feedlib.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_pinFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10465,7 +10466,7 @@ func (ec *executionContext) _Mutation_pinFeedItem(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PinFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().PinFeedItem(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10477,9 +10478,9 @@ func (ec *executionContext) _Mutation_pinFeedItem(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Item)
+	res := resTmp.(*feedlib.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_unpinFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10507,7 +10508,7 @@ func (ec *executionContext) _Mutation_unpinFeedItem(ctx context.Context, field g
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UnpinFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().UnpinFeedItem(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10519,9 +10520,9 @@ func (ec *executionContext) _Mutation_unpinFeedItem(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Item)
+	res := resTmp.(*feedlib.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_hideFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10549,7 +10550,7 @@ func (ec *executionContext) _Mutation_hideFeedItem(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().HideFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().HideFeedItem(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10561,9 +10562,9 @@ func (ec *executionContext) _Mutation_hideFeedItem(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Item)
+	res := resTmp.(*feedlib.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_showFeedItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10591,7 +10592,7 @@ func (ec *executionContext) _Mutation_showFeedItem(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ShowFeedItem(rctx, args["flavour"].(base.Flavour), args["itemID"].(string))
+		return ec.resolvers.Mutation().ShowFeedItem(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10603,9 +10604,9 @@ func (ec *executionContext) _Mutation_showFeedItem(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Item)
+	res := resTmp.(*feedlib.Item)
 	fc.Result = res
-	return ec.marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, field.Selections, res)
+	return ec.marshalNItem2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_hideNudge(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10633,7 +10634,7 @@ func (ec *executionContext) _Mutation_hideNudge(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().HideNudge(rctx, args["flavour"].(base.Flavour), args["nudgeID"].(string))
+		return ec.resolvers.Mutation().HideNudge(rctx, args["flavour"].(feedlib.Flavour), args["nudgeID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10645,9 +10646,9 @@ func (ec *executionContext) _Mutation_hideNudge(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Nudge)
+	res := resTmp.(*feedlib.Nudge)
 	fc.Result = res
-	return ec.marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx, field.Selections, res)
+	return ec.marshalNNudge2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐNudge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_showNudge(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10675,7 +10676,7 @@ func (ec *executionContext) _Mutation_showNudge(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ShowNudge(rctx, args["flavour"].(base.Flavour), args["nudgeID"].(string))
+		return ec.resolvers.Mutation().ShowNudge(rctx, args["flavour"].(feedlib.Flavour), args["nudgeID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10687,9 +10688,9 @@ func (ec *executionContext) _Mutation_showNudge(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Nudge)
+	res := resTmp.(*feedlib.Nudge)
 	fc.Result = res
-	return ec.marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx, field.Selections, res)
+	return ec.marshalNNudge2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐNudge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10717,7 +10718,7 @@ func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().PostMessage(rctx, args["flavour"].(base.Flavour), args["itemID"].(string), args["message"].(base.Message))
+		return ec.resolvers.Mutation().PostMessage(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string), args["message"].(feedlib.Message))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10729,9 +10730,9 @@ func (ec *executionContext) _Mutation_postMessage(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*base.Message)
+	res := resTmp.(*feedlib.Message)
 	fc.Result = res
-	return ec.marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, field.Selections, res)
+	return ec.marshalNMsg2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteMessage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -10759,7 +10760,7 @@ func (ec *executionContext) _Mutation_deleteMessage(ctx context.Context, field g
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteMessage(rctx, args["flavour"].(base.Flavour), args["itemID"].(string), args["messageID"].(string))
+		return ec.resolvers.Mutation().DeleteMessage(rctx, args["flavour"].(feedlib.Flavour), args["itemID"].(string), args["messageID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10801,7 +10802,7 @@ func (ec *executionContext) _Mutation_processEvent(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ProcessEvent(rctx, args["flavour"].(base.Flavour), args["event"].(base.Event))
+		return ec.resolvers.Mutation().ProcessEvent(rctx, args["flavour"].(feedlib.Flavour), args["event"].(feedlib.Event))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11768,7 +11769,7 @@ func (ec *executionContext) _NPSResponse_feedback(ctx context.Context, field gra
 	return ec.marshalOFeedback2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐFeedback(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NotificationBody_publishMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationBody_publishMessage(ctx context.Context, field graphql.CollectedField, obj *feedlib.NotificationBody) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11803,7 +11804,7 @@ func (ec *executionContext) _NotificationBody_publishMessage(ctx context.Context
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NotificationBody_deleteMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationBody_deleteMessage(ctx context.Context, field graphql.CollectedField, obj *feedlib.NotificationBody) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11838,7 +11839,7 @@ func (ec *executionContext) _NotificationBody_deleteMessage(ctx context.Context,
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NotificationBody_resolveMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationBody_resolveMessage(ctx context.Context, field graphql.CollectedField, obj *feedlib.NotificationBody) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11873,7 +11874,7 @@ func (ec *executionContext) _NotificationBody_resolveMessage(ctx context.Context
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NotificationBody_unresolveMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationBody_unresolveMessage(ctx context.Context, field graphql.CollectedField, obj *feedlib.NotificationBody) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11908,7 +11909,7 @@ func (ec *executionContext) _NotificationBody_unresolveMessage(ctx context.Conte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NotificationBody_showMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationBody_showMessage(ctx context.Context, field graphql.CollectedField, obj *feedlib.NotificationBody) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11943,7 +11944,7 @@ func (ec *executionContext) _NotificationBody_showMessage(ctx context.Context, f
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _NotificationBody_hideMessage(ctx context.Context, field graphql.CollectedField, obj *base.NotificationBody) (ret graphql.Marshaler) {
+func (ec *executionContext) _NotificationBody_hideMessage(ctx context.Context, field graphql.CollectedField, obj *feedlib.NotificationBody) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11978,7 +11979,7 @@ func (ec *executionContext) _NotificationBody_hideMessage(ctx context.Context, f
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12013,7 +12014,7 @@ func (ec *executionContext) _Nudge_id(ctx context.Context, field graphql.Collect
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_sequenceNumber(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12048,7 +12049,7 @@ func (ec *executionContext) _Nudge_sequenceNumber(ctx context.Context, field gra
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_visibility(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_visibility(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12078,12 +12079,12 @@ func (ec *executionContext) _Nudge_visibility(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Visibility)
+	res := resTmp.(feedlib.Visibility)
 	fc.Result = res
-	return ec.marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx, field.Selections, res)
+	return ec.marshalNVisibility2githubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_status(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_status(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12113,12 +12114,12 @@ func (ec *executionContext) _Nudge_status(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(base.Status)
+	res := resTmp.(feedlib.Status)
 	fc.Result = res
-	return ec.marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNStatus2githubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_expiry(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_expiry(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12150,7 +12151,7 @@ func (ec *executionContext) _Nudge_expiry(ctx context.Context, field graphql.Col
 	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_title(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_title(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12185,7 +12186,7 @@ func (ec *executionContext) _Nudge_title(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_text(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_text(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12220,7 +12221,7 @@ func (ec *executionContext) _Nudge_text(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_actions(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_actions(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12250,12 +12251,12 @@ func (ec *executionContext) _Nudge_actions(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]base.Action)
+	res := resTmp.([]feedlib.Action)
 	fc.Result = res
-	return ec.marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionᚄ(ctx, field.Selections, res)
+	return ec.marshalNAction2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐActionᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_groups(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_groups(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12287,7 +12288,7 @@ func (ec *executionContext) _Nudge_groups(ctx context.Context, field graphql.Col
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_users(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_users(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12319,7 +12320,7 @@ func (ec *executionContext) _Nudge_users(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚕstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_links(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_links(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12346,12 +12347,12 @@ func (ec *executionContext) _Nudge_links(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]base.Link)
+	res := resTmp.([]feedlib.Link)
 	fc.Result = res
-	return ec.marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, field.Selections, res)
+	return ec.marshalOLink2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12378,12 +12379,12 @@ func (ec *executionContext) _Nudge_notificationChannels(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]base.Channel)
+	res := resTmp.([]feedlib.Channel)
 	fc.Result = res
-	return ec.marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, field.Selections, res)
+	return ec.marshalOChannel2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Nudge_notificationBody(ctx context.Context, field graphql.CollectedField, obj *base.Nudge) (ret graphql.Marshaler) {
+func (ec *executionContext) _Nudge_notificationBody(ctx context.Context, field graphql.CollectedField, obj *feedlib.Nudge) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12410,12 +12411,12 @@ func (ec *executionContext) _Nudge_notificationBody(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(base.NotificationBody)
+	res := resTmp.(feedlib.NotificationBody)
 	fc.Result = res
-	return ec.marshalONotificationBody2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNotificationBody(ctx, field.Selections, res)
+	return ec.marshalONotificationBody2githubᚗcomᚋsavannahghiᚋfeedlibᚐNotificationBody(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Payload_data(ctx context.Context, field graphql.CollectedField, obj *base.Payload) (ret graphql.Marshaler) {
+func (ec *executionContext) _Payload_data(ctx context.Context, field graphql.CollectedField, obj *feedlib.Payload) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -12507,7 +12508,7 @@ func (ec *executionContext) _Query_getFaqsContent(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFaqsContent(rctx, args["flavour"].(base.Flavour))
+		return ec.resolvers.Query().GetFaqsContent(rctx, args["flavour"].(feedlib.Flavour))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12591,7 +12592,7 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(base.Flavour), args["isAnonymous"].(bool), args["persistent"].(base.BooleanFilter), args["status"].(*base.Status), args["visibility"].(*base.Visibility), args["expired"].(*base.BooleanFilter), args["filterParams"].(*helpers.FilterParams))
+		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feedlib.Flavour), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12633,7 +12634,7 @@ func (ec *executionContext) _Query_labels(ctx context.Context, field graphql.Col
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Labels(rctx, args["flavour"].(base.Flavour))
+		return ec.resolvers.Query().Labels(rctx, args["flavour"].(feedlib.Flavour))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12675,7 +12676,7 @@ func (ec *executionContext) _Query_unreadPersistentItems(ctx context.Context, fi
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().UnreadPersistentItems(rctx, args["flavour"].(base.Flavour))
+		return ec.resolvers.Query().UnreadPersistentItems(rctx, args["flavour"].(feedlib.Flavour))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -15064,8 +15065,8 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj interface{}) (base.Context, error) {
-	var it base.Context
+func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj interface{}) (feedlib.Context, error) {
+	var it feedlib.Context
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15108,8 +15109,8 @@ func (ec *executionContext) unmarshalInputContextInput(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj interface{}) (base.Event, error) {
-	var it base.Event
+func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj interface{}) (feedlib.Event, error) {
+	var it feedlib.Event
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15126,7 +15127,7 @@ func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("context"))
-			it.Context, err = ec.unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx, v)
+			it.Context, err = ec.unmarshalNContextInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐContext(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15134,7 +15135,7 @@ func (ec *executionContext) unmarshalInputEventInput(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("payload"))
-			it.Payload, err = ec.unmarshalNPayloadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx, v)
+			it.Payload, err = ec.unmarshalNPayloadInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐPayload(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15328,8 +15329,8 @@ func (ec *executionContext) unmarshalInputFirebaseWebpushConfigInput(ctx context
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj interface{}) (base.Message, error) {
-	var it base.Message
+func (ec *executionContext) unmarshalInputMsgInput(ctx context.Context, obj interface{}) (feedlib.Message, error) {
+	var it feedlib.Message
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15456,8 +15457,8 @@ func (ec *executionContext) unmarshalInputNPSInput(ctx context.Context, obj inte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj interface{}) (base.Payload, error) {
-	var it base.Payload
+func (ec *executionContext) unmarshalInputPayloadInput(ctx context.Context, obj interface{}) (feedlib.Payload, error) {
+	var it feedlib.Payload
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -15634,7 +15635,7 @@ func (ec *executionContext) _AccessToken(ctx context.Context, sel ast.SelectionS
 
 var actionImplementors = []string{"Action"}
 
-func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, obj *base.Action) graphql.Marshaler {
+func (ec *executionContext) _Action(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Action) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, actionImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -15848,7 +15849,7 @@ func (ec *executionContext) _CalendarEvent(ctx context.Context, sel ast.Selectio
 
 var contextImplementors = []string{"Context"}
 
-func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, obj *base.Context) graphql.Marshaler {
+func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Context) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, contextImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16010,7 +16011,7 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 
 var eventImplementors = []string{"Event"}
 
-func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *base.Event) graphql.Marshaler {
+func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Event) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, eventImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16638,7 +16639,7 @@ func (ec *executionContext) _GhostCMSTag(ctx context.Context, sel ast.SelectionS
 
 var itemImplementors = []string{"Item"}
 
-func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj *base.Item) graphql.Marshaler {
+func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Item) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, itemImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16742,7 +16743,7 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 
 var linkImplementors = []string{"Link"}
 
-func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj *base.Link) graphql.Marshaler {
+func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Link) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, linkImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16794,7 +16795,7 @@ func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj
 
 var msgImplementors = []string{"Msg"}
 
-func (ec *executionContext) _Msg(ctx context.Context, sel ast.SelectionSet, obj *base.Message) graphql.Marshaler {
+func (ec *executionContext) _Msg(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Message) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, msgImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17067,7 +17068,7 @@ func (ec *executionContext) _NPSResponse(ctx context.Context, sel ast.SelectionS
 
 var notificationBodyImplementors = []string{"NotificationBody"}
 
-func (ec *executionContext) _NotificationBody(ctx context.Context, sel ast.SelectionSet, obj *base.NotificationBody) graphql.Marshaler {
+func (ec *executionContext) _NotificationBody(ctx context.Context, sel ast.SelectionSet, obj *feedlib.NotificationBody) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, notificationBodyImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17119,7 +17120,7 @@ func (ec *executionContext) _NotificationBody(ctx context.Context, sel ast.Selec
 
 var nudgeImplementors = []string{"Nudge"}
 
-func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, obj *base.Nudge) graphql.Marshaler {
+func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Nudge) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, nudgeImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17188,7 +17189,7 @@ func (ec *executionContext) _Nudge(ctx context.Context, sel ast.SelectionSet, ob
 
 var payloadImplementors = []string{"Payload"}
 
-func (ec *executionContext) _Payload(ctx context.Context, sel ast.SelectionSet, obj *base.Payload) graphql.Marshaler {
+func (ec *executionContext) _Payload(ctx context.Context, sel ast.SelectionSet, obj *feedlib.Payload) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, payloadImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -17948,11 +17949,11 @@ func (ec *executionContext) marshalNAccessToken2ᚖgitlabᚗslade360emrᚗcomᚋ
 	return ec._AccessToken(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx context.Context, sel ast.SelectionSet, v base.Action) graphql.Marshaler {
+func (ec *executionContext) marshalNAction2githubᚗcomᚋsavannahghiᚋfeedlibᚐAction(ctx context.Context, sel ast.SelectionSet, v feedlib.Action) graphql.Marshaler {
 	return ec._Action(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionᚄ(ctx context.Context, sel ast.SelectionSet, v []base.Action) graphql.Marshaler {
+func (ec *executionContext) marshalNAction2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐActionᚄ(ctx context.Context, sel ast.SelectionSet, v []feedlib.Action) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -17976,7 +17977,7 @@ func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx, sel, v[i])
+			ret[i] = ec.marshalNAction2githubᚗcomᚋsavannahghiᚋfeedlibᚐAction(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -17989,13 +17990,13 @@ func (ec *executionContext) marshalNAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionType(ctx context.Context, v interface{}) (base.ActionType, error) {
-	var res base.ActionType
+func (ec *executionContext) unmarshalNActionType2githubᚗcomᚋsavannahghiᚋfeedlibᚐActionType(ctx context.Context, v interface{}) (feedlib.ActionType, error) {
+	var res feedlib.ActionType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNActionType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐActionType(ctx context.Context, sel ast.SelectionSet, v base.ActionType) graphql.Marshaler {
+func (ec *executionContext) marshalNActionType2githubᚗcomᚋsavannahghiᚋfeedlibᚐActionType(ctx context.Context, sel ast.SelectionSet, v feedlib.ActionType) graphql.Marshaler {
 	return v
 }
 
@@ -18035,17 +18036,17 @@ func (ec *executionContext) marshalNBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, v interface{}) (base.BooleanFilter, error) {
-	var res base.BooleanFilter
+func (ec *executionContext) unmarshalNBooleanFilter2githubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx context.Context, v interface{}) (feedlib.BooleanFilter, error) {
+	var res feedlib.BooleanFilter
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNBooleanFilter2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v base.BooleanFilter) graphql.Marshaler {
+func (ec *executionContext) marshalNBooleanFilter2githubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v feedlib.BooleanFilter) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNContextInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx context.Context, v interface{}) (base.Context, error) {
+func (ec *executionContext) unmarshalNContextInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐContext(ctx context.Context, v interface{}) (feedlib.Context, error) {
 	res, err := ec.unmarshalInputContextInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -18158,7 +18159,7 @@ func (ec *executionContext) marshalNEventAttendee2ᚖgoogleᚗgolangᚗorgᚋapi
 	return ec._EventAttendee(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEventInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐEvent(ctx context.Context, v interface{}) (base.Event, error) {
+func (ec *executionContext) unmarshalNEventInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐEvent(ctx context.Context, v interface{}) (feedlib.Event, error) {
 	res, err := ec.unmarshalInputEventInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -18182,13 +18183,13 @@ func (ec *executionContext) unmarshalNFirebaseSimpleNotificationInput2gitlabᚗs
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx context.Context, v interface{}) (base.Flavour, error) {
-	var res base.Flavour
+func (ec *executionContext) unmarshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx context.Context, v interface{}) (feedlib.Flavour, error) {
+	var res feedlib.Flavour
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNFlavour2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐFlavour(ctx context.Context, sel ast.SelectionSet, v base.Flavour) graphql.Marshaler {
+func (ec *executionContext) marshalNFlavour2githubᚗcomᚋsavannahghiᚋfeedlibᚐFlavour(ctx context.Context, sel ast.SelectionSet, v feedlib.Flavour) graphql.Marshaler {
 	return v
 }
 
@@ -18280,13 +18281,13 @@ func (ec *executionContext) marshalNGhostCMSTag2ᚕgitlabᚗslade360emrᚗcomᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐHandling(ctx context.Context, v interface{}) (base.Handling, error) {
-	var res base.Handling
+func (ec *executionContext) unmarshalNHandling2githubᚗcomᚋsavannahghiᚋfeedlibᚐHandling(ctx context.Context, v interface{}) (feedlib.Handling, error) {
+	var res feedlib.Handling
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNHandling2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐHandling(ctx context.Context, sel ast.SelectionSet, v base.Handling) graphql.Marshaler {
+func (ec *executionContext) marshalNHandling2githubᚗcomᚋsavannahghiᚋfeedlibᚐHandling(ctx context.Context, sel ast.SelectionSet, v feedlib.Handling) graphql.Marshaler {
 	return v
 }
 
@@ -18335,11 +18336,11 @@ func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNItem2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx context.Context, sel ast.SelectionSet, v base.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2githubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx context.Context, sel ast.SelectionSet, v feedlib.Item) graphql.Marshaler {
 	return ec._Item(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []base.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐItemᚄ(ctx context.Context, sel ast.SelectionSet, v []feedlib.Item) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18363,7 +18364,7 @@ func (ec *executionContext) marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋba
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNItem2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx, sel, v[i])
+			ret[i] = ec.marshalNItem2githubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18376,7 +18377,7 @@ func (ec *executionContext) marshalNItem2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋba
 	return ret
 }
 
-func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐItem(ctx context.Context, sel ast.SelectionSet, v *base.Item) graphql.Marshaler {
+func (ec *executionContext) marshalNItem2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐItem(ctx context.Context, sel ast.SelectionSet, v *feedlib.Item) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18386,17 +18387,17 @@ func (ec *executionContext) marshalNItem2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋba
 	return ec._Item(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {
+func (ec *executionContext) marshalNLink2githubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx context.Context, sel ast.SelectionSet, v feedlib.Link) graphql.Marshaler {
 	return ec._Link(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLinkType(ctx context.Context, v interface{}) (base.LinkType, error) {
-	var res base.LinkType
+func (ec *executionContext) unmarshalNLinkType2githubᚗcomᚋsavannahghiᚋfeedlibᚐLinkType(ctx context.Context, v interface{}) (feedlib.LinkType, error) {
+	var res feedlib.LinkType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNLinkType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLinkType(ctx context.Context, sel ast.SelectionSet, v base.LinkType) graphql.Marshaler {
+func (ec *executionContext) marshalNLinkType2githubᚗcomᚋsavannahghiᚋfeedlibᚐLinkType(ctx context.Context, sel ast.SelectionSet, v feedlib.LinkType) graphql.Marshaler {
 	return v
 }
 
@@ -18421,11 +18422,11 @@ func (ec *executionContext) marshalNMap2map(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNMsg2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v base.Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMsg2githubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx context.Context, sel ast.SelectionSet, v feedlib.Message) graphql.Marshaler {
 	return ec._Msg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v *base.Message) graphql.Marshaler {
+func (ec *executionContext) marshalNMsg2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx context.Context, sel ast.SelectionSet, v *feedlib.Message) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18435,7 +18436,7 @@ func (ec *executionContext) marshalNMsg2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbas
 	return ec._Msg(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNMsgInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, v interface{}) (base.Message, error) {
+func (ec *executionContext) unmarshalNMsgInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx context.Context, v interface{}) (feedlib.Message, error) {
 	res, err := ec.unmarshalInputMsgInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -18492,11 +18493,11 @@ func (ec *executionContext) marshalNNPSResponse2ᚖgitlabᚗslade360emrᚗcomᚋ
 	return ec._NPSResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNNudge2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx context.Context, sel ast.SelectionSet, v base.Nudge) graphql.Marshaler {
+func (ec *executionContext) marshalNNudge2githubᚗcomᚋsavannahghiᚋfeedlibᚐNudge(ctx context.Context, sel ast.SelectionSet, v feedlib.Nudge) graphql.Marshaler {
 	return ec._Nudge(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudgeᚄ(ctx context.Context, sel ast.SelectionSet, v []base.Nudge) graphql.Marshaler {
+func (ec *executionContext) marshalNNudge2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐNudgeᚄ(ctx context.Context, sel ast.SelectionSet, v []feedlib.Nudge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18520,7 +18521,7 @@ func (ec *executionContext) marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋb
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNNudge2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx, sel, v[i])
+			ret[i] = ec.marshalNNudge2githubᚗcomᚋsavannahghiᚋfeedlibᚐNudge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18533,7 +18534,7 @@ func (ec *executionContext) marshalNNudge2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋb
 	return ret
 }
 
-func (ec *executionContext) marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNudge(ctx context.Context, sel ast.SelectionSet, v *base.Nudge) graphql.Marshaler {
+func (ec *executionContext) marshalNNudge2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐNudge(ctx context.Context, sel ast.SelectionSet, v *feedlib.Nudge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18543,7 +18544,7 @@ func (ec *executionContext) marshalNNudge2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋb
 	return ec._Nudge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNPayloadInput2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx context.Context, v interface{}) (base.Payload, error) {
+func (ec *executionContext) unmarshalNPayloadInput2githubᚗcomᚋsavannahghiᚋfeedlibᚐPayload(ctx context.Context, v interface{}) (feedlib.Payload, error) {
 	res, err := ec.unmarshalInputPayloadInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -18664,13 +18665,13 @@ func (ec *executionContext) marshalNSendMessageResponse2ᚖgitlabᚗslade360emr�
 	return ec._SendMessageResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, v interface{}) (base.Status, error) {
-	var res base.Status
+func (ec *executionContext) unmarshalNStatus2githubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx context.Context, v interface{}) (feedlib.Status, error) {
+	var res feedlib.Status
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNStatus2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, sel ast.SelectionSet, v base.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNStatus2githubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx context.Context, sel ast.SelectionSet, v feedlib.Status) graphql.Marshaler {
 	return v
 }
 
@@ -18740,13 +18741,13 @@ func (ec *executionContext) marshalNString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) unmarshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐTextType(ctx context.Context, v interface{}) (base.TextType, error) {
-	var res base.TextType
+func (ec *executionContext) unmarshalNTextType2githubᚗcomᚋsavannahghiᚋfeedlibᚐTextType(ctx context.Context, v interface{}) (feedlib.TextType, error) {
+	var res feedlib.TextType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTextType2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐTextType(ctx context.Context, sel ast.SelectionSet, v base.TextType) graphql.Marshaler {
+func (ec *executionContext) marshalNTextType2githubᚗcomᚋsavannahghiᚋfeedlibᚐTextType(ctx context.Context, sel ast.SelectionSet, v feedlib.TextType) graphql.Marshaler {
 	return v
 }
 
@@ -18784,13 +18785,13 @@ func (ec *executionContext) unmarshalNUploadInput2gitlabᚗslade360emrᚗcomᚋg
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, v interface{}) (base.Visibility, error) {
-	var res base.Visibility
+func (ec *executionContext) unmarshalNVisibility2githubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx context.Context, v interface{}) (feedlib.Visibility, error) {
+	var res feedlib.Visibility
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNVisibility2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, sel ast.SelectionSet, v base.Visibility) graphql.Marshaler {
+func (ec *executionContext) marshalNVisibility2githubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx context.Context, sel ast.SelectionSet, v feedlib.Visibility) graphql.Marshaler {
 	return v
 }
 
@@ -19130,11 +19131,11 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx context.Context, sel ast.SelectionSet, v base.Action) graphql.Marshaler {
+func (ec *executionContext) marshalOAction2githubᚗcomᚋsavannahghiᚋfeedlibᚐAction(ctx context.Context, sel ast.SelectionSet, v feedlib.Action) graphql.Marshaler {
 	return ec._Action(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx context.Context, sel ast.SelectionSet, v []base.Action) graphql.Marshaler {
+func (ec *executionContext) marshalOAction2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐAction(ctx context.Context, sel ast.SelectionSet, v []feedlib.Action) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19161,7 +19162,7 @@ func (ec *executionContext) marshalOAction2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOAction2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐAction(ctx, sel, v[i])
+			ret[i] = ec.marshalOAction2githubᚗcomᚋsavannahghiᚋfeedlibᚐAction(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19198,33 +19199,33 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, v interface{}) (*base.BooleanFilter, error) {
+func (ec *executionContext) unmarshalOBooleanFilter2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx context.Context, v interface{}) (*feedlib.BooleanFilter, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(base.BooleanFilter)
+	var res = new(feedlib.BooleanFilter)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOBooleanFilter2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v *base.BooleanFilter) graphql.Marshaler {
+func (ec *executionContext) marshalOBooleanFilter2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx context.Context, sel ast.SelectionSet, v *feedlib.BooleanFilter) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, v interface{}) (base.Channel, error) {
-	var res base.Channel
+func (ec *executionContext) unmarshalOChannel2githubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx context.Context, v interface{}) (feedlib.Channel, error) {
+	var res feedlib.Channel
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, sel ast.SelectionSet, v base.Channel) graphql.Marshaler {
+func (ec *executionContext) marshalOChannel2githubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx context.Context, sel ast.SelectionSet, v feedlib.Channel) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, v interface{}) ([]base.Channel, error) {
+func (ec *executionContext) unmarshalOChannel2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx context.Context, v interface{}) ([]feedlib.Channel, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19237,10 +19238,10 @@ func (ec *executionContext) unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo
 		}
 	}
 	var err error
-	res := make([]base.Channel, len(vSlice))
+	res := make([]feedlib.Channel, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, vSlice[i])
+		res[i], err = ec.unmarshalOChannel2githubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19248,7 +19249,7 @@ func (ec *executionContext) unmarshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo
 	return res, nil
 }
 
-func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx context.Context, sel ast.SelectionSet, v []base.Channel) graphql.Marshaler {
+func (ec *executionContext) marshalOChannel2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx context.Context, sel ast.SelectionSet, v []feedlib.Channel) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19275,7 +19276,7 @@ func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOChannel2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐChannel(ctx, sel, v[i])
+			ret[i] = ec.marshalOChannel2githubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19288,7 +19289,7 @@ func (ec *executionContext) marshalOChannel2ᚕgitlabᚗslade360emrᚗcomᚋgo�
 	return ret
 }
 
-func (ec *executionContext) marshalOContext2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐContext(ctx context.Context, sel ast.SelectionSet, v base.Context) graphql.Marshaler {
+func (ec *executionContext) marshalOContext2githubᚗcomᚋsavannahghiᚋfeedlibᚐContext(ctx context.Context, sel ast.SelectionSet, v feedlib.Context) graphql.Marshaler {
 	return ec._Context(ctx, sel, &v)
 }
 
@@ -19465,11 +19466,11 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return graphql.MarshalInt(*v)
 }
 
-func (ec *executionContext) marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v base.Link) graphql.Marshaler {
+func (ec *executionContext) marshalOLink2githubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx context.Context, sel ast.SelectionSet, v feedlib.Link) graphql.Marshaler {
 	return ec._Link(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx context.Context, sel ast.SelectionSet, v []base.Link) graphql.Marshaler {
+func (ec *executionContext) marshalOLink2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx context.Context, sel ast.SelectionSet, v []feedlib.Link) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19496,7 +19497,7 @@ func (ec *executionContext) marshalOLink2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋba
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOLink2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐLink(ctx, sel, v[i])
+			ret[i] = ec.marshalOLink2githubᚗcomᚋsavannahghiᚋfeedlibᚐLink(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19524,11 +19525,11 @@ func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.Selecti
 	return graphql.MarshalMap(v)
 }
 
-func (ec *executionContext) marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v base.Message) graphql.Marshaler {
+func (ec *executionContext) marshalOMsg2githubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx context.Context, sel ast.SelectionSet, v feedlib.Message) graphql.Marshaler {
 	return ec._Msg(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx context.Context, sel ast.SelectionSet, v []base.Message) graphql.Marshaler {
+func (ec *executionContext) marshalOMsg2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx context.Context, sel ast.SelectionSet, v []feedlib.Message) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19555,7 +19556,7 @@ func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbas
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOMsg2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐMessage(ctx, sel, v[i])
+			ret[i] = ec.marshalOMsg2githubᚗcomᚋsavannahghiᚋfeedlibᚐMessage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19568,24 +19569,24 @@ func (ec *executionContext) marshalOMsg2ᚕgitlabᚗslade360emrᚗcomᚋgoᚋbas
 	return ret
 }
 
-func (ec *executionContext) marshalONotificationBody2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐNotificationBody(ctx context.Context, sel ast.SelectionSet, v base.NotificationBody) graphql.Marshaler {
+func (ec *executionContext) marshalONotificationBody2githubᚗcomᚋsavannahghiᚋfeedlibᚐNotificationBody(ctx context.Context, sel ast.SelectionSet, v feedlib.NotificationBody) graphql.Marshaler {
 	return ec._NotificationBody(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOPayload2gitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐPayload(ctx context.Context, sel ast.SelectionSet, v base.Payload) graphql.Marshaler {
+func (ec *executionContext) marshalOPayload2githubᚗcomᚋsavannahghiᚋfeedlibᚐPayload(ctx context.Context, sel ast.SelectionSet, v feedlib.Payload) graphql.Marshaler {
 	return ec._Payload(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, v interface{}) (*base.Status, error) {
+func (ec *executionContext) unmarshalOStatus2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx context.Context, v interface{}) (*feedlib.Status, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(base.Status)
+	var res = new(feedlib.Status)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOStatus2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐStatus(ctx context.Context, sel ast.SelectionSet, v *base.Status) graphql.Marshaler {
+func (ec *executionContext) marshalOStatus2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx context.Context, sel ast.SelectionSet, v *feedlib.Status) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19661,16 +19662,16 @@ func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel as
 	return graphql.MarshalTime(v)
 }
 
-func (ec *executionContext) unmarshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, v interface{}) (*base.Visibility, error) {
+func (ec *executionContext) unmarshalOVisibility2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx context.Context, v interface{}) (*feedlib.Visibility, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(base.Visibility)
+	var res = new(feedlib.Visibility)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOVisibility2ᚖgitlabᚗslade360emrᚗcomᚋgoᚋbaseᚐVisibility(ctx context.Context, sel ast.SelectionSet, v *base.Visibility) graphql.Marshaler {
+func (ec *executionContext) marshalOVisibility2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx context.Context, sel ast.SelectionSet, v *feedlib.Visibility) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

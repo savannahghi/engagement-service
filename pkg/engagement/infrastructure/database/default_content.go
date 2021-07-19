@@ -15,8 +15,8 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 
 	"github.com/markbates/pkger"
+	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/base"
 )
 
 const (
@@ -48,44 +48,44 @@ var _ = pkger.Dir(defaultContentDir)
 type actionGenerator func(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Action, error)
+) (*feedlib.Action, error)
 
 type nudgeGenerator func(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Nudge, error)
+) (*feedlib.Nudge, error)
 
 type itemGenerator func(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Item, error)
+) (*feedlib.Item, error)
 
 // SetDefaultActions ensures that a feed has default actions
 func SetDefaultActions(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Action, error) {
+) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "SetDefaultActions")
 	defer span.End()
-	actions := []base.Action{}
+	actions := []feedlib.Action{}
 
 	switch flavour {
-	case base.FlavourConsumer:
+	case feedlib.FlavourConsumer:
 		consumerActions, err := defaultConsumerActions(ctx, uid, flavour, repository)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default consumer actions: %w", err)
 		}
 		actions = consumerActions
-	case base.FlavourPro:
+	case feedlib.FlavourPro:
 		proActions, err := defaultProActions(ctx, uid, flavour, repository)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -101,22 +101,22 @@ func SetDefaultActions(
 func SetDefaultNudges(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Nudge, error) {
+) ([]feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "SetDefaultNudges")
 	defer span.End()
-	var nudges []base.Nudge
+	var nudges []feedlib.Nudge
 
 	switch flavour {
-	case base.FlavourConsumer:
+	case feedlib.FlavourConsumer:
 		consumerNudges, err := defaultConsumerNudges(ctx, uid, flavour, repository)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default consumer nudges: %w", err)
 		}
 		nudges = consumerNudges
-	case base.FlavourPro:
+	case feedlib.FlavourPro:
 		proNudges, err := defaultProNudges(ctx, uid, flavour, repository)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -132,22 +132,22 @@ func SetDefaultNudges(
 func SetDefaultItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Item, error) {
+) ([]feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "SetDefaultItems")
 	defer span.End()
-	var items []base.Item
+	var items []feedlib.Item
 
 	switch flavour {
-	case base.FlavourConsumer:
+	case feedlib.FlavourConsumer:
 		consumerItems, err := defaultConsumerItems(ctx, uid, flavour, repository)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return nil, fmt.Errorf("unable to initialize default consumer items: %w", err)
 		}
 		items = consumerItems
-	case base.FlavourPro:
+	case feedlib.FlavourPro:
 		proItems, err := defaultProItems(ctx, uid, flavour, repository)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
@@ -162,12 +162,12 @@ func SetDefaultItems(
 func defaultConsumerNudges(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Nudge, error) {
+) ([]feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "defaultConsumerNudges")
 	defer span.End()
-	var nudges []base.Nudge
+	var nudges []feedlib.Nudge
 	fns := []nudgeGenerator{
 		verifyEmailNudge,
 	}
@@ -185,12 +185,12 @@ func defaultConsumerNudges(
 func defaultProNudges(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Nudge, error) {
+) ([]feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "defaultProNudges")
 	defer span.End()
-	var nudges []base.Nudge
+	var nudges []feedlib.Nudge
 	fns := []nudgeGenerator{
 		partnerAccountSetupNudge,
 		verifyEmailNudge,
@@ -209,12 +209,12 @@ func defaultProNudges(
 func defaultConsumerActions(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Action, error) {
+) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "defaultConsumerActions")
 	defer span.End()
-	var actions []base.Action
+	var actions []feedlib.Action
 	fns := []actionGenerator{
 		defaultGetInsuranceAction,
 		defaultGetTestAction,
@@ -235,12 +235,12 @@ func defaultConsumerActions(
 func defaultProActions(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Action, error) {
+) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "defaultProActions")
 	defer span.End()
-	var actions []base.Action
+	var actions []feedlib.Action
 	fns := []actionGenerator{
 		defaultAddPatientAction,
 		defaultSearchPatientAction,
@@ -259,17 +259,17 @@ func defaultProActions(
 func defaultSeeDoctorAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getConsultationActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingFullPage,
 		common.StaticBase+"/actions/svg/see_doctor.svg",
 		"See Doctor",
 		"See a doctor",
@@ -280,17 +280,17 @@ func defaultSeeDoctorAction(
 func defaultBuyMedicineAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getMedicineActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingFullPage,
 		common.StaticBase+"/actions/svg/medicine.svg",
 		"Get Medicine",
 		"Get medicines",
@@ -301,17 +301,17 @@ func defaultBuyMedicineAction(
 func defaultGetTestAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getTestActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingFullPage,
 		common.StaticBase+"/actions/svg/get_tested.svg",
 		"Get tests",
 		"Get diagnostic tests",
@@ -322,17 +322,17 @@ func defaultGetTestAction(
 func defaultGetInsuranceAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		getInsuranceActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingFullPage,
 		common.StaticBase+"/actions/svg/buy_cover.svg",
 		"Buy Cover",
 		"Buy medical insurance",
@@ -343,17 +343,17 @@ func defaultGetInsuranceAction(
 func defaultSearchPatientAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		searchPatientActionName,
-		base.ActionTypeSecondary,
-		base.HandlingFullPage,
+		feedlib.ActionTypeSecondary,
+		feedlib.HandlingFullPage,
 		common.StaticBase+"/actions/svg/search_user.svg",
 		"Search a patient",
 		"Search for a patient",
@@ -364,17 +364,17 @@ func defaultSearchPatientAction(
 func defaultAddPatientAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	return createGlobalAction(
 		ctx,
 		uid,
 		false,
 		flavour,
 		addPatientActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingFullPage,
 		common.StaticBase+"/actions/svg/add_user.svg",
 		"Register patient",
 		"Register a patient",
@@ -385,9 +385,9 @@ func defaultAddPatientAction(
 func partnerAccountSetupNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "partnerAccountSetupNudge")
 	defer span.End()
 	title := common.PartnerAccountSetupNudgeTitle
@@ -399,8 +399,8 @@ func partnerAccountSetupNudge(
 		false,
 		flavour,
 		partnerAccountSetupActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingFullPage,
 		repository,
 	)
 	if err != nil {
@@ -408,10 +408,10 @@ func partnerAccountSetupNudge(
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", partnerAccountSetupActionName, err)
 	}
-	actions := []base.Action{
+	actions := []feedlib.Action{
 		*partnerAccountSetupAction,
 	}
-	notificationBody := base.NotificationBody{
+	notificationBody := feedlib.NotificationBody{
 		ResolveMessage: "Thank you for setting up your partner set up account.",
 	}
 	return createNudge(
@@ -432,9 +432,9 @@ func partnerAccountSetupNudge(
 func verifyEmailNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "verifyEmailNudge")
 	defer span.End()
 	title := common.AddPrimaryEmailNudgeTitle
@@ -446,8 +446,8 @@ func verifyEmailNudge(
 		false,
 		flavour,
 		verifyEmailActionName,
-		base.ActionTypePrimary,
-		base.HandlingFullPage,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingFullPage,
 		repository,
 	)
 	if err != nil {
@@ -455,10 +455,10 @@ func verifyEmailNudge(
 		return nil, fmt.Errorf(
 			"can't create %s action: %w", verifyEmailActionName, err)
 	}
-	actions := []base.Action{
+	actions := []feedlib.Action{
 		*verifyEmailAction,
 	}
-	notificationBody := base.NotificationBody{
+	notificationBody := feedlib.NotificationBody{
 		ResolveMessage: "Thank you for adding your primary email address.",
 	}
 	return createNudge(
@@ -479,35 +479,35 @@ func verifyEmailNudge(
 func createNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	title string,
 	text string,
 	imageURL string,
 	imageTitle string,
 	imageDescription string,
-	actions []base.Action,
+	actions []feedlib.Action,
 	repository repository.Repository,
-	notificationBody base.NotificationBody,
-) (*base.Nudge, error) {
+	notificationBody feedlib.NotificationBody,
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "createNudge")
 	defer span.End()
 	future := time.Now().Add(time.Hour * futureHours)
-	nudge := &base.Nudge{
+	nudge := &feedlib.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
-		Visibility:     base.VisibilityShow,
-		Status:         base.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
+		Status:         feedlib.StatusPending,
 		Expiry:         future,
 		Title:          title,
 		Text:           text,
-		Links: []base.Link{
-			base.GetPNGImageLink(
+		Links: []feedlib.Link{
+			feedlib.GetPNGImageLink(
 				imageURL, imageTitle, imageDescription, imageURL),
 		},
 		Actions:              actions,
 		Groups:               []string{},
 		Users:                []string{uid},
-		NotificationChannels: []base.Channel{},
+		NotificationChannels: []feedlib.Channel{},
 		NotificationBody:     notificationBody,
 	}
 	_, err := nudge.ValidateAndMarshal()
@@ -528,22 +528,22 @@ func createGlobalAction(
 	ctx context.Context,
 	uid string,
 	allowAnonymous bool,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	name string,
-	actionType base.ActionType,
-	handling base.Handling,
+	actionType feedlib.ActionType,
+	handling feedlib.Handling,
 	iconLink string,
 	iconTitle string,
 	iconDescription string,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "createGlobalAction")
 	defer span.End()
-	action := &base.Action{
+	action := &feedlib.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Name:           name,
-		Icon: base.GetSVGImageLink(
+		Icon: feedlib.GetSVGImageLink(
 			iconLink, iconTitle, iconDescription, iconLink),
 		ActionType:     actionType,
 		Handling:       handling,
@@ -567,19 +567,19 @@ func createLocalAction(
 	ctx context.Context,
 	uid string,
 	allowAnonymous bool,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	name string,
-	actionType base.ActionType,
-	handling base.Handling,
+	actionType feedlib.ActionType,
+	handling feedlib.Handling,
 	repository repository.Repository,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	_, span := tracer.Start(ctx, "createLocalAction")
 	defer span.End()
-	action := &base.Action{
+	action := &feedlib.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Name:           name,
-		Icon: base.GetPNGImageLink(
+		Icon: feedlib.GetPNGImageLink(
 			common.StaticBase+"/1px.png",
 			"Blank Image",
 			"Default Blank Image",
@@ -603,7 +603,7 @@ func createLocalAction(
 func createFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	author string,
 	tagline string,
@@ -613,23 +613,23 @@ func createFeedItem(
 	iconDescription string,
 	summary string,
 	text string,
-	links []base.Link,
-	actions []base.Action,
-	conversations []base.Message,
+	links []feedlib.Link,
+	actions []feedlib.Action,
+	conversations []feedlib.Message,
 	persistent bool,
 	repository repository.Repository,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "createFeedItem")
 	defer span.End()
 	future := time.Now().Add(time.Hour * futureHours)
-	item := &base.Item{
+	item := &feedlib.Item{
 		ID:             itemID,
 		SequenceNumber: defaultSequenceNumber,
 		Expiry:         future,
 		Persistent:     persistent,
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
-		Icon: base.GetPNGImageLink(
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
+		Icon: feedlib.GetPNGImageLink(
 			iconImageURL, iconTitle, iconDescription, iconImageURL),
 		Author:               author,
 		Tagline:              tagline,
@@ -637,13 +637,13 @@ func createFeedItem(
 		Timestamp:            time.Now(),
 		Summary:              summary,
 		Text:                 text,
-		TextType:             base.TextTypeMarkdown,
+		TextType:             feedlib.TextTypeMarkdown,
 		Links:                links,
 		Actions:              actions,
 		Conversations:        conversations,
 		Groups:               []string{},
 		Users:                []string{uid},
-		NotificationChannels: []base.Channel{},
+		NotificationChannels: []feedlib.Channel{},
 	}
 	_, err := item.ValidateAndMarshal()
 	if err != nil {
@@ -661,12 +661,12 @@ func createFeedItem(
 func defaultConsumerItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Item, error) {
+) ([]feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "defaultConsumerItems")
 	defer span.End()
-	var items []base.Item
+	var items []feedlib.Item
 	fns := []itemGenerator{
 		simpleConsumerWelcome,
 	}
@@ -684,12 +684,12 @@ func defaultConsumerItems(
 func defaultProItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Item, error) {
+) ([]feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "defaultProItems")
 	defer span.End()
-	var items []base.Item
+	var items []feedlib.Item
 	fns := []itemGenerator{
 		simpleProWelcome,
 	}
@@ -707,9 +707,9 @@ func defaultProItems(
 func simpleConsumerWelcome(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "simpleConsumerWelcome")
 	defer span.End()
 	persistent := true // at least one persistent message in welcome data
@@ -754,9 +754,9 @@ func simpleConsumerWelcome(
 func simpleProWelcome(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "simpleProWelcome")
 	defer span.End()
 	persistent := true // at least one persistent message in welcome data
@@ -801,16 +801,16 @@ func simpleProWelcome(
 func getMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	text string,
-	replyTo *base.Message,
+	replyTo *feedlib.Message,
 	postedByName string,
 	repository repository.Repository,
-) (*base.Message, error) {
+) (*feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "getMessage")
 	defer span.End()
-	msg := &base.Message{
+	msg := &feedlib.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: defaultSequenceNumber,
 		Text:           text,
@@ -838,10 +838,10 @@ func getMessage(
 func getConsumerWelcomeThread(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	repository repository.Repository,
-) ([]base.Message, error) {
+) ([]feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "getConsumerWelcomeThread")
 	defer span.End()
 	welcome, err := getMessage(
@@ -994,7 +994,7 @@ func getConsumerWelcomeThread(
 		return nil, err
 	}
 
-	return []base.Message{
+	return []feedlib.Message{
 		*welcome,
 		*pharmacyReply,
 		*deliveryAssistant,
@@ -1010,10 +1010,10 @@ func getConsumerWelcomeThread(
 func getProWelcomeThread(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	repository repository.Repository,
-) ([]base.Message, error) {
+) ([]feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "getProWelcomeThread")
 	defer span.End()
 	welcome, err := getMessage(
@@ -1155,7 +1155,7 @@ func getProWelcomeThread(
 		return nil, err
 	}
 
-	return []base.Message{
+	return []feedlib.Message{
 		*welcome,
 		*pharmacyReply,
 		*deliveryAssistant,
@@ -1168,20 +1168,20 @@ func getProWelcomeThread(
 	}, nil
 }
 
-func getFeedWelcomeVideos(flavour base.Flavour) []base.Link {
-	videos := []base.Link{}
+func getFeedWelcomeVideos(flavour feedlib.Flavour) []feedlib.Link {
+	videos := []feedlib.Link{}
 
 	switch flavour {
-	case base.FlavourConsumer:
+	case feedlib.FlavourConsumer:
 		// Videos for Consumer
-		consumerVideos := []base.Link{
-			base.GetYoutubeVideoLink(
+		consumerVideos := []feedlib.Link{
+			feedlib.GetYoutubeVideoLink(
 				"https://youtu.be/-mlr9rjRXmc",
 				"Slade 360",
 				" View your health insurance cover benefits on your Be.Well app.",
 				common.StaticBase+"/items/videos/thumbs/01_lead.png",
 			),
-			base.GetYoutubeVideoLink(
+			feedlib.GetYoutubeVideoLink(
 				"https://youtu.be/-iSB8yrSIps",
 				"Slade 360",
 				"How to add your health insurance cover to your Be.Well app.",
@@ -1190,7 +1190,7 @@ func getFeedWelcomeVideos(flavour base.Flavour) []base.Link {
 		}
 		videos = append(videos, consumerVideos...)
 
-	case base.FlavourPro:
+	case feedlib.FlavourPro:
 		// Videos for PRO
 
 	}
@@ -1198,7 +1198,7 @@ func getFeedWelcomeVideos(flavour base.Flavour) []base.Link {
 	return videos
 }
 
-func feedItemsFromCMSFeedTag(ctx context.Context, flavour base.Flavour) []base.Item {
+func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour) []feedlib.Item {
 	ctx, span := tracer.Start(ctx, "feedItemsFromCMSFeedTag")
 	defer span.End()
 	// Initialize ISC clients
@@ -1208,7 +1208,7 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour base.Flavour) []base.I
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	libraryService := library.NewLibraryService(onboarding)
 
-	items := []base.Item{}
+	items := []feedlib.Item{}
 
 	feedPosts, err := libraryService.GetFeedContent(ctx, flavour)
 	if err != nil {
@@ -1239,34 +1239,34 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour base.Flavour) []base.I
 			sequenceNumber = int(time.Now().Unix()) + 1
 		}
 
-		items = append(items, base.Item{
+		items = append(items, feedlib.Item{
 			ID:             ksuid.New().String(),
 			SequenceNumber: sequenceNumber,
 			Expiry:         future,
 			Persistent:     false,
-			Status:         base.StatusPending,
-			Visibility:     base.VisibilityShow,
-			Icon:           base.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+			Status:         feedlib.StatusPending,
+			Visibility:     feedlib.VisibilityShow,
+			Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
 			Author:         defaultAuthor,
 			Tagline:        tagline,
 			Label:          common.DefaultLabel,
 			Summary:        summary,
 			Timestamp:      time.Now(),
 			Text:           text,
-			TextType:       base.TextTypeHTML,
-			Links: []base.Link{
-				base.GetYoutubeVideoLink(
+			TextType:       feedlib.TextTypeHTML,
+			Links: []feedlib.Link{
+				feedlib.GetYoutubeVideoLink(
 					videoLink.URL,
 					videoLink.Title,
 					videoLink.Description,
 					videoLink.Thumbnail,
 				),
 			},
-			Actions:              []base.Action{},
-			Conversations:        []base.Message{},
+			Actions:              []feedlib.Action{},
+			Conversations:        []feedlib.Message{},
 			Users:                []string{},
 			Groups:               []string{},
-			NotificationChannels: []base.Channel{},
+			NotificationChannels: []feedlib.Channel{},
 		})
 	}
 
@@ -1280,85 +1280,85 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour base.Flavour) []base.I
 	}
 
 	// add the slade 360 video last
-	items = append(items, base.Item{
+	items = append(items, feedlib.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: int(time.Now().Unix()),
 		Expiry:         future,
 		Persistent:     false,
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
-		Icon:           base.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
+		Icon:           feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
 		Author:         defaultAuthor,
 		Tagline:        "Learn what is Be.Well and how you can benefit from using it",
 		Label:          common.DefaultLabel,
 		Summary:        "Be.Well is a virtual and physical healthcare community.",
 		Timestamp:      time.Now(),
 		Text:           "Be.Well is a virtual and physical healthcare community. Our goal is to make it easy for you to access affordable high-quality healthcare - whether online or in person.",
-		TextType:       base.TextTypeHTML,
-		Links: []base.Link{
-			base.GetYoutubeVideoLink(
+		TextType:       feedlib.TextTypeHTML,
+		Links: []feedlib.Link{
+			feedlib.GetYoutubeVideoLink(
 				"https://youtu.be/mKnlXcS3_Z0",
 				"Slade 360",
 				"Slade 360. HealthCare. Simplified.",
 				common.StaticBase+"/items/videos/thumbs/04_slade.png",
 			),
 		},
-		Actions:              []base.Action{},
-		Conversations:        []base.Message{},
+		Actions:              []feedlib.Action{},
+		Conversations:        []feedlib.Message{},
 		Users:                []string{},
 		Groups:               []string{},
-		NotificationChannels: []base.Channel{},
+		NotificationChannels: []feedlib.Channel{},
 	})
 
 	return items
 }
 
-func feedItemFromCMSPost(post library.GhostCMSPost) base.Item {
+func feedItemFromCMSPost(post library.GhostCMSPost) feedlib.Item {
 	future := time.Now().Add(time.Hour * futureHours)
-	return base.Item{
+	return feedlib.Item{
 		ID:                   post.UUID,
 		SequenceNumber:       int(post.PublishedAt.Unix()),
 		Expiry:               future,
 		Persistent:           false,
-		Status:               base.StatusPending,
-		Visibility:           base.VisibilityShow,
-		Icon:                 base.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
+		Status:               feedlib.StatusPending,
+		Visibility:           feedlib.VisibilityShow,
+		Icon:                 feedlib.GetPNGImageLink(common.DefaultIconPath, "Icon", "Feed Item Icon", common.DefaultIconPath),
 		Author:               defaultAuthor,
 		Tagline:              post.Slug,
 		Label:                common.DefaultLabel,
 		Summary:              TruncateStringWithEllipses(post.Excerpt, 140),
 		Timestamp:            post.UpdatedAt,
 		Text:                 post.HTML,
-		TextType:             base.TextTypeHTML,
+		TextType:             feedlib.TextTypeHTML,
 		Links:                getLinks(post),
-		Actions:              []base.Action{},
-		Conversations:        []base.Message{},
+		Actions:              []feedlib.Action{},
+		Conversations:        []feedlib.Message{},
 		Users:                []string{},
 		Groups:               []string{},
-		NotificationChannels: []base.Channel{},
+		NotificationChannels: []feedlib.Channel{},
 	}
 }
 
-func getLinks(post library.GhostCMSPost) []base.Link {
+func getLinks(post library.GhostCMSPost) []feedlib.Link {
 	featureImageLink := post.FeatureImage
 	defaultLinkTitle := "CMS Item default Icon"
 	if strings.HasSuffix(featureImageLink, ".png") {
-		return []base.Link{
+		return []feedlib.Link{
 			{
 				ID:          ksuid.New().String(),
 				URL:         featureImageLink,
-				LinkType:    base.LinkTypePngImage,
+				LinkType:    feedlib.LinkTypePngImage,
 				Title:       defaultLinkTitle,
 				Description: defaultLinkTitle,
 				Thumbnail:   featureImageLink,
 			},
 		}
 	}
-	return []base.Link{
+	return []feedlib.Link{
 		{
 			ID:          ksuid.New().String(),
 			URL:         common.DefaultIconPath,
-			LinkType:    base.LinkTypeDefault,
+			LinkType:    feedlib.LinkTypeDefault,
 			Title:       defaultLinkTitle,
 			Description: defaultLinkTitle,
 			Thumbnail:   common.DefaultIconPath,
@@ -1397,9 +1397,9 @@ func TruncateStringWithEllipses(str string, length int) string {
 func defaultActions(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	repository repository.Repository,
-) ([]base.Action, error) {
+) ([]feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "defaultActions")
 	defer span.End()
 	resolveAction, err := createLocalAction(
@@ -1408,8 +1408,8 @@ func defaultActions(
 		false,
 		flavour,
 		common.ResolveItemActionName,
-		base.ActionTypePrimary,
-		base.HandlingInline,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingInline,
 		repository,
 	)
 	if err != nil {
@@ -1423,8 +1423,8 @@ func defaultActions(
 		true,
 		flavour,
 		common.PinItemActionName,
-		base.ActionTypePrimary,
-		base.HandlingInline,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingInline,
 		repository,
 	)
 	if err != nil {
@@ -1438,15 +1438,15 @@ func defaultActions(
 		true,
 		flavour,
 		common.HideItemActionName,
-		base.ActionTypePrimary,
-		base.HandlingInline,
+		feedlib.ActionTypePrimary,
+		feedlib.HandlingInline,
 		repository,
 	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to create hide action: %w", err)
 	}
-	actions := []base.Action{
+	actions := []feedlib.Action{
 		*resolveAction,
 		*pinAction,
 		*hideAction,

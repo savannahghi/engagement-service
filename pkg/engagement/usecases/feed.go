@@ -13,6 +13,7 @@ import (
 
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
 	"gitlab.slade360emr.com/go/base"
 
@@ -30,11 +31,11 @@ type FeedUseCases interface {
 		ctx context.Context,
 		uid *string,
 		isAnonymous *bool,
-		flavour base.Flavour,
-		persistent base.BooleanFilter,
-		status *base.Status,
-		visibility *base.Visibility,
-		expired *base.BooleanFilter,
+		flavour feedlib.Flavour,
+		persistent feedlib.BooleanFilter,
+		status *feedlib.Status,
+		visibility *feedlib.Visibility,
+		expired *feedlib.BooleanFilter,
 		filterParams *helpers.FilterParams,
 	) (*domain.Feed, error)
 
@@ -42,164 +43,164 @@ type FeedUseCases interface {
 		ctx context.Context,
 		uid *string,
 		isAnonymous *bool,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) (*domain.Feed, error)
 
 	GetFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	GetNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	GetAction(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		actionID string,
-	) (*base.Action, error)
+	) (*feedlib.Action, error)
 
 	PublishFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		item *base.Item,
-	) (*base.Item, error)
+		flavour feedlib.Flavour,
+		item *feedlib.Item,
+	) (*feedlib.Item, error)
 
 	DeleteFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 	) error
 
 	ResolveFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	PinFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	UnpinFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	UnresolveFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	HideFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	ShowFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	Labels(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) ([]string, error)
 
 	SaveLabel(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		label string,
 	) error
 
 	UnreadPersistentItems(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) (int, error)
 
 	UpdateUnreadPersistentItemsCount(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) error
 
 	PublishNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		nudge *base.Nudge,
-	) (*base.Nudge, error)
+		flavour feedlib.Flavour,
+		nudge *feedlib.Nudge,
+	) (*feedlib.Nudge, error)
 
 	ResolveNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	UnresolveNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	HideNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	ShowNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	GetDefaultNudgeByTitle(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		title string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	ProcessEvent(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		event *base.Event,
+		flavour feedlib.Flavour,
+		event *feedlib.Event,
 	) error
 
 	DeleteMessage(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 		messageID string,
 
@@ -208,29 +209,29 @@ type FeedUseCases interface {
 	PostMessage(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-		message *base.Message,
-	) (*base.Message, error)
+		message *feedlib.Message,
+	) (*feedlib.Message, error)
 
 	DeleteAction(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		actionID string,
 	) error
 
 	PublishAction(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		action *base.Action,
-	) (*base.Action, error)
+		flavour feedlib.Flavour,
+		action *feedlib.Action,
+	) (*feedlib.Action, error)
 
 	DeleteNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
 	) error
 }
@@ -257,11 +258,11 @@ func (fe FeedUseCaseImpl) GetFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
-	flavour base.Flavour,
-	persistent base.BooleanFilter,
-	status *base.Status,
-	visibility *base.Visibility,
-	expired *base.BooleanFilter,
+	flavour feedlib.Flavour,
+	persistent feedlib.BooleanFilter,
+	status *feedlib.Status,
+	visibility *feedlib.Visibility,
+	expired *feedlib.BooleanFilter,
 	filterParams *helpers.FilterParams,
 ) (*domain.Feed, error) {
 	ctx, span := tracer.Start(ctx, "GetFeed")
@@ -312,7 +313,7 @@ func (fe FeedUseCaseImpl) GetThinFeed(
 	ctx context.Context,
 	uid *string,
 	isAnonymous *bool,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) (*domain.Feed, error) {
 	ctx, span := tracer.Start(ctx, "GetThinFeed")
 	defer span.End()
@@ -333,9 +334,9 @@ func (fe FeedUseCaseImpl) GetThinFeed(
 	feed := &domain.Feed{
 		UID:         *uid,
 		Flavour:     flavour,
-		Actions:     []base.Action{},
-		Items:       []base.Item{},
-		Nudges:      []base.Nudge{},
+		Actions:     []feedlib.Action{},
+		Items:       []feedlib.Item{},
+		Nudges:      []feedlib.Nudge{},
 		IsAnonymous: isAnonymous,
 	}
 
@@ -350,9 +351,9 @@ func (fe FeedUseCaseImpl) GetThinFeed(
 func (fe FeedUseCaseImpl) GetFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "GetFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -387,9 +388,9 @@ func (fe FeedUseCaseImpl) GetFeedItem(
 func (fe FeedUseCaseImpl) GetNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetNudge")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -422,9 +423,9 @@ func (fe FeedUseCaseImpl) GetNudge(
 func (fe FeedUseCaseImpl) GetAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	actionID string,
-) (*base.Action, error) {
+) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "GetAction")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -459,9 +460,9 @@ func (fe FeedUseCaseImpl) GetAction(
 func (fe FeedUseCaseImpl) PublishFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	item *base.Item,
-) (*base.Item, error) {
+	flavour feedlib.Flavour,
+	item *feedlib.Item,
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "PublishFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -493,7 +494,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 	}
 
 	for _, action := range item.Actions {
-		if action.ActionType == base.ActionTypeFloating {
+		if action.ActionType == feedlib.ActionTypeFloating {
 			return nil, fmt.Errorf("floating actions are only allowed at the global level")
 		}
 	}
@@ -526,7 +527,7 @@ func (fe FeedUseCaseImpl) PublishFeedItem(
 func (fe FeedUseCaseImpl) DeleteFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteFeedItem")
@@ -578,9 +579,9 @@ func (fe FeedUseCaseImpl) DeleteFeedItem(
 func (fe FeedUseCaseImpl) ResolveFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "ResolveFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -607,7 +608,7 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 		return nil, exceptions.ErrNilFeedItem
 	}
 
-	item.Status = base.StatusDone
+	item.Status = feedlib.StatusDone
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	for i, action := range item.Actions {
@@ -645,9 +646,9 @@ func (fe FeedUseCaseImpl) ResolveFeedItem(
 func (fe FeedUseCaseImpl) PinFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "PinFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -712,9 +713,9 @@ func (fe FeedUseCaseImpl) PinFeedItem(
 func (fe FeedUseCaseImpl) UnpinFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "UnpinFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -779,9 +780,9 @@ func (fe FeedUseCaseImpl) UnpinFeedItem(
 func (fe FeedUseCaseImpl) UnresolveFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "UnresolveFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -808,7 +809,7 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 		return nil, exceptions.ErrNilFeedItem
 	}
 
-	item.Status = base.StatusPending
+	item.Status = feedlib.StatusPending
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	for i, action := range item.Actions {
@@ -846,9 +847,9 @@ func (fe FeedUseCaseImpl) UnresolveFeedItem(
 func (fe FeedUseCaseImpl) HideFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "HideFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -875,7 +876,7 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 		return nil, exceptions.ErrNilFeedItem
 	}
 
-	item.Visibility = base.VisibilityHide
+	item.Visibility = feedlib.VisibilityHide
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	for i, action := range item.Actions {
@@ -913,9 +914,9 @@ func (fe FeedUseCaseImpl) HideFeedItem(
 func (fe FeedUseCaseImpl) ShowFeedItem(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-) (*base.Item, error) {
+) (*feedlib.Item, error) {
 	ctx, span := tracer.Start(ctx, "ShowFeedItem")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -942,7 +943,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 		return nil, exceptions.ErrNilFeedItem
 	}
 
-	item.Visibility = base.VisibilityShow
+	item.Visibility = feedlib.VisibilityShow
 	item.SequenceNumber = item.SequenceNumber + 1
 
 	for i, action := range item.Actions {
@@ -979,7 +980,7 @@ func (fe FeedUseCaseImpl) ShowFeedItem(
 // Labels returns the valid labels / filters for this feed
 func (fe FeedUseCaseImpl) Labels(
 	ctx context.Context,
-	uid string, flavour base.Flavour,
+	uid string, flavour feedlib.Flavour,
 ) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "Labels")
 	defer span.End()
@@ -1004,7 +1005,7 @@ func (fe FeedUseCaseImpl) Labels(
 func (fe FeedUseCaseImpl) SaveLabel(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	label string,
 ) error {
 	ctx, span := tracer.Start(ctx, "SaveLabel")
@@ -1030,7 +1031,7 @@ func (fe FeedUseCaseImpl) SaveLabel(
 func (fe FeedUseCaseImpl) UnreadPersistentItems(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) (int, error) {
 	ctx, span := tracer.Start(ctx, "UnreadPersistentItems")
 	defer span.End()
@@ -1055,7 +1056,7 @@ func (fe FeedUseCaseImpl) UnreadPersistentItems(
 func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 ) error {
 	ctx, span := tracer.Start(ctx, "UpdateUnreadPersistentItemsCount")
 	defer span.End()
@@ -1092,9 +1093,9 @@ func (fe FeedUseCaseImpl) UpdateUnreadPersistentItemsCount(
 func (fe FeedUseCaseImpl) PublishNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	nudge *base.Nudge,
-) (*base.Nudge, error) {
+	flavour feedlib.Flavour,
+	nudge *feedlib.Nudge,
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "PublishNudge")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1126,7 +1127,7 @@ func (fe FeedUseCaseImpl) PublishNudge(
 	}
 
 	for _, action := range nudge.Actions {
-		if action.ActionType == base.ActionTypeFloating {
+		if action.ActionType == feedlib.ActionTypeFloating {
 			return nil, fmt.Errorf("floating actions are only allowed at the global level")
 		}
 	}
@@ -1158,9 +1159,9 @@ func (fe FeedUseCaseImpl) PublishNudge(
 func (fe FeedUseCaseImpl) ResolveNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "ResolveNudge")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1187,7 +1188,7 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 		return nil, exceptions.ErrNilNudge
 	}
 
-	nudge.Status = base.StatusDone
+	nudge.Status = feedlib.StatusDone
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	for i, action := range nudge.Actions {
@@ -1224,9 +1225,9 @@ func (fe FeedUseCaseImpl) ResolveNudge(
 func (fe FeedUseCaseImpl) UnresolveNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "UnresolveNudge")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1253,7 +1254,7 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 		return nil, exceptions.ErrNilNudge
 	}
 
-	nudge.Status = base.StatusPending
+	nudge.Status = feedlib.StatusPending
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	for i, action := range nudge.Actions {
@@ -1290,9 +1291,9 @@ func (fe FeedUseCaseImpl) UnresolveNudge(
 func (fe FeedUseCaseImpl) HideNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "HideNudge")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1319,7 +1320,7 @@ func (fe FeedUseCaseImpl) HideNudge(
 		return nil, exceptions.ErrNilNudge
 	}
 
-	nudge.Visibility = base.VisibilityHide
+	nudge.Visibility = feedlib.VisibilityHide
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	for i, action := range nudge.Actions {
@@ -1355,9 +1356,9 @@ func (fe FeedUseCaseImpl) HideNudge(
 func (fe FeedUseCaseImpl) ShowNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "ShowNudge")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1384,7 +1385,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 		return nil, exceptions.ErrNilNudge
 	}
 
-	nudge.Visibility = base.VisibilityShow
+	nudge.Visibility = feedlib.VisibilityShow
 	nudge.SequenceNumber = nudge.SequenceNumber + 1
 
 	for i, action := range nudge.Actions {
@@ -1421,7 +1422,7 @@ func (fe FeedUseCaseImpl) ShowNudge(
 func (fe FeedUseCaseImpl) DeleteNudge(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	nudgeID string,
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteNudge")
@@ -1486,9 +1487,9 @@ func (fe FeedUseCaseImpl) DeleteNudge(
 func (fe FeedUseCaseImpl) PublishAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	action *base.Action,
-) (*base.Action, error) {
+	flavour feedlib.Flavour,
+	action *feedlib.Action,
+) (*feedlib.Action, error) {
 	ctx, span := tracer.Start(ctx, "PublishAction")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1547,7 +1548,7 @@ func (fe FeedUseCaseImpl) PublishAction(
 func (fe FeedUseCaseImpl) DeleteAction(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	actionID string,
 ) error {
 	ctx, span := tracer.Start(ctx, "DeleteAction")
@@ -1598,10 +1599,10 @@ func (fe FeedUseCaseImpl) DeleteAction(
 func (fe FeedUseCaseImpl) PostMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
-	message *base.Message,
-) (*base.Message, error) {
+	message *feedlib.Message,
+) (*feedlib.Message, error) {
 	ctx, span := tracer.Start(ctx, "PostMessage")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1670,7 +1671,7 @@ func (fe FeedUseCaseImpl) PostMessage(
 func (fe FeedUseCaseImpl) DeleteMessage(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	itemID string,
 	messageID string,
 ) error {
@@ -1743,8 +1744,8 @@ func (fe FeedUseCaseImpl) DeleteMessage(
 func (fe FeedUseCaseImpl) ProcessEvent(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
-	event *base.Event,
+	flavour feedlib.Flavour,
+	event *feedlib.Event,
 ) error {
 	ctx, span := tracer.Start(ctx, "ProcessEvent")
 	defer span.End()
@@ -1820,9 +1821,9 @@ func (fe FeedUseCaseImpl) ProcessEvent(
 func (fe FeedUseCaseImpl) GetDefaultNudgeByTitle(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	title string,
-) (*base.Nudge, error) {
+) (*feedlib.Nudge, error) {
 	ctx, span := tracer.Start(ctx, "GetDefaultNudgeByTitle")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
@@ -20,14 +20,14 @@ func NewMockNotificationService() (*MockNotificationService, error) {
 
 // MockNotificationService is used to mock notifications in-memory for tests
 type MockNotificationService struct {
-	notifications map[string][]base.Element
+	notifications map[string][]feedlib.Element
 	topicIDs      []string
 	subscriptions map[string]string
 }
 
 func (mn MockNotificationService) checkPreconditions() error {
 	if mn.notifications == nil {
-		mn.notifications = make(map[string][]base.Element)
+		mn.notifications = make(map[string][]feedlib.Element)
 	}
 
 	if mn.topicIDs == nil {
@@ -46,8 +46,8 @@ func (mn MockNotificationService) Notify(
 	ctx context.Context,
 	topicID string,
 	uid string,
-	flavour base.Flavour,
-	payload base.Element,
+	flavour feedlib.Flavour,
+	payload feedlib.Element,
 	metadata map[string]interface{},
 ) error {
 	_, span := tracer.Start(ctx, "Notify")

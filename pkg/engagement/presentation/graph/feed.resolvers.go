@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 )
 
-func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
+func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -31,7 +31,7 @@ func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour base.Fla
 	return item, nil
 }
 
-func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
+func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -48,7 +48,7 @@ func (r *mutationResolver) UnresolveFeedItem(ctx context.Context, flavour base.F
 	return item, nil
 }
 
-func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
+func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -65,7 +65,7 @@ func (r *mutationResolver) PinFeedItem(ctx context.Context, flavour base.Flavour
 	return item, nil
 }
 
-func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
+func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -82,7 +82,7 @@ func (r *mutationResolver) UnpinFeedItem(ctx context.Context, flavour base.Flavo
 	return item, nil
 }
 
-func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
+func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -99,7 +99,7 @@ func (r *mutationResolver) HideFeedItem(ctx context.Context, flavour base.Flavou
 	return item, nil
 }
 
-func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour base.Flavour, itemID string) (*base.Item, error) {
+func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -116,7 +116,7 @@ func (r *mutationResolver) ShowFeedItem(ctx context.Context, flavour base.Flavou
 	return item, nil
 }
 
-func (r *mutationResolver) HideNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error) {
+func (r *mutationResolver) HideNudge(ctx context.Context, flavour feedlib.Flavour, nudgeID string) (*feedlib.Nudge, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -133,7 +133,7 @@ func (r *mutationResolver) HideNudge(ctx context.Context, flavour base.Flavour, 
 	return nudge, nil
 }
 
-func (r *mutationResolver) ShowNudge(ctx context.Context, flavour base.Flavour, nudgeID string) (*base.Nudge, error) {
+func (r *mutationResolver) ShowNudge(ctx context.Context, flavour feedlib.Flavour, nudgeID string) (*feedlib.Nudge, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -150,7 +150,7 @@ func (r *mutationResolver) ShowNudge(ctx context.Context, flavour base.Flavour, 
 	return nudge, nil
 }
 
-func (r *mutationResolver) PostMessage(ctx context.Context, flavour base.Flavour, itemID string, message base.Message) (*base.Message, error) {
+func (r *mutationResolver) PostMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, message feedlib.Message) (*feedlib.Message, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -167,7 +167,7 @@ func (r *mutationResolver) PostMessage(ctx context.Context, flavour base.Flavour
 	return msg, nil
 }
 
-func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour base.Flavour, itemID string, messageID string) (bool, error) {
+func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, messageID string) (bool, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -184,7 +184,7 @@ func (r *mutationResolver) DeleteMessage(ctx context.Context, flavour base.Flavo
 	return true, nil
 }
 
-func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour base.Flavour, event base.Event) (bool, error) {
+func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour feedlib.Flavour, event feedlib.Event) (bool, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -201,7 +201,7 @@ func (r *mutationResolver) ProcessEvent(ctx context.Context, flavour base.Flavou
 	return true, nil
 }
 
-func (r *queryResolver) GetFeed(ctx context.Context, flavour base.Flavour, isAnonymous bool, persistent base.BooleanFilter, status *base.Status, visibility *base.Visibility, expired *base.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
+func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -228,7 +228,7 @@ func (r *queryResolver) GetFeed(ctx context.Context, flavour base.Flavour, isAno
 	return feed, nil
 }
 
-func (r *queryResolver) Labels(ctx context.Context, flavour base.Flavour) ([]string, error) {
+func (r *queryResolver) Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)
@@ -245,7 +245,7 @@ func (r *queryResolver) Labels(ctx context.Context, flavour base.Flavour) ([]str
 	return labels, nil
 }
 
-func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour base.Flavour) (int, error) {
+func (r *queryResolver) UnreadPersistentItems(ctx context.Context, flavour feedlib.Flavour) (int, error) {
 	startTime := time.Now()
 
 	uid, err := r.getLoggedInUserUID(ctx)

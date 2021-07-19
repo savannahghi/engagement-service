@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/base"
 )
 
@@ -13,7 +14,7 @@ import (
 // process them intelligently.
 type NotificationEnvelope struct {
 	UID      string                 `json:"uid"`
-	Flavour  base.Flavour           `json:"flavour"`
+	Flavour  feedlib.Flavour        `json:"flavour"`
 	Payload  []byte                 `json:"payload"`
 	Metadata map[string]interface{} `json:"metadata"`
 }

@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/feedlib"
 )
 
 // FakeServiceMessaging is a mock implementation of the "messaging" service
@@ -12,8 +12,8 @@ type FakeServiceMessaging struct {
 		ctx context.Context,
 		topicID string,
 		uid string,
-		flavour base.Flavour,
-		payload base.Element,
+		flavour feedlib.Flavour,
+		payload feedlib.Element,
 		metadata map[string]interface{},
 	) error
 
@@ -30,8 +30,8 @@ func (f *FakeServiceMessaging) Notify(
 	ctx context.Context,
 	topicID string,
 	uid string,
-	flavour base.Flavour,
-	payload base.Element,
+	flavour feedlib.Flavour,
+	payload feedlib.Element,
 	metadata map[string]interface{},
 ) error {
 	return f.NotifyFn(ctx, topicID, uid, flavour, payload, metadata)

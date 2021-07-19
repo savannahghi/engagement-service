@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
@@ -31,7 +32,7 @@ func TestService_GetFeedContent(t *testing.T) {
 
 	type args struct {
 		ctx     context.Context
-		flavour base.Flavour
+		flavour feedlib.Flavour
 	}
 	tests := []struct {
 		name        string
@@ -42,7 +43,7 @@ func TestService_GetFeedContent(t *testing.T) {
 		{
 			name: "default case",
 			args: args{
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				ctx:     ctx,
 			},
 			wantNonZero: true,
@@ -81,7 +82,7 @@ func TestService_GetFaqsContent(t *testing.T) {
 
 	type args struct {
 		ctx     context.Context
-		flavour base.Flavour
+		flavour feedlib.Flavour
 	}
 	tests := []struct {
 		name    string

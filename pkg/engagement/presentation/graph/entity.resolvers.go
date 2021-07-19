@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.slade360emr.com/go/base"
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
@@ -32,7 +32,7 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.F
 	}
 
 	uid := components[0]
-	flavour := base.Flavour(components[1])
+	flavour := feedlib.Flavour(components[1])
 	if !flavour.IsValid() {
 		return nil, fmt.Errorf("%s is not a valid flavour", flavour)
 	}
@@ -41,7 +41,7 @@ func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.F
 		&uid,
 		&anonymous,
 		flavour,
-		base.BooleanFilterBoth,
+		feedlib.BooleanFilterBoth,
 		nil,
 		nil,
 		nil,

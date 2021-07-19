@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -115,8 +116,8 @@ func RegisterPushToken(
 	return true, nil
 }
 
-func getATestMessage() base.Message {
-	return base.Message{
+func getATestMessage() feedlib.Message {
+	return feedlib.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getATestSequenceNumber(),
 		Text:           ksuid.New().String(),
@@ -127,54 +128,54 @@ func getATestMessage() base.Message {
 	}
 }
 
-func getTheTestItem(t *testing.T) base.Item {
+func getTheTestItem(t *testing.T) feedlib.Item {
 	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
 	)
 	if err != nil {
 		t.Errorf("failed to create a test user: %v", err)
-		return base.Item{}
+		return feedlib.Item{}
 	}
 
-	return base.Item{
+	return feedlib.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
-		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
+		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
-		TextType:       base.TextTypePlain,
-		Links: []base.Link{
-			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-			base.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
+		TextType:       feedlib.TextTypePlain,
+		Links: []feedlib.Link{
+			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
 		},
-		Actions: []base.Action{
+		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-				ActionType:     base.ActionTypeSecondary,
-				Handling:       base.HandlingFullPage,
+				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     feedlib.ActionTypeSecondary,
+				Handling:       feedlib.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-				ActionType:     base.ActionTypePrimary,
-				Handling:       base.HandlingInline,
+				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     feedlib.ActionTypePrimary,
+				Handling:       feedlib.HandlingInline,
 			},
 		},
-		Conversations: []base.Message{
+		Conversations: []feedlib.Message{
 			{
 				ID:             "msg-2",
 				Text:           "hii ni reply",
@@ -192,11 +193,11 @@ func getTheTestItem(t *testing.T) base.Item {
 			"group-1",
 			"group-2",
 		},
-		NotificationChannels: []base.Channel{
-			base.ChannelFcm,
-			base.ChannelEmail,
-			base.ChannelSms,
-			base.ChannelWhatsapp,
+		NotificationChannels: []feedlib.Channel{
+			feedlib.ChannelFcm,
+			feedlib.ChannelEmail,
+			feedlib.ChannelSms,
+			feedlib.ChannelWhatsapp,
 		},
 	}
 }
@@ -205,13 +206,13 @@ func getATestSequenceNumber() int {
 	return rand.Intn(intMax)
 }
 
-func getATestEvent() base.Event {
-	return base.Event{
+func getATestEvent() feedlib.Event {
+	return feedlib.Event{
 		ID:   ksuid.New().String(),
 		Name: "TEST_EVENT",
-		Context: base.Context{
+		Context: feedlib.Context{
 			UserID:         ksuid.New().String(),
-			Flavour:        base.FlavourConsumer,
+			Flavour:        feedlib.FlavourConsumer,
 			OrganizationID: ksuid.New().String(),
 			LocationID:     ksuid.New().String(),
 			Timestamp:      time.Now(),
@@ -219,18 +220,18 @@ func getATestEvent() base.Event {
 	}
 }
 
-func getATestAction() base.Action {
-	return base.Action{
+func getATestAction() feedlib.Action {
+	return feedlib.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getATestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-		ActionType:     base.ActionTypePrimary,
-		Handling:       base.HandlingFullPage,
+		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		ActionType:     feedlib.ActionTypePrimary,
+		Handling:       feedlib.HandlingFullPage,
 	}
 }
 
-func getTestPubsubPayload(t *testing.T, el base.Element) *pubsubtools.PubSubPayload {
+func getTestPubsubPayload(t *testing.T, el feedlib.Element) *pubsubtools.PubSubPayload {
 	elData, err := el.ValidateAndMarshal()
 	if err != nil {
 		t.Errorf("invalid element: %w", err)
@@ -248,7 +249,7 @@ func getTestPubsubPayload(t *testing.T, el base.Element) *pubsubtools.PubSubPayl
 
 	envelope := dto.NotificationEnvelope{
 		UID:     token.UID,
-		Flavour: base.FlavourConsumer,
+		Flavour: feedlib.FlavourConsumer,
 		Payload: elData,
 		Metadata: map[string]interface{}{
 			ksuid.New().String(): ksuid.New().String(),
@@ -273,7 +274,7 @@ func getTestPubsubPayload(t *testing.T, el base.Element) *pubsubtools.PubSubPayl
 	}
 }
 
-func aTestNudge(t *testing.T) *base.Nudge {
+func aTestNudge(t *testing.T) *feedlib.Nudge {
 	_, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(
 		t,
 		onboardingISCClient(t),
@@ -282,18 +283,18 @@ func aTestNudge(t *testing.T) *base.Nudge {
 		t.Errorf("failed to create a test user: %v", err)
 		return nil
 	}
-	return &base.Nudge{
+	return &feedlib.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: getATestSequenceNumber(),
 		Expiry:         time.Now().Add(time.Hour * 24),
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
-		Links: []base.Link{
-			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Links: []feedlib.Link{
+			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		},
 		Text: ksuid.New().String(),
-		Actions: []base.Action{
+		Actions: []feedlib.Action{
 			getATestAction(),
 		},
 		Users: []string{
@@ -302,11 +303,11 @@ func aTestNudge(t *testing.T) *base.Nudge {
 		Groups: []string{
 			ksuid.New().String(),
 		},
-		NotificationChannels: []base.Channel{
-			base.ChannelEmail,
-			base.ChannelFcm,
-			base.ChannelSms,
-			base.ChannelWhatsapp,
+		NotificationChannels: []feedlib.Channel{
+			feedlib.ChannelEmail,
+			feedlib.ChannelFcm,
+			feedlib.ChannelSms,
+			feedlib.ChannelWhatsapp,
 		},
 	}
 }
@@ -1161,7 +1162,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 				sender: "Be.Well",
 				pl: dto.NotificationEnvelope{
 					UID:     token.UID,
-					Flavour: base.FlavourConsumer,
+					Flavour: feedlib.FlavourConsumer,
 					Payload: []byte("payload"),
 					Metadata: map[string]interface{}{
 						"language": "en",
@@ -1186,7 +1187,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 				sender: "Be.Well",
 				pl: dto.NotificationEnvelope{
 					UID:     "",
-					Flavour: base.FlavourConsumer,
+					Flavour: feedlib.FlavourConsumer,
 					Payload: []byte("payload"),
 					Metadata: map[string]interface{}{
 						"language": "en",
@@ -1211,7 +1212,7 @@ func TestSendNotificationViaFCM(t *testing.T) {
 				sender: "Be.Well",
 				pl: dto.NotificationEnvelope{
 					UID:     "",
-					Flavour: base.FlavourConsumer,
+					Flavour: feedlib.FlavourConsumer,
 					Payload: []byte("payload"),
 					Metadata: map[string]interface{}{
 						"language": "en",
@@ -1327,7 +1328,7 @@ func TestNotifyInboxCountUpdate(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 		count   int
 	}
 	tests := []struct {
@@ -1340,7 +1341,7 @@ func TestNotifyInboxCountUpdate(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     token.UID,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				count:   10,
 			},
 			wantErr: false,
@@ -1350,7 +1351,7 @@ func TestNotifyInboxCountUpdate(t *testing.T) {
 			args: args{
 				ctx:     context.Background(),
 				uid:     "invalid uid",
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 				count:   10,
 			},
 			wantErr: true,
@@ -1440,7 +1441,7 @@ func TestUpdateInbox(t *testing.T) {
 	type args struct {
 		ctx     context.Context
 		uid     string
-		flavour base.Flavour
+		flavour feedlib.Flavour
 	}
 	tests := []struct {
 		name    string
@@ -1452,7 +1453,7 @@ func TestUpdateInbox(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     token.UID,
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 			},
 			wantErr: false,
 		},
@@ -1461,7 +1462,7 @@ func TestUpdateInbox(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     "invalid uid",
-				flavour: base.FlavourConsumer,
+				flavour: feedlib.FlavourConsumer,
 			},
 			// TODO: Restore after the milestone @mathenge
 			wantErr: false,
@@ -1471,7 +1472,7 @@ func TestUpdateInbox(t *testing.T) {
 			args: args{
 				ctx:     ctx,
 				uid:     "invalid uid",
-				flavour: base.FlavourPro,
+				flavour: feedlib.FlavourPro,
 			},
 			// TODO: Restore after the milestone @mathenge
 			wantErr: false,

@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -149,7 +150,7 @@ type NotificationUsecases interface {
 	UpdateInbox(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) error
 
 	NotifyNudgeUpdate(
@@ -161,7 +162,7 @@ type NotificationUsecases interface {
 	NotifyInboxCountUpdate(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		count int,
 	) error
 
@@ -868,7 +869,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 			"can't unmarshal notification envelope from pubsub data: %w", err)
 	}
 
-	var item base.Item
+	var item feedlib.Item
 	err = json.Unmarshal(envelope.Payload, &item)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -932,7 +933,7 @@ func (n NotificationImpl) NotifyItemUpdate(
 }
 
 // UpdateInbox recalculates the inbox count and notifies the client over FCM
-func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour base.Flavour) error {
+func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour feedlib.Flavour) error {
 	ctx, span := tracer.Start(ctx, "UpdateInbox")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1001,7 +1002,7 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		return fmt.Errorf("can't unmarshal notification envelope from pubsub data: %w", err)
 	}
 
-	var nudge base.Nudge
+	var nudge feedlib.Nudge
 	err = json.Unmarshal(envelope.Payload, &nudge)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
@@ -1056,7 +1057,7 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 func (n NotificationImpl) NotifyInboxCountUpdate(
 	ctx context.Context,
 	uid string,
-	flavour base.Flavour,
+	flavour feedlib.Flavour,
 	count int,
 ) error {
 	ctx, span := tracer.Start(ctx, "NotifyInboxCountUpdate")

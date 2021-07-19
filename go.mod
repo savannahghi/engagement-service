@@ -13,7 +13,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go v1.40.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
-	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/brianvoe/gofakeit/v6 v6.5.0
 	github.com/casbin/casbin/v2 v2.33.0
 	github.com/gobuffalo/here v0.6.2 // indirect
@@ -34,8 +33,9 @@ require (
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/xid v1.3.0
 	github.com/savannahghi/converterandformatter v0.0.3
-	github.com/savannahghi/enumutils v0.0.0-20210629053908-b2082a4ab6b3 // indirect
+	github.com/savannahghi/enumutils v0.0.0-20210629053908-b2082a4ab6b3
 	github.com/savannahghi/errorcodeutil v0.0.0-20210715070815-98283e9f49c6
+	github.com/savannahghi/feedlib v0.0.0-20210628122532-ef88e353d4d6
 	github.com/savannahghi/pubsubtools v0.0.0-20210624135722-0393c6ad97a0
 	github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad
 	github.com/savannahghi/serverutils v0.0.2

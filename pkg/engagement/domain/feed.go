@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/base"
 )
 
@@ -24,16 +25,16 @@ type Feed struct {
 	UID string `json:"uid" firestore:"uid"`
 
 	// whether this is a consumer or pro feed
-	Flavour base.Flavour `json:"flavour" firestore:"flavour"`
+	Flavour feedlib.Flavour `json:"flavour" firestore:"flavour"`
 
 	// what are the global actions available to this user?
-	Actions []base.Action `json:"actions" firestore:"actions"`
+	Actions []feedlib.Action `json:"actions" firestore:"actions"`
 
 	// what does this user's feed contain?
-	Items []base.Item `json:"items" firestore:"items"`
+	Items []feedlib.Item `json:"items" firestore:"items"`
 
 	// what prompts or nudges should this user see?
-	Nudges []base.Nudge `json:"nudges" firestore:"nudges"`
+	Nudges []feedlib.Nudge `json:"nudges" firestore:"nudges"`
 
 	// indicates whether the user is Anonymous or not
 	IsAnonymous *bool `json:"isAnonymous" firestore:"isAnonymous"`

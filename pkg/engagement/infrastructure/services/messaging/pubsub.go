@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -15,7 +16,6 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 
 	"cloud.google.com/go/pubsub"
-	"gitlab.slade360emr.com/go/base"
 )
 
 var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/messaging")
@@ -34,8 +34,8 @@ type NotificationService interface {
 		ctx context.Context,
 		topicID string,
 		uid string,
-		flavour base.Flavour,
-		payload base.Element,
+		flavour feedlib.Flavour,
+		payload feedlib.Element,
 		metadata map[string]interface{},
 	) error
 
@@ -126,8 +126,8 @@ func (ps PubSubNotificationService) Notify(
 	ctx context.Context,
 	topicID string,
 	uid string,
-	flavour base.Flavour,
-	el base.Element,
+	flavour feedlib.Flavour,
+	el feedlib.Element,
 	metadata map[string]interface{},
 ) error {
 	ctx, span := tracer.Start(ctx, "Notify")

@@ -16,6 +16,7 @@ import (
 
 	"github.com/imroc/req"
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
@@ -73,19 +74,19 @@ func GetTestSequenceNumber() int {
 	return rand.Intn(intMax)
 }
 
-func GetTestAction() base.Action {
-	return base.Action{
+func GetTestAction() feedlib.Action {
+	return feedlib.Action{
 		ID:             ksuid.New().String(),
 		SequenceNumber: GetTestSequenceNumber(),
 		Name:           "TEST_ACTION",
-		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-		ActionType:     base.ActionTypePrimary,
-		Handling:       base.HandlingFullPage,
+		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		ActionType:     feedlib.ActionTypePrimary,
+		Handling:       feedlib.HandlingFullPage,
 	}
 }
 
-func getTestMessage() base.Message {
-	return base.Message{
+func getTestMessage() feedlib.Message {
+	return feedlib.Message{
 		ID:             ksuid.New().String(),
 		SequenceNumber: GetTestSequenceNumber(),
 		Text:           ksuid.New().String(),
@@ -96,45 +97,45 @@ func getTestMessage() base.Message {
 	}
 }
 
-func getTestItem() base.Item {
-	return base.Item{
+func getTestItem() feedlib.Item {
+	return feedlib.Item{
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Expiry:         time.Now(),
 		Persistent:     true,
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
-		Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
+		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		Author:         "Bot 1",
 		Tagline:        "Bot speaks...",
 		Label:          "DRUGS",
 		Timestamp:      time.Now(),
 		Summary:        "I am a bot...",
 		Text:           "This bot can speak",
-		TextType:       base.TextTypePlain,
-		Links: []base.Link{
-			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-			base.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
+		TextType:       feedlib.TextTypePlain,
+		Links: []feedlib.Link{
+			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", base.LogoURL),
 		},
-		Actions: []base.Action{
+		Actions: []feedlib.Action{
 			{
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-				ActionType:     base.ActionTypeSecondary,
-				Handling:       base.HandlingFullPage,
+				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     feedlib.ActionTypeSecondary,
+				Handling:       feedlib.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
-				ActionType:     base.ActionTypePrimary,
-				Handling:       base.HandlingInline,
+				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+				ActionType:     feedlib.ActionTypePrimary,
+				Handling:       feedlib.HandlingInline,
 			},
 		},
-		Conversations: []base.Message{
+		Conversations: []feedlib.Message{
 			{
 				ID:             "msg-2",
 				Text:           "hii ni reply",
@@ -153,11 +154,11 @@ func getTestItem() base.Item {
 			"group-1",
 			"group-2",
 		},
-		NotificationChannels: []base.Channel{
-			base.ChannelFcm,
-			base.ChannelEmail,
-			base.ChannelSms,
-			base.ChannelWhatsapp,
+		NotificationChannels: []feedlib.Channel{
+			feedlib.ChannelFcm,
+			feedlib.ChannelEmail,
+			feedlib.ChannelSms,
+			feedlib.ChannelWhatsapp,
 		},
 	}
 }
@@ -235,19 +236,19 @@ func GetBearerTokenHeader(t *testing.T) string {
 	return fmt.Sprintf("Bearer %s", idTokens.IDToken)
 }
 
-func testNudge() *base.Nudge {
-	return &base.Nudge{
+func testNudge() *feedlib.Nudge {
+	return &feedlib.Nudge{
 		ID:             ksuid.New().String(),
 		SequenceNumber: GetTestSequenceNumber(),
 		Expiry:         time.Now().Add(time.Hour * 24),
-		Status:         base.StatusPending,
-		Visibility:     base.VisibilityShow,
+		Status:         feedlib.StatusPending,
+		Visibility:     feedlib.VisibilityShow,
 		Title:          ksuid.New().String(),
-		Links: []base.Link{
-			base.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
+		Links: []feedlib.Link{
+			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.LogoURL),
 		},
 		Text: ksuid.New().String(),
-		Actions: []base.Action{
+		Actions: []feedlib.Action{
 			GetTestAction(),
 		},
 		Users: []string{
@@ -256,11 +257,11 @@ func testNudge() *base.Nudge {
 		Groups: []string{
 			ksuid.New().String(),
 		},
-		NotificationChannels: []base.Channel{
-			base.ChannelEmail,
-			base.ChannelFcm,
-			base.ChannelSms,
-			base.ChannelWhatsapp,
+		NotificationChannels: []feedlib.Channel{
+			feedlib.ChannelEmail,
+			feedlib.ChannelFcm,
+			feedlib.ChannelSms,
+			feedlib.ChannelWhatsapp,
 		},
 	}
 }
@@ -269,8 +270,8 @@ func postElement(
 	ctx context.Context,
 	t *testing.T,
 	uid string,
-	fl base.Flavour,
-	el base.Element,
+	fl feedlib.Flavour,
+	el feedlib.Element,
 	baseURL string,
 	routeName string,
 ) error {
@@ -357,8 +358,8 @@ func postMessage(
 	ctx context.Context,
 	t *testing.T,
 	uid string,
-	fl base.Flavour,
-	el base.Element,
+	fl feedlib.Flavour,
+	el feedlib.Element,
 	baseURL string,
 	itemID string,
 ) error {

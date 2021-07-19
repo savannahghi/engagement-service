@@ -17,6 +17,7 @@ import (
 	"net/http"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
@@ -667,7 +668,7 @@ func (p PresentationHandlersImpl) PublishFeedItem(
 			return
 		}
 
-		item := &base.Item{}
+		item := &feedlib.Item{}
 		err = item.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -805,7 +806,7 @@ func (p PresentationHandlersImpl) PublishNudge(
 			return
 		}
 
-		nudge := &base.Nudge{}
+		nudge := &feedlib.Nudge{}
 		err = nudge.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -892,7 +893,7 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge(
 			return
 		}
 
-		if nudge.Status == base.StatusDone {
+		if nudge.Status == feedlib.StatusDone {
 			respondWithJSON(w, http.StatusOK, marshalled)
 		}
 
@@ -988,7 +989,7 @@ func (p PresentationHandlersImpl) PublishAction(
 			return
 		}
 
-		action := &base.Action{}
+		action := &feedlib.Action{}
 		err = action.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1078,7 +1079,7 @@ func (p PresentationHandlersImpl) PostMessage(
 			return
 		}
 
-		message := &base.Message{}
+		message := &feedlib.Message{}
 		err = message.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1170,7 +1171,7 @@ func (p PresentationHandlersImpl) ProcessEvent(
 			return
 		}
 
-		event := &base.Event{}
+		event := &feedlib.Event{}
 		err = event.ValidateAndUnmarshal(data)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)

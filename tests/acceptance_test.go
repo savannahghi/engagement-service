@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
@@ -135,7 +136,7 @@ func TestGraphQLDeleteMessage(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -262,7 +263,7 @@ func TestGraphQLPostMessage(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -397,7 +398,7 @@ func TestGraphQLHideNudge(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge()
 	err := postElement(
 		ctx,
@@ -535,7 +536,7 @@ func TestGraphQLShowNudge(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testNudge := testNudge()
 	err := postElement(
 		ctx,
@@ -673,7 +674,7 @@ func TestGraphQLResolveFeedItem(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -830,7 +831,7 @@ func TestGraphQLUnresolveFeedItem(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -986,7 +987,7 @@ func TestGraphQLPinFeedItem(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -1141,7 +1142,7 @@ func TestGraphQLUnpinFeedItem(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -1296,7 +1297,7 @@ func TestGraphQLHideFeedItem(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -1452,7 +1453,7 @@ func TestGraphQLShowFeedItem(t *testing.T) {
 	}
 
 	uid := authToken.UID
-	fl := base.FlavourConsumer
+	fl := feedlib.FlavourConsumer
 	testItem := getTestItem()
 	err := postElement(
 		ctx,
@@ -2128,7 +2129,7 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 				query: map[string]interface{}{
 					"query": graphqlQuery,
 					"variables": map[string]interface{}{
-						"flavour": base.FlavourConsumer,
+						"flavour": feedlib.FlavourConsumer,
 					},
 				},
 			},
@@ -2142,7 +2143,7 @@ func TestGraphQlGetFaqsContent(t *testing.T) {
 		// 		query: map[string]interface{}{
 		// 			"query": graphqlQuery,
 		// 			"variables": map[string]interface{}{
-		// 				"flavour": base.FlavourPro,
+		// 				"flavour": feedlib.FlavourPro,
 		// 			},
 		// 		},
 		// 	},

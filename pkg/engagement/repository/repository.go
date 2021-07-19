@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/savannahghi/feedlib"
 	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
-
-	"gitlab.slade360emr.com/go/base"
 )
 
 // Repository defines methods for persistence and retrieval of feeds
@@ -21,11 +20,11 @@ type Repository interface {
 		ctx context.Context,
 		uid *string,
 		isAnonymous *bool,
-		flavour base.Flavour,
-		persistent base.BooleanFilter,
-		status *base.Status,
-		visibility *base.Visibility,
-		expired *base.BooleanFilter,
+		flavour feedlib.Flavour,
+		persistent feedlib.BooleanFilter,
+		status *feedlib.Status,
+		visibility *feedlib.Visibility,
+		expired *feedlib.BooleanFilter,
 		filterParams *helpers.FilterParams,
 	) (*domain.Feed, error)
 
@@ -33,31 +32,31 @@ type Repository interface {
 	GetFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) (*base.Item, error)
+	) (*feedlib.Item, error)
 
 	// saving a new feed item
 	SaveFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		item *base.Item,
-	) (*base.Item, error)
+		flavour feedlib.Flavour,
+		item *feedlib.Item,
+	) (*feedlib.Item, error)
 
 	// updating an existing feed item
 	UpdateFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		item *base.Item,
-	) (*base.Item, error)
+		flavour feedlib.Flavour,
+		item *feedlib.Item,
+	) (*feedlib.Item, error)
 
 	// DeleteFeedItem permanently deletes a feed item and it's copies
 	DeleteFeedItem(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 	) error
 
@@ -65,31 +64,31 @@ type Repository interface {
 	GetNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	// saving a new modified nudge
 	SaveNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		nudge *base.Nudge,
-	) (*base.Nudge, error)
+		flavour feedlib.Flavour,
+		nudge *feedlib.Nudge,
+	) (*feedlib.Nudge, error)
 
 	// updating an existing nudge
 	UpdateNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		nudge *base.Nudge,
-	) (*base.Nudge, error)
+		flavour feedlib.Flavour,
+		nudge *feedlib.Nudge,
+	) (*feedlib.Nudge, error)
 
 	// DeleteNudge permanently deletes a nudge and it's copies
 	DeleteNudge(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		nudgeID string,
 	) error
 
@@ -97,23 +96,23 @@ type Repository interface {
 	GetAction(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		actionID string,
-	) (*base.Action, error)
+	) (*feedlib.Action, error)
 
 	// saving a new action
 	SaveAction(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		action *base.Action,
-	) (*base.Action, error)
+		flavour feedlib.Flavour,
+		action *feedlib.Action,
+	) (*feedlib.Action, error)
 
 	// DeleteAction permanently deletes an action and it's copies
 	DeleteAction(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		actionID string,
 	) error
 
@@ -121,25 +120,25 @@ type Repository interface {
 	PostMessage(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-		message *base.Message,
-	) (*base.Message, error)
+		message *feedlib.Message,
+	) (*feedlib.Message, error)
 
 	// GetMessage retrieves THE LATEST VERSION OF a message
 	GetMessage(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 		messageID string,
-	) (*base.Message, error)
+	) (*feedlib.Message, error)
 
 	// DeleteMessage deletes a message
 	DeleteMessage(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
 		messageID string,
 	) error
@@ -148,77 +147,77 @@ type Repository interface {
 	GetMessages(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		itemID string,
-	) ([]base.Message, error)
+	) ([]feedlib.Message, error)
 
 	SaveIncomingEvent(
 		ctx context.Context,
-		event *base.Event,
+		event *feedlib.Event,
 	) error
 
 	SaveOutgoingEvent(
 		ctx context.Context,
-		event *base.Event,
+		event *feedlib.Event,
 	) error
 
 	GetNudges(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		status *base.Status,
-		visibility *base.Visibility,
-		expired *base.BooleanFilter,
-	) ([]base.Nudge, error)
+		flavour feedlib.Flavour,
+		status *feedlib.Status,
+		visibility *feedlib.Visibility,
+		expired *feedlib.BooleanFilter,
+	) ([]feedlib.Nudge, error)
 
 	GetActions(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-	) ([]base.Action, error)
+		flavour feedlib.Flavour,
+	) ([]feedlib.Action, error)
 
 	GetItems(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
-		persistent base.BooleanFilter,
-		status *base.Status,
-		visibility *base.Visibility,
-		expired *base.BooleanFilter,
+		flavour feedlib.Flavour,
+		persistent feedlib.BooleanFilter,
+		status *feedlib.Status,
+		visibility *feedlib.Visibility,
+		expired *feedlib.BooleanFilter,
 		filterParams *helpers.FilterParams,
-	) ([]base.Item, error)
+	) ([]feedlib.Item, error)
 
 	Labels(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) ([]string, error)
 
 	SaveLabel(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		label string,
 	) error
 
 	UnreadPersistentItems(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) (int, error)
 
 	UpdateUnreadPersistentItemsCount(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 	) error
 
 	GetDefaultNudgeByTitle(
 		ctx context.Context,
 		uid string,
-		flavour base.Flavour,
+		flavour feedlib.Flavour,
 		title string,
-	) (*base.Nudge, error)
+	) (*feedlib.Nudge, error)
 
 	SaveMarketingMessage(
 		ctx context.Context,
