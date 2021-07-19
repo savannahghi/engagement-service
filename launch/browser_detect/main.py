@@ -18,15 +18,30 @@ ANDROID = "Android"
 BASE_URL = "https://engagement-prod.healthcloud.co.ke/"
 A_LANDING_PAGE = "https://a.bewell.co.ke"
 
-ANDROID_DUMMY_TEMPLATE = """
+
+def htmlTemplate(eventString, link):
+    """Format and return a html template."""
+    return """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Be.Well By Slade360</title>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){{w[l]=w[l]||[];w[l].push({{'gtm.start':
+    new Date().getTime(),event:'gtm.js'}});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    }})(window,document,'script','dataLayer','GTM-T5V349R');</script>
+    <!-- End Google Tag Manager -->
 </head>
 <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T5V349R"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
     <!-- Start of HubSpot Embed Code -->
     <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/20198195.js"></script>
     <!-- End of HubSpot Embed Code -->
@@ -35,7 +50,7 @@ ANDROID_DUMMY_TEMPLATE = """
     <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-analytics.js"></script>
     <script>
-        var firebaseConfig = {
+        var firebaseConfig = {{
             apiKey: "AIzaSyAv2aRsSSHkOR6xGwwaw6-UTkvED3RNlBQ",
             authDomain: "bewell-app.firebaseapp.com",
             databaseURL: "https://bewell-app.firebaseio.com",
@@ -44,28 +59,50 @@ ANDROID_DUMMY_TEMPLATE = """
             messagingSenderId: "841947754847",
             appId: "1:841947754847:web:034e338de70038796686ea",
             measurementId: "G-WR8JPLG8ZH"
-        };
+        }};
 
         firebase.initializeApp(firebaseConfig);
         var analytics = firebase.analytics();
 
-        analytics.logEvent('redirected_to_android_playstore');    
+        analytics.logEvent(%s);
 
-        window.location.replace("https://play.google.com/store/apps/details?id=com.savannah.bewell");
+        window.location.replace(%s);
+    </script>
+
+     <!-- AdRoll tracking pixel -->
+    <script type="text/javascript">
+      adroll_adv_id = "G34MBP2POFA2VKFCJHXOZ4";
+      adroll_pix_id = "IMUEF2EGPBCOLDIDDDSZMU";
+      adroll_vaersion = "2.0";
+      (function (w, d, e, o, a) {{
+        w.__adroll_loaded = true;
+        w.adroll = w.adroll || [];
+        w.adroll.f = ['setProperties', 'identify', 'track'];
+        var roundtripUrl = "https://s.adroll.com/j/" + adroll_adv_id + "/roundtrip.js";
+        for (a = 0; a < w.adroll.f.length; a++) {{
+          w.adroll[w.adroll.f[a]] = w.adroll[w.adroll.f[a]] || (function (n) {{
+            return function () {{ w.adroll.push([n, arguments]) }}
+          }})(w.adroll.f[a])
+        }} e = d.createElement('script');
+        o = d.getElementsByTagName('script')[0];
+        e.async = 1;
+        e.src = roundtripUrl;
+        o.parentNode.insertBefore(e, o);
+      }})(window, document); adroll.track("pageView");
     </script>
 
     <!-- Facebook Pixel Code -->
     <script>
-        !function (f, b, e, v, n, t, s) {
-            if (f.fbq) return; n = f.fbq = function () {
+        !function (f, b, e, v, n, t, s) {{
+            if (f.fbq) return; n = f.fbq = function () {{
                 n.callMethod ?
                 n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
+            }};
             if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
             n.queue = []; t = b.createElement(e); t.async = !0;
             t.src = v; s = b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
+        }}(window, document, 'script',
         'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '400335678066977');
         fbq('track', 'PageView');
@@ -76,99 +113,21 @@ ANDROID_DUMMY_TEMPLATE = """
     </noscript>
     <!-- End Facebook Pixel Code -->
 
-    <!-- Global site tag (gtag.js) - Google Ads: 1025904802 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1025904802"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'AW-1025904802');
-    </script>
-
-    <!-- Event snippet for BeWell Well Campaign conversion page -->
-    <script>
-        gtag('event', 'conversion', { 'send_to': 'AW-1025904802/KKiKCOq1_dECEKKhmOkD' });
-    </script>
 </body>
 </html>
-"""  # noqa
+""" % (eventString, link)  # noqa
 
-IOS_DUMMY_TEMPLATE = """
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Be.Well By Slade360</title>
-</head>
-<body>
-    <!-- Start of HubSpot Embed Code -->
-    <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/20198195.js"></script>
-    <!-- End of HubSpot Embed Code -->
 
-    <!-- The core Firebase JS SDK  -->
-    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-analytics.js"></script>
-    <script>
-        var firebaseConfig = {
-            apiKey: "AIzaSyAv2aRsSSHkOR6xGwwaw6-UTkvED3RNlBQ",
-            authDomain: "bewell-app.firebaseapp.com",
-            databaseURL: "https://bewell-app.firebaseio.com",
-            projectId: "bewell-app",
-            storageBucket: "bewell-app.appspot.com",
-            messagingSenderId: "841947754847",
-            appId: "1:841947754847:web:034e338de70038796686ea",
-            measurementId: "G-WR8JPLG8ZH"
-        };
+PLAY_STORE_LINK = """https://play.google.com/store/
+apps/details?id=com.savannah.bewell"""
+APPLE_STORE_LINK = """https://apps.apple.com/ke/app/
+be-well-by-slade360/id1496576692"""
 
-        firebase.initializeApp(firebaseConfig);
-        var analytics = firebase.analytics();
 
-        analytics.logEvent('redirected_to_iOS_appstore');
-
-        window.location.replace("https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692");
-    </script>
-
-    <!-- Facebook Pixel Code -->
-    <script>
-        !function (f, b, e, v, n, t, s) {
-            if (f.fbq) return; n = f.fbq = function () {
-                n.callMethod ?
-                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
-            n.queue = []; t = b.createElement(e); t.async = !0;
-            t.src = v; s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '400335678066977');
-        fbq('track', 'PageView');
-    </script>
-    <noscript>
-        <img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=400335678066977&ev=PageView&noscript=1" />
-    </noscript>
-    <!-- End Facebook Pixel Code -->
-
-    <!-- Global site tag (gtag.js) - Google Ads: 1025904802 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1025904802"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'AW-1025904802');
-    </script>
-
-    <!-- Event snippet for BeWell Well Campaign conversion page -->
-    <script>
-        gtag('event', 'conversion', { 'send_to': 'AW-1025904802/KKiKCOq1_dECEKKhmOkD' });
-    </script>
-</body>
-</html>
-"""  # noqa
+events = {
+    'android': 'redirected_to_android_playstore',
+    'IOS': 'redirected_to_iOS_appstore',
+}
 
 
 def mark_bewell_aware(email):
@@ -190,15 +149,18 @@ def detect_browser(request):
     """
     user_agent = parse(request.headers.get("User-Agent"))
     os_family = user_agent.os.family
+    print(os_family)
     email = request.args.get("email")
     if email is not None:
         mark_bewell_aware(email)
 
     if os_family == IOS:
-        return flask.render_template_string(IOS_DUMMY_TEMPLATE)
+        return flask.render_template_string(htmlTemplate(events['IOS'],
+                                                         PLAY_STORE_LINK))
 
     if os_family == ANDROID:
-        return flask.render_template_string(ANDROID_DUMMY_TEMPLATE)
+        return flask.render_template_string(htmlTemplate(events['android'],
+                                                         PLAY_STORE_LINK))
 
     else:
         return flask.redirect(A_LANDING_PAGE)

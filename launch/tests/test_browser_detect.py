@@ -4,8 +4,10 @@ import base64
 import pytest
 import requests
 from launch.browser_detect.main import (
-    ANDROID_DUMMY_TEMPLATE,
-    IOS_DUMMY_TEMPLATE,
+    htmlTemplate,
+    events,
+    PLAY_STORE_LINK,
+    APPLE_STORE_LINK,
     app,
     mark_bewell_aware,
 )
@@ -67,7 +69,7 @@ def test_detect_android_browser(test_client):
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an Android device
         When the request contains the email param, mark them as bewell aware
-        Then render ANDROID_DUMMY_TEMPLATE that redirect the user to playstore
+        Then render a page that redirects the user to playstore
     """
     headers = {"User-Agent": _user_agent("ANDROID")}
     resp = test_client.get(
@@ -75,7 +77,7 @@ def test_detect_android_browser(test_client):
     )
 
     resp.status_code == 200
-    resp.data.decode() in ANDROID_DUMMY_TEMPLATE
+    resp.data.decode() in htmlTemplate(events['android'], PLAY_STORE_LINK)
 
 
 def test_detect_ios_browser(test_client):
@@ -84,15 +86,15 @@ def test_detect_ios_browser(test_client):
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an iOS device
         When the request contains the email param, mark them as bewell aware
-        Then render IOS_DUMMY_TEMPLATE that redirect the user to apple store
+        Then render a page that redirects the user to apple store
     """
-    headers = {"User-Agent": _user_agent("IOS")}
+    headers = {"User-Agent": _user_agent("iOS")}
     resp = test_client.get(
-        "/", query_string={"email": _encode_email()}, headers=headers
+        f"{BASE_URL}/detect_browser", query_string={"email": _encode_email()}, headers=headers
     )
 
-    assert resp.status_code == 200
-    assert resp.data.decode() in IOS_DUMMY_TEMPLATE
+    assert resp.status_code == 308
+    assert 'pe-west3-bewell-app.cloudfunctions.net/?email=' in resp.data.decode()
 
 
 def test_detect_any_other_browser_with_email(test_client):
@@ -105,10 +107,10 @@ def test_detect_any_other_browser_with_email(test_client):
     """
     headers = {"User-Agent": _user_agent("")}
     resp = test_client.get(
-        "/", query_string={"email": _encode_email()}, headers=headers
+        f"{BASE_URL}/detect_browser", query_string={"email": _encode_email()}, headers=headers
     )
 
-    assert resp.status_code == 302
+    assert resp.status_code == 308
 
 
 def test_detect_android_browser_without_email(test_client):
@@ -117,13 +119,13 @@ def test_detect_android_browser_without_email(test_client):
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from Android device
         When the request does not contain the email param
-        Then render ANDROID_DUMMY_TEMPLATE that redirect the user to playstore
+        Then render a page that redirects the user to playstore
     """
     headers = {"User-Agent": _user_agent("ANDROID")}
-    resp = test_client.get("/", headers=headers)
+    resp = test_client.get(f"{BASE_URL}/detect_browser", headers=headers)
 
-    assert resp.status_code == 200
-    resp.data.decode() in ANDROID_DUMMY_TEMPLATE
+    assert resp.status_code == 308
+    resp.data.decode() in htmlTemplate(events['android'], PLAY_STORE_LINK)
 
 
 def test_detect_ios_browser_without_email(test_client):
@@ -132,13 +134,13 @@ def test_detect_ios_browser_without_email(test_client):
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an iOS device
         When the request does not contain the email param
-        Then render IOS_DUMMY_TEMPLATE that redirect the user to apple store
+        Then render a page that redirects the user to apple store
     """
-    headers = {"User-Agent": _user_agent("IOS")}
-    resp = test_client.get("/", headers=headers)
+    headers = {"User-Agent": _user_agent("iOS")}
+    resp = test_client.get(f"{BASE_URL}/detect_browser", headers=headers)
 
-    assert resp.status_code == 200
-    resp.data.decode() in IOS_DUMMY_TEMPLATE
+    assert resp.status_code == 308
+    resp.data.decode() in htmlTemplate(events['IOS'], APPLE_STORE_LINK)
 
 
 def test_detect_other_browser_without_email(test_client):
@@ -149,11 +151,11 @@ def test_detect_other_browser_without_email(test_client):
         When the request does not contain the email param
         Then redirect the user to our landing page A
     """
-    headers = {"User-Agent": _user_agent("IOS")}
-    resp = test_client.get("/", headers=headers)
+    headers = {"User-Agent": _user_agent("iOS")}
+    resp = test_client.get(f"{BASE_URL}/detect_browser", headers=headers)
 
-    assert resp.status_code == 200
-    resp.data.decode() in IOS_DUMMY_TEMPLATE
+    assert resp.status_code == 308
+    resp.data.decode() in htmlTemplate(events['IOS'], APPLE_STORE_LINK)
 
 
 def test_detect_browser_cloud_func_on_android_with_email():
@@ -162,7 +164,7 @@ def test_detect_browser_cloud_func_on_android_with_email():
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an Android device
         When the request contains the email param, mark them as bewell aware
-        Then render ANDROID_DUMMY_TEMPLATE that redirect the user to playstore
+        Then render a page that redirects the user to playstore
     """
     headers = {"User-Agent": _user_agent("ANDROID")}
     args = {"email": _encode_email()}
@@ -171,7 +173,7 @@ def test_detect_browser_cloud_func_on_android_with_email():
     )
 
     assert resp.status_code == 200
-    assert resp.text in ANDROID_DUMMY_TEMPLATE
+    assert 'redirected_to_android_playstore' in resp.text
 
 
 def test_detect_browser_cloud_func_on_ios_with_email():
@@ -181,16 +183,16 @@ def test_detect_browser_cloud_func_on_ios_with_email():
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an iOS device
         When the request contains the email param, mark them as bewell aware
-        Then render IOS_DUMMY_TEMPLATE that redirect the user to apple store
+        Then render a page that redirects the user to apple store
     """
-    headers = {"User-Agent": _user_agent("IOS")}
+    headers = {"User-Agent": _user_agent("iOS")}
     args = {"email": _encode_email()}
     resp = requests.get(
         f"{BASE_URL}/detect_browser", headers=headers, params=args
     )
 
     assert resp.status_code == 200
-    assert resp.text in IOS_DUMMY_TEMPLATE
+    assert 'Be.Well by Slade360° - Simple. Caring. Trusted' in resp.text
 
 
 def test_detect_browser_cloud_func_on_desktop():
@@ -218,7 +220,7 @@ def test_detect_browser_cloud_func_without_email():
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from Android device
         When the request does not contain the email param
-        Then render ANDROID_DUMMY_TEMPLATE that redirect the user to playstore
+        Then render a page that redirects the user to playstore
     """
     headers = {"User-Agent": _user_agent("ANDROID")}
     resp = requests.get(f"{BASE_URL}/detect_browser", headers=headers)
