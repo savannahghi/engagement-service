@@ -5773,16 +5773,6 @@ func TestResolveDefaultNudge(t *testing.T) {
 	if err != nil {
 		t.Errorf("can't set default nudges: %s", err)
 	}
-
-	// Teardown
-	for _, nudge := range defaultNudges {
-		err := fr.DeleteNudge(ctx, uid, fl, nudge.ID)
-		if err != nil {
-			t.Errorf("teardown failed")
-			return
-		}
-	}
-
 }
 
 func TestSendEmail(t *testing.T) {

@@ -979,12 +979,6 @@ func TestFirebaseRepository_SaveNudge(t *testing.T) {
 			}
 		})
 	}
-	// Teardown
-	err = fr.DeleteNudge(ctx, uid, flavour, nudge2.ID)
-	if err != nil {
-		t.Errorf("teardown failed")
-		return
-	}
 }
 
 func TestFirebaseRepository_DeleteNudge(t *testing.T) {

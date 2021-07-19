@@ -1839,13 +1839,6 @@ func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 			}
 		})
 	}
-	// Teardown
-	err = agg.Repository.DeleteNudge(ctx, uid, fl, savedNudge.ID)
-	if err != nil {
-		t.Errorf("teardown failed")
-		return
-	}
-
 }
 func TestFeed_GetAction(t *testing.T) {
 	ctx := base.GetAuthenticatedContext(t)
