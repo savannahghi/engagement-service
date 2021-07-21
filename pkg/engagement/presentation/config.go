@@ -455,7 +455,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost, http.MethodOptions,
 	).HandlerFunc(h.SendNotificationHandler(ctx))
 
-	isc.Path("/slader_data/{phoneNumber}").Methods(
+	isc.Path("/slader_data").Methods(
 		http.MethodGet, http.MethodOptions,
 	).HandlerFunc(h.GetSladerData(ctx))
 	// return the combined router

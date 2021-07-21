@@ -6637,121 +6637,129 @@ func TestGetMarketingData(t *testing.T) {
 // 	}
 // }
 
-// func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
-// 	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
-// 		t,
-// 		onboardingISCClient(t),
-// 	)
-// 	if err != nil {
-// 		t.Errorf("failed to create a test user: %v", err)
-// 		return
-// 	}
-// 	headers := getDefaultHeaders(ctx, t, baseURL)
+func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
+	ctx, _, err := base.GetPhoneNumberAuthenticatedContextAndToken(
+		t,
+		onboardingISCClient(t),
+	)
+	if err != nil {
+		t.Errorf("failed to create a test user: %v", err)
+		return
+	}
+	headers := getDefaultHeaders(ctx, t, baseURL)
 
-// 	testNumber := base.TestUserPhoneNumber
-// 	invalidNumber := uuid.New().String()
-// 	// Setup test data
-// 	marketingData := composeMarketingDataPayload(
-// 		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
-// 		fmt.Sprintf("WING %s", ksuid.New().String()),
-// 		testNumber,
-// 		gofakeit.Email(),
-// 	)
-// 	err = loadTestMarketingData(ctx, *marketingData)
-// 	if err != nil {
-// 		t.Errorf("failed to create test data")
-// 		return
-// 	}
+	testNumber := base.TestUserPhoneNumber
+	// Setup test data
+	marketingData := composeMarketingDataPayload(
+		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
+		fmt.Sprintf("WING %s", ksuid.New().String()),
+		testNumber,
+		gofakeit.Email(),
+	)
+	err = loadTestMarketingData(ctx, *marketingData)
+	if err != nil {
+		t.Errorf("failed to create test data")
+		return
+	}
 
-// 	type args struct {
-// 		url        string
-// 		httpMethod string
-// 		body       io.Reader
-// 	}
+	type args struct {
+		url        string
+		httpMethod string
+		body       io.Reader
+	}
 
-// 	tests := []struct {
-// 		name       string
-// 		args       args
-// 		wantStatus int
-// 		wantErr    bool
-// 	}{
-// 		{
-// 			name: "Happy Case: Successfully retrieve data",
-// 			args: args{
-// 				url:        fmt.Sprintf("%s/internal/slader_data/%s", baseURL, base.TestUserPhoneNumber),
-// 				httpMethod: http.MethodGet,
-// 			},
-// 			wantStatus: http.StatusOK,
-// 			wantErr:    false,
-// 		},
-// 		{
-// 			name: "Sad Case: Fail to retrieve data",
-// 			args: args{
-// 				url:        fmt.Sprintf("%s/internal/slader_data/%s", baseURL, invalidNumber),
-// 				httpMethod: http.MethodGet,
-// 			},
-// 			wantStatus: http.StatusBadRequest,
-// 			wantErr:    true,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			r, err := http.NewRequest(
-// 				tt.args.httpMethod,
-// 				tt.args.url,
-// 				tt.args.body,
-// 			)
-// 			if err != nil {
-// 				t.Errorf("unable to compose request: %s", err)
-// 				return
-// 			}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "Happy Case: Successfully retrieve data",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, base.TestUserPhoneNumber),
+				httpMethod: http.MethodGet,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "Sad Case: Fail to retrieve data - missing number",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/slader_data", baseURL),
+				httpMethod: http.MethodGet,
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    false,
+		},
+		{
+			name: "Sad Case: Method not allowed",
+			args: args{
+				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, base.TestUserPhoneNumber),
+				httpMethod: http.MethodPost,
+			},
+			wantStatus: http.StatusMethodNotAllowed,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
 
-// 			if r == nil {
-// 				t.Errorf("nil request")
-// 				return
-// 			}
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
 
-// 			for k, v := range headers {
-// 				r.Header.Add(k, v)
-// 			}
-// 			client := http.DefaultClient
-// 			resp, err := client.Do(r)
-// 			if err != nil {
-// 				t.Errorf("request error: %s", err)
-// 				return
-// 			}
+			for k, v := range headers {
+				r.Header.Add(k, v)
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
 
-// 			if resp == nil && !tt.wantErr {
-// 				t.Errorf("nil response")
-// 				return
-// 			}
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
 
-// 			data, err := ioutil.ReadAll(resp.Body)
-// 			if err != nil {
-// 				t.Errorf("can't read request body: %s", err)
-// 				return
-// 			}
-// 			if data == nil {
-// 				t.Errorf("nil response data")
-// 				return
-// 			}
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
 
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-// 			if tt.wantStatus != resp.StatusCode {
-// 				t.Errorf("expected %v, but got %v", tt.wantStatus, resp.StatusCode)
-// 				return
-// 			}
-// 		})
-// 	}
+			if tt.wantStatus != resp.StatusCode {
+				t.Errorf("expected %v, but got %v", tt.wantStatus, resp.StatusCode)
+				return
+			}
+		})
+	}
 
-// 	// Teardown test data
-// 	err = rollBackTestMarketingData(ctx, *marketingData)
-// 	if err != nil {
-// 		t.Errorf("failed to teardown test data")
-// 		return
-// 	}
-// }
+	// Teardown test data
+	err = rollBackTestMarketingData(ctx, *marketingData)
+	if err != nil {
+		t.Errorf("failed to teardown test data")
+		return
+	}
+}

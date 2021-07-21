@@ -2025,15 +2025,24 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(ctx context.Contex
 // GetSladerData get the details of a single slader by their phonenumber
 func (p PresentationHandlersImpl) GetSladerData(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		phoneNumber, err := getStringVar(r, "phoneNumber")
+		phoneNumber := r.URL.Query().Get("phoneNumber")
+
+		if phoneNumber == "" {
+			err := fmt.Errorf("expected `phoneNumber` to be defined in the query parameters")
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		phone, err := base.NormalizeMSISDN(phoneNumber)
 		if err != nil {
-			respondWithError(w, http.StatusBadRequest, err)
+			err := fmt.Errorf("failed to normalize phone number: %s", err)
+			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
 
 		sladerData, err := p.interactor.Marketing.GetUserMarketingData(
 			ctx,
-			phoneNumber,
+			*phone,
 		)
 
 		if err != nil {
