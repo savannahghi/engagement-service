@@ -46,7 +46,7 @@ const (
 
 // ServiceOTP is an interface that defines all interactions with OTP service
 type ServiceOTP interface {
-	GenerateAndSendOTP(msisdn string) (string, error)
+	GenerateAndSendOTP(ctx context.Context, msisdn string) (string, error)
 	SendOTPToEmail(ctx context.Context, msisdn, email *string) (string, error)
 	SaveOTPToFirestore(otp dto.OTP) error
 	VerifyOtp(ctx context.Context, msisdn, verificationCode *string) (bool, error)
@@ -72,7 +72,12 @@ type Service struct {
 // First we fetch the dependencies from dep.yaml file. Since this service has a predefined set
 // of dependencies, the same dependecies defined in the yaml should be defined in the service
 // struct definition explictly, No guess work.
-func NewService(whatsapp whatsapp.ServiceWhatsapp, mail mail.ServiceMail, sms sms.ServiceSMS, twilio twilio.ServiceTwilio) *Service {
+func NewService(
+	whatsapp whatsapp.ServiceWhatsapp,
+	mail mail.ServiceMail,
+	sms sms.ServiceSMS,
+	twilio twilio.ServiceTwilio,
+) *Service {
 	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {
@@ -127,7 +132,11 @@ func cleanITPhoneNumber() (*string, error) {
 }
 
 // SendOTP sends otp code message to specified number
-func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code string) (string, error) {
+func (s Service) SendOTP(
+	ctx context.Context,
+	normalizedPhoneNumber string,
+	code string,
+) (string, error) {
 	ctx, span := tracer.Start(ctx, "SendOTP")
 	defer span.End()
 
@@ -153,7 +162,7 @@ func (s Service) SendOTP(ctx context.Context, normalizedPhoneNumber string, code
 
 // GenerateAndSendOTP creates an OTP and sends it to the
 // supplied phone number as a text message
-func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
+func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string) (string, error) {
 	cleanNo, err := converterandformatter.NormalizeMSISDN(msisdn)
 	if err != nil {
 
@@ -173,7 +182,6 @@ func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
 		return ITCode, nil
 	}
 
-	ctx := context.Background()
 	code, err := s.GenerateOTP(ctx)
 	if err != nil {
 
@@ -208,7 +216,7 @@ func (s Service) GenerateAndSendOTP(msisdn string) (string, error) {
 func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string) (string, error) {
 	_, span := tracer.Start(ctx, "SendOTPToEmail")
 	defer span.End()
-	code, err := s.GenerateAndSendOTP(*msisdn)
+	code, err := s.GenerateAndSendOTP(ctx, *msisdn)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		log.Printf("error: %s", err)
@@ -307,7 +315,10 @@ func (s Service) VerifyOtp(ctx context.Context, msisdn, verificationCode *string
 }
 
 // VerifyEmailOtp checks for the validity of the supplied OTP but does not invalidate it
-func (s Service) VerifyEmailOtp(ctx context.Context, email, verificationCode *string) (bool, error) {
+func (s Service) VerifyEmailOtp(
+	ctx context.Context,
+	email, verificationCode *string,
+) (bool, error) {
 	ctx, span := tracer.Start(ctx, "VerifyEmailOtp")
 	defer span.End()
 	s.checkPreconditions()
@@ -351,7 +362,11 @@ func (s Service) VerifyEmailOtp(ctx context.Context, email, verificationCode *st
 }
 
 // GenerateRetryOTP generates fallback OTPs when Africa is talking sms fails
-func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int) (string, error) {
+func (s Service) GenerateRetryOTP(
+	ctx context.Context,
+	msisdn *string,
+	retryStep int,
+) (string, error) {
 	ctx, span := tracer.Start(ctx, "GenerateRetryOTP")
 	defer span.End()
 	cleanNo, err := converterandformatter.NormalizeMSISDN(*msisdn)
@@ -398,7 +413,12 @@ func (s Service) GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep
 
 	if retryStep == whatsappStep {
 
-		sent, err := s.whatsapp.PhoneNumberVerificationCode(ctx, otp.MSISDN, otp.AuthorizationCode, otp.Message)
+		sent, err := s.whatsapp.PhoneNumberVerificationCode(
+			ctx,
+			otp.MSISDN,
+			otp.AuthorizationCode,
+			otp.Message,
+		)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return code, fmt.Errorf("unable to send a phone verification code :%w", err)

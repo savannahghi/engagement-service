@@ -1664,7 +1664,7 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 			return
 		}
 
-		code, err := p.interactor.OTP.GenerateAndSendOTP(msisdn)
+		code, err := p.interactor.OTP.GenerateAndSendOTP(r.Context(), msisdn)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -2017,7 +2017,9 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 }
 
 // UpdateMailgunDeliveryStatus gets the status of the sent emails and logs them in the database
-func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(
+	ctx context.Context,
+) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		payload := &dto.MailgunEvent{}
 		base.DecodeJSONToTargetStruct(rw, r, payload)

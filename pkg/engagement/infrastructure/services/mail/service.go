@@ -43,11 +43,29 @@ const (
 // ServiceMail defines a Mail service interface
 type ServiceMail interface {
 	SendInBlue(ctx context.Context, subject, text string, to ...string) (string, string, error)
-	SendMailgun(ctx context.Context, subject, text string, body *string, to ...string) (string, string, error)
-	SendEmail(ctx context.Context, subject, text string, body *string, to ...string) (string, string, error)
-	SimpleEmail(ctx context.Context, subject, text string, body *string, to ...string) (string, error)
+	SendMailgun(
+		ctx context.Context,
+		subject, text string,
+		body *string,
+		to ...string,
+	) (string, string, error)
+	SendEmail(
+		ctx context.Context,
+		subject, text string,
+		body *string,
+		to ...string,
+	) (string, string, error)
+	SimpleEmail(
+		ctx context.Context,
+		subject, text string,
+		body *string,
+		to ...string,
+	) (string, error)
 	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
-	UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
+	UpdateMailgunDeliveryStatus(
+		ctx context.Context,
+		payload *dto.MailgunEvent,
+	) (*dto.OutgoingEmailsLog, error)
 }
 
 // NewService initializes a new MailGun service
@@ -55,6 +73,7 @@ func NewService(repository repository.Repository) *Service {
 	apiKey := serverutils.MustGetEnvVar(MailGunAPIKeyEnvVarName)
 	domain := serverutils.MustGetEnvVar(MailGunDomainEnvVarName)
 	from := serverutils.MustGetEnvVar(MailGunFromEnvVarName)
+
 	mg := mailgun.NewMailgun(domain, apiKey)
 	mg.SetAPIBase(mailgun.APIBaseEU)
 
@@ -97,17 +116,26 @@ func (s Service) CheckPreconditions() {
 	if s.SendInBlueAPIKey == "" {
 		log.Panicf("uninitialized sendInBlueAPIKey")
 	}
+	if s.Repository == nil {
+		log.Panicf("uninitialized repository in mail service")
+	}
 }
 
 // MakeSendInBlueRequest makes a request to SendInBlue
-func (s Service) MakeSendInBlueRequest(ctx context.Context, data map[string]interface{}, target interface{}) error {
+func (s Service) MakeSendInBlueRequest(
+	ctx context.Context,
+	data map[string]interface{},
+	target interface{},
+) error {
 	_, span := tracer.Start(ctx, "MakeSendInBlueRequest")
 	defer span.End()
+
 	bs, err := json.Marshal(data)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("makeSendInBlueRequest: can't marshal data [%#v] to JSON: %w", data, err)
 	}
+
 	r := bytes.NewBuffer(bs)
 	req, reqErr := http.NewRequest(http.MethodPost, sendInBlueBaseURL, r)
 	if reqErr != nil {
@@ -146,32 +174,43 @@ func (s Service) MakeSendInBlueRequest(ctx context.Context, data map[string]inte
 }
 
 // SendInBlue sends email via the SendInBlue service
-func (s Service) SendInBlue(ctx context.Context, subject, text string, to ...string) (string, string, error) {
+func (s Service) SendInBlue(
+	ctx context.Context,
+	subject, text string,
+	to ...string,
+) (string, string, error) {
+	s.CheckPreconditions()
+
 	ctx, span := tracer.Start(ctx, "SendInBlue")
 	defer span.End()
-	s.CheckPreconditions()
+
 	sender := map[string]string{
 		"name":  appName,
 		"email": s.From,
 	}
+
 	addresses := []map[string]string{}
 	for _, address := range to {
 		addresses = append(addresses, map[string]string{
 			"email": address,
 		})
 	}
+
 	data := map[string]interface{}{
 		"sender":      sender,
 		"to":          addresses,
 		"subject":     subject,
 		"htmlContent": text,
 	}
+
 	result := map[string]interface{}{}
+
 	err := s.MakeSendInBlueRequest(ctx, data, &result)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return "", "", fmt.Errorf("unable to send email via sendInBlue: %w", err)
 	}
+
 	messageID, ok := result["messageId"].(string)
 	if !ok {
 		return "", "", fmt.Errorf("string messageID not found in SendInBlue response %#v", result)
@@ -181,10 +220,17 @@ func (s Service) SendInBlue(ctx context.Context, subject, text string, to ...str
 }
 
 // SendMailgun sends email via MailGun
-func (s Service) SendMailgun(ctx context.Context, subject, text string, body *string, to ...string) (string, string, error) {
-	_, span := tracer.Start(ctx, "SendMailgun")
-	defer span.End()
+func (s Service) SendMailgun(
+	ctx context.Context,
+	subject, text string,
+	body *string,
+	to ...string,
+) (string, string, error) {
 	s.CheckPreconditions()
+
+	ctx, span := tracer.Start(ctx, "SendMailgun")
+	defer span.End()
+
 	message := s.Mg.NewMessage(s.From, subject, text, to...)
 	if body != nil {
 		message.SetHtml(*body)
@@ -192,7 +238,7 @@ func (s Service) SendMailgun(ctx context.Context, subject, text string, body *st
 		message.SetHtml(text)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*MailGunTimeoutSeconds)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*MailGunTimeoutSeconds)
 	defer cancel()
 
 	resp, id, err := s.Mg.Send(ctx, message)
@@ -213,7 +259,7 @@ func (s Service) SendMailgun(ctx context.Context, subject, text string, body *st
 		EmailSentOn: time.Now(),
 	}
 
-	err = s.SaveOutgoingEmails(context.Background(), outgoingEmail)
+	err = s.SaveOutgoingEmails(ctx, outgoingEmail)
 	if err != nil {
 		return resp, id, fmt.Errorf("unable to save outgoing email(s): %s", err)
 	}
@@ -223,28 +269,56 @@ func (s Service) SendMailgun(ctx context.Context, subject, text string, body *st
 
 // SendEmail sends the specified email to the recipient(s) specified in `to`
 // and returns the status
-func (s Service) SendEmail(ctx context.Context, subject, text string, body *string, to ...string) (string, string, error) {
+func (s Service) SendEmail(
+	ctx context.Context,
+	subject, text string,
+	body *string,
+	to ...string,
+) (string, string, error) {
 	s.CheckPreconditions()
+	ctx, span := tracer.Start(ctx, "SendEmail")
+	defer span.End()
+
 	if s.SendInBlueEnabled {
 		return s.SendInBlue(ctx, subject, text, to...)
 	}
+
 	return s.SendMailgun(ctx, subject, text, body, to...)
 }
 
 // SimpleEmail is a simplified API to send email.
 // It returns only a status or error.
-func (s Service) SimpleEmail(ctx context.Context, subject, text string, body *string, to ...string) (string, error) {
+func (s Service) SimpleEmail(
+	ctx context.Context,
+	subject, text string,
+	body *string,
+	to ...string,
+) (string, error) {
 	s.CheckPreconditions()
+
+	ctx, span := tracer.Start(ctx, "SimpleEmail")
+	defer span.End()
+
 	status, _, err := s.SendEmail(ctx, subject, text, nil, to...)
+
 	return status, err
 }
 
 // SaveOutgoingEmails saves all the outgoing emails
 func (s Service) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
+	ctx, span := tracer.Start(ctx, "SaveOutgoingEmails")
+	defer span.End()
+
 	return s.Repository.SaveOutgoingEmails(ctx, payload)
 }
 
 // UpdateMailgunDeliveryStatus updates the status and delivery time of the sent email message
-func (s Service) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
+func (s Service) UpdateMailgunDeliveryStatus(
+	ctx context.Context,
+	payload *dto.MailgunEvent,
+) (*dto.OutgoingEmailsLog, error) {
+	ctx, span := tracer.Start(ctx, "UpdateMailgunDeliveryStatus")
+	defer span.End()
+
 	return s.Repository.UpdateMailgunDeliveryStatus(ctx, payload)
 }

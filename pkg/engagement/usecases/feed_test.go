@@ -52,7 +52,10 @@ func InitializeTestNewFeed(ctx context.Context) (*usecases.FeedUseCaseImpl, erro
 	projectID, err := serverutils.GetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"can't get projectID from env var `%s`: %w", serverutils.GoogleCloudProjectIDEnvVarName, err)
+			"can't get projectID from env var `%s`: %w",
+			serverutils.GoogleCloudProjectIDEnvVarName,
+			err,
+		)
 	}
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
@@ -92,7 +95,19 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	marketing := usecases.NewMarketing(r, hubspot, mail)
 
 	i, err := interactor.NewEngagementInteractor(
-		feed, notification, uploads, library, sms, *mail, whatsapp, otp, twilio, fcm, surveys, hubspot, marketing,
+		feed,
+		notification,
+		uploads,
+		library,
+		sms,
+		*mail,
+		whatsapp,
+		otp,
+		twilio,
+		fcm,
+		surveys,
+		hubspot,
+		marketing,
 	)
 
 	if err != nil {
@@ -116,14 +131,19 @@ func getTestItem() feedlib.Item {
 		Persistent:     true,
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-		Author:         "Bot 1",
-		Tagline:        "Bot speaks...",
-		Label:          "DRUGS",
-		Timestamp:      time.Now(),
-		Summary:        "I am a bot...",
-		Text:           "This bot can speak",
-		TextType:       feedlib.TextTypePlain,
+		Icon: feedlib.GetPNGImageLink(
+			base.LogoURL,
+			"title",
+			"description",
+			base.BlankImageURL,
+		),
+		Author:    "Bot 1",
+		Tagline:   "Bot speaks...",
+		Label:     "DRUGS",
+		Timestamp: time.Now(),
+		Summary:   "I am a bot...",
+		Text:      "This bot can speak",
+		TextType:  feedlib.TextTypePlain,
 		Links: []feedlib.Link{
 			feedlib.GetYoutubeVideoLink(sampleVideoURL, "title", "description", base.BlankImageURL),
 		},
@@ -132,7 +152,12 @@ func getTestItem() feedlib.Item {
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+				Icon: feedlib.GetPNGImageLink(
+					base.LogoURL,
+					"title",
+					"description",
+					base.BlankImageURL,
+				),
 				ActionType:     feedlib.ActionTypeSecondary,
 				Handling:       feedlib.HandlingFullPage,
 				AllowAnonymous: false,
@@ -141,7 +166,12 @@ func getTestItem() feedlib.Item {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+				Icon: feedlib.GetPNGImageLink(
+					base.LogoURL,
+					"title",
+					"description",
+					base.BlankImageURL,
+				),
 				ActionType:     feedlib.ActionTypePrimary,
 				Handling:       feedlib.HandlingInline,
 				AllowAnonymous: true,
@@ -239,14 +269,19 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 		Persistent:     true,
 		Status:         feedlib.StatusPending,
 		Visibility:     feedlib.VisibilityShow,
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-		Author:         "Bot 1",
-		Tagline:        "Bot speaks...",
-		Label:          "DRUGS",
-		Timestamp:      time.Now(),
-		Summary:        "I am a bot...",
-		Text:           "This bot can speak",
-		TextType:       feedlib.TextTypeMarkdown,
+		Icon: feedlib.GetPNGImageLink(
+			base.LogoURL,
+			"title",
+			"description",
+			base.BlankImageURL,
+		),
+		Author:    "Bot 1",
+		Tagline:   "Bot speaks...",
+		Label:     "DRUGS",
+		Timestamp: time.Now(),
+		Summary:   "I am a bot...",
+		Text:      "This bot can speak",
+		TextType:  feedlib.TextTypeMarkdown,
 		Links: []feedlib.Link{
 			feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
 		},
@@ -255,17 +290,27 @@ func TestItem_ValidateAndUnmarshal(t *testing.T) {
 				ID:             ksuid.New().String(),
 				SequenceNumber: 1,
 				Name:           "ACTION_NAME",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-				ActionType:     feedlib.ActionTypeSecondary,
-				Handling:       feedlib.HandlingFullPage,
+				Icon: feedlib.GetPNGImageLink(
+					base.LogoURL,
+					"title",
+					"description",
+					base.BlankImageURL,
+				),
+				ActionType: feedlib.ActionTypeSecondary,
+				Handling:   feedlib.HandlingFullPage,
 			},
 			{
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-				ActionType:     feedlib.ActionTypePrimary,
-				Handling:       feedlib.HandlingInline,
+				Icon: feedlib.GetPNGImageLink(
+					base.LogoURL,
+					"title",
+					"description",
+					base.BlankImageURL,
+				),
+				ActionType: feedlib.ActionTypePrimary,
+				Handling:   feedlib.HandlingInline,
 			},
 		},
 		Conversations: []feedlib.Message{
@@ -395,9 +440,14 @@ func TestNudge_ValidateAndUnmarshal(t *testing.T) {
 				ID:             "action-1",
 				SequenceNumber: 1,
 				Name:           "First action",
-				Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
-				ActionType:     feedlib.ActionTypePrimary,
-				Handling:       feedlib.HandlingInline,
+				Icon: feedlib.GetPNGImageLink(
+					base.LogoURL,
+					"title",
+					"description",
+					base.BlankImageURL,
+				),
+				ActionType: feedlib.ActionTypePrimary,
+				Handling:   feedlib.HandlingInline,
 			},
 		},
 		Groups: []string{
@@ -489,7 +539,12 @@ func TestAction_ValidateAndUnmarshal(t *testing.T) {
 		ID:             ksuid.New().String(),
 		SequenceNumber: 1,
 		Name:           "ACTION_NAME",
-		Icon:           feedlib.GetPNGImageLink(base.LogoURL, "title", "description", base.BlankImageURL),
+		Icon: feedlib.GetPNGImageLink(
+			base.LogoURL,
+			"title",
+			"description",
+			base.BlankImageURL,
+		),
 		ActionType:     feedlib.ActionTypeSecondary,
 		Handling:       feedlib.HandlingFullPage,
 		AllowAnonymous: false,
@@ -1829,9 +1884,18 @@ func TestFeedUseCaseImpl_GetDefaultNudgeByTitle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := agg.GetDefaultNudgeByTitle(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.title)
+			got, err := agg.GetDefaultNudgeByTitle(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.title,
+			)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FeedUseCaseImpl.GetDefaultNudgeByTitle() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf(
+					"FeedUseCaseImpl.GetDefaultNudgeByTitle() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -2084,7 +2148,12 @@ func TestFeed_ResolveFeedItem(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := agg.ResolveFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			got, err := agg.ResolveFeedItem(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.itemID,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.ResolveFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2142,7 +2211,12 @@ func TestFeed_UnresolveFeedItem(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := agg.UnresolveFeedItem(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID)
+			got, err := agg.UnresolveFeedItem(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.itemID,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.UnresolveFeedItem() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2600,7 +2674,12 @@ func TestFeed_UnresolveNudge(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := agg.UnresolveNudge(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.nudgeID)
+			got, err := agg.UnresolveNudge(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.nudgeID,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.UnresolveNudge() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2918,7 +2997,13 @@ func TestFeed_PostMessage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := agg.PostMessage(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID, tt.args.message)
+			got, err := agg.PostMessage(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.itemID,
+				tt.args.message,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.PostMessage() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -2989,7 +3074,13 @@ func TestFeed_DeleteMessage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := agg.DeleteMessage(tt.args.ctx, tt.args.uid, tt.args.flavour, tt.args.itemID, tt.args.messageID)
+			err := agg.DeleteMessage(
+				tt.args.ctx,
+				tt.args.uid,
+				tt.args.flavour,
+				tt.args.itemID,
+				tt.args.messageID,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Feed.DeleteMessage() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -3555,7 +3646,11 @@ func TestFeed_UpdateUnreadPersistentItemsCount(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := agg.UpdateUnreadPersistentItemsCount(tt.args.ctx, tt.args.uid, tt.args.flavour); (err != nil) != tt.wantErr {
-				t.Errorf("Feed.UpdateUnreadPersistentItemsCount() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf(
+					"Feed.UpdateUnreadPersistentItemsCount() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
 			}
 		})
 	}

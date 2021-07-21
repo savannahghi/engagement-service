@@ -38,7 +38,11 @@ func (r *mutationResolver) VerifyOtp(ctx context.Context, msisdn string, otp str
 	return verifyOTP, nil
 }
 
-func (r *mutationResolver) VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error) {
+func (r *mutationResolver) VerifyEmailOtp(
+	ctx context.Context,
+	email string,
+	otp string,
+) (bool, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
@@ -65,7 +69,7 @@ func (r *queryResolver) GenerateOtp(ctx context.Context, msisdn string) (string,
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	otp, err := r.interactor.OTP.GenerateAndSendOTP(msisdn)
+	otp, err := r.interactor.OTP.GenerateAndSendOTP(ctx, msisdn)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate OTP")
 	}
@@ -80,7 +84,11 @@ func (r *queryResolver) GenerateOtp(ctx context.Context, msisdn string) (string,
 	return otp, nil
 }
 
-func (r *queryResolver) GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string) (string, error) {
+func (r *queryResolver) GenerateAndEmailOtp(
+	ctx context.Context,
+	msisdn string,
+	email *string,
+) (string, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()
@@ -100,7 +108,11 @@ func (r *queryResolver) GenerateAndEmailOtp(ctx context.Context, msisdn string, 
 	return otp, nil
 }
 
-func (r *queryResolver) GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int) (string, error) {
+func (r *queryResolver) GenerateRetryOtp(
+	ctx context.Context,
+	msisdn string,
+	retryStep int,
+) (string, error) {
 	startTime := time.Now()
 
 	r.checkPreconditions()

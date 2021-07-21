@@ -1984,7 +1984,6 @@ func (fr Repository) UpdateUserCRMBewellAware(
 ) error {
 	ctx, span := tracer.Start(ctx, "UpdateUserCRMBewellAware")
 	defer span.End()
-	logrus.Printf("collection name %v", fr.getMarketingDataCollectionName())
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("properties.Email", "==", email).
 		Where("properties.BeWellAware", "==", "NO")
@@ -2028,6 +2027,9 @@ func (fr Repository) SaveOutgoingEmails(
 	ctx context.Context,
 	payload *dto.OutgoingEmailsLog,
 ) error {
+	ctx, span := tracer.Start(ctx, "SaveOutgoingEmails")
+	defer span.End()
+
 	collection := fr.getOutgoingEmailsCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, payload)
 	if err != nil {
@@ -2041,6 +2043,8 @@ func (fr Repository) UpdateMailgunDeliveryStatus(
 	ctx context.Context,
 	payload *dto.MailgunEvent,
 ) (*dto.OutgoingEmailsLog, error) {
+	ctx, span := tracer.Start(ctx, "UpdateMailgunDeliveryStatus")
+	defer span.End()
 
 	collection := fr.getOutgoingEmailsCollectionName()
 
@@ -2087,6 +2091,7 @@ func (fr Repository) GetSladerDataByPhone(
 ) (*apiclient.Segment, error) {
 	ctx, span := tracer.Start(ctx, "GetSladerDataByPhone")
 	defer span.End()
+
 	query := fr.firestoreClient.Collection(
 		fr.getMarketingDataCollectionName(),
 	).Where("properties.Phone", "==", phonenumber)

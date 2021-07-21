@@ -17,7 +17,14 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewService(t *testing.T) {
-	var repo repository.Repository
+	ctx := context.Background()
+
+	repo, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		t.Errorf("error initializing new firebase repo:%v", err)
+		return
+	}
+
 	service := mail.NewService(repo)
 	tests := []struct {
 		name string
