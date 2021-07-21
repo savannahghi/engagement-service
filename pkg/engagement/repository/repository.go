@@ -222,12 +222,21 @@ type Repository interface {
 	SaveMarketingMessage(
 		ctx context.Context,
 		data dto.MarketingSMS,
-	) error
+	) (*dto.MarketingSMS, error)
+
+	GetMarketingSMSByID(
+		ctx context.Context,
+		id string,
+	) (*dto.MarketingSMS, error)
+
+	GetMarketingSMSByPhone(
+		ctx context.Context,
+		phoneNumber string,
+	) (*dto.MarketingSMS, error)
 
 	UpdateMarketingMessage(
 		ctx context.Context,
-		phoneNumber string,
-		deliveryReport *dto.ATDeliveryReport,
+		data *dto.MarketingSMS,
 	) (*dto.MarketingSMS, error)
 
 	SaveTwilioResponse(

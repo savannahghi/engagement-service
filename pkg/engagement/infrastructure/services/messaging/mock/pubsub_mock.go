@@ -16,6 +16,14 @@ type FakeServiceMessaging struct {
 		payload feedlib.Element,
 		metadata map[string]interface{},
 	) error
+	NotifyEngagementCreateFn func(
+		ctx context.Context,
+		phone string,
+		messageID string,
+		engagementType string,
+		metadata map[string]interface{},
+		topicID string,
+	) error
 
 	// Ask the notification service about the topics that it knows about
 	TopicIDsFn func() []string
@@ -50,4 +58,16 @@ func (f *FakeServiceMessaging) SubscriptionIDs() map[string]string {
 // ReverseSubscriptionIDs ...
 func (f *FakeServiceMessaging) ReverseSubscriptionIDs() map[string]string {
 	return f.ReverseSubscriptionIDsFn()
+}
+
+// NotifyEngagementCreate ..
+func (f *FakeServiceMessaging) NotifyEngagementCreate(
+	ctx context.Context,
+	phone string,
+	messageID string,
+	engagementType string,
+	metadata map[string]interface{},
+	topicID string,
+) error {
+	return f.NotifyEngagementCreateFn(ctx, phone, messageID, engagementType, metadata, topicID)
 }

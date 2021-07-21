@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/feedlib"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
@@ -188,6 +191,11 @@ type NotificationUsecases interface {
 		ctx context.Context,
 		m *pubsubtools.PubSubPayload,
 	) error
+
+	HandleEngagementCreate(
+		ctx context.Context,
+		m *pubsubtools.PubSubPayload,
+	) (*domain.EngagementData, error)
 }
 
 // HandlePubsubPayload defines the signature of a function that handles
@@ -201,6 +209,7 @@ type NotificationImpl struct {
 	onboarding onboarding.ProfileService
 	fcm        fcm.ServiceFCM
 	mail       mail.ServiceMail
+	crm        hubspot.ServiceHubSpotInterface
 }
 
 // NewNotification initializes a notification usecase
@@ -210,6 +219,7 @@ func NewNotification(
 	onboarding onboarding.ProfileService,
 	fcm fcm.ServiceFCM,
 	mail mail.ServiceMail,
+	crm hubspot.ServiceHubSpotInterface,
 ) *NotificationImpl {
 	return &NotificationImpl{
 		repository: repository,
@@ -217,11 +227,15 @@ func NewNotification(
 		onboarding: onboarding,
 		fcm:        fcm,
 		mail:       mail,
+		crm:        crm,
 	}
 }
 
 // HandleItemPublish responds to item publish messages
-func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemPublish(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemPublish")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -229,7 +243,10 @@ func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *pubsubtools.
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.PublishItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -251,7 +268,10 @@ func (n NotificationImpl) HandleItemPublish(ctx context.Context, m *pubsubtools.
 }
 
 // HandleItemDelete responds to item delete messages
-func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemDelete(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -259,7 +279,10 @@ func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *pubsubtools.P
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.DeleteItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -282,7 +305,10 @@ func (n NotificationImpl) HandleItemDelete(ctx context.Context, m *pubsubtools.P
 }
 
 // HandleItemResolve responds to item resolve messages
-func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemResolve(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemResolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -290,7 +316,10 @@ func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *pubsubtools.
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.ResolveItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -313,7 +342,10 @@ func (n NotificationImpl) HandleItemResolve(ctx context.Context, m *pubsubtools.
 }
 
 // HandleItemUnresolve responds to item unresolve messages
-func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemUnresolve(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemUnresolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -321,7 +353,10 @@ func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *pubsubtool
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.UnresolveItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -344,7 +379,10 @@ func (n NotificationImpl) HandleItemUnresolve(ctx context.Context, m *pubsubtool
 }
 
 // HandleItemHide responds to item hide messages
-func (n NotificationImpl) HandleItemHide(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemHide(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemHide")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -375,7 +413,10 @@ func (n NotificationImpl) HandleItemHide(ctx context.Context, m *pubsubtools.Pub
 }
 
 // HandleItemShow responds to item show messages
-func (n NotificationImpl) HandleItemShow(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemShow(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemShow")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -406,7 +447,10 @@ func (n NotificationImpl) HandleItemShow(ctx context.Context, m *pubsubtools.Pub
 }
 
 // HandleItemPin responds to item pin messages
-func (n NotificationImpl) HandleItemPin(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemPin(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemPin")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -437,7 +481,10 @@ func (n NotificationImpl) HandleItemPin(ctx context.Context, m *pubsubtools.PubS
 }
 
 // HandleItemUnpin responds to item unpin messages
-func (n NotificationImpl) HandleItemUnpin(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleItemUnpin(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleItemUnpin")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -468,7 +515,10 @@ func (n NotificationImpl) HandleItemUnpin(ctx context.Context, m *pubsubtools.Pu
 }
 
 // HandleNudgePublish responds to nudge publish messages
-func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgePublish(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgePublish")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -476,7 +526,10 @@ func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *pubsubtools
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.PublishItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -499,7 +552,10 @@ func (n NotificationImpl) HandleNudgePublish(ctx context.Context, m *pubsubtools
 }
 
 // HandleNudgeDelete responds to nudge delete messages
-func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeDelete(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -507,7 +563,10 @@ func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *pubsubtools.
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.DeleteItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -530,7 +589,10 @@ func (n NotificationImpl) HandleNudgeDelete(ctx context.Context, m *pubsubtools.
 }
 
 // HandleNudgeResolve responds to nudge resolve messages
-func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeResolve(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeResolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -538,7 +600,10 @@ func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *pubsubtools
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ResolveItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.ResolveItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -561,7 +626,10 @@ func (n NotificationImpl) HandleNudgeResolve(ctx context.Context, m *pubsubtools
 }
 
 // HandleNudgeUnresolve responds to nudge unresolve messages
-func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeUnresolve(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeUnresolve")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -569,7 +637,10 @@ func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *pubsubtoo
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.UnresolveItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.UnresolveItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -592,7 +663,10 @@ func (n NotificationImpl) HandleNudgeUnresolve(ctx context.Context, m *pubsubtoo
 }
 
 // HandleNudgeHide responds to nudge hide messages
-func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeHide(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeHide")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -623,7 +697,10 @@ func (n NotificationImpl) HandleNudgeHide(ctx context.Context, m *pubsubtools.Pu
 }
 
 // HandleNudgeShow responds to nudge hide messages
-func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleNudgeShow(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleNudgeShow")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -654,7 +731,10 @@ func (n NotificationImpl) HandleNudgeShow(ctx context.Context, m *pubsubtools.Pu
 }
 
 // HandleActionPublish responds to action publish messages
-func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleActionPublish(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleActionPublish")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -662,7 +742,10 @@ func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *pubsubtool
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PublishItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.PublishItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -681,7 +764,10 @@ func (n NotificationImpl) HandleActionPublish(ctx context.Context, m *pubsubtool
 }
 
 // HandleActionDelete responds to action publish messages
-func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleActionDelete(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleActionDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -689,7 +775,10 @@ func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *pubsubtools
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteItem)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.DeleteItem,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -708,7 +797,10 @@ func (n NotificationImpl) HandleActionDelete(ctx context.Context, m *pubsubtools
 }
 
 // HandleMessagePost responds to message post pubsub messages
-func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleMessagePost(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleMessagePost")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -716,7 +808,10 @@ func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *pubsubtools.
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.PostMessage)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.PostMessage,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -735,7 +830,10 @@ func (n NotificationImpl) HandleMessagePost(ctx context.Context, m *pubsubtools.
 }
 
 // HandleMessageDelete responds to message delete pubsub messages
-func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleMessageDelete(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleMessageDelete")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -743,7 +841,10 @@ func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *pubsubtool
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.DeleteMessage)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.DeleteMessage,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -762,7 +863,10 @@ func (n NotificationImpl) HandleMessageDelete(ctx context.Context, m *pubsubtool
 }
 
 // HandleIncomingEvent responds to message delete pubsub messages
-func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleIncomingEvent(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleIncomingEvent")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -770,7 +874,10 @@ func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *pubsubtool
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ProcessEvent)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.ProcessEvent,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -792,7 +899,10 @@ func (n NotificationImpl) HandleIncomingEvent(ctx context.Context, m *pubsubtool
 }
 
 // HandleSendNotification responds to send notification messages
-func (n NotificationImpl) HandleSendNotification(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) HandleSendNotification(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "HandleSendNotification")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -800,7 +910,10 @@ func (n NotificationImpl) HandleSendNotification(ctx context.Context, m *pubsubt
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.SendMessage)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.SendMessage,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -818,7 +931,9 @@ func (n NotificationImpl) HandleSendNotification(ctx context.Context, m *pubsubt
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf(
-			"can't unmarshal notification notification from pubsub data: %w", err)
+			"can't unmarshal notification notification from pubsub data: %w",
+			err,
+		)
 	}
 
 	_, err = n.fcm.SendNotification(
@@ -852,7 +967,10 @@ func (n NotificationImpl) NotifyItemUpdate(
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.ItemUpdate,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -886,7 +1004,13 @@ func (n NotificationImpl) NotifyItemUpdate(
 			ImageURL: &iconURL,
 		}
 
-		err = n.SendNotificationViaFCM(ctx, item.Users, sender, envelope, notification)
+		err = n.SendNotificationViaFCM(
+			ctx,
+			item.Users,
+			sender,
+			envelope,
+			notification,
+		)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return fmt.Errorf("unable to notify item: %w", err)
@@ -898,14 +1022,26 @@ func (n NotificationImpl) NotifyItemUpdate(
 
 	switch sender {
 	case itemPublishSender:
-		existingLabels, err := n.repository.Labels(ctx, envelope.UID, envelope.Flavour)
+		existingLabels, err := n.repository.Labels(
+			ctx,
+			envelope.UID,
+			envelope.Flavour,
+		)
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return fmt.Errorf("can't fetch existing labels: %w", err)
 		}
 
-		if !converterandformatter.StringSliceContains(existingLabels, item.Label) {
-			err = n.repository.SaveLabel(ctx, envelope.UID, envelope.Flavour, item.Label)
+		if !converterandformatter.StringSliceContains(
+			existingLabels,
+			item.Label,
+		) {
+			err = n.repository.SaveLabel(
+				ctx,
+				envelope.UID,
+				envelope.Flavour,
+				item.Label,
+			)
 			if err != nil {
 				helpers.RecordSpanError(span, err)
 				return fmt.Errorf("can't save label: %w", err)
@@ -933,7 +1069,11 @@ func (n NotificationImpl) NotifyItemUpdate(
 }
 
 // UpdateInbox recalculates the inbox count and notifies the client over FCM
-func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour feedlib.Flavour) error {
+func (n NotificationImpl) UpdateInbox(
+	ctx context.Context,
+	uid string,
+	flavour feedlib.Flavour,
+) error {
 	ctx, span := tracer.Start(ctx, "UpdateInbox")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -941,7 +1081,10 @@ func (n NotificationImpl) UpdateInbox(ctx context.Context, uid string, flavour f
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.ItemUpdate,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -986,7 +1129,10 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.ItemUpdate,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -999,7 +1145,10 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("can't unmarshal notification envelope from pubsub data: %w", err)
+		return fmt.Errorf(
+			"can't unmarshal notification envelope from pubsub data: %w",
+			err,
+		)
 	}
 
 	var nudge feedlib.Nudge
@@ -1043,7 +1192,13 @@ func (n NotificationImpl) NotifyNudgeUpdate(
 		return fmt.Errorf("unexpected nudge sender: %s", sender)
 	}
 
-	err = n.SendNotificationViaFCM(ctx, nudge.Users, sender, envelope, notification)
+	err = n.SendNotificationViaFCM(
+		ctx,
+		nudge.Users,
+		sender,
+		envelope,
+		notification,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to notify nudge: %w", err)
@@ -1067,7 +1222,10 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.ItemUpdate)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.ItemUpdate,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -1103,7 +1261,10 @@ func (n NotificationImpl) NotifyInboxCountUpdate(
 }
 
 // GetUserTokens retrieves the user tokens corresponding to the supplied UIDs
-func (n NotificationImpl) GetUserTokens(ctx context.Context, uids []string) ([]string, error) {
+func (n NotificationImpl) GetUserTokens(
+	ctx context.Context,
+	uids []string,
+) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "GetUserTokens")
 	defer span.End()
 	userTokens, err := n.onboarding.GetDeviceTokens(ctx, onboarding.UserUIDs{
@@ -1135,7 +1296,10 @@ func (n NotificationImpl) SendNotificationViaFCM(
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.SendMessage)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.SendMessage,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -1184,7 +1348,10 @@ func (n NotificationImpl) SendNotificationViaFCM(
 }
 
 // SendEmail sends an email
-func (n NotificationImpl) SendEmail(ctx context.Context, m *pubsubtools.PubSubPayload) error {
+func (n NotificationImpl) SendEmail(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) error {
 	ctx, span := tracer.Start(ctx, "SendEmail")
 	defer span.End()
 	user, err := base.GetLoggedInUser(ctx)
@@ -1192,7 +1359,10 @@ func (n NotificationImpl) SendEmail(ctx context.Context, m *pubsubtools.PubSubPa
 		helpers.RecordSpanError(span, err)
 		return fmt.Errorf("unable to get user: %w", err)
 	}
-	isAuthorized, err := authorization.IsAuthorized(user, permission.SendMessage)
+	isAuthorized, err := authorization.IsAuthorized(
+		user,
+		permission.SendMessage,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
@@ -1225,4 +1395,61 @@ func (n NotificationImpl) SendEmail(ctx context.Context, m *pubsubtools.PubSubPa
 		return fmt.Errorf("unable to send email: %v", err)
 	}
 	return nil
+}
+
+// HandleEngagementCreate creates a Hubspot crm engagement
+func (n NotificationImpl) HandleEngagementCreate(
+	ctx context.Context,
+	m *pubsubtools.PubSubPayload,
+) (*domain.EngagementData, error) {
+	ctx, span := tracer.Start(ctx, "HandleEngagementCreate")
+	defer span.End()
+
+	var engagement dto.EngagementPubSubMessage
+	err := json.Unmarshal(m.Message.Data, &engagement)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return nil, fmt.Errorf(
+			"can't unmarshal notification envelope from pubsub data: %w",
+			err,
+		)
+	}
+
+	sms, err := n.repository.GetMarketingSMSByID(ctx, engagement.MessageID)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to get message with message id %s",
+			engagement.MessageID,
+		)
+	}
+	sms.Engagement = engagement.Engagement
+	updatedSms, err := n.repository.UpdateMarketingMessage(ctx, sms)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to update message with engagement report: %v",
+			err,
+		)
+	}
+
+	engagementData, err := n.crm.CreateEngagementByPhone(
+		engagement.PhoneNumber,
+		engagement.Engagement,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create hubspot engagement: %v", err)
+	}
+
+	updatedSms.IsSynced = true
+	now := time.Now()
+	updatedSms.TimeSynced = &now
+
+	_, err = n.repository.UpdateMarketingMessage(ctx, updatedSms)
+	if err != nil {
+		return engagementData, fmt.Errorf(
+			"failed to update message with engagement sync status: %v",
+			err,
+		)
+	}
+
+	return engagementData, nil
 }

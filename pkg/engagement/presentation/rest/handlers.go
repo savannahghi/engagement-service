@@ -433,6 +433,17 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			)
 			return
 		}
+	case helpers.AddPubSubNamespace(common.EngagementCreateTopic):
+		engagement, err := p.interactor.Notification.HandleEngagementCreate(ctx, m)
+		if err != nil {
+			serverutils.WriteJSONResponse(
+				w,
+				base.ErrorMap(err),
+				http.StatusBadRequest,
+			)
+			return
+		}
+		log.Print(engagement)
 	default:
 		// the topic should be anticipated/handled here
 		errMsg := fmt.Sprintf(
@@ -1484,19 +1495,28 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			DeliveryReportTimeStamp: time.Now(),
 		}
 
-		log.Printf("Delivery report status: %v \n\n\n", deliveryReport.Status)
-		marketingSMS, err := p.interactor.SMS.UpdateMarketingMessage(
+		log.Printf("Getting the SMS data to append delivery report..")
+		sms, err := p.interactor.SMS.GetMarketingSMSByPhone(ctx, phoneNumber)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		log.Printf("The returned SMS %v..", sms)
+
+		log.Printf("Updating the SMS with the delivery report")
+		sms.DeliveryReport = deliveryReport
+		updatedSms, err := p.interactor.SMS.UpdateMarketingMessage(
 			ctx,
-			phoneNumber,
-			deliveryReport,
+			sms,
 		)
 		log.Printf("An error occurred when updating message delivery report: %v \n\n\n", err)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		log.Printf("The updated message that has been returned %v\n\n\n", marketingSMS)
-		marshalled, err := json.Marshal(marketingSMS)
+		log.Printf("The updated message that has been returned %v\n\n\n", updatedSms)
+
+		marshalled, err := json.Marshal(updatedSms)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1638,14 +1658,13 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(
 // SendOTPHandler is an isc api that generates and sends an otp to an msisdn
 func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s := otp.NewService()
 		msisdn, err := otp.ValidateSendOTPPayload(w, r)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 
-		code, err := s.GenerateAndSendOTP(msisdn)
+		code, err := p.interactor.OTP.GenerateAndSendOTP(msisdn)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -1667,13 +1686,12 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler(
 	ctx context.Context,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s := otp.NewService()
 		payload, err := otp.ValidateGenerateRetryOTPPayload(w, r)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		code, err := s.GenerateRetryOTP(
+		code, err := p.interactor.OTP.GenerateRetryOTP(
 			ctx,
 			payload.Msisdn,
 			payload.RetryStep,
@@ -1698,13 +1716,12 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler(
 	ctx context.Context,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s := otp.NewService()
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, false)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := s.VerifyOtp(
+		isVerified, err := p.interactor.OTP.VerifyOtp(
 			ctx,
 			payload.Msisdn,
 			payload.VerificationCode,
@@ -1730,13 +1747,12 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(
 	ctx context.Context,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s := otp.NewService()
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, true)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
-		isVerified, err := s.VerifyEmailOtp(
+		isVerified, err := p.interactor.OTP.VerifyEmailOtp(
 			ctx,
 			payload.Email,
 			payload.VerificationCode,

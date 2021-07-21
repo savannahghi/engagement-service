@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"go.opentelemetry.io/otel"
 
@@ -37,6 +39,15 @@ type NotificationService interface {
 		flavour feedlib.Flavour,
 		payload feedlib.Element,
 		metadata map[string]interface{},
+	) error
+
+	NotifyEngagementCreate(
+		ctx context.Context,
+		phone string,
+		messageID string,
+		engagementType string,
+		metadata map[string]interface{},
+		topicID string,
 	) error
 
 	// Ask the notification service about the topics that it knows about
@@ -195,6 +206,7 @@ func (ps PubSubNotificationService) TopicIDs() []string {
 		helpers.AddPubSubNamespace(common.MessageDeleteTopic),
 		helpers.AddPubSubNamespace(common.IncomingEventTopic),
 		helpers.AddPubSubNamespace(common.SentEmailTopic),
+		helpers.AddPubSubNamespace(common.EngagementCreateTopic),
 	}
 }
 
@@ -208,4 +220,49 @@ func (ps PubSubNotificationService) SubscriptionIDs() map[string]string {
 // TODO implement this
 func (ps PubSubNotificationService) ReverseSubscriptionIDs() map[string]string {
 	return nil
+}
+
+// NotifyEngagementCreate asynchronously publishes to pub/sub to create a hubspot engagement
+func (ps PubSubNotificationService) NotifyEngagementCreate(
+	ctx context.Context,
+	phone string,
+	messageID string,
+	engagementType string,
+	metadata map[string]interface{},
+	topicID string,
+) error {
+	ctx, span := tracer.Start(ctx, "NotifyEngagementCreate")
+	defer span.End()
+
+	engagement := domain.Engagement{
+		Active:    true,
+		Type:      engagementType,
+		Timestamp: time.Now().UnixNano() / 1000000,
+	}
+	engagementData := domain.EngagementData{
+		Engagement: engagement,
+		Metadata:   metadata,
+	}
+
+	message := dto.EngagementPubSubMessage{
+		Engagement:  engagementData,
+		PhoneNumber: phone,
+		MessageID:   messageID,
+	}
+
+	engagementPayload, err := json.Marshal(message)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf(
+			"can't marshal notification engagement to JSON: %w", err)
+	}
+	return pubsubtools.PublishToPubsub(
+		ctx,
+		ps.client,
+		helpers.AddPubSubNamespace(topicID),
+		ps.environment,
+		helpers.ServiceName,
+		helpers.TopicVersion,
+		engagementPayload,
+	)
 }

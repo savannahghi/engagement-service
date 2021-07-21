@@ -14,6 +14,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -64,7 +65,8 @@ func InitializeTestNewNotification(ctx context.Context) (*usecases.NotificationI
 	onboarding := onboarding.NewRemoteProfileService(onboardingClient)
 	fcm := fcm.NewService(fr)
 	mail := mail.NewService(fr)
-	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail)
+	crm := hubspot.NewHubSpotService()
+	notification := usecases.NewNotification(fr, fcmNotification, onboarding, fcm, mail, crm)
 	return notification, nil
 }
 

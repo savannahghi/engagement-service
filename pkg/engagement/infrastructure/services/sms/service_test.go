@@ -8,10 +8,11 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 )
@@ -27,9 +28,18 @@ func newTestSMSService() (*sms.Service, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
 	}
-	crm := hubspot.NewHubSpotService()
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
-	return sms.NewService(fr, crm, onboarding), nil
+	ps, err := messaging.NewPubSubNotificationService(
+		ctx,
+		serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName),
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't instantiate notification service in resolver: %w",
+			err,
+		)
+	}
+	return sms.NewService(fr, onboarding, ps), nil
 }
 
 func TestSendToMany(t *testing.T) {

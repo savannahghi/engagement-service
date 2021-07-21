@@ -15,15 +15,12 @@ import (
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/base"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
 )
 
@@ -75,19 +72,7 @@ type Service struct {
 // First we fetch the dependencies from dep.yaml file. Since this service has a predefined set
 // of dependencies, the same dependecies defined in the yaml should be defined in the service
 // struct definition explictly, No guess work.
-func NewService() *Service {
-	var repository repository.Repository
-
-	whatsapp := whatsapp.NewService()
-
-	mail := mail.NewService(repository)
-
-	crm := hubspot.NewHubSpotService()
-	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
-	sms := sms.NewService(repository, crm, onboarding)
-
-	twilio := twilio.NewService()
-
+func NewService(whatsapp whatsapp.ServiceWhatsapp, mail mail.ServiceMail, sms sms.ServiceSMS, twilio twilio.ServiceTwilio) *Service {
 	fc := &base.FirebaseClient{}
 	firebaseApp, err := fc.InitFirebase()
 	if err != nil {

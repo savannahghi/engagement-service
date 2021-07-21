@@ -72,8 +72,9 @@ type MarketingSMS struct {
 	Message              string                `json:"message"`
 	DeliveryReport       *ATDeliveryReport     `json:"deliveryReport"`
 	Status               string                `json:"status"`
-	Engagement           domain.EngagementData `json:"engagement"`
 	IsSynced             bool                  `json:"isSynced"`
+	TimeSynced           *time.Time            `json:"timeSynced"`
+	Engagement           domain.EngagementData `json:"engagement"`
 }
 
 // ATDeliveryReport callback delivery reports
@@ -145,4 +146,11 @@ type MailgunEvent struct {
 	DeliveredOn string `json:"timestamp" firestore:"deliveredOn"`
 	// MessageID is a unique identifier of mailgun's message
 	MessageID string `json:"message-id" firestore:"messageID"`
+}
+
+// EngagementPubSubMessage represents engagement payload published to pubsub
+type EngagementPubSubMessage struct {
+	Engagement  domain.EngagementData `json:"engagement"`
+	PhoneNumber string                `json:"phoneNumber"`
+	MessageID   string                `json:"messageID"`
 }

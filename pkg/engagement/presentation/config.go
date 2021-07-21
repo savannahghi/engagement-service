@@ -100,17 +100,17 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 	fcm := fcm.NewService(fr)
 	mail := mail.NewService(fr)
+	crm := hubspot.NewHubSpotService()
 	notification := usecases.NewNotification(
 		fr,
 		fcmNotification,
 		onboarding,
 		fcm,
 		mail,
+		crm,
 	)
 	uploads := uploads.NewUploadsService()
-	crm := hubspot.NewHubSpotService()
 	library := library.NewLibraryService(onboarding)
-	sms := sms.NewService(fr, crm, onboarding)
 	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -118,10 +118,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 			err,
 		)
 	}
+	sms := sms.NewService(fr, onboarding, ns)
 	feed := usecases.NewFeed(fr, ns)
 	whatsapp := whatsapp.NewService()
-	otp := otp.NewService()
-	twilio := twilio.NewService()
+	twilio := twilio.NewService(sms)
+	otp := otp.NewService(whatsapp, mail, sms, twilio)
 	surveys := surveys.NewService(fr)
 	hubspot := hubspot.NewHubSpotService()
 	marketing := usecases.NewMarketing(fr, hubspot, mail)

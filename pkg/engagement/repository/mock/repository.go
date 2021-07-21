@@ -220,7 +220,7 @@ type FakeEngagementRepository struct {
 	SaveMarketingMessageFn func(
 		ctx context.Context,
 		data dto.MarketingSMS,
-	) error
+	) (*dto.MarketingSMS, error)
 
 	SaveTwilioResponseFn func(
 		ctx context.Context,
@@ -248,8 +248,7 @@ type FakeEngagementRepository struct {
 
 	UpdateMarketingMessageFn func(
 		ctx context.Context,
-		phoneNumber string,
-		deliveryReport *dto.ATDeliveryReport,
+		data *dto.MarketingSMS,
 	) (*dto.MarketingSMS, error)
 
 	RetrieveMarketingDataFn func(
@@ -275,6 +274,16 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		phonenumber string,
 	) (*apiclient.Segment, error)
+
+	GetMarketingSMSByIDFn func(
+		ctx context.Context,
+		id string,
+	) (*dto.MarketingSMS, error)
+
+	GetMarketingSMSByPhoneFn func(
+		ctx context.Context,
+		phoneNumber string,
+	) (*dto.MarketingSMS, error)
 }
 
 // GetFeed ...
@@ -547,7 +556,7 @@ func (f *FakeEngagementRepository) GetDefaultNudgeByTitle(
 func (f *FakeEngagementRepository) SaveMarketingMessage(
 	ctx context.Context,
 	data dto.MarketingSMS,
-) error {
+) (*dto.MarketingSMS, error) {
 	return f.SaveMarketingMessageFn(ctx, data)
 }
 
@@ -590,10 +599,9 @@ func (f *FakeEngagementRepository) SaveNPSResponse(
 // UpdateMarketingMessage ..
 func (f *FakeEngagementRepository) UpdateMarketingMessage(
 	ctx context.Context,
-	phoneNumber string,
-	deliveryReport *dto.ATDeliveryReport,
+	data *dto.MarketingSMS,
 ) (*dto.MarketingSMS, error) {
-	return f.UpdateMarketingMessageFn(ctx, phoneNumber, deliveryReport)
+	return f.UpdateMarketingMessageFn(ctx, data)
 }
 
 // RetrieveMarketingData ..
@@ -649,4 +657,17 @@ func (f *FakeEngagementRepository) GetSladerDataByPhone(
 	phonenumber string,
 ) (*apiclient.Segment, error) {
 	return f.GetSladerDataByPhoneFn(ctx, phonenumber)
+}
+
+// GetMarketingSMSByPhone ..
+func (f *FakeEngagementRepository) GetMarketingSMSByPhone(ctx context.Context, phoneNumber string) (*dto.MarketingSMS, error) {
+	return f.GetMarketingSMSByPhoneFn(ctx, phoneNumber)
+}
+
+// GetMarketingSMSByID ..
+func (f *FakeEngagementRepository) GetMarketingSMSByID(
+	ctx context.Context,
+	id string,
+) (*dto.MarketingSMS, error) {
+	return f.GetMarketingSMSByIDFn(ctx, id)
 }

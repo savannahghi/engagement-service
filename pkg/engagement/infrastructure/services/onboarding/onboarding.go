@@ -48,6 +48,7 @@ type ProfileService interface {
 	) (map[string][]string, error)
 	GetUserProfile(ctx context.Context, uid string) (*base.UserProfile, error)
 	IsOptedOut(ctx context.Context, phoneNumber string) (bool, error)
+	PhonesWithoutOptOut(ctx context.Context, phones []string) ([]string, error)
 }
 
 // NewRemoteProfileService initializes a connection to a remote profile service
@@ -233,4 +234,25 @@ func (rps RemoteProfileService) IsOptedOut(
 	}
 
 	return body["opted_out"], nil
+}
+
+// PhonesWithoutOptOut given a slice of phone numbers, returns numbers that have not opted out
+// of our marketing messages programme
+func (rps RemoteProfileService) PhonesWithoutOptOut(ctx context.Context, phones []string) ([]string, error) {
+	ctx, span := tracer.Start(ctx, "PhonesWithoutOptOut")
+	defer span.End()
+
+	var whitelistedNumbers []string
+	for _, phone := range phones {
+		optedOut, err := rps.IsOptedOut(ctx, phone)
+		if err != nil {
+			helpers.RecordSpanError(span, err)
+			return nil, err
+		}
+		if !optedOut {
+			whitelistedNumbers = append(whitelistedNumbers, phone)
+		}
+	}
+
+	return whitelistedNumbers, nil
 }

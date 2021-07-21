@@ -5897,7 +5897,7 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 		return
 	}
 
-	err = fr.SaveMarketingMessage(ctx, sms)
+	savedSms, err := fr.SaveMarketingMessage(ctx, sms)
 	if err != nil {
 		t.Errorf("unable to save marketing message: %w",
 			err,
@@ -5905,7 +5905,7 @@ func TestGetAITSMSDeliveryCallback(t *testing.T) {
 		return
 	}
 	expectedPayload := map[string]interface{}{
-		"phoneNumber": sms.PhoneNumber,
+		"phoneNumber": savedSms.PhoneNumber,
 		"retryCount":  "0",
 		"status":      "success",
 	}

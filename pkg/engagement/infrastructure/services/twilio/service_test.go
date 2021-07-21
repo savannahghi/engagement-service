@@ -9,7 +9,11 @@ import (
 	"github.com/savannahghi/serverutils"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/base"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
 func TestMain(m *testing.M) {
@@ -17,8 +21,28 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func newTwilioService(ctx context.Context) (*twilio.Service, error) {
+	var repo repository.Repository
+	projectID := serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName)
+	ns, err := messaging.NewPubSubNotificationService(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't instantiate notification service: %w",
+			err,
+		)
+	}
+	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
+	sms := sms.NewService(repo, onboarding, ns)
+
+	return twilio.NewService(sms), nil
+}
+
 func TestNewService(t *testing.T) {
-	srv := twilio.NewService()
+	srv, err := newTwilioService(context.Background())
+	if err != nil {
+		t.Errorf("failed to initialize new twilio test service: %v", err)
+		return
+	}
 	assert.NotNil(t, srv)
 	if srv == nil {
 		t.Errorf("nil twilio service")
@@ -84,7 +108,11 @@ func TestService_Room(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := twilio.NewService()
+			s, err := newTwilioService(context.Background())
+			if err != nil {
+				t.Errorf("failed to initialize new twilio test service: %v", err)
+				return
+			}
 			room, err := s.Room(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.Room() error = %v, wantErr %v", err, tt.wantErr)
@@ -140,7 +168,11 @@ func TestService_AccessToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := twilio.NewService()
+			s, err := newTwilioService(context.Background())
+			if err != nil {
+				t.Errorf("failed to initialize new twilio test service: %v", err)
+				return
+			}
 			got, err := s.TwilioAccessToken(tt.args.ctx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.AccessToken() error = %v, wantErr %v", err, tt.wantErr)
@@ -219,7 +251,11 @@ func TestService_SendSMS(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := twilio.NewService()
+			s, err := newTwilioService(context.Background())
+			if err != nil {
+				t.Errorf("failed to initialize new twilio test service: %v", err)
+				return
+			}
 			if err := s.SendSMS(tt.args.ctx, tt.args.normalizedDestinationPhoneNumber, tt.args.msg); (err != nil) != tt.wantErr {
 				t.Errorf("Service.SendSMS() error = %v, wantErr %v", err, tt.wantErr)
 			}

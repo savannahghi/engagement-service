@@ -274,7 +274,12 @@ func (fr Repository) GetFeedItem(
 	}
 
 	itemsCollection := fr.getItemsCollection(uid, flavour)
-	el, err := fr.getSingleElement(ctx, itemsCollection, itemID, &feedlib.Item{})
+	el, err := fr.getSingleElement(
+		ctx,
+		itemsCollection,
+		itemID,
+		&feedlib.Item{},
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to get items: %w", err)
@@ -482,7 +487,12 @@ func (fr Repository) SaveNudge(
 	}
 
 	// find an existing nudge with the same title
-	existingNudge, err := fr.GetDefaultNudgeByTitle(ctx, uid, flavour, nudge.Title)
+	existingNudge, err := fr.GetDefaultNudgeByTitle(
+		ctx,
+		uid,
+		flavour,
+		nudge.Title,
+	)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		// error means an existing nudge wasn't found
@@ -490,7 +500,9 @@ func (fr Repository) SaveNudge(
 	}
 
 	if existingNudge != nil {
-		return nil, fmt.Errorf("cannot save nudge, found an existing nudge with same title")
+		return nil, fmt.Errorf(
+			"cannot save nudge, found an existing nudge with same title",
+		)
 	}
 
 	coll := fr.getNudgesCollection(uid, flavour)
@@ -1138,7 +1150,10 @@ func (fr Repository) GetActions(
 			return nil, fmt.Errorf(
 				"unable to unmarshal action from firebase doc: %w", err)
 		}
-		if !converterandformatter.StringSliceContains(seenActionIDs, action.ID) {
+		if !converterandformatter.StringSliceContains(
+			seenActionIDs,
+			action.ID,
+		) {
 			actions = append(actions, *action)
 			seenActionIDs = append(seenActionIDs, action.ID)
 		}
@@ -1606,37 +1621,32 @@ func (fr Repository) GetDefaultNudgeByTitle(
 func (fr Repository) SaveMarketingMessage(
 	ctx context.Context,
 	data dto.MarketingSMS,
-) error {
+) (*dto.MarketingSMS, error) {
 	ctx, span := tracer.Start(ctx, "SaveMarketingMessage")
 	defer span.End()
 	if err := fr.checkPreconditions(); err != nil {
 		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("repository precondition check failed: %w", err)
+		return nil, fmt.Errorf("repository precondition check failed: %w", err)
 	}
 
 	collectionName := fr.getMaretingSMSCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("unable to save callback response")
+		return nil, fmt.Errorf("unable to save callback response")
 	}
 
-	return nil
+	return &data, nil
 }
 
-// UpdateMarketingMessage updates marketing SMS data
-func (fr Repository) UpdateMarketingMessage(
+func getMarketingSMSData(
 	ctx context.Context,
-	phoneNumber string,
-	deliveryReport *dto.ATDeliveryReport,
+	atleastOne bool,
+	query firestore.Query,
 ) (*dto.MarketingSMS, error) {
-	ctx, span := tracer.Start(ctx, "UpdateMarketingMessage")
+	ctx, span := tracer.Start(ctx, "getMarketingSMSData")
 	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
-		Where("PhoneNumber", "==", phoneNumber).
-		OrderBy("MessageSentTimeStamp", firestore.Desc)
-
-	docs, err := fetchQueryDocs(ctx, query, true)
+	docs, err := fetchQueryDocs(ctx, query, atleastOne)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, err
@@ -1650,15 +1660,58 @@ func (fr Repository) UpdateMarketingMessage(
 			"unable to unmarshal marketing SMS from doc snapshot: %w", err)
 	}
 
-	marketingSMS.DeliveryReport = deliveryReport
-	doc := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
-		Doc(docs[0].Ref.ID)
-	if _, err = doc.Set(ctx, marketingSMS); err != nil {
+	return &marketingSMS, nil
+}
+
+// GetMarketingSMSByID returns a message given its id
+func (fr Repository) GetMarketingSMSByID(
+	ctx context.Context,
+	id string,
+) (*dto.MarketingSMS, error) {
+	ctx, span := tracer.Start(ctx, "GetMarketingSMSByID")
+	defer span.End()
+	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
+		Where("ID", "==", id)
+	return getMarketingSMSData(ctx, true, query)
+}
+
+// GetMarketingSMSByPhone returns the latest message given a phone number
+func (fr Repository) GetMarketingSMSByPhone(
+	ctx context.Context,
+	phoneNumber string,
+) (*dto.MarketingSMS, error) {
+	ctx, span := tracer.Start(ctx, "GetMarketingSMSByPhone")
+	defer span.End()
+	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
+		Where("PhoneNumber", "==", phoneNumber).
+		OrderBy("MessageSentTimeStamp", firestore.Desc)
+	return getMarketingSMSData(ctx, true, query)
+}
+
+// UpdateMarketingMessage updates marketing SMS data
+func (fr Repository) UpdateMarketingMessage(
+	ctx context.Context,
+	data *dto.MarketingSMS,
+) (*dto.MarketingSMS, error) {
+	ctx, span := tracer.Start(ctx, "UpdateMarketingMessage")
+	defer span.End()
+	query := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
+		Where("ID", "==", data.ID)
+
+	docs, err := fetchQueryDocs(ctx, query, true)
+	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, err
 	}
 
-	return &marketingSMS, nil
+	doc := fr.firestoreClient.Collection(fr.getMaretingSMSCollectionName()).
+		Doc(docs[0].Ref.ID)
+	if _, err = doc.Set(ctx, data); err != nil {
+		helpers.RecordSpanError(span, err)
+		return nil, err
+	}
+
+	return fr.GetMarketingSMSByID(ctx, data.ID)
 }
 
 // SaveTwilioResponse saves the callback data
@@ -1761,12 +1814,16 @@ func (fr Repository) SaveNPSResponse(
 // 0 =? generic error. 1
 // 1 =? record exists. Means it should be created or checked for existence on the crm
 // -1 =? a record was created on firebase correctly. Means it should be created or checked for existence on the crm
-func (fr Repository) LoadMarketingData(ctx context.Context, data apiclient.Segment) (int, error) {
+func (fr Repository) LoadMarketingData(
+	ctx context.Context,
+	data apiclient.Segment,
+) (int, error) {
 	ctx, span := tracer.Start(ctx, "LoadMarketingData")
 	defer span.End()
 	// check the data does not exist
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("properties.Email", "==", data.Properties.Email).Where("properties.InitialSegment", "==", data.Properties.InitialSegment)
+		Where("properties.Email", "==", data.Properties.Email).
+		Where("properties.InitialSegment", "==", data.Properties.InitialSegment)
 
 	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
@@ -1777,7 +1834,8 @@ func (fr Repository) LoadMarketingData(ctx context.Context, data apiclient.Segme
 		return 1, nil
 	}
 	// create a new record
-	_, _, err = fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Add(ctx, data)
+	_, _, err = fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Add(ctx, data)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return 0, fmt.Errorf("unable create marketing record: %v", err)
@@ -1787,7 +1845,10 @@ func (fr Repository) LoadMarketingData(ctx context.Context, data apiclient.Segme
 }
 
 // RollBackMarketingData remove the record that was creatded. This happens only when the same record fails to the created on the crm
-func (fr Repository) RollBackMarketingData(ctx context.Context, data apiclient.Segment) error {
+func (fr Repository) RollBackMarketingData(
+	ctx context.Context,
+	data apiclient.Segment,
+) error {
 	ctx, span := tracer.Start(ctx, "RollBackMarketingData")
 	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
@@ -1815,7 +1876,8 @@ func (fr Repository) RetrieveMarketingData(
 	ctx, span := tracer.Start(ctx, "RetrieveMarketingData")
 	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("message_sent", "==", "FALSE").Where("wing", "==", data.Wing).
+		Where("message_sent", "==", "FALSE").
+		Where("wing", "==", data.Wing).
 		Where("properties.InitialSegment", "==", data.InitialSegment)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
@@ -1849,7 +1911,9 @@ func (fr Repository) UpdateMessageSentStatus(
 	ctx, span := tracer.Start(ctx, "UpdateMessageSentStatus")
 	defer span.End()
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("message_sent", "==", "FALSE").Where("properties.Phone", "==", phonenumber).Where("properties.InitialSegment", "==", segment)
+		Where("message_sent", "==", "FALSE").
+		Where("properties.Phone", "==", phonenumber).
+		Where("properties.InitialSegment", "==", segment)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1877,10 +1941,15 @@ func (fr Repository) UpdateMessageSentStatus(
 }
 
 // UpdateUserCRMEmail updates user CRM contact properties with the supplied data
-func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
+func (fr Repository) UpdateUserCRMEmail(
+	ctx context.Context,
+	phoneNumber string,
+	payload *dto.UpdateContactPSMessage,
+) error {
 	ctx, span := tracer.Start(ctx, "UpdateUserCRMEmail")
 	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Phone", "==", phoneNumber)
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Where("properties.Phone", "==", phoneNumber)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1908,11 +1977,17 @@ func (fr Repository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string,
 }
 
 // UpdateUserCRMBewellAware updates user CMR data with provided email= as bewell-aware on the CRM
-func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error {
+func (fr Repository) UpdateUserCRMBewellAware(
+	ctx context.Context,
+	email string,
+	payload *dto.UpdateContactPSMessage,
+) error {
 	ctx, span := tracer.Start(ctx, "UpdateUserCRMBewellAware")
 	defer span.End()
 	logrus.Printf("collection name %v", fr.getMarketingDataCollectionName())
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).Where("properties.Email", "==", email).Where("properties.BeWellAware", "==", "NO")
+	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
+		Where("properties.Email", "==", email).
+		Where("properties.BeWellAware", "==", "NO")
 
 	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
@@ -1926,7 +2001,9 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 		if err != nil {
 			helpers.RecordSpanError(span, err)
 			return fmt.Errorf(
-				"unable to unmarshal marketing Data from doc snapshot: %w", err)
+				"unable to unmarshal marketing Data from doc snapshot: %w",
+				err,
+			)
 		}
 
 		logrus.Printf("update payload %v", marketingData)
@@ -1947,7 +2024,10 @@ func (fr Repository) UpdateUserCRMBewellAware(ctx context.Context, email string,
 }
 
 // SaveOutgoingEmails saves all the outgoing emails
-func (fr Repository) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
+func (fr Repository) SaveOutgoingEmails(
+	ctx context.Context,
+	payload *dto.OutgoingEmailsLog,
+) error {
 	collection := fr.getOutgoingEmailsCollectionName()
 	_, _, err := fr.firestoreClient.Collection(collection).Add(ctx, payload)
 	if err != nil {
@@ -1957,11 +2037,15 @@ func (fr Repository) SaveOutgoingEmails(ctx context.Context, payload *dto.Outgoi
 }
 
 // UpdateMailgunDeliveryStatus updates the status and delivery time of the sent email message
-func (fr Repository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
+func (fr Repository) UpdateMailgunDeliveryStatus(
+	ctx context.Context,
+	payload *dto.MailgunEvent,
+) (*dto.OutgoingEmailsLog, error) {
 
 	collection := fr.getOutgoingEmailsCollectionName()
 
-	query := fr.firestoreClient.Collection(collection).Where("messageID", "==", payload.MessageID)
+	query := fr.firestoreClient.Collection(collection).
+		Where("messageID", "==", payload.MessageID)
 
 	docs, err := fetchQueryDocs(ctx, query, true)
 	if err != nil {
@@ -1971,7 +2055,10 @@ func (fr Repository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *d
 	var emailLogData dto.OutgoingEmailsLog
 	err = docs[0].DataTo(&emailLogData)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshal data from docs snapshot: %w", err)
+		return nil, fmt.Errorf(
+			"unable to marshal data from docs snapshot: %w",
+			err,
+		)
 	}
 
 	timeOfDelivery := helpers.EpochTimetoStandardTime(payload.DeliveredOn)
@@ -1983,7 +2070,8 @@ func (fr Repository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *d
 
 	emailLogData.Event = &eventOutput
 
-	doc := fr.firestoreClient.Collection(fr.getOutgoingEmailsCollectionName()).Doc(docs[0].Ref.ID)
+	doc := fr.firestoreClient.Collection(fr.getOutgoingEmailsCollectionName()).
+		Doc(docs[0].Ref.ID)
 	if _, err = doc.Set(ctx, emailLogData); err != nil {
 		logrus.Print("an error occurred while updating data: ", err)
 		return nil, fmt.Errorf("unable to update data")

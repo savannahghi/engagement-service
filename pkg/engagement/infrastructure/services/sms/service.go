@@ -17,10 +17,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
-	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
@@ -67,11 +67,14 @@ type ServiceSMS interface {
 	SaveMarketingMessage(
 		ctx context.Context,
 		data dto.MarketingSMS,
-	) error
+	) (*dto.MarketingSMS, error)
 	UpdateMarketingMessage(
 		ctx context.Context,
+		data *dto.MarketingSMS,
+	) (*dto.MarketingSMS, error)
+	GetMarketingSMSByPhone(
+		ctx context.Context,
 		phoneNumber string,
-		deliveryReport *dto.ATDeliveryReport,
 	) (*dto.MarketingSMS, error)
 }
 
@@ -79,8 +82,8 @@ type ServiceSMS interface {
 type Service struct {
 	Env        string
 	Repository repository.Repository
-	Crm        hubspot.ServiceHubSpotInterface
 	Onboarding onboarding.ProfileService
+	PubSub     messaging.NotificationService
 }
 
 // GetSmsURL is the sms endpoint
@@ -105,17 +108,37 @@ func getHost(env, service string) string {
 }
 
 // NewService returns a new service
-func NewService(repository repository.Repository, crm hubspot.ServiceHubSpotInterface, onboarding onboarding.ProfileService) *Service {
+func NewService(
+	repository repository.Repository,
+	onboarding onboarding.ProfileService,
+	pubsub messaging.NotificationService,
+) *Service {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)
-	return &Service{env, repository, crm, onboarding}
+	return &Service{env, repository, onboarding, pubsub}
 }
 
 // SaveMarketingMessage saves the callback data for future analysis
 func (s Service) SaveMarketingMessage(
 	ctx context.Context,
 	data dto.MarketingSMS,
-) error {
+) (*dto.MarketingSMS, error) {
 	return s.Repository.SaveMarketingMessage(ctx, data)
+}
+
+// UpdateMarketingMessage adds a delivery report to an AIT SMS
+func (s Service) UpdateMarketingMessage(
+	ctx context.Context,
+	data *dto.MarketingSMS,
+) (*dto.MarketingSMS, error) {
+	return s.Repository.UpdateMarketingMessage(ctx, data)
+}
+
+// GetMarketingSMSByPhone returns the latest message given a phone number
+func (s Service) GetMarketingSMSByPhone(
+	ctx context.Context,
+	phoneNumber string,
+) (*dto.MarketingSMS, error) {
+	return s.Repository.GetMarketingSMSByID(ctx, phoneNumber)
 }
 
 // UpdateMessageSentStatus updates the message sent field to true when a message
@@ -126,15 +149,6 @@ func (s Service) UpdateMessageSentStatus(
 	segment string,
 ) error {
 	return s.Repository.UpdateMessageSentStatus(ctx, phonenumber, segment)
-}
-
-// UpdateMarketingMessage adds a delivery report to an AIT SMS
-func (s Service) UpdateMarketingMessage(
-	ctx context.Context,
-	phoneNumber string,
-	deliveryReport *dto.ATDeliveryReport,
-) (*dto.MarketingSMS, error) {
-	return s.Repository.UpdateMarketingMessage(ctx, phoneNumber, deliveryReport)
 }
 
 // SendToMany is a utility method to send to many recipients at the same time
@@ -276,16 +290,13 @@ func (s Service) SendMarketingSMS(
 ) (*dto.SendMessageResponse, error) {
 	ctx, span := tracer.Start(ctx, "SendMarketingSMS")
 	defer span.End()
-	var whitelistedNumbers []string
-	for _, number := range to {
-		optedOut, err := s.Onboarding.IsOptedOut(ctx, number)
-		if err != nil {
-			helpers.RecordSpanError(span, err)
-			return nil, err
-		}
-		if !optedOut {
-			whitelistedNumbers = append(whitelistedNumbers, number)
-		}
+	whitelistedNumbers, err := s.Onboarding.PhonesWithoutOptOut(ctx, to)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return nil, fmt.Errorf(
+			"failed to get phone numbers without opt out with error: %v",
+			err,
+		)
 	}
 	if len(whitelistedNumbers) == 0 {
 		return nil, nil
@@ -303,18 +314,6 @@ func (s Service) SendMarketingSMS(
 		return nil, nil
 	}
 
-	engagement := domain.Engagement{
-		Active:    true,
-		Type:      "NOTE",
-		Timestamp: time.Now().UnixNano() / 1000000,
-	}
-	engagementData := domain.EngagementData{
-		Engagement: engagement,
-		Metadata: map[string]interface{}{
-			"body": message,
-		},
-	}
-
 	smsMsgDataRecipients := smsMsgData.Recipients
 	for _, recipient := range smsMsgDataRecipients {
 		phone := recipient.Number
@@ -325,41 +324,49 @@ func (s Service) SendMarketingSMS(
 			MessageSentTimeStamp: time.Now(),
 			Message:              message,
 			Status:               recipient.Status,
-			Engagement:           engagementData,
 		}
-
-		// todo make this async @mathenge
-		resp, err := s.Crm.CreateEngagementByPhone(phone, engagementData)
-		if err != nil {
-			helpers.RecordSpanError(span, err)
-			log.Print(err)
-		}
-
-		if resp != nil {
-			data.IsSynced = true
-		}
-
-		if err := s.SaveMarketingMessage(
+		savedSms, err := s.SaveMarketingMessage(
 			ctx,
 			data,
-		); err != nil {
+		)
+		if err != nil {
 			helpers.RecordSpanError(span, err)
-			return nil, fmt.Errorf("failed to create a message in our data store: %v", err)
+			return resp, fmt.Errorf(
+				"failed to create a message in our data store: %v",
+				err,
+			)
 		}
 
-		// Toggle message sent value to TRUE
 		if err := s.UpdateMessageSentStatus(
 			ctx,
 			data.PhoneNumber,
 			segment,
 		); err != nil {
 			helpers.RecordSpanError(span, err)
-			return nil, fmt.Errorf("failed to update message sent status to true: %v", err)
+			return resp, fmt.Errorf(
+				"failed to update message sent status to true: %v",
+				err,
+			)
 		}
 
-		// Sleep for 5 seconds to reduce the rate at which we call HubSpot's APIs
-		// They have a rate limit of 100/10s
-		time.Sleep(5 * time.Second)
+		metadata := map[string]interface{}{
+			"body": message,
+		}
+		if err = s.PubSub.NotifyEngagementCreate(
+			ctx,
+			data.PhoneNumber,
+			savedSms.ID,
+			"NOTE",
+			metadata,
+			common.EngagementCreateTopic,
+		); err != nil {
+			helpers.RecordSpanError(span, err)
+			return resp, fmt.Errorf(
+				"failed to publish to %v pub/sub topic with error: %v",
+				common.EngagementCreateTopic,
+				err,
+			)
+		}
 	}
 
 	return resp, nil
