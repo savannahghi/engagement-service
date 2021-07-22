@@ -452,11 +452,11 @@ github.com/savannahghi/feedlib v0.0.0-20210628122532-ef88e353d4d6 h1:KKb7B/X+k5V
 github.com/savannahghi/feedlib v0.0.0-20210628122532-ef88e353d4d6/go.mod h1:P6YHmWsa/TK/qTb2U1ryjuASotTQmbarArB0LYLjMo4=
 github.com/savannahghi/firebasetools v0.0.5/go.mod h1:obAxyBfPaGTx/g86LF19gSmmEh5x+Tbnziatk514mUQ=
 github.com/savannahghi/firebasetools v0.0.6/go.mod h1:obAxyBfPaGTx/g86LF19gSmmEh5x+Tbnziatk514mUQ=
-github.com/savannahghi/firebasetools v0.0.12 h1:cws8tPmPC3BUz82SmQDfYeRRMOTq65Qen3uVV8oeDZU=
-github.com/savannahghi/firebasetools v0.0.12/go.mod h1:0xgpolbK6P2GzUveYSeF9DcMTkJvF8pIWLes1LLtTEE=
+github.com/savannahghi/firebasetools v0.0.13 h1:2eBFwzsnmhRUzxfgQZxOjedlMuyef2dz4tvpw59pJkE=
+github.com/savannahghi/firebasetools v0.0.13/go.mod h1:0xgpolbK6P2GzUveYSeF9DcMTkJvF8pIWLes1LLtTEE=
 github.com/savannahghi/interserviceclient v0.0.3/go.mod h1:GWTJkKfsXzTPNDkZ5U07pBZr6avQF5SndW36f1Hew7k=
-github.com/savannahghi/interserviceclient v0.0.12 h1:P66D+vGRVmkGvGBJ15Aq81dQ14XGAE4JIpMgGdJv4hA=
-github.com/savannahghi/interserviceclient v0.0.12/go.mod h1:tAbQd0BIdGtRAtmbKR50qu52wXtkkOXEQbT9TtweVIA=
+github.com/savannahghi/interserviceclient v0.0.13 h1:hKUrWkUQW7mNZLp/wxJNnzORDpNjuQ8wzstI25F6mLQ=
+github.com/savannahghi/interserviceclient v0.0.13/go.mod h1:aGGEc+40bBVHVDs1k0CzK5uPb5080vv4fb25T/cuXQk=
 github.com/savannahghi/profileutils v0.0.6/go.mod h1:Ct0sjzOW9zjDN58ynT5GTV6M2hHMY3nsFDV08I6gpO4=
 github.com/savannahghi/profileutils v0.0.7 h1:E6Rr3d0x67p9K9D6YDGx0AsX10wGab6C/cP7kPHEIHI=
 github.com/savannahghi/profileutils v0.0.7/go.mod h1:Ct0sjzOW9zjDN58ynT5GTV6M2hHMY3nsFDV08I6gpO4=

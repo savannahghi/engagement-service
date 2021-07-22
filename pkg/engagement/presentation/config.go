@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
@@ -237,7 +236,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Authenticated routes
 	authR := r.Path("/graphql").Subrouter()
-	authR.Use(apiclient.AuthenticationMiddleware(firebaseApp))
+	authR.Use(firebasetools.AuthenticationMiddleware(firebaseApp))
 	authR.Methods(
 		http.MethodPost,
 		http.MethodGet,
