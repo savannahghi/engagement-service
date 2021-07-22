@@ -165,8 +165,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware(ctx))
-	r.Path("/load_data").Methods(http.MethodPost).HandlerFunc(h.LoadCampaignData(ctx))
+	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
+	r.Path("/load_data").Methods(http.MethodPost).HandlerFunc(h.LoadCampaignData())
 
 	r.Path(pubsubtools.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
@@ -175,16 +175,16 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/send_sms").Methods(
 		http.MethodPost,
 		http.MethodOptions,
-	).HandlerFunc(h.SendToMany(ctx))
+	).HandlerFunc(h.SendToMany())
 	r.Path("/send_marketing_sms").Methods(
 		http.MethodPost,
 		http.MethodOptions,
-	).HandlerFunc(h.SendMarketingSMS(ctx))
+	).HandlerFunc(h.SendMarketingSMS())
 
 	// Get Marketing Data (Segments) from collections
 	r.Path("/marketing_data").Methods(
 		http.MethodPost,
-	).HandlerFunc(h.GetMarketingData(ctx))
+	).HandlerFunc(h.GetMarketingData())
 
 	// HubSpot CRM specific endpoints
 	r.Path("/contact_lists").Methods(
@@ -200,19 +200,19 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Callbacks
 	r.Path("/ait_callback").
 		Methods(http.MethodPost).
-		HandlerFunc(h.GetAITSMSDeliveryCallback(ctx))
+		HandlerFunc(h.GetAITSMSDeliveryCallback())
 	r.Path("/twilio_notification").
 		Methods(http.MethodPost).
-		HandlerFunc(h.GetNotificationHandler(ctx))
+		HandlerFunc(h.GetNotificationHandler())
 	r.Path("/twilio_incoming_message").
 		Methods(http.MethodPost).
-		HandlerFunc(h.GetIncomingMessageHandler(ctx))
+		HandlerFunc(h.GetIncomingMessageHandler())
 	r.Path("/twilio_fallback").
 		Methods(http.MethodPost).
-		HandlerFunc(h.GetFallbackHandler(ctx))
+		HandlerFunc(h.GetFallbackHandler())
 	r.Path("/collect_email_address").Methods(
 		http.MethodPost,
-	).HandlerFunc(h.CollectEmailAddress(ctx))
+	).HandlerFunc(h.CollectEmailAddress())
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
 	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
@@ -221,7 +221,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/upload").Methods(
 		http.MethodPost,
 		http.MethodOptions,
-	).HandlerFunc(h.Upload(ctx))
+	).HandlerFunc(h.Upload())
 
 	// static files
 	schemaFileHandler, err := rest.SchemaHandler()
@@ -255,148 +255,148 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	feedISC.Methods(
 		http.MethodGet,
 	).Path("/").HandlerFunc(
-		h.GetFeed(ctx),
+		h.GetFeed(),
 	).Name("getFeed")
 
 	feedISC.Methods(
 		http.MethodGet,
 	).Path("/items/{itemID}/").HandlerFunc(
-		h.GetFeedItem(ctx),
+		h.GetFeedItem(),
 	).Name("getFeedItem")
 
 	feedISC.Methods(
 		http.MethodGet,
 	).Path("/nudges/{nudgeID}/").HandlerFunc(
-		h.GetNudge(ctx),
+		h.GetNudge(),
 	).Name("getNudge")
 
 	feedISC.Methods(
 		http.MethodGet,
 	).Path("/actions/{actionID}/").HandlerFunc(
-		h.GetAction(ctx),
+		h.GetAction(),
 	).Name("getAction")
 
 	// creation
 	feedISC.Methods(
 		http.MethodPost,
 	).Path("/items/").HandlerFunc(
-		h.PublishFeedItem(ctx),
+		h.PublishFeedItem(),
 	).Name("publishFeedItem")
 
 	feedISC.Methods(
 		http.MethodPost,
 	).Path("/nudges/").HandlerFunc(
-		h.PublishNudge(ctx),
+		h.PublishNudge(),
 	).Name("publishNudge")
 
 	feedISC.Methods(
 		http.MethodPost,
 	).Path("/actions/").HandlerFunc(
-		h.PublishAction(ctx),
+		h.PublishAction(),
 	).Name("publishAction")
 
 	feedISC.Methods(
 		http.MethodPost,
 	).Path("/{itemID}/messages/").HandlerFunc(
-		h.PostMessage(ctx),
+		h.PostMessage(),
 	).Name("postMessage")
 
 	feedISC.Methods(
 		http.MethodPost,
 	).Path("/events/").HandlerFunc(
-		h.ProcessEvent(ctx),
+		h.ProcessEvent(),
 	).Name("postEvent")
 
 	// deleting
 	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/items/{itemID}/").HandlerFunc(
-		h.DeleteFeedItem(ctx),
+		h.DeleteFeedItem(),
 	).Name("deleteFeedItem")
 
 	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/nudges/{nudgeID}/").HandlerFunc(
-		h.DeleteNudge(ctx),
+		h.DeleteNudge(),
 	).Name("deleteNudge")
 
 	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/actions/{actionID}/").HandlerFunc(
-		h.DeleteAction(ctx),
+		h.DeleteAction(),
 	).Name("deleteAction")
 
 	feedISC.Methods(
 		http.MethodDelete,
 	).Path("/{itemID}/messages/{messageID}/").HandlerFunc(
-		h.DeleteMessage(ctx),
+		h.DeleteMessage(),
 	).Name("deleteMessage")
 
 	// modifying (patching)
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/resolve/").HandlerFunc(
-		h.ResolveFeedItem(ctx),
+		h.ResolveFeedItem(),
 	).Name("resolveFeedItem")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/unresolve/").HandlerFunc(
-		h.UnresolveFeedItem(ctx),
+		h.UnresolveFeedItem(),
 	).Name("unresolveFeedItem")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/pin/").HandlerFunc(
-		h.PinFeedItem(ctx),
+		h.PinFeedItem(),
 	).Name("pinFeedItem")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/unpin/").HandlerFunc(
-		h.UnpinFeedItem(ctx),
+		h.UnpinFeedItem(),
 	).Name("unpinFeedItem")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/hide/").HandlerFunc(
-		h.HideFeedItem(ctx),
+		h.HideFeedItem(),
 	).Name("hideFeedItem")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/items/{itemID}/show/").HandlerFunc(
-		h.ShowFeedItem(ctx),
+		h.ShowFeedItem(),
 	).Name("showFeedItem")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/resolve/").HandlerFunc(
-		h.ResolveNudge(ctx),
+		h.ResolveNudge(),
 	).Name("resolveNudge")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/defaultnudges/{title}/resolve/").HandlerFunc(
-		h.ResolveDefaultNudge(ctx),
+		h.ResolveDefaultNudge(),
 	).Name("resolveDefaultNudge")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/unresolve/").HandlerFunc(
-		h.UnresolveNudge(ctx),
+		h.UnresolveNudge(),
 	).Name("unresolveNudge")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/show/").HandlerFunc(
-		h.ShowNudge(ctx),
+		h.ShowNudge(),
 	).Name("showNudge")
 
 	feedISC.Methods(
 		http.MethodPatch,
 	).Path("/nudges/{nudgeID}/hide/").HandlerFunc(
-		h.HideNudge(ctx),
+		h.HideNudge(),
 	).Name("hideNudge")
 
 	isc := r.PathPrefix("/internal/").Subrouter()
@@ -405,35 +405,35 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	isc.Methods(
 		http.MethodGet,
 	).Path("/upload/{uploadID}/").HandlerFunc(
-		h.FindUpload(ctx),
+		h.FindUpload(),
 	).Name("getUpload")
 
 	isc.Methods(
 		http.MethodPost,
 	).Path("/upload/").HandlerFunc(
-		h.Upload(ctx),
+		h.Upload(),
 	).Name("upload")
 
 	isc.Methods(
 		http.MethodPost,
 	).Path("/send_email").HandlerFunc(
-		h.SendEmail(ctx),
+		h.SendEmail(),
 	).Name("sendEmail")
 
 	isc.Methods(
 		http.MethodPost,
 	).Path("/mailgun_delivery_webhook").HandlerFunc(
-		h.UpdateMailgunDeliveryStatus(ctx),
+		h.UpdateMailgunDeliveryStatus(),
 	).Name("mailgun_delivery_webhook")
 
 	isc.Methods(
 		http.MethodPost,
 	).Path("/send_sms").HandlerFunc(
-		h.SendToMany(ctx),
+		h.SendToMany(),
 	).Name("sendToMany")
 
 	isc.Path("/verify_phonenumber").Methods(http.MethodPost).HandlerFunc(
-		h.PhoneNumberVerificationCodeHandler(ctx),
+		h.PhoneNumberVerificationCodeHandler(),
 	)
 
 	isc.Path("/send_otp/").Methods(
@@ -442,23 +442,23 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	isc.Path("/send_retry_otp/").Methods(
 		http.MethodPost, http.MethodOptions,
-	).HandlerFunc(h.SendRetryOTPHandler(ctx))
+	).HandlerFunc(h.SendRetryOTPHandler())
 
 	isc.Path("/verify_otp/").Methods(
 		http.MethodPost, http.MethodOptions,
-	).HandlerFunc(h.VerifyRetryOTPHandler(ctx))
+	).HandlerFunc(h.VerifyRetryOTPHandler())
 
 	isc.Path("/verify_email_otp/").Methods(
 		http.MethodPost, http.MethodOptions,
-	).HandlerFunc(h.VerifyRetryEmailOTPHandler(ctx))
+	).HandlerFunc(h.VerifyRetryEmailOTPHandler())
 
 	isc.Path("/send_notification").Methods(
 		http.MethodPost, http.MethodOptions,
-	).HandlerFunc(h.SendNotificationHandler(ctx))
+	).HandlerFunc(h.SendNotificationHandler())
 
 	isc.Path("/slader_data").Methods(
 		http.MethodGet, http.MethodOptions,
-	).HandlerFunc(h.GetSladerData(ctx))
+	).HandlerFunc(h.GetSladerData())
 	// return the combined router
 	return r, nil
 }

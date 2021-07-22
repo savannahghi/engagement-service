@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -46,144 +45,96 @@ var errNotFound = fmt.Errorf("not found")
 // PresentationHandlers represents all the REST API logic
 type PresentationHandlers interface {
 	GoogleCloudPubSubHandler(w http.ResponseWriter, r *http.Request)
-	GetFeed(
-		ctx context.Context,
-	) http.HandlerFunc
+	GetFeed() http.HandlerFunc
 
-	GetFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	GetFeedItem() http.HandlerFunc
 
-	GetNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	GetNudge() http.HandlerFunc
 
-	GetAction(
-		ctx context.Context,
-	) http.HandlerFunc
+	GetAction() http.HandlerFunc
 
-	PublishFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	PublishFeedItem() http.HandlerFunc
 
-	DeleteFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	DeleteFeedItem() http.HandlerFunc
 
-	ResolveFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	ResolveFeedItem() http.HandlerFunc
 
-	PinFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	PinFeedItem() http.HandlerFunc
 
-	UnpinFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	UnpinFeedItem() http.HandlerFunc
 
-	HideFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	HideFeedItem() http.HandlerFunc
 
-	ShowFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	ShowFeedItem() http.HandlerFunc
 
-	UnresolveFeedItem(
-		ctx context.Context,
-	) http.HandlerFunc
+	UnresolveFeedItem() http.HandlerFunc
 
-	PublishNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	PublishNudge() http.HandlerFunc
 
-	ResolveNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	ResolveNudge() http.HandlerFunc
 
-	ResolveDefaultNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	ResolveDefaultNudge() http.HandlerFunc
 
-	UnresolveNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	UnresolveNudge() http.HandlerFunc
 
-	HideNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	HideNudge() http.HandlerFunc
 
-	ShowNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	ShowNudge() http.HandlerFunc
 
-	DeleteNudge(
-		ctx context.Context,
-	) http.HandlerFunc
+	DeleteNudge() http.HandlerFunc
 
-	PublishAction(
-		ctx context.Context,
-	) http.HandlerFunc
+	PublishAction() http.HandlerFunc
 
-	DeleteAction(
-		ctx context.Context,
-	) http.HandlerFunc
+	DeleteAction() http.HandlerFunc
 
-	PostMessage(
-		ctx context.Context,
-	) http.HandlerFunc
+	PostMessage() http.HandlerFunc
 
-	DeleteMessage(
-		ctx context.Context,
-	) http.HandlerFunc
+	DeleteMessage() http.HandlerFunc
 
-	ProcessEvent(
-		ctx context.Context,
-	) http.HandlerFunc
+	ProcessEvent() http.HandlerFunc
 
-	Upload(ctx context.Context) http.HandlerFunc
+	Upload() http.HandlerFunc
 
-	FindUpload(ctx context.Context) http.HandlerFunc
+	FindUpload() http.HandlerFunc
 
-	SendEmail(ctx context.Context) http.HandlerFunc
+	SendEmail() http.HandlerFunc
 
-	SendToMany(ctx context.Context) http.HandlerFunc
+	SendToMany() http.HandlerFunc
 
-	SendMarketingSMS(ctx context.Context) http.HandlerFunc
+	SendMarketingSMS() http.HandlerFunc
 
-	GetAITSMSDeliveryCallback(ctx context.Context) http.HandlerFunc
+	GetAITSMSDeliveryCallback() http.HandlerFunc
 
-	GetNotificationHandler(ctx context.Context) http.HandlerFunc
+	GetNotificationHandler() http.HandlerFunc
 
-	GetIncomingMessageHandler(ctx context.Context) http.HandlerFunc
+	GetIncomingMessageHandler() http.HandlerFunc
 
-	GetFallbackHandler(ctx context.Context) http.HandlerFunc
+	GetFallbackHandler() http.HandlerFunc
 
-	PhoneNumberVerificationCodeHandler(ctx context.Context) http.HandlerFunc
+	PhoneNumberVerificationCodeHandler() http.HandlerFunc
 
 	SendOTPHandler() http.HandlerFunc
 
-	SendRetryOTPHandler(ctx context.Context) http.HandlerFunc
+	SendRetryOTPHandler() http.HandlerFunc
 
-	VerifyRetryOTPHandler(ctx context.Context) http.HandlerFunc
+	VerifyRetryOTPHandler() http.HandlerFunc
 
-	VerifyRetryEmailOTPHandler(ctx context.Context) http.HandlerFunc
+	VerifyRetryEmailOTPHandler() http.HandlerFunc
 
-	SendNotificationHandler(ctx context.Context) http.HandlerFunc
+	SendNotificationHandler() http.HandlerFunc
 
 	GetContactLists() http.HandlerFunc
 	GetContactListByID() http.HandlerFunc
 	GetContactsInAList() http.HandlerFunc
-	CollectEmailAddress(ctx context.Context) http.HandlerFunc
-	SetBewellAware(cxt context.Context) http.HandlerFunc
+	CollectEmailAddress() http.HandlerFunc
+	SetBewellAware() http.HandlerFunc
 
-	GetMarketingData(ctx context.Context) http.HandlerFunc
+	GetMarketingData() http.HandlerFunc
 
-	LoadCampaignData(ctx context.Context) http.HandlerFunc
-	UpdateMailgunDeliveryStatus(ctx context.Context) http.HandlerFunc
+	LoadCampaignData() http.HandlerFunc
+	UpdateMailgunDeliveryStatus() http.HandlerFunc
 
-	GetSladerData(ctx context.Context) http.HandlerFunc
+	GetSladerData() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -201,6 +152,8 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	ctx := r.Context()
+
 	m, err := pubsubtools.VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
 		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
@@ -220,7 +173,7 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 		serverutils.WriteJSONResponse(w, base.ErrorMap(err), http.StatusBadRequest)
 		return
 	}
-	ctx := addUIDToContext(envelope.UID)
+	ctx = addUIDToContext(ctx, envelope.UID)
 
 	switch topicID {
 	case helpers.AddPubSubNamespace(common.ItemPublishTopic):
@@ -465,10 +418,10 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 }
 
 // GetFeed retrieves and serves a feed
-func (p PresentationHandlersImpl) GetFeed(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetFeed() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		uid, flavour, anonymous, err := getUIDFlavourAndIsAnonymous(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -509,7 +462,7 @@ func (p PresentationHandlersImpl) GetFeed(
 		}
 
 		feed, err := p.interactor.Feed.GetFeed(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			uid,
 			anonymous,
 			*flavour,
@@ -534,10 +487,10 @@ func (p PresentationHandlersImpl) GetFeed(
 }
 
 // GetFeedItem retrieves a single feed item
-func (p PresentationHandlersImpl) GetFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		itemID, err := getStringVar(r, "itemID")
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -551,7 +504,7 @@ func (p PresentationHandlersImpl) GetFeedItem(
 		}
 
 		item, err := p.interactor.Feed.GetFeedItem(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			itemID,
@@ -576,10 +529,10 @@ func (p PresentationHandlersImpl) GetFeedItem(
 }
 
 // GetNudge retrieves a single nudge
-func (p PresentationHandlersImpl) GetNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		uid, flavour, _, err := getUIDFlavourAndIsAnonymous(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -592,9 +545,9 @@ func (p PresentationHandlersImpl) GetNudge(
 			return
 		}
 
-		ctx = addUIDToContext(*uid)
+		ctx = addUIDToContext(ctx, *uid)
 		nudge, err := p.interactor.Feed.GetNudge(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			nudgeID,
@@ -619,10 +572,10 @@ func (p PresentationHandlersImpl) GetNudge(
 }
 
 // GetAction retrieves a single action
-func (p PresentationHandlersImpl) GetAction(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetAction() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		uid, flavour, _, err := getUIDFlavourAndIsAnonymous(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -636,7 +589,7 @@ func (p PresentationHandlersImpl) GetAction(
 		}
 
 		action, err := p.interactor.Feed.GetAction(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			actionID,
@@ -669,10 +622,10 @@ func readBody(r *http.Request) ([]byte, error) {
 }
 
 // PublishFeedItem posts a feed item
-func (p PresentationHandlersImpl) PublishFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) PublishFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		data, err := readBody(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -693,7 +646,7 @@ func (p PresentationHandlersImpl) PublishFeedItem(
 		}
 
 		publishedItem, err := p.interactor.Feed.PublishFeedItem(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			item,
@@ -714,10 +667,10 @@ func (p PresentationHandlersImpl) PublishFeedItem(
 }
 
 // DeleteFeedItem removes a feed item
-func (p PresentationHandlersImpl) DeleteFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) DeleteFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		itemID, err := getStringVar(r, "itemID")
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -731,7 +684,7 @@ func (p PresentationHandlersImpl) DeleteFeedItem(
 		}
 
 		err = p.interactor.Feed.DeleteFeedItem(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			itemID,
@@ -753,64 +706,64 @@ func (p PresentationHandlersImpl) DeleteFeedItem(
 }
 
 // ResolveFeedItem marks a feed item as done
-func (p PresentationHandlersImpl) ResolveFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) ResolveFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchItem(ctx, p.interactor.Feed.ResolveFeedItem, w, r)
 	}
 }
 
 // PinFeedItem marks a feed item as done
-func (p PresentationHandlersImpl) PinFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) PinFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchItem(ctx, p.interactor.Feed.PinFeedItem, w, r)
 	}
 }
 
 // UnpinFeedItem marks a feed item as done
-func (p PresentationHandlersImpl) UnpinFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) UnpinFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchItem(ctx, p.interactor.Feed.UnpinFeedItem, w, r)
 	}
 }
 
 // HideFeedItem marks a feed item as done
-func (p PresentationHandlersImpl) HideFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) HideFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchItem(ctx, p.interactor.Feed.HideFeedItem, w, r)
 	}
 }
 
 // ShowFeedItem marks a feed item as done
-func (p PresentationHandlersImpl) ShowFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) ShowFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchItem(ctx, p.interactor.Feed.ShowFeedItem, w, r)
 	}
 }
 
 // UnresolveFeedItem marks a feed item as not resolved
-func (p PresentationHandlersImpl) UnresolveFeedItem(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) UnresolveFeedItem() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchItem(ctx, p.interactor.Feed.UnresolveFeedItem, w, r)
 	}
 }
 
 // PublishNudge posts a new nudge
-func (p PresentationHandlersImpl) PublishNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) PublishNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		data, err := readBody(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -831,7 +784,7 @@ func (p PresentationHandlersImpl) PublishNudge(
 		}
 
 		publishedNudge, err := p.interactor.Feed.PublishNudge(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			nudge,
@@ -856,19 +809,19 @@ func (p PresentationHandlersImpl) PublishNudge(
 }
 
 // ResolveNudge marks a nudge as resolved
-func (p PresentationHandlersImpl) ResolveNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) ResolveNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchNudge(ctx, p.interactor.Feed.ResolveNudge, w, r)
 	}
 }
 
 // ResolveDefaultNudge marks a default nudges as resolved
-func (p PresentationHandlersImpl) ResolveDefaultNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) ResolveDefaultNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		title, err := getStringVar(r, "title")
 
 		if err != nil {
@@ -883,7 +836,7 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge(
 		}
 
 		nudge, err := p.interactor.Feed.GetDefaultNudgeByTitle(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			title,
@@ -909,7 +862,7 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge(
 		}
 
 		_, err = p.interactor.Feed.ResolveNudge(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			nudge.ID,
@@ -924,37 +877,37 @@ func (p PresentationHandlersImpl) ResolveDefaultNudge(
 }
 
 // UnresolveNudge marks a nudge as not resolved
-func (p PresentationHandlersImpl) UnresolveNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) UnresolveNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchNudge(ctx, p.interactor.Feed.UnresolveNudge, w, r)
 	}
 }
 
 // HideNudge marks a nudge as not resolved
-func (p PresentationHandlersImpl) HideNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) HideNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchNudge(ctx, p.interactor.Feed.HideNudge, w, r)
 	}
 }
 
 // ShowNudge marks a nudge as not resolved
-func (p PresentationHandlersImpl) ShowNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) ShowNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		patchNudge(ctx, p.interactor.Feed.ShowNudge, w, r)
 	}
 }
 
 // DeleteNudge permanently deletes a nudge
-func (p PresentationHandlersImpl) DeleteNudge(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) DeleteNudge() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		nudgeID, err := getStringVar(r, "nudgeID")
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -968,7 +921,7 @@ func (p PresentationHandlersImpl) DeleteNudge(
 		}
 
 		err = p.interactor.Feed.DeleteNudge(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			nudgeID,
@@ -990,10 +943,10 @@ func (p PresentationHandlersImpl) DeleteNudge(
 }
 
 // PublishAction posts a new action to a user's feed
-func (p PresentationHandlersImpl) PublishAction(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) PublishAction() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		data, err := readBody(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1014,7 +967,7 @@ func (p PresentationHandlersImpl) PublishAction(
 		}
 
 		publishedAction, err := p.interactor.Feed.PublishAction(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			action,
@@ -1035,10 +988,10 @@ func (p PresentationHandlersImpl) PublishAction(
 }
 
 // DeleteAction permanently removes an action from a user's feed
-func (p PresentationHandlersImpl) DeleteAction(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) DeleteAction() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		actionID, err := getStringVar(r, "actionID")
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1052,7 +1005,7 @@ func (p PresentationHandlersImpl) DeleteAction(
 		}
 
 		err = p.interactor.Feed.DeleteAction(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			actionID,
@@ -1074,10 +1027,10 @@ func (p PresentationHandlersImpl) DeleteAction(
 }
 
 // PostMessage adds a message to a thread
-func (p PresentationHandlersImpl) PostMessage(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) PostMessage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		data, err := readBody(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1104,7 +1057,7 @@ func (p PresentationHandlersImpl) PostMessage(
 		}
 
 		postedMessage, err := p.interactor.Feed.PostMessage(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			itemID,
@@ -1126,10 +1079,10 @@ func (p PresentationHandlersImpl) PostMessage(
 }
 
 // DeleteMessage removes a message from a thread
-func (p PresentationHandlersImpl) DeleteMessage(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) DeleteMessage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		itemID, err := getStringVar(r, "itemID")
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1149,7 +1102,7 @@ func (p PresentationHandlersImpl) DeleteMessage(
 		}
 
 		err = p.interactor.Feed.DeleteMessage(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			itemID,
@@ -1172,10 +1125,10 @@ func (p PresentationHandlersImpl) DeleteMessage(
 }
 
 // ProcessEvent saves an event
-func (p PresentationHandlersImpl) ProcessEvent(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) ProcessEvent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		data, err := readBody(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1196,7 +1149,7 @@ func (p PresentationHandlersImpl) ProcessEvent(
 		}
 
 		err = p.interactor.Feed.ProcessEvent(
-			addUIDToContext(*uid),
+			addUIDToContext(ctx, *uid),
 			*uid,
 			*flavour,
 			event,
@@ -1218,10 +1171,10 @@ func (p PresentationHandlersImpl) ProcessEvent(
 }
 
 // Upload saves an upload in cloud storage
-func (p PresentationHandlersImpl) Upload(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) Upload() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		data, err := readBody(r)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1275,10 +1228,10 @@ func (p PresentationHandlersImpl) Upload(
 }
 
 // FindUpload retrieves an upload by it's ID
-func (p PresentationHandlersImpl) FindUpload(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) FindUpload() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		uploadID, err := getStringVar(r, "uploadID")
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
@@ -1308,10 +1261,10 @@ func (p PresentationHandlersImpl) FindUpload(
 
 // SendEmail sends the specified email to the recipient(s) specified in `to`
 // and returns the status
-func (p PresentationHandlersImpl) SendEmail(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendEmail() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.EMailMessage{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.Subject == "" {
@@ -1354,10 +1307,10 @@ func (p PresentationHandlersImpl) SendEmail(
 }
 
 // SendToMany sends a data message to the specified recipient
-func (p PresentationHandlersImpl) SendToMany(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendToMany() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.SendSMSPayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		for _, phoneNo := range payload.To {
@@ -1407,10 +1360,10 @@ func (p PresentationHandlersImpl) SendToMany(
 }
 
 // SendMarketingSMS sends a data message to the specified recipient
-func (p PresentationHandlersImpl) SendMarketingSMS(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendMarketingSMS() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.SendSMSPayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if len(payload.To) == 0 {
@@ -1461,11 +1414,10 @@ func (p PresentationHandlersImpl) SendMarketingSMS(
 }
 
 // GetAITSMSDeliveryCallback generates an SMS Delivery Report by saving the callback data for future analysis.
-func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Entry point to our AT callback implementation...\n\n\n")
+		ctx := r.Context()
+
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("unable to parse request data %v", err)
@@ -1475,7 +1427,6 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			return
 		}
 
-		log.Printf("Parsing the form data and creating a delivery report ...")
 		networkCode := r.Form.Get("networkCode")
 		failureReason := r.Form.Get("failureReason")
 		phoneNumber := r.Form.Get("phoneNumber")
@@ -1495,42 +1446,37 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback(
 			DeliveryReportTimeStamp: time.Now(),
 		}
 
-		log.Printf("Getting the SMS data to append delivery report..")
 		sms, err := p.interactor.SMS.GetMarketingSMSByPhone(ctx, phoneNumber)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		log.Printf("The returned SMS %v..", sms)
 
-		log.Printf("Updating the SMS with the delivery report")
 		sms.DeliveryReport = deliveryReport
 		updatedSms, err := p.interactor.SMS.UpdateMarketingMessage(
 			ctx,
 			sms,
 		)
-		log.Printf("An error occurred when updating message delivery report: %v \n\n\n", err)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		log.Printf("The updated message that has been returned %v\n\n\n", updatedSms)
 
 		marshalled, err := json.Marshal(updatedSms)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
 		}
-		log.Printf("The response returned %v \n\n\n", string(marshalled))
+
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }
 
 // GetNotificationHandler returns a handler that processes an Africa's Talking payment notification
-func (p PresentationHandlersImpl) GetNotificationHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetNotificationHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.Message{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
@@ -1568,10 +1514,10 @@ func (p PresentationHandlersImpl) GetNotificationHandler(
 }
 
 // GetIncomingMessageHandler returns a handler that processes an Africa's Talking payment notification
-func (p PresentationHandlersImpl) GetIncomingMessageHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetIncomingMessageHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.Message{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.AccountSID == "" {
@@ -1609,9 +1555,7 @@ func (p PresentationHandlersImpl) GetIncomingMessageHandler(
 }
 
 // GetFallbackHandler returns a handler that processes an Africa's Talking payment notification
-func (p PresentationHandlersImpl) GetFallbackHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetFallbackHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO ErrorCode and ErrorURL sent here as params
 		// TODO Implement WhatsAPP fallback handler: serverutils.DecodeJSONToTargetStruct(w, r, notificationPayload)
@@ -1621,10 +1565,10 @@ func (p PresentationHandlersImpl) GetFallbackHandler(
 }
 
 // PhoneNumberVerificationCodeHandler process ISC request to PhoneNumberVerificationCode
-func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		type PayloadRequest struct {
 			To               string `json:"to"`
 			Code             string `json:"code"`
@@ -1658,13 +1602,15 @@ func (p PresentationHandlersImpl) PhoneNumberVerificationCodeHandler(
 // SendOTPHandler is an isc api that generates and sends an otp to an msisdn
 func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		msisdn, err := otp.ValidateSendOTPPayload(w, r)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 
-		code, err := p.interactor.OTP.GenerateAndSendOTP(r.Context(), msisdn)
+		code, err := p.interactor.OTP.GenerateAndSendOTP(ctx, msisdn)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -1682,10 +1628,10 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 
 // SendRetryOTPHandler is an isc api that generates
 // fallback OTPs when Africa is talking sms fails
-func (p PresentationHandlersImpl) SendRetryOTPHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendRetryOTPHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload, err := otp.ValidateGenerateRetryOTPPayload(w, r)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
@@ -1712,10 +1658,10 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler(
 }
 
 // VerifyRetryOTPHandler is an isc api that confirms OTPs earlier sent
-func (p PresentationHandlersImpl) VerifyRetryOTPHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) VerifyRetryOTPHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, false)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
@@ -1743,10 +1689,10 @@ func (p PresentationHandlersImpl) VerifyRetryOTPHandler(
 }
 
 // VerifyRetryEmailOTPHandler is an isc api that confirms OTPs earlier sent via email.
-func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload, err := otp.ValidateVerifyOTPPayload(w, r, true)
 		if err != nil {
 			base.ReportErr(w, err, http.StatusBadRequest)
@@ -1774,10 +1720,10 @@ func (p PresentationHandlersImpl) VerifyRetryEmailOTPHandler(
 }
 
 // SendNotificationHandler sends a data message to the specified registration tokens.
-func (p PresentationHandlersImpl) SendNotificationHandler(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) SendNotificationHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload, payloadErr := fcm.ValidateSendNotificationPayload(w, r)
 		if payloadErr != nil {
 			base.ReportErr(w, payloadErr, http.StatusBadRequest)
@@ -1859,13 +1805,15 @@ func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
 
 //SetBewellAware the user identified by the provided email= as bewell-aware on the CRM
 // todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) SetBewellAware(cxt context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.SetBewellAwareInput{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 
 		err := p.interactor.Marketing.BeWellAware(
-			cxt,
+			ctx,
 			payload.EmailAddress,
 		)
 		if err != nil {
@@ -1886,8 +1834,10 @@ func (p PresentationHandlersImpl) SetBewellAware(cxt context.Context) http.Handl
 
 // CollectEmailAddress updates a user CRM contact with the supplied email
 // todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.PrimaryEmailAddressPayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.PhoneNumber == "" {
@@ -1943,8 +1893,10 @@ func (p PresentationHandlersImpl) CollectEmailAddress(ctx context.Context) http.
 }
 
 // GetMarketingData retrieves all the marketing data from the collection
-func (p PresentationHandlersImpl) GetMarketingData(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetMarketingData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.MarketingMessagePayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 
@@ -1990,8 +1942,10 @@ func (p PresentationHandlersImpl) GetMarketingData(ctx context.Context) http.Han
 
 //LoadCampaignData loads a prepared campaign dataset into firestore and CRM
 // todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) LoadCampaignData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.LoadCampgainDataInput{}
 
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
@@ -2017,10 +1971,10 @@ func (p PresentationHandlersImpl) LoadCampaignData(ctx context.Context) http.Han
 }
 
 // UpdateMailgunDeliveryStatus gets the status of the sent emails and logs them in the database
-func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(
-	ctx context.Context,
-) http.HandlerFunc {
+func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		payload := &dto.MailgunEvent{}
 		base.DecodeJSONToTargetStruct(rw, r, payload)
 
@@ -2041,8 +1995,10 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus(
 }
 
 // GetSladerData get the details of a single slader by their phonenumber
-func (p PresentationHandlersImpl) GetSladerData(ctx context.Context) http.HandlerFunc {
+func (p PresentationHandlersImpl) GetSladerData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		phoneNumber := r.URL.Query().Get("phoneNumber")
 
 		if phoneNumber == "" {

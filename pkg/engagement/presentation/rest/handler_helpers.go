@@ -96,7 +96,7 @@ func patchItem(
 		return
 	}
 
-	item, err := patchFunc(addUIDToContext(*uid), *uid, *flavour, itemID)
+	item, err := patchFunc(addUIDToContext(ctx, *uid), *uid, *flavour, itemID)
 	if err != nil {
 		if errors.Is(err, exceptions.ErrNilFeedItem) {
 			respondWithError(w, http.StatusNotFound, err)
@@ -136,7 +136,7 @@ func patchNudge(
 		return
 	}
 
-	element, err := patchFunc(addUIDToContext(*uid), *uid, *flavour, nudgeID)
+	element, err := patchFunc(addUIDToContext(ctx, *uid), *uid, *flavour, nudgeID)
 	if err != nil {
 		if errors.Is(err, exceptions.ErrNilNudge) {
 			respondWithError(w, http.StatusNotFound, err)
@@ -269,9 +269,9 @@ func SchemaHandler() (http.Handler, error) {
 	return http.StripPrefix("/schema", http.FileServer(f)), nil
 }
 
-func addUIDToContext(uid string) context.Context {
+func addUIDToContext(ctx context.Context, uid string) context.Context {
 	return context.WithValue(
-		context.Background(),
+		ctx,
 		base.AuthTokenContextKey,
 		&auth.Token{UID: uid},
 	)
