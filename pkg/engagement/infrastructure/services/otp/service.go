@@ -32,7 +32,7 @@ const (
 	subject       = "Be.Well Verification Code"
 	whatsappStep  = 1
 	twilioStep    = 2
-	appIdentifier = "ZjMyZTFjOTF"
+	appIdentifier = "qKW6RBxMor4"
 )
 
 // These constants are here to support Integration Testing
