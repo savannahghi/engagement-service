@@ -15,7 +15,6 @@ import (
 	"github.com/savannahghi/pubsubtools"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -159,7 +158,7 @@ func getTheTestItem(t *testing.T) feedlib.Item {
 		TextType:       feedlib.TextTypePlain,
 		Links: []feedlib.Link{
 			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
-			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", feedlib.LogoURL),
+			feedlib.GetYoutubeVideoLink(feedlib.SampleVideoURL, "title", "description", feedlib.LogoURL),
 		},
 		Actions: []feedlib.Action{
 			{
@@ -322,7 +321,7 @@ func aTestNudge(t *testing.T) *feedlib.Nudge {
 // 	notify, err := InitializeTestNewNotification(ctx)
 // 	assert.Nil(t, err)
 // 	type args struct {
-// 		m *base.PubSubPayload
+// 		m *pubsubutils.PubSubPayload
 // 	}
 // 	tests := []struct {
 // 		name    string

@@ -14,7 +14,6 @@ import (
 	"github.com/savannahghi/profileutils"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/apiclient"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
@@ -205,7 +204,7 @@ func (m MarketingDataImpl) LoadCampaignDataset(ctx context.Context, phone string
 		}
 	}
 
-	if p := converterandformatter.StringSliceContains(base.AuthorizedPhones, phone); !p {
+	if p := converterandformatter.StringSliceContains(profileutils.AuthorizedPhones, phone); !p {
 		res.LoadingError = fmt.Errorf("not authorized to access this resource")
 		sendMail(res)
 		return

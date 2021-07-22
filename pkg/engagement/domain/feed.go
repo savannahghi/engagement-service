@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/base"
 )
 
 // Feed manages and serializes the nudges, actions and feed items that a
@@ -51,7 +50,7 @@ func (fe Feed) IsEntity() {}
 // ValidateAndUnmarshal checks that the input data is valid as per the
 // relevant JSON schema and unmarshals it if it is
 func (fe *Feed) ValidateAndUnmarshal(b []byte) error {
-	err := base.ValidateAndUnmarshal(base.FeedSchemaFile, b, fe)
+	err := feedlib.ValidateAndUnmarshal(feedlib.FeedSchemaFile, b, fe)
 	if err != nil {
 		return fmt.Errorf("invalid feed JSON: %w", err)
 	}
@@ -60,7 +59,7 @@ func (fe *Feed) ValidateAndUnmarshal(b []byte) error {
 
 // ValidateAndMarshal validates against the JSON schema then marshals to JSON
 func (fe *Feed) ValidateAndMarshal() ([]byte, error) {
-	return base.ValidateAndMarshal(base.FeedSchemaFile, fe)
+	return feedlib.ValidateAndMarshal(feedlib.FeedSchemaFile, fe)
 }
 
 // EMailMessage holds data required to send emails

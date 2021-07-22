@@ -32,7 +32,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/xid v1.3.0
-	github.com/savannahghi/converterandformatter v0.0.3
+	github.com/savannahghi/converterandformatter v0.0.9
 	github.com/savannahghi/enumutils v0.0.0-20210629053908-b2082a4ab6b3
 	github.com/savannahghi/errorcodeutil v0.0.1
 	github.com/savannahghi/feedlib v0.0.0-20210628122532-ef88e353d4d6
@@ -41,7 +41,7 @@ require (
 	github.com/savannahghi/profileutils v0.0.7
 	github.com/savannahghi/pubsubtools v0.0.0-20210624135722-0393c6ad97a0
 	github.com/savannahghi/scalarutils v0.0.0-20210622091443-bad5089abdad
-	github.com/savannahghi/serverutils v0.0.2
+	github.com/savannahghi/serverutils v0.0.3
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

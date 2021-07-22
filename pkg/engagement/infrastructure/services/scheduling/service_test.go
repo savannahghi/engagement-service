@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
 )
 
-const calendarTestEmail = converterandformatter.TestUserEmail
+const calendarTestEmail = firebasetools.TestUserEmail
 
 func TestMain(m *testing.M) {
 	os.Setenv("ROOT_COLLECTION_SUFFIX", "testing")

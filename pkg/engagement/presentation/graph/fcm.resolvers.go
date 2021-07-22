@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
@@ -21,7 +21,7 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 	r.checkPreconditions()
 	r.CheckUserTokenInContext(ctx)
 
-	notificationData, err := base.MapInterfaceToMapString(data)
+	notificationData, err := converterandformatter.MapInterfaceToMapString(data)
 	if err != nil {
 		return false, err
 	}

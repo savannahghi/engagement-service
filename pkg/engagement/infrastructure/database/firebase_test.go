@@ -10,12 +10,12 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/google/uuid"
-	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/apiclient"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
@@ -2076,8 +2076,8 @@ func TestRepository_SaveNPSResponse(t *testing.T) {
 		Question: "How is it",
 		Answer:   "It is what it is",
 	}
-	email := converterandformatter.TestUserEmail
-	phoneNumber := base.TestUserPhoneNumber
+	email := firebasetools.TestUserEmail
+	phoneNumber := interserviceclient.TestUserPhoneNumber
 
 	response := &dto.NPSResponse{
 		ID:        uuid.New().String(),
@@ -2514,7 +2514,7 @@ func TestService_SaveOutgoingEmails(t *testing.T) {
 // 	marketingData := composeMarketingDataPayload(
 // 		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
 // 		fmt.Sprintf("WING %s", ksuid.New().String()),
-// 		base.TestUserPhoneNumber,
+// 		profileutils.TestUserPhoneNumber,
 // 		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
 // 	)
 
@@ -2538,7 +2538,7 @@ func TestService_SaveOutgoingEmails(t *testing.T) {
 // 			name: "Happy Case: Successfully retrieve a slader data",
 // 			args: args{
 // 				ctx:         ctx,
-// 				phonenumber: base.TestUserPhoneNumber,
+// 				phonenumber: profileutils.TestUserPhoneNumber,
 // 			},
 // 			wantErr: false,
 // 		},

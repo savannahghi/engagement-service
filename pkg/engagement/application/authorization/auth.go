@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"gitlab.slade360emr.com/go/base"
-
 	"github.com/casbin/casbin/v2"
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/profileutils"
@@ -68,10 +66,10 @@ func CheckAuthorization(subject string, permission profileutils.PermissionInput)
 // have access by default.
 // for subjects identified by their phone number normalize the phone and omit the first (+) character
 func IsAuthorized(user *profileutils.UserInfo, permission profileutils.PermissionInput) (bool, error) {
-	if user.PhoneNumber != "" && converterandformatter.StringSliceContains(base.AuthorizedPhones, user.PhoneNumber) {
+	if user.PhoneNumber != "" && converterandformatter.StringSliceContains(profileutils.AuthorizedPhones, user.PhoneNumber) {
 		return CheckAuthorization(user.PhoneNumber[1:], permission)
 	}
-	if user.Email != "" && converterandformatter.StringSliceContains(base.AuthorizedEmails, user.Email) {
+	if user.Email != "" && converterandformatter.StringSliceContains(profileutils.AuthorizedEmails, user.Email) {
 		return CheckAuthorization(user.Email, permission)
 
 	}

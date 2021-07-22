@@ -12,8 +12,6 @@ import (
 
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
-
-	"gitlab.slade360emr.com/go/base"
 )
 
 const waitSeconds = 30
@@ -41,7 +39,7 @@ func main() {
 	// initialize the tracing provider in prod and testing env only
 	env := serverutils.GetRunningEnvironment()
 	if env == serverutils.ProdEnv || env == serverutils.TestingEnv {
-		tp, err := base.InitOtelSDK(ctx, "engagement")
+		tp, err := serverutils.InitOtelSDK(ctx, "engagement")
 		if err != nil {
 			serverutils.LogStartupError(ctx, err)
 		}

@@ -30,7 +30,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/apiclient"
-	"gitlab.slade360emr.com/go/base"
 
 	"github.com/savannahghi/interserviceclient"
 	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
@@ -4085,7 +4084,7 @@ func getTestItem(t *testing.T) *feedlib.Item {
 		TextType:       feedlib.TextTypePlain,
 		Links: []feedlib.Link{
 			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
-			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", feedlib.LogoURL),
+			feedlib.GetYoutubeVideoLink(feedlib.SampleVideoURL, "title", "description", feedlib.LogoURL),
 		},
 		Actions: []feedlib.Action{
 			{
@@ -4238,7 +4237,7 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 }
 
 // func TestGoogleCloudPubSubHandler(t *testing.T) {
-// 	ctx, token, err := base.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
+// 	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(t, onboardingISCClient(t))
 // 	if err != nil {
 // 		t.Errorf("cant get phone number authenticated context and token: %v", err)
 // 		return
@@ -4358,9 +4357,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 
 // 	b64 := base64.StdEncoding.EncodeToString([]byte(ksuid.New().String()))
 
-// 	actionPublishTopicPayload := base.PubSubPayload{
+// 	actionPublishTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      actionData,
 // 			Attributes: map[string]string{
@@ -4369,9 +4368,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidActionPublishTopicPayload := base.PubSubPayload{
+// 	invalidActionPublishTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      itemData,
 // 			Attributes: map[string]string{
@@ -4384,9 +4383,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 	actionPublishRequest, _ := GetPayloadRequest(actionPublishTopicPayload)
 // 	invalidActionPublishRequest, _ := GetPayloadRequest(invalidActionPublishTopicPayload)
 
-// 	actionDeleteTopicPayload := base.PubSubPayload{
+// 	actionDeleteTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      actionData,
 // 			Attributes: map[string]string{
@@ -4395,9 +4394,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidActionDeleteTopicPayload := base.PubSubPayload{
+// 	invalidActionDeleteTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      itemData,
 // 			Attributes: map[string]string{
@@ -4410,9 +4409,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 	invalidActionDeleteRequest, _ := GetPayloadRequest(invalidActionDeleteTopicPayload)
 // 	actionDeleteRequest, _ := GetPayloadRequest(actionDeleteTopicPayload)
 
-// 	messagePostTopicPayload := base.PubSubPayload{
+// 	messagePostTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      messageData,
 // 			Attributes: map[string]string{
@@ -4421,8 +4420,8 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidMessagePostTopicPayload := base.PubSubPayload{
-// 		Message: base.PubSubMessage{
+// 	invalidMessagePostTopicPayload := pubsubutils.PubSubPayload{
+// 		Message: pubsubutils.PubSubMessage{
 // 			Data: itemData,
 // 			Attributes: map[string]string{
 // 				"topicID":       "invalid topic",
@@ -4443,9 +4442,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	messageDeleteTopicPayload := base.PubSubPayload{
+// 	messageDeleteTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      messageData,
 // 			Attributes: map[string]string{
@@ -4454,8 +4453,8 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidMessageDeleteTopicPayload := base.PubSubPayload{
-// 		Message: base.PubSubMessage{
+// 	invalidMessageDeleteTopicPayload := pubsubutils.PubSubPayload{
+// 		Message: pubsubutils.PubSubMessage{
 // 			Data: itemData,
 // 			Attributes: map[string]string{
 // 				"topicID":       "invalid topic",
@@ -4475,9 +4474,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	incomingEventTopicPayload := base.PubSubPayload{
+// 	incomingEventTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      eventData,
 // 			Attributes: map[string]string{
@@ -4486,8 +4485,8 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidIncomingEventTopicPayload := base.PubSubPayload{
-// 		Message: base.PubSubMessage{
+// 	invalidIncomingEventTopicPayload := pubsubutils.PubSubPayload{
+// 		Message: pubsubutils.PubSubMessage{
 // 			Data: itemData,
 // 			Attributes: map[string]string{
 // 				"topicID":       "invalid topic",
@@ -4507,9 +4506,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	invalidTopicPayload := base.PubSubPayload{
+// 	invalidTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      []byte(b64),
 // 			Attributes: map[string]string{
@@ -4520,9 +4519,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 
 // 	invalidTopicRequest, _ := GetPayloadRequest(invalidTopicPayload)
 
-// 	itemPublishTopicPayload := base.PubSubPayload{
+// 	itemPublishTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4531,9 +4530,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemPublishTopicPayload := base.PubSubPayload{
+// 	invalidItemPublishTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4546,9 +4545,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 	invalidItemPublishTopicRequest, _ := GetPayloadRequest(invalidItemPublishTopicPayload)
 // 	itemPublishTopicRequest, _ := GetPayloadRequest(itemPublishTopicPayload)
 
-// 	itemResolveTopicPayload := base.PubSubPayload{
+// 	itemResolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4557,9 +4556,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemResolveTopicPayload := base.PubSubPayload{
+// 	invalidItemResolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4572,9 +4571,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 	invalidItemResolveTopicRequest, _ := GetPayloadRequest(invalidItemResolveTopicPayload)
 // 	itemResolveTopicRequest, _ := GetPayloadRequest(itemResolveTopicPayload)
 
-// 	itemUnresolveTopicPayload := base.PubSubPayload{
+// 	itemUnresolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4583,9 +4582,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemUnresolveTopicPayload := base.PubSubPayload{
+// 	invalidItemUnresolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4606,9 +4605,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	itemDeleteTopicPayload := base.PubSubPayload{
+// 	itemDeleteTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4617,9 +4616,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemDeleteTopicPayload := base.PubSubPayload{
+// 	invalidItemDeleteTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4640,9 +4639,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	itemHideTopicPayload := base.PubSubPayload{
+// 	itemHideTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4651,9 +4650,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemHideTopicPayload := base.PubSubPayload{
+// 	invalidItemHideTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4674,9 +4673,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	itemShowTopicPayload := base.PubSubPayload{
+// 	itemShowTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4685,9 +4684,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemShowTopicPayload := base.PubSubPayload{
+// 	invalidItemShowTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4708,9 +4707,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	itemPinTopicPayload := base.PubSubPayload{
+// 	itemPinTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4719,9 +4718,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemPinTopicPayload := base.PubSubPayload{
+// 	invalidItemPinTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4742,9 +4741,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	itemUnpinTopicPayload := base.PubSubPayload{
+// 	itemUnpinTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      notificationData,
 // 			Attributes: map[string]string{
@@ -4753,9 +4752,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidItemUnpinTopicPayload := base.PubSubPayload{
+// 	invalidItemUnpinTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4776,9 +4775,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	nudgePublishTopicPayload := base.PubSubPayload{
+// 	nudgePublishTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      nudgeData,
 // 			Attributes: map[string]string{
@@ -4787,9 +4786,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidNudgePublishTopicPayload := base.PubSubPayload{
+// 	invalidNudgePublishTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4810,9 +4809,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	nudgeDeleteTopicPayload := base.PubSubPayload{
+// 	nudgeDeleteTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      nudgeData,
 // 			Attributes: map[string]string{
@@ -4821,9 +4820,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidNudgeDeleteTopicPayload := base.PubSubPayload{
+// 	invalidNudgeDeleteTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4844,9 +4843,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	nudgeResolveTopicPayload := base.PubSubPayload{
+// 	nudgeResolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      nudgeData,
 // 			Attributes: map[string]string{
@@ -4855,9 +4854,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidNudgeResolveTopicPayload := base.PubSubPayload{
+// 	invalidNudgeResolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4878,9 +4877,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	nudgeUnresolveTopicPayload := base.PubSubPayload{
+// 	nudgeUnresolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      nudgeData,
 // 			Attributes: map[string]string{
@@ -4889,9 +4888,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidNudgeUnresolveTopicPayload := base.PubSubPayload{
+// 	invalidNudgeUnresolveTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4912,9 +4911,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	nudgeHideTopicPayload := base.PubSubPayload{
+// 	nudgeHideTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      nudgeData,
 // 			Attributes: map[string]string{
@@ -4923,9 +4922,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidNudgeHideTopicPayload := base.PubSubPayload{
+// 	invalidNudgeHideTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4946,9 +4945,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	nudgeShowTopicPayload := base.PubSubPayload{
+// 	nudgeShowTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      nudgeData,
 // 			Attributes: map[string]string{
@@ -4957,9 +4956,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidNudgeShowTopicPayload := base.PubSubPayload{
+// 	invalidNudgeShowTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: "invalid",
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: "invalid",
 // 			Data:      messageDataJSON,
 // 			Attributes: map[string]string{
@@ -4986,9 +4985,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		return
 // 	}
 
-// 	sendEmailTopicPayload := base.PubSubPayload{
+// 	sendEmailTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      emailPayload,
 // 			Attributes: map[string]string{
@@ -4997,9 +4996,9 @@ func GetPayloadRequest(data pubsubtools.PubSubPayload) (*http.Request, error) {
 // 		},
 // 	}
 
-// 	invalidSendEmailTopicPayload := base.PubSubPayload{
+// 	invalidSendEmailTopicPayload := pubsubutils.PubSubPayload{
 // 		Subscription: ksuid.New().String(),
-// 		Message: base.PubSubMessage{
+// 		Message: pubsubutils.PubSubMessage{
 // 			MessageID: ksuid.New().String(),
 // 			Data:      itemData,
 // 			Attributes: map[string]string{
@@ -6377,7 +6376,7 @@ func TestPresentationHandlersImpl_GetContactsInAList(t *testing.T) {
 
 func TestSetBewellAware(t *testing.T) {
 	assert := assert.New(t)
-	userEmail := dto.SetBewellAwareInput{EmailAddress: base.TestUserEmail}
+	userEmail := dto.SetBewellAwareInput{EmailAddress: firebasetools.TestUserEmail}
 	userEmailAsJson, err := json.Marshal(userEmail)
 	if !assert.Nilf(err, "unable to marshall upload input to JSON: %s", err) {
 		return
@@ -6393,7 +6392,7 @@ func TestSetBewellAware(t *testing.T) {
 		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
 		fmt.Sprintf("WING %s", ksuid.New().String()),
 		gofakeit.PhoneFormatted(),
-		base.TestUserEmail,
+		firebasetools.TestUserEmail,
 	)
 	err = loadTestMarketingData(ctx, *marketingData)
 	if err != nil {
@@ -6724,7 +6723,7 @@ func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
 	}
 	headers := getDefaultHeaders(ctx, t, baseURL)
 
-	testNumber := base.TestUserPhoneNumber
+	testNumber := interserviceclient.TestUserPhoneNumber
 	// Setup test data
 	marketingData := composeMarketingDataPayload(
 		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
@@ -6753,7 +6752,7 @@ func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
 		{
 			name: "Happy Case: Successfully retrieve data",
 			args: args{
-				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, base.TestUserPhoneNumber),
+				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, interserviceclient.TestUserPhoneNumber),
 				httpMethod: http.MethodGet,
 			},
 			wantStatus: http.StatusOK,
@@ -6771,7 +6770,7 @@ func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
 		{
 			name: "Sad Case: Method not allowed",
 			args: args{
-				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, base.TestUserPhoneNumber),
+				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, interserviceclient.TestUserPhoneNumber),
 				httpMethod: http.MethodPost,
 			},
 			wantStatus: http.StatusMethodNotAllowed,

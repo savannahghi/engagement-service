@@ -36,22 +36,22 @@ package otp_test
 // 			expectedErrorMessage: "invalid phone number: 1",
 // 		},
 // 		"international_with_plus": {
-// 			input:          base.TestUserPhoneNumber,
+// 			input:          profileutils.TestUserPhoneNumber,
 // 			expectError:    false,
-// 			expectedOutput: base.TestUserPhoneNumber,
+// 			expectedOutput: profileutils.TestUserPhoneNumber,
 // 		},
 // 		"international_no_plus": {
-// 			input:          base.TestUserPhoneNumber[1:],
+// 			input:          profileutils.TestUserPhoneNumber[1:],
 // 			expectError:    false,
-// 			expectedOutput: base.TestUserPhoneNumber,
+// 			expectedOutput: profileutils.TestUserPhoneNumber,
 // 		},
 // 		"national_zero_prefix": {
-// 			input:          "0" + base.TestUserPhoneNumber[4:],
+// 			input:          "0" + profileutils.TestUserPhoneNumber[4:],
 // 			expectError:    false,
-// 			expectedOutput: base.TestUserPhoneNumber,
+// 			expectedOutput: profileutils.TestUserPhoneNumber,
 // 		},
 // 		"national_no_zero_prefix": {
-// 			input:                base.TestUserPhoneNumber[4:],
+// 			input:                profileutils.TestUserPhoneNumber[4:],
 // 			expectError:          true,
 // 			expectedErrorMessage: "invalid phone number: 711223344",
 // 		},
@@ -81,7 +81,7 @@ package otp_test
 // 		expectedErrorMessage string
 // 	}{
 // 		"valid_case : Kenyan number": {
-// 			msisdn: base.TestUserPhoneNumber,
+// 			msisdn: profileutils.TestUserPhoneNumber,
 // 		},
 // 		"valid_case : american number": {
 // 			msisdn: InternationalTestUserPhoneNumber,
@@ -109,7 +109,7 @@ package otp_test
 // }
 
 // func TestService_SendOTPToEmail(t *testing.T) {
-// 	phoneNumber := base.TestUserPhoneNumber
+// 	phoneNumber := profileutils.TestUserPhoneNumber
 // 	invalidPhoneNumber := "1"
 // 	otpService := otp.NewService()
 // 	ctx := context.Background()
@@ -173,7 +173,7 @@ package otp_test
 // // disabled retry OTP tests due to service costs
 
 // func TestService_GenerateRetryOtp(t *testing.T) {
-// 	phoneNumber := base.TestUserPhoneNumber
+// 	phoneNumber := profileutils.TestUserPhoneNumber
 // 	invalidPhoneNumber := "this is definitely not a number"
 // 	service := otp.NewService()
 // 	type args struct {
@@ -313,7 +313,7 @@ package otp_test
 // }
 
 // func TestService_VerifyOtp(t *testing.T) {
-// 	phoneNumber := base.TestUserPhoneNumber
+// 	phoneNumber := profileutils.TestUserPhoneNumber
 // 	invalidNumber := "1111"
 // 	srv := otp.NewService()
 // 	assert.NotNil(t, srv, "service should not be bil")
@@ -466,7 +466,7 @@ package otp_test
 // 		{
 // 			name: "valid normalized Kenyan number",
 // 			args: args{
-// 				normalizedPhoneNumber: base.TestUserPhoneNumber,
+// 				normalizedPhoneNumber: profileutils.TestUserPhoneNumber,
 // 				code:                  "123456",
 // 			},
 // 			want:    "123456",

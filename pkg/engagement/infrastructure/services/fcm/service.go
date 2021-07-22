@@ -10,8 +10,8 @@ import (
 	"cloud.google.com/go/firestore"
 	"firebase.google.com/go/messaging"
 	"github.com/google/uuid"
+	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/firebasetools"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -176,7 +176,7 @@ func (s Service) SendNotification(
 	if android != nil {
 		message.Android = &messaging.AndroidConfig{
 			Priority: android.Priority,
-			Data:     base.ConvertInterfaceMap(android.Data),
+			Data:     converterandformatter.ConvertInterfaceMap(android.Data),
 		}
 		if android.CollapseKey != nil {
 			message.Android.CollapseKey = *android.CollapseKey
@@ -187,13 +187,13 @@ func (s Service) SendNotification(
 	}
 	if web != nil {
 		message.Webpush = &messaging.WebpushConfig{
-			Headers: base.ConvertInterfaceMap(web.Headers),
-			Data:    base.ConvertInterfaceMap(web.Data),
+			Headers: converterandformatter.ConvertInterfaceMap(web.Headers),
+			Data:    converterandformatter.ConvertInterfaceMap(web.Data),
 		}
 	}
 	if ios != nil {
 		message.APNS = &messaging.APNSConfig{
-			Headers: base.ConvertInterfaceMap(web.Headers),
+			Headers: converterandformatter.ConvertInterfaceMap(web.Headers),
 		}
 	}
 
@@ -229,7 +229,7 @@ func (s Service) SendNotification(
 				}
 			}
 			if data != nil {
-				savedNotification.Data = base.ConvertStringMap(data)
+				savedNotification.Data = converterandformatter.ConvertStringMap(data)
 			}
 			if android != nil {
 				savedNotification.AndroidConfig = &dto.FirebaseAndroidConfig{

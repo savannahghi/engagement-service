@@ -15,14 +15,12 @@ import (
 	"time"
 
 	"github.com/imroc/req"
-	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
 )
 
@@ -117,7 +115,7 @@ func getTestItem() feedlib.Item {
 		TextType:       feedlib.TextTypePlain,
 		Links: []feedlib.Link{
 			feedlib.GetPNGImageLink(feedlib.LogoURL, "title", "description", feedlib.LogoURL),
-			feedlib.GetYoutubeVideoLink(base.SampleVideoURL, "title", "description", feedlib.LogoURL),
+			feedlib.GetYoutubeVideoLink(feedlib.SampleVideoURL, "title", "description", feedlib.LogoURL),
 		},
 		Actions: []feedlib.Action{
 			{
@@ -203,7 +201,7 @@ func getGraphQLHeaders(t *testing.T) map[string]string {
 
 func GetBearerTokenHeader(t *testing.T) string {
 	ctx := context.Background()
-	user, err := firebasetools.GetOrCreateFirebaseUser(ctx, converterandformatter.TestUserEmail)
+	user, err := firebasetools.GetOrCreateFirebaseUser(ctx, firebasetools.TestUserEmail)
 	if err != nil {
 		t.Errorf("can't get or create firebase user: %s", err)
 		return ""

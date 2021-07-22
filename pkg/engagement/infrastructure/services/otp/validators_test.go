@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/base"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
@@ -73,7 +73,7 @@ func TestValidateSendOTPPayload(t *testing.T) {
 }
 
 func TestValidateGenerateRetryOTPPayload(t *testing.T) {
-	phoneNumber := base.TestUserPhoneNumber
+	phoneNumber := interserviceclient.TestUserPhoneNumber
 	goodData := &dto.GenerateRetryOTP{
 		Msisdn:    &phoneNumber,
 		RetryStep: 2,
@@ -135,7 +135,7 @@ func TestValidateGenerateRetryOTPPayload(t *testing.T) {
 }
 
 func TestValidateVerifyOTPPayload_Phone(t *testing.T) {
-	phoneNumber := base.TestUserPhoneNumber
+	phoneNumber := interserviceclient.TestUserPhoneNumber
 	verificationCode := "45225"
 
 	goodData := &dto.VerifyOTP{
@@ -200,8 +200,8 @@ func TestValidateVerifyOTPPayload_Phone(t *testing.T) {
 }
 
 func TestValidateVerifyOTPPayload_Email(t *testing.T) {
-	phoneNumber := base.TestUserPhoneNumber
-	email := converterandformatter.TestUserEmail
+	phoneNumber := interserviceclient.TestUserPhoneNumber
+	email := firebasetools.TestUserEmail
 	verificationCode := "45225"
 
 	goodData := &dto.VerifyOTP{
