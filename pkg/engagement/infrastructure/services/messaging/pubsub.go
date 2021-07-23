@@ -45,7 +45,7 @@ type NotificationService interface {
 		ctx context.Context,
 		phone string,
 		messageID string,
-		engagementType string,
+		engagementType domain.EngagementType,
 		metadata map[string]interface{},
 		topicID string,
 	) error
@@ -227,7 +227,7 @@ func (ps PubSubNotificationService) NotifyEngagementCreate(
 	ctx context.Context,
 	phone string,
 	messageID string,
-	engagementType string,
+	engagementType domain.EngagementType,
 	metadata map[string]interface{},
 	topicID string,
 ) error {

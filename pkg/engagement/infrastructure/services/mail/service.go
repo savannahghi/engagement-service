@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -65,6 +66,7 @@ type ServiceMail interface {
 		ctx context.Context,
 		payload *dto.MailgunEvent,
 	) (*dto.OutgoingEmailsLog, error)
+	GenerateEmailTemplate(name string, templateName string) string
 }
 
 // NewService initializes a new MailGun service
@@ -320,4 +322,12 @@ func (s Service) UpdateMailgunDeliveryStatus(
 	defer span.End()
 
 	return s.Repository.UpdateMailgunDeliveryStatus(ctx, payload)
+}
+
+//GenerateEmailTemplate generates custom emails to be sent to the users
+func (s Service) GenerateEmailTemplate(name string, templateName string) string {
+	t := template.Must(template.New("Be.WellEmailTemplate").Parse(templateName))
+	buf := new(bytes.Buffer)
+	_ = t.Execute(buf, name)
+	return buf.String()
 }

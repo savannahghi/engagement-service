@@ -33,8 +33,7 @@ import (
 
 const (
 	// StaticDir is the directory that contains schemata, default images etc
-	StaticDir     = "gitlab.slade360emr.com/go/engagement:/static/"
-	marketingText = "Kevin from Be.Well Team"
+	StaticDir = "gitlab.slade360emr.com/go/engagement:/static/"
 
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
@@ -1803,16 +1802,14 @@ func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
 	}
 }
 
-//SetBewellAware the user identified by the provided email= as bewell-aware on the CRM
+//SetBewellAware the user identified by the provided email as bewell-aware
 // todo write automated tests for this (it has already been hand-tested to work)
 func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-
 		payload := &dto.SetBewellAwareInput{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-
-		err := p.interactor.Marketing.BeWellAware(
+		contact, err := p.interactor.GTM.BeWellAware(
 			ctx,
 			payload.EmailAddress,
 		)
@@ -1820,8 +1817,7 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 			errorcode.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		resp := map[string]string{"status": "success"}
-		marshalled, err := json.Marshal(resp)
+		marshalled, err := json.Marshal(contact)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return
@@ -1829,7 +1825,6 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 
 		respondWithJSON(w, http.StatusOK, marshalled)
 	}
-
 }
 
 // CollectEmailAddress updates a user CRM contact with the supplied email
@@ -1837,26 +1832,18 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-
 		payload := &dto.PrimaryEmailAddressPayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		if payload.PhoneNumber == "" {
-			err := fmt.Errorf("expected `phone` to be defined")
+		if payload.PhoneNumber == "" || payload.EmailAddress == "" {
+			err := fmt.Errorf("expected either a phone number or an email to be defined")
 			serverutils.WriteJSONResponse(w, errorcode.CustomError{
 				Err:     err,
 				Message: err.Error(),
 			}, http.StatusBadRequest)
 			return
 		}
-		if payload.EmailAddress == "" {
-			err := fmt.Errorf("expected `email` to be defined")
-			serverutils.WriteJSONResponse(w, errorcode.CustomError{
-				Err:     err,
-				Message: err.Error(),
-			}, http.StatusBadRequest)
-			return
-		}
-		err := p.interactor.Marketing.UpdateUserCRMEmail(
+
+		contact, err := p.interactor.GTM.CollectEmails(
 			ctx,
 			payload.EmailAddress,
 			payload.PhoneNumber,
@@ -1865,24 +1852,8 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 			errorcode.RespondWithError(w, http.StatusBadRequest, err)
 			return
 		}
-		name := "Kevin From Be.Well"
 
-		body := GenerateCollectEmailFunc(name)
-		subject := "Download the new Be.Well app to manage your insurance benefits"
-		sendEmail, _, err := p.interactor.Mail.SendEmail(
-			ctx,
-			subject,
-			marketingText,
-			&body,
-			payload.EmailAddress,
-		)
-		if err != nil {
-			err := fmt.Errorf("email not sent: %s", err)
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		marshalled, err := json.Marshal(sendEmail)
+		marshalled, err := json.Marshal(contact)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, err)
 			return

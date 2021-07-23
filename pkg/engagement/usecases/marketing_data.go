@@ -78,8 +78,6 @@ const dataLoadingTemaplate = `
 // MarketingDataUseCases represents all the marketing data business logic
 type MarketingDataUseCases interface {
 	GetMarketingData(ctx context.Context, data *dto.MarketingMessagePayload) ([]*apiclient.Segment, error)
-	UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error
-	BeWellAware(ctx context.Context, email string) error
 	LoadCampaignDataset(ctx context.Context, phone string, emails []string)
 	GetUserMarketingData(ctx context.Context, phonenumber string) (*apiclient.Segment, error)
 }
@@ -113,42 +111,6 @@ func (m MarketingDataImpl) GetMarketingData(ctx context.Context, data *dto.Marke
 	}
 
 	return segmentData, nil
-}
-
-// UpdateUserCRMEmail updates a user CRM contact with the supplied email
-func (m MarketingDataImpl) UpdateUserCRMEmail(ctx context.Context, email string, phonenumber string) error {
-	ctx, span := tracer.Start(ctx, "UpdateUserCRMEmail")
-	defer span.End()
-	CRMContactProperties := domain.ContactProperties{
-		Email: email,
-	}
-
-	if err := m.repository.UpdateUserCRMEmail(ctx, phonenumber, &dto.UpdateContactPSMessage{
-		Properties: CRMContactProperties,
-		Phone:      phonenumber,
-	}); err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("failed to create CRM staging payload %v", err)
-	}
-	return nil
-
-}
-
-//BeWellAware toggles the user identified by the provided email= as bewell-aware on the CRM
-func (m MarketingDataImpl) BeWellAware(ctx context.Context, email string) error {
-	ctx, span := tracer.Start(ctx, "BeWellAware")
-	defer span.End()
-	CRMContactProperties := domain.ContactProperties{
-		BeWellAware: domain.GeneralOptionTypeYes,
-	}
-
-	if err := m.repository.UpdateUserCRMBewellAware(ctx, email, &dto.UpdateContactPSMessage{
-		Properties: CRMContactProperties,
-	}); err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf("failed to set user as BeWell Aware %v", err)
-	}
-	return nil
 }
 
 // LoadCampaignDataset publishes the campaign dataset into firestore and CRM

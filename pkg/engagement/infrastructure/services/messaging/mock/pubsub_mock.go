@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/savannahghi/feedlib"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 )
 
 // FakeServiceMessaging is a mock implementation of the "messaging" service
@@ -20,7 +21,7 @@ type FakeServiceMessaging struct {
 		ctx context.Context,
 		phone string,
 		messageID string,
-		engagementType string,
+		engagementType domain.EngagementType,
 		metadata map[string]interface{},
 		topicID string,
 	) error
@@ -65,7 +66,7 @@ func (f *FakeServiceMessaging) NotifyEngagementCreate(
 	ctx context.Context,
 	phone string,
 	messageID string,
-	engagementType string,
+	engagementType domain.EngagementType,
 	metadata map[string]interface{},
 	topicID string,
 ) error {

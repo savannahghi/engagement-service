@@ -274,9 +274,6 @@ type Repository interface {
 		segment string,
 	) error
 
-	UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
-	UpdateUserCRMBewellAware(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
-
 	LoadMarketingData(ctx context.Context, data apiclient.Segment) (int, error)
 
 	RollBackMarketingData(ctx context.Context, data apiclient.Segment) error

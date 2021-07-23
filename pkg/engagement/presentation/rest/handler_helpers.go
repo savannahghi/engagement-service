@@ -1,12 +1,10 @@
 package rest
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -276,13 +274,4 @@ func addUIDToContext(ctx context.Context, uid string) context.Context {
 		firebasetools.AuthTokenContextKey,
 		&auth.Token{UID: uid},
 	)
-}
-
-//GenerateCollectEmailFunc generates the custom email to be sent to the user when sending the Be.Well
-// app and play store urls through email
-func GenerateCollectEmailFunc(name string) string {
-	t := template.Must(template.New("collectCRMEmailAddress").Parse(ColLectCMREmailTemplate))
-	buf := new(bytes.Buffer)
-	_ = t.Execute(buf, name)
-	return buf.String()
 }

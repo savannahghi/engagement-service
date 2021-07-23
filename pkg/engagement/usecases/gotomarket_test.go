@@ -1,0 +1,205 @@
+package usecases_test
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/brianvoe/gofakeit/v6"
+	hubspotDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
+	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
+	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
+)
+
+const (
+	phone    = "+254701223334"
+	email    = "%s.users@bewell.co.ke"
+	newEmail = "test@bewell.co.ke"
+)
+
+func newHubspotUsecases() *hubspotUsecases.HubSpot {
+	ctx := context.Background()
+	hubspotService := hubspot.NewHubSpotService()
+	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
+	if err != nil {
+		log.Panic("failed to initialize hubspot crm respository: %w", err)
+	}
+	return hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+}
+func newGtmTestUsecase(ctx context.Context) *usecases.GoToMarketImpl {
+	fr, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		log.Panic(
+			"can't instantiate firebase repository in resolver: %w",
+			err,
+		)
+	}
+	mail := mail.NewService(fr)
+	hubspotUsecases := newHubspotUsecases()
+	return usecases.NewGoToMarketUsecases(hubspotUsecases, mail)
+}
+
+func testContact() (*hubspotDomain.CRMContact, error) {
+	ctx := context.Background()
+	phone := "+254701223334"
+	hubspotUsecases := newHubspotUsecases()
+	c := &hubspotDomain.CRMContact{
+		Properties: hubspotDomain.ContactProperties{
+			Phone: phone,
+			Email: fmt.Sprintf(email, phone),
+		},
+	}
+	contact, err := hubspotUsecases.CreateHubSpotContact(ctx, c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create tests contact: %w", err)
+	}
+
+	// Sleep to ensure the created contact propagates
+	time.Sleep(5 * time.Second)
+
+	return contact, nil
+}
+func TestGoToMarketImpl_CollectEmails(t *testing.T) {
+	ctx := context.Background()
+	g := newGtmTestUsecase(ctx)
+
+	contact, err := testContact()
+	if err != nil {
+		t.Errorf("failed to create a test contact: %w", err)
+		return
+	}
+	if contact == nil {
+		t.Errorf("nil contact created")
+		return
+	}
+	type args struct {
+		ctx         context.Context
+		email       string
+		phonenumber string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "collect email happy case",
+			args: args{
+				ctx:         ctx,
+				email:       newEmail,
+				phonenumber: contact.Properties.Phone,
+			},
+			wantErr: false,
+		},
+		{
+			name: "collect email sad case",
+			args: args{
+				ctx:         ctx,
+				email:       newEmail,
+				phonenumber: gofakeit.Phone(),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			contact, err := g.CollectEmails(tt.args.ctx, tt.args.email, tt.args.phonenumber)
+			if (err != nil) != tt.wantErr {
+				if strings.Contains(err.Error(), "Sandbox subdomains are for test purposes only") {
+					if tt.name == "collect email happy case" {
+						if contact == nil {
+							t.Errorf("expected a contact")
+							return
+						}
+						if contact.Properties.Email != newEmail {
+							t.Errorf("expected a contact email to be collected")
+							return
+						}
+					}
+					if tt.name == "collect email sad case" {
+						if contact != nil {
+							t.Errorf("did not expect a contact")
+							return
+						}
+					}
+					return
+				}
+				t.Errorf("GoToMarketImpl.CollectEmails() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGoToMarketImpl_BeWellAware(t *testing.T) {
+	ctx := context.Background()
+	g := newGtmTestUsecase(ctx)
+
+	contact, err := testContact()
+	if err != nil {
+		t.Errorf("failed to create a test contact: %w", err)
+		return
+	}
+	if contact == nil {
+		t.Errorf("nil contact created")
+		return
+	}
+	type args struct {
+		ctx   context.Context
+		email string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "bewell aware happy case",
+			args: args{
+				ctx:   ctx,
+				email: newEmail,
+			},
+			wantErr: false,
+		},
+		{
+			name: "bewell aware sad case",
+			args: args{
+				ctx:   ctx,
+				email: gofakeit.Email(),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			contact, err := g.BeWellAware(tt.args.ctx, tt.args.email)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GoToMarketImpl.BeWellAware() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.name == "bewell aware happy case" {
+				if contact == nil {
+					t.Errorf("expected a contact")
+					return
+				}
+				if contact.Properties.BeWellAware != hubspotDomain.GeneralOptionTypeYes {
+					t.Errorf("expected a contact to be bewell aware")
+					return
+				}
+			}
+			if tt.name == "collect email sad case" {
+				if contact != nil {
+					t.Errorf("did not expect a contact")
+					return
+				}
+			}
+		})
+	}
+}

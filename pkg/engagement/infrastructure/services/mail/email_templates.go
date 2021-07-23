@@ -1,8 +1,7 @@
-package rest
+package mail
 
-// ColLectCMREmailTemplate generates an email template
-const ColLectCMREmailTemplate = `
-
+// MarketingEmailTemplate generates an simple marketing email template
+const MarketingEmailTemplate = `
 <!DOCTYPE html>
 <html>
 
@@ -229,7 +228,5 @@ const ColLectCMREmailTemplate = `
   <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/20198195.js"></script>
   <!-- End of HubSpot Embed Code -->
 </body>
-
 </html>
-
 `

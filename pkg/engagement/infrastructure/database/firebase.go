@@ -1854,10 +1854,13 @@ func (fr Repository) RollBackMarketingData(
 	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
 		Where("properties.Email", "==", data.Properties.Email)
 
-	docs, err := fetchQueryDocs(ctx, query, true)
+	docs, err := fetchQueryDocs(ctx, query, false)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return err
+	}
+	if len(docs) == 0 {
+		return nil
 	}
 
 	// delete the record
@@ -1937,88 +1940,6 @@ func (fr Repository) UpdateMessageSentStatus(
 		helpers.RecordSpanError(span, err)
 		return err
 	}
-	return nil
-}
-
-// UpdateUserCRMEmail updates user CRM contact properties with the supplied data
-func (fr Repository) UpdateUserCRMEmail(
-	ctx context.Context,
-	phoneNumber string,
-	payload *dto.UpdateContactPSMessage,
-) error {
-	ctx, span := tracer.Start(ctx, "UpdateUserCRMEmail")
-	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("properties.Phone", "==", phoneNumber)
-
-	docs, err := fetchQueryDocs(ctx, query, true)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-
-	var marketingData apiclient.Segment
-	err = docs[0].DataTo(&marketingData)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf(
-			"unable to unmarshal marketing Data from doc snapshot: %w", err)
-	}
-
-	marketingData.Properties.Email = payload.Properties.Email
-
-	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Doc(docs[0].Ref.ID)
-	if _, err = doc.Set(ctx, marketingData); err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	return nil
-}
-
-// UpdateUserCRMBewellAware updates user CMR data with provided email= as bewell-aware on the CRM
-func (fr Repository) UpdateUserCRMBewellAware(
-	ctx context.Context,
-	email string,
-	payload *dto.UpdateContactPSMessage,
-) error {
-	ctx, span := tracer.Start(ctx, "UpdateUserCRMBewellAware")
-	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("properties.Email", "==", email).
-		Where("properties.BeWellAware", "==", "NO")
-
-	docs, err := fetchQueryDocs(ctx, query, false)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-
-	for _, doc := range docs {
-		var marketingData apiclient.Segment
-		err = doc.DataTo(&marketingData)
-		if err != nil {
-			helpers.RecordSpanError(span, err)
-			return fmt.Errorf(
-				"unable to unmarshal marketing Data from doc snapshot: %w",
-				err,
-			)
-		}
-
-		logrus.Printf("update payload %v", marketingData)
-
-		marketingData.Properties.BeWellAware = payload.Properties.BeWellAware
-
-		logrus.Printf("update after amend payload %v", marketingData)
-
-		doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-			Doc(doc.Ref.ID)
-		if _, err = doc.Set(ctx, marketingData); err != nil {
-			helpers.RecordSpanError(span, err)
-			return err
-		}
-	}
-
 	return nil
 }
 

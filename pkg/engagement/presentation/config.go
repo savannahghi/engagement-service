@@ -8,7 +8,9 @@ import (
 	"os"
 	"time"
 
+	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
+	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
@@ -101,14 +103,22 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 	fcm := fcm.NewService(fr)
 	mail := mail.NewService(fr)
-	crm := hubspot.NewHubSpotService()
+
+	hubspotService := hubspot.NewHubSpotService()
+	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
+	}
+	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+	gtm := usecases.NewGoToMarketUsecases(hubspotUsecases, mail)
+
 	notification := usecases.NewNotification(
 		fr,
 		fcmNotification,
 		onboarding,
 		fcm,
 		mail,
-		crm,
+		hubspotService,
 	)
 	uploads := uploads.NewUploadsService()
 	library := library.NewLibraryService(onboarding)
@@ -125,8 +135,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	twilio := twilio.NewService(sms)
 	otp := otp.NewService(whatsapp, mail, sms, twilio)
 	surveys := surveys.NewService(fr)
-	hubspot := hubspot.NewHubSpotService()
-	marketing := usecases.NewMarketing(fr, hubspot, mail)
+	marketing := usecases.NewMarketing(fr, hubspotService, mail)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
@@ -141,8 +150,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		twilio,
 		fcm,
 		surveys,
-		hubspot,
+		hubspotService,
 		marketing,
+		gtm,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
