@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/interserviceclient"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/google/uuid"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
-	"github.com/savannahghi/interserviceclient"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/apiclient"
@@ -2514,7 +2514,7 @@ func TestService_SaveOutgoingEmails(t *testing.T) {
 // 	marketingData := composeMarketingDataPayload(
 // 		fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
 // 		fmt.Sprintf("WING %s", ksuid.New().String()),
-// 		profileutils.TestUserPhoneNumber,
+// 		interserviceclient.TestUserPhoneNumber,
 // 		fmt.Sprintf("test-%s@savannah.com", ksuid.New().String()),
 // 	)
 
@@ -2538,7 +2538,7 @@ func TestService_SaveOutgoingEmails(t *testing.T) {
 // 			name: "Happy Case: Successfully retrieve a slader data",
 // 			args: args{
 // 				ctx:         ctx,
-// 				phonenumber: profileutils.TestUserPhoneNumber,
+// 				phonenumber: interserviceclient.TestUserPhoneNumber,
 // 			},
 // 			wantErr: false,
 // 		},

@@ -6486,124 +6486,146 @@ func TestGetMarketingData(t *testing.T) {
 	}
 }
 
-// func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
-// 	ctx := context.Background()
-// 	headers := getDefaultHeaders(ctx, t, baseURL)
-// 	fr, err := database.NewFirebaseRepository(ctx)
-// 	if err != nil {
-// 		t.Errorf("can't initialize Firebase Repository: %s", err)
-// 		return
-// 	}
+func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
+    ctx := context.Background()
+    headers := getDefaultHeaders(ctx, t, baseURL)
+    fr, err := database.NewFirebaseRepository(ctx)
+    if err != nil {
+        t.Errorf("can't initialize Firebase Repository: %s", err)
+        return
+    }
 
-// 	event := dto.MailgunEvent{
-// 		EventName:   "delivered",
-// 		DeliveredOn: "12345637.11222",
-// 		MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
-// 	}
+    event := dto.MailgunEvent{
+        EventName:   "delivered",
+        DeliveredOn: "12345637.11222",
+        MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
+    }
 
-// 	_, err = fr.UpdateMailgunDeliveryStatus(ctx, &event)
-// 	if err != nil {
-// 		t.Errorf("unable to update email delivery status: %w",
-// 			err,
-// 		)
-// 		return
-// 	}
+    emailLog := &dto.OutgoingEmailsLog{
+        UUID:        uuid.NewString(),
+        To:          []string{"test@bewell.co.ke"},
+        From:        "test@bewell.co.ke",
+        Subject:     "Test",
+        Text:        "Test",
+        MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
+        EmailSentOn: time.Time{},
+        Event: &dto.MailgunEventOutput{
+            EventName:   "accepted",
+            DeliveredOn: time.Time{},
+        },
+    }
 
-// 	bs, err := json.Marshal(event)
-// 	if err != nil {
-// 		t.Errorf("unable to marshal event input to JSON: %s", err)
-// 	}
-// 	payload := bytes.NewBuffer(bs)
+    err = fr.SaveOutgoingEmails(ctx, emailLog)
+    if err != nil {
+        t.Errorf("unable to save outgoing email: %w",
+            err,
+        )
+        return
+    }
 
-// 	type args struct {
-// 		url        string
-// 		httpMethod string
-// 		headers    map[string]string
-// 		body       io.Reader
-// 	}
-// 	tests := []struct {
-// 		name       string
-// 		args       args
-// 		wantStatus int
-// 		wantErr    bool
-// 	}{
-// 		{
-// 			name: "valid event",
-// 			args: args{
-// 				url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
-// 				httpMethod: http.MethodPost,
-// 				headers:    headers,
-// 				body:       payload,
-// 			},
-// 			wantStatus: http.StatusOK,
-// 			wantErr:    false,
-// 		},
-// 		{
-// 			name: "nil event",
-// 			args: args{
-// 				url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
-// 				httpMethod: http.MethodPost,
-// 				headers:    headers,
-// 				body:       nil,
-// 			},
-// 			wantStatus: http.StatusBadRequest,
-// 			wantErr:    false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			r, err := http.NewRequest(
-// 				tt.args.httpMethod,
-// 				tt.args.url,
-// 				tt.args.body,
-// 			)
-// 			if err != nil {
-// 				t.Errorf("unable to compose request: %s", err)
-// 				return
-// 			}
+    _, err = fr.UpdateMailgunDeliveryStatus(ctx, &event)
+    if err != nil {
+        t.Errorf("unable to update email delivery status: %w",
+            err,
+        )
+        return
+    }
 
-// 			if r == nil {
-// 				t.Errorf("nil request")
-// 				return
-// 			}
+    bs, err := json.Marshal(event)
+    if err != nil {
+        t.Errorf("unable to marshal event input to JSON: %s", err)
+    }
+    payload := bytes.NewBuffer(bs)
 
-// 			for k, v := range tt.args.headers {
-// 				r.Header.Add(k, v)
-// 			}
-// 			client := http.DefaultClient
-// 			resp, err := client.Do(r)
-// 			if err != nil {
-// 				t.Errorf("request error: %s", err)
-// 				return
-// 			}
+    type args struct {
+        url        string
+        httpMethod string
+        headers    map[string]string
+        body       io.Reader
+    }
+    tests := []struct {
+        name       string
+        args       args
+        wantStatus int
+        wantErr    bool
+    }{
+        {
+            name: "valid event",
+            args: args{
+                url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
+                httpMethod: http.MethodPost,
+                headers:    headers,
+                body:       payload,
+            },
+            wantStatus: http.StatusOK,
+            wantErr:    false,
+        },
+        {
+            name: "nil event",
+            args: args{
+                url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
+                httpMethod: http.MethodPost,
+                headers:    headers,
+                body:       nil,
+            },
+            wantStatus: http.StatusBadRequest,
+            wantErr:    false,
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            r, err := http.NewRequest(
+                tt.args.httpMethod,
+                tt.args.url,
+                tt.args.body,
+            )
+            if err != nil {
+                t.Errorf("unable to compose request: %s", err)
+                return
+            }
 
-// 			if resp == nil && !tt.wantErr {
-// 				t.Errorf("nil response")
-// 				return
-// 			}
+            if r == nil {
+                t.Errorf("nil request")
+                return
+            }
 
-// 			data, err := ioutil.ReadAll(resp.Body)
-// 			if err != nil {
-// 				t.Errorf("can't read request body: %s", err)
-// 				return
-// 			}
-// 			if data == nil {
-// 				t.Errorf("nil response data")
-// 				return
-// 			}
+            for k, v := range tt.args.headers {
+                r.Header.Add(k, v)
+            }
+            client := http.DefaultClient
+            resp, err := client.Do(r)
+            if err != nil {
+                t.Errorf("request error: %s", err)
+                return
+            }
 
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
+            if resp == nil && !tt.wantErr {
+                t.Errorf("nil response")
+                return
+            }
 
-// 			if resp.StatusCode != tt.wantStatus {
-// 				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
-// 				return
-// 			}
-// 		})
-// 	}
-// }
+            data, err := ioutil.ReadAll(resp.Body)
+            if err != nil {
+                t.Errorf("can't read request body: %s", err)
+                return
+            }
+            if data == nil {
+                t.Errorf("nil response data")
+                return
+            }
+
+            if (err != nil) != tt.wantErr {
+                t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+
+            if resp.StatusCode != tt.wantStatus {
+                t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
+                return
+            }
+        })
+    }
+}
 
 func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
 	ctx, _, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
