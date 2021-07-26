@@ -106,15 +106,14 @@ func TestService_GetFaqsContent(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		// // TODO: fix failing test
-		// {
-		// 	name: "invalid:failed_to_retrieved_consumer_faq",
-		// 	args: args{
-		// 		ctx:     nil,
-		// 		flavour: "CONSUMER",
-		// 	},
-		// 	wantErr: true,
-		// },
+		{
+			name: "invalid:pass_invalid_flavor",
+			args: args{
+				ctx:     context.Background(),
+				flavour: "INVALID",
+			},
+			wantErr: true,
+		},
 		{
 			name: "invalid:failed_to_get_logged_in_user",
 			args: args{
