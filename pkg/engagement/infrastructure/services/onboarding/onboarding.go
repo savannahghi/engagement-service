@@ -48,8 +48,6 @@ type ProfileService interface {
 		uid UserUIDs,
 	) (map[string][]string, error)
 	GetUserProfile(ctx context.Context, uid string) (*profileutils.UserProfile, error)
-	IsOptedOut(ctx context.Context, phoneNumber string) (bool, error)
-	PhonesWithoutOptOut(ctx context.Context, phones []string) ([]string, error)
 }
 
 // NewRemoteProfileService initializes a connection to a remote profile service
@@ -186,74 +184,4 @@ func (rps RemoteProfileService) GetUserProfile(
 		return nil, fmt.Errorf("error parsing user profile data: %w", err)
 	}
 	return &user, nil
-}
-
-// IsOptedOut checks and returns if a user is opted out or not
-func (rps RemoteProfileService) IsOptedOut(
-	ctx context.Context,
-	phoneNumber string,
-) (bool, error) {
-	ctx, span := tracer.Start(ctx, "IsOptedOut")
-	defer span.End()
-	payload := map[string]interface{}{
-		"phoneNumber": phoneNumber,
-	}
-	resp, err := rps.profileClient.MakeRequest(
-		ctx,
-		http.MethodPost,
-		isOptedOut,
-		payload,
-	)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return false, fmt.Errorf(
-			"unable to make remote profile call with error: %v",
-			err,
-		)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf(
-			"failed to get opted out status. Error code: %v",
-			resp.StatusCode,
-		)
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return false, fmt.Errorf(
-			"error reading profile response body: %w",
-			err,
-		)
-	}
-
-	body := map[string]bool{}
-	err = json.Unmarshal(data, &body)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return false, fmt.Errorf("error parsing user profile data: %w", err)
-	}
-
-	return body["opted_out"], nil
-}
-
-// PhonesWithoutOptOut given a slice of phone numbers, returns numbers that have not opted out
-// of our marketing messages programme
-func (rps RemoteProfileService) PhonesWithoutOptOut(ctx context.Context, phones []string) ([]string, error) {
-	ctx, span := tracer.Start(ctx, "PhonesWithoutOptOut")
-	defer span.End()
-
-	var whitelistedNumbers []string
-	for _, phone := range phones {
-		optedOut, err := rps.IsOptedOut(ctx, phone)
-		if err != nil {
-			helpers.RecordSpanError(span, err)
-			return nil, err
-		}
-		if !optedOut {
-			whitelistedNumbers = append(whitelistedNumbers, phone)
-		}
-	}
-
-	return whitelistedNumbers, nil
 }

@@ -20,6 +20,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	mockFCM "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
@@ -88,19 +89,18 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	uploads := uploads.NewUploadsService()
 
 	library := library.NewLibraryService(onboardingSvc)
-	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
-	sms := sms.NewService(r, onboarding, messagingSvc)
-	whatsapp := whatsapp.NewService()
-	twilio := twilio.NewService(sms)
-	otp := otp.NewService(whatsapp, mail, sms, twilio)
-	surveys := surveys.NewService(r)
 	hubspotService := hubspot.NewHubSpotService()
 	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
 	}
 	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr)
-	gtm := usecases.NewGoToMarketUsecases(hubspotUsecases, mail)
+	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
+	sms := sms.NewService(r, crmExt, messagingSvc)
+	whatsapp := whatsapp.NewService()
+	twilio := twilio.NewService(sms)
+	otp := otp.NewService(whatsapp, mail, sms, twilio)
+	surveys := surveys.NewService(r)
 	marketing := usecases.NewMarketing(r, hubspotService, mail)
 
 	i, err := interactor.NewEngagementInteractor(
@@ -117,7 +117,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 		surveys,
 		hubspotService,
 		marketing,
-		gtm,
+		crmExt,
 	)
 
 	if err != nil {

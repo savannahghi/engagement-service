@@ -1803,13 +1803,12 @@ func (p PresentationHandlersImpl) GetContactsInAList() http.HandlerFunc {
 }
 
 //SetBewellAware the user identified by the provided email as bewell-aware
-// todo write automated tests for this (it has already been hand-tested to work)
 func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		payload := &dto.SetBewellAwareInput{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-		contact, err := p.interactor.GTM.BeWellAware(
+		contact, err := p.interactor.CrmExt.BeWellAware(
 			ctx,
 			payload.EmailAddress,
 		)
@@ -1828,7 +1827,6 @@ func (p PresentationHandlersImpl) SetBewellAware() http.HandlerFunc {
 }
 
 // CollectEmailAddress updates a user CRM contact with the supplied email
-// todo write automated tests for this (it has already been hand-tested to work)
 func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -1843,7 +1841,7 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 			return
 		}
 
-		contact, err := p.interactor.GTM.CollectEmails(
+		contact, err := p.interactor.CrmExt.CollectEmails(
 			ctx,
 			payload.EmailAddress,
 			payload.PhoneNumber,

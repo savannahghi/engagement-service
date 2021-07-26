@@ -3,6 +3,7 @@ package sms_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"testing"
 
@@ -10,10 +11,15 @@ import (
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
+	hubspotDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
+	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
+	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 )
 
@@ -22,13 +28,25 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func newHubSpotService(ctx context.Context) *hubspotUsecases.HubSpot {
+	hubspotService := hubspot.NewHubSpotService()
+	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
+	if err != nil {
+		log.Panic("failed to initialize hubspot crm respository: %w", err)
+	}
+	return hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+}
+
 func newTestSMSService() (*sms.Service, error) {
 	ctx := context.Background()
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
 	}
-	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
+
+	hubspotUsecases := newHubSpotService(ctx)
+	mail := mail.NewService(fr)
+	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
 	ps, err := messaging.NewPubSubNotificationService(
 		ctx,
 		serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName),
@@ -39,7 +57,7 @@ func newTestSMSService() (*sms.Service, error) {
 			err,
 		)
 	}
-	return sms.NewService(fr, onboarding, ps), nil
+	return sms.NewService(fr, crmExt, ps), nil
 }
 
 func TestSendToMany(t *testing.T) {
@@ -196,6 +214,16 @@ func TestService_SendMarketingSMS(t *testing.T) {
 		t.Errorf("unable to initialize test service with error %v", err)
 		return
 	}
+	to := []string{"+254711223344", "+254700990099"}
+
+	for _, phone := range to {
+		hs := newHubSpotService(ctx)
+		_, err := hs.CreateHubSpotContact(ctx, &hubspotDomain.CRMContact{Properties: hubspotDomain.ContactProperties{Phone: phone}})
+		if err != nil {
+			t.Errorf("failed to create test contact: %w", err)
+			return
+		}
+	}
 
 	type args struct {
 		ctx     context.Context
@@ -214,7 +242,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 			name: "Happily send a marketing SMS :)",
 			args: args{
 				ctx:     ctx,
-				to:      []string{"+254711223344", "+254700990099"},
+				to:      to,
 				message: gofakeit.HipsterSentence(10),
 				from:    enumutils.SenderIDBewell,
 				segment: "WING A",
@@ -225,7 +253,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 			name: "Sad Case missing message :(",
 			args: args{
 				ctx:     ctx,
-				to:      []string{"+254711223344", "+254700990099"},
+				to:      to,
 				message: "",
 				from:    enumutils.SenderIDBewell,
 				segment: gofakeit.UUID(),
@@ -236,7 +264,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 			name: "Sad Case missing sender :(",
 			args: args{
 				ctx:     ctx,
-				to:      []string{"+254711223344", "+254700990099"},
+				to:      to,
 				message: gofakeit.HipsterSentence(10),
 				from:    "",
 				segment: "WING A",
@@ -247,7 +275,7 @@ func TestService_SendMarketingSMS(t *testing.T) {
 			name: "Sad Case invalid sender :(",
 			args: args{
 				ctx:     ctx,
-				to:      []string{"+254711223344", "+254700990099"},
+				to:      to,
 				message: gofakeit.HipsterSentence(10),
 				from:    "invalid",
 				segment: "WING A",

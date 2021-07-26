@@ -1,4 +1,4 @@
-package usecases_test
+package crm_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
 )
 
 const (
@@ -33,7 +33,8 @@ func newHubspotUsecases() *hubspotUsecases.HubSpot {
 	}
 	return hubspotUsecases.NewHubSpotUsecases(hubspotfr)
 }
-func newGtmTestUsecase(ctx context.Context) *usecases.GoToMarketImpl {
+
+func newServiceCrm(ctx context.Context) *crm.Hubspot {
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		log.Panic(
@@ -43,7 +44,7 @@ func newGtmTestUsecase(ctx context.Context) *usecases.GoToMarketImpl {
 	}
 	mail := mail.NewService(fr)
 	hubspotUsecases := newHubspotUsecases()
-	return usecases.NewGoToMarketUsecases(hubspotUsecases, mail)
+	return crm.NewCrmService(hubspotUsecases, mail)
 }
 
 func testContact() (*hubspotDomain.CRMContact, error) {
@@ -66,9 +67,9 @@ func testContact() (*hubspotDomain.CRMContact, error) {
 
 	return contact, nil
 }
-func TestGoToMarketImpl_CollectEmails(t *testing.T) {
+func TestHubspot_CollectEmails(t *testing.T) {
 	ctx := context.Background()
-	g := newGtmTestUsecase(ctx)
+	g := newServiceCrm(ctx)
 
 	contact, err := testContact()
 	if err != nil {
@@ -131,16 +132,16 @@ func TestGoToMarketImpl_CollectEmails(t *testing.T) {
 					}
 					return
 				}
-				t.Errorf("GoToMarketImpl.CollectEmails() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Hubspot.CollectEmails() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
 	}
 }
 
-func TestGoToMarketImpl_BeWellAware(t *testing.T) {
+func TestHubspot_BeWellAware(t *testing.T) {
 	ctx := context.Background()
-	g := newGtmTestUsecase(ctx)
+	g := newServiceCrm(ctx)
 
 	contact, err := testContact()
 	if err != nil {
@@ -181,7 +182,7 @@ func TestGoToMarketImpl_BeWellAware(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			contact, err := g.BeWellAware(tt.args.ctx, tt.args.email)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GoToMarketImpl.BeWellAware() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Hubspot.BeWellAware() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if tt.name == "bewell aware happy case" {

@@ -20,8 +20,8 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
 )
@@ -82,7 +82,7 @@ type ServiceSMS interface {
 type Service struct {
 	Env        string
 	Repository repository.Repository
-	Onboarding onboarding.ProfileService
+	Crm        crm.ServiceCrm
 	PubSub     messaging.NotificationService
 }
 
@@ -110,11 +110,11 @@ func getHost(env, service string) string {
 // NewService returns a new service
 func NewService(
 	repository repository.Repository,
-	onboarding onboarding.ProfileService,
+	crm crm.ServiceCrm,
 	pubsub messaging.NotificationService,
 ) *Service {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)
-	return &Service{env, repository, onboarding, pubsub}
+	return &Service{env, repository, crm, pubsub}
 }
 
 // SaveMarketingMessage saves the callback data for future analysis
@@ -290,14 +290,17 @@ func (s Service) SendMarketingSMS(
 ) (*dto.SendMessageResponse, error) {
 	ctx, span := tracer.Start(ctx, "SendMarketingSMS")
 	defer span.End()
-	whitelistedNumbers, err := s.Onboarding.PhonesWithoutOptOut(ctx, to)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf(
-			"failed to get phone numbers without opt out with error: %v",
-			err,
-		)
+	var whitelistedNumbers []string
+	for _, phone := range to {
+		optedOut, err := s.Crm.IsOptedOut(ctx, phone)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check if the number %s is opted out: %w", phone, err)
+		}
+		if !optedOut {
+			whitelistedNumbers = append(whitelistedNumbers, phone)
+		}
 	}
+
 	if len(whitelistedNumbers) == 0 {
 		return nil, nil
 	}

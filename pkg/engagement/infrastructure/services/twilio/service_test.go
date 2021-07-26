@@ -9,8 +9,13 @@ import (
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"github.com/stretchr/testify/assert"
+	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
+	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
@@ -31,8 +36,19 @@ func newTwilioService(ctx context.Context) (*twilio.Service, error) {
 			err,
 		)
 	}
-	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
-	sms := sms.NewService(repo, onboarding, ns)
+	hubspotService := hubspot.NewHubSpotService()
+	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
+	}
+	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+	fr, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
+	}
+	mail := mail.NewService(fr)
+	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
+	sms := sms.NewService(repo, crmExt, ns)
 
 	return twilio.NewService(sms), nil
 }

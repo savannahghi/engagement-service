@@ -1,4 +1,4 @@
-package usecases
+package crm
 
 import (
 	"context"
@@ -8,37 +8,43 @@ import (
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
+	"go.opentelemetry.io/otel"
 )
 
-// GoToMarketUseCases represents all the marketing data business logic
-type GoToMarketUseCases interface {
+var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases")
+
+// ServiceCrm represents commontools crm lib usecases extension
+type ServiceCrm interface {
+	IsOptedOut(ctx context.Context, phoneNumber string) (bool, error)
 	CollectEmails(ctx context.Context, email string, phonenumber string) (*hubspotDomain.CRMContact, error)
 	BeWellAware(ctx context.Context, email string) (*hubspotDomain.CRMContact, error)
 }
 
-// GoToMarketImpl represents the marketing usecase implementation
-type GoToMarketImpl struct {
-	hubspot hubspotUsecases.HubSpotUsecases
-	mail    mail.ServiceMail
+// Hubspot interacts with `HubSpot` CRM usecases
+type Hubspot struct {
+	hubSpotUsecases hubspotUsecases.HubSpotUsecases
+	mail            mail.ServiceMail
 }
 
-// NewGoToMarketUsecases initialises a marketing usecase
-func NewGoToMarketUsecases(
-	hubspot hubspotUsecases.HubSpotUsecases,
-	mail mail.ServiceMail,
-) *GoToMarketImpl {
-	return &GoToMarketImpl{
-		hubspot: hubspot,
-		mail:    mail,
+// NewCrmService inits a new crm instance
+func NewCrmService(hubSpotUsecases hubspotUsecases.HubSpotUsecases, mail mail.ServiceMail) *Hubspot {
+	return &Hubspot{
+		hubSpotUsecases: hubSpotUsecases,
+		mail:            mail,
 	}
 }
 
+// IsOptedOut checks if a given phone number is opted out
+func (h *Hubspot) IsOptedOut(ctx context.Context, phoneNumber string) (bool, error) {
+	return h.hubSpotUsecases.IsOptedOut(ctx, phoneNumber)
+}
+
 // CollectEmails receives an email and update the email of the found record in our firestore and hubspot CRM
-func (g *GoToMarketImpl) CollectEmails(ctx context.Context, email string, phonenumber string) (*hubspotDomain.CRMContact, error) {
+func (h *Hubspot) CollectEmails(ctx context.Context, email string, phonenumber string) (*hubspotDomain.CRMContact, error) {
 	ctx, span := tracer.Start(ctx, "CollectEmails")
 	defer span.End()
 
-	contact, err := g.hubspot.GetContactByPhone(ctx, phonenumber)
+	contact, err := h.hubSpotUsecases.GetContactByPhone(ctx, phonenumber)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to get contact with phone number %s: %w", phonenumber, err)
@@ -48,16 +54,16 @@ func (g *GoToMarketImpl) CollectEmails(ctx context.Context, email string, phonen
 	}
 	contact.Properties.Email = email
 
-	updatedContact, err := g.hubspot.UpdateHubSpotContact(ctx, contact)
+	updatedContact, err := h.hubSpotUsecases.UpdateHubSpotContact(ctx, contact)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to update contact with phone number %s: %w", phonenumber, err)
 	}
 
 	name := "Kevin From Be.Well"
-	body := g.mail.GenerateEmailTemplate(name, mail.MarketingEmailTemplate)
+	body := h.mail.GenerateEmailTemplate(name, mail.MarketingEmailTemplate)
 	subject := "Download the new Be.Well app to manage your insurance benefits"
-	_, _, err = g.mail.SendEmail(
+	_, _, err = h.mail.SendEmail(
 		ctx,
 		subject,
 		name,
@@ -72,11 +78,11 @@ func (g *GoToMarketImpl) CollectEmails(ctx context.Context, email string, phonen
 }
 
 //BeWellAware toggles the user identified by the provided email as bewell-aware
-func (g *GoToMarketImpl) BeWellAware(ctx context.Context, email string) (*hubspotDomain.CRMContact, error) {
+func (h *Hubspot) BeWellAware(ctx context.Context, email string) (*hubspotDomain.CRMContact, error) {
 	ctx, span := tracer.Start(ctx, "BeWellAware")
 	defer span.End()
 
-	contact, err := g.hubspot.GetContactByEmail(ctx, email)
+	contact, err := h.hubSpotUsecases.GetContactByEmail(ctx, email)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to get contact with email %s: %w", email, err)
@@ -86,7 +92,7 @@ func (g *GoToMarketImpl) BeWellAware(ctx context.Context, email string) (*hubspo
 	}
 	contact.Properties.BeWellAware = hubspotDomain.GeneralOptionTypeYes
 
-	updatedContact, err := g.hubspot.UpdateHubSpotContact(ctx, contact)
+	updatedContact, err := h.hubSpotUsecases.UpdateHubSpotContact(ctx, contact)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		return nil, fmt.Errorf("failed to update contact with email %s: %w", email, err)

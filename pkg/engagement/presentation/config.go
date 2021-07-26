@@ -43,6 +43,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
 
@@ -110,7 +111,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
 	}
 	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr)
-	gtm := usecases.NewGoToMarketUsecases(hubspotUsecases, mail)
 
 	notification := usecases.NewNotification(
 		fr,
@@ -129,7 +129,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 			err,
 		)
 	}
-	sms := sms.NewService(fr, onboarding, ns)
+
+	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
+	sms := sms.NewService(fr, crmExt, ns)
 	feed := usecases.NewFeed(fr, ns)
 	whatsapp := whatsapp.NewService()
 	twilio := twilio.NewService(sms)
@@ -152,7 +154,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		surveys,
 		hubspotService,
 		marketing,
-		gtm,
+		crmExt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)

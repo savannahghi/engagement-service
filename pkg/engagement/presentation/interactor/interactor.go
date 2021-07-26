@@ -4,6 +4,7 @@ package interactor
 
 import (
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
@@ -31,7 +32,7 @@ type Interactor struct {
 	Surveys      surveys.ServiceSurveys
 	CRM          hubspot.ServiceHubSpotInterface
 	Marketing    usecases.MarketingDataUseCases
-	GTM          usecases.GoToMarketUseCases
+	CrmExt       crm.ServiceCrm
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -49,7 +50,7 @@ func NewEngagementInteractor(
 	surveys surveys.ServiceSurveys,
 	CRM hubspot.ServiceHubSpotInterface,
 	marketing usecases.MarketingDataUseCases,
-	gtm usecases.GoToMarketUseCases,
+	crmExt crm.ServiceCrm,
 ) (*Interactor, error) {
 	return &Interactor{
 		Feed:         feed,
@@ -65,6 +66,6 @@ func NewEngagementInteractor(
 		Surveys:      surveys,
 		CRM:          CRM,
 		Marketing:    marketing,
-		GTM:          gtm,
+		CrmExt:       crmExt,
 	}, nil
 }
