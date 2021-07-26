@@ -50,7 +50,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
 	gitlab.slade360emr.com/go/apiclient v0.0.11
-	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210723125124-7a3a8623924d
+	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210726014436-3d8df0da82a0
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.21.0
 	go.opentelemetry.io/otel v1.0.0-RC1
