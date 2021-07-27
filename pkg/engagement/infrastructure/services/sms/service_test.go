@@ -7,8 +7,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
+	hubspotDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
@@ -204,90 +207,100 @@ func TestSend(t *testing.T) {
 	}
 }
 
-// func TestService_SendMarketingSMS(t *testing.T) {
-// 	ctx := firebasetools.GetAuthenticatedContext(t)
-// 	s, err := newTestSMSService()
-// 	if err != nil {
-// 		t.Errorf("unable to initialize test service with error %v", err)
-// 		return
-// 	}
+func TestService_SendMarketingSMS(t *testing.T) {
+	ctx := firebasetools.GetAuthenticatedContext(t)
+	s, err := newTestSMSService()
+	if err != nil {
+		t.Errorf("unable to initialize test service with error %v", err)
+		return
+	}
+	to := []string{"+254711223344", "+254700990099"}
 
-// 	type args struct {
-// 		ctx     context.Context
-// 		to      []string
-// 		message string
-// 		from    enumutils.SenderID
-// 		segment string
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		wantErr bool
-// 		wantNil bool
-// 	}{
-// 		{
-// 			name: "Happily send a marketing SMS :)",
-// 			args: args{
-// 				ctx:     ctx,
-// 				to:      []string{"+254711223344", "+254700990099"},
-// 				message: gofakeit.HipsterSentence(10),
-// 				from:    enumutils.SenderIDBewell,
-// 				segment: "WING A",
-// 			},
-// 			wantErr: false,
-// 		},
-// 		{
-// 			name: "Sad Case missing message :(",
-// 			args: args{
-// 				ctx:     ctx,
-// 				to:      []string{"+254711223344", "+254700990099"},
-// 				message: "",
-// 				from:    enumutils.SenderIDBewell,
-// 				segment: gofakeit.UUID(),
-// 			},
-// 			wantErr: true,
-// 		},
-// 		{
-// 			name: "Sad Case missing sender :(",
-// 			args: args{
-// 				ctx:     ctx,
-// 				to:      []string{"+254711223344", "+254700990099"},
-// 				message: gofakeit.HipsterSentence(10),
-// 				from:    "",
-// 				segment: "WING A",
-// 			},
-// 			wantErr: true,
-// 		},
-// 		{
-// 			name: "Sad Case invalid sender :(",
-// 			args: args{
-// 				ctx:     ctx,
-// 				to:      []string{"+254711223344", "+254700990099"},
-// 				message: gofakeit.HipsterSentence(10),
-// 				from:    "invalid",
-// 				segment: "WING A",
-// 			},
-// 			wantErr: true,
-// 		},
-// 		{
-// 			name: "Sad Case missing recipient :(",
-// 			args: args{
-// 				ctx:     ctx,
-// 				to:      []string{""},
-// 				message: gofakeit.HipsterSentence(10),
-// 				from:    enumutils.SenderIDBewell,
-// 				segment: "WING A",
-// 			},
-// 			wantErr: true,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			_, err := s.SendMarketingSMS(tt.args.ctx, tt.args.to, tt.args.message, tt.args.from, tt.args.segment)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("Service.SendMarketingSMS() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 		})
-// 	}
-// }
+	for _, phone := range to {
+		hs := newHubSpotService(ctx)
+		_, err := hs.CreateHubSpotContact(ctx, &hubspotDomain.CRMContact{Properties: hubspotDomain.ContactProperties{Phone: phone}})
+		if err != nil {
+			t.Errorf("failed to create test contact: %w", err)
+			return
+		}
+	}
+
+	type args struct {
+		ctx     context.Context
+		to      []string
+		message string
+		from    enumutils.SenderID
+		segment string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		wantNil bool
+	}{
+		{
+			name: "Happily send a marketing SMS :)",
+			args: args{
+				ctx:     ctx,
+				to:      to,
+				message: gofakeit.HipsterSentence(10),
+				from:    enumutils.SenderIDBewell,
+				segment: "WING A",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Sad Case missing message :(",
+			args: args{
+				ctx:     ctx,
+				to:      to,
+				message: "",
+				from:    enumutils.SenderIDBewell,
+				segment: gofakeit.UUID(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Sad Case missing sender :(",
+			args: args{
+				ctx:     ctx,
+				to:      to,
+				message: gofakeit.HipsterSentence(10),
+				from:    "",
+				segment: "WING A",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Sad Case invalid sender :(",
+			args: args{
+				ctx:     ctx,
+				to:      to,
+				message: gofakeit.HipsterSentence(10),
+				from:    "invalid",
+				segment: "WING A",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Sad Case missing recipient :(",
+			args: args{
+				ctx:     ctx,
+				to:      []string{""},
+				message: gofakeit.HipsterSentence(10),
+				from:    enumutils.SenderIDBewell,
+				segment: "WING A",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := s.SendMarketingSMS(tt.args.ctx, tt.args.to, tt.args.message, tt.args.from, tt.args.segment)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.SendMarketingSMS() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
