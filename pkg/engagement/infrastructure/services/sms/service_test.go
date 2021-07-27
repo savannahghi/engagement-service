@@ -34,7 +34,7 @@ func newHubSpotService(ctx context.Context) *hubspotUsecases.HubSpot {
 	if err != nil {
 		log.Panic("failed to initialize hubspot crm respository: %w", err)
 	}
-	return hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+	return hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 }
 
 func newTestSMSService() (*sms.Service, error) {

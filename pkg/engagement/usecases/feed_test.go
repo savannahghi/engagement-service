@@ -94,7 +94,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
 	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
 	sms := sms.NewService(r, crmExt, messagingSvc)
 	whatsapp := whatsapp.NewService()

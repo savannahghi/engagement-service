@@ -24,6 +24,7 @@ import (
 
 	errorcode "github.com/savannahghi/errorcodeutil"
 
+	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/presentation/rest"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
@@ -134,16 +135,19 @@ type PresentationHandlers interface {
 	UpdateMailgunDeliveryStatus() http.HandlerFunc
 
 	GetSladerData() http.HandlerFunc
+
+	HubSpotFirestoreSync() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
 type PresentationHandlersImpl struct {
-	interactor *interactor.Interactor
+	interactor      *interactor.Interactor
+	hubspotHandlers hubspotHandlers.Handlers
 }
 
 // NewPresentationHandlers initializes a new rest handlers usecase
-func NewPresentationHandlers(i *interactor.Interactor) PresentationHandlers {
-	return &PresentationHandlersImpl{i}
+func NewPresentationHandlers(i *interactor.Interactor, hubspotHandlers hubspotHandlers.Handlers) PresentationHandlers {
+	return &PresentationHandlersImpl{i, hubspotHandlers}
 }
 
 //GoogleCloudPubSubHandler receives push messages from Google Cloud Pub-Sub
@@ -2002,5 +2006,12 @@ func (p PresentationHandlersImpl) GetSladerData() http.HandlerFunc {
 			return
 		}
 		respondWithJSON(w, http.StatusOK, marshalled)
+	}
+}
+
+// HubSpotFirestoreSync syncs hubspot contacts and our firestore records
+func (p PresentationHandlersImpl) HubSpotFirestoreSync() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		p.hubspotHandlers.HubspotFireStoreSync(w, r)
 	}
 }

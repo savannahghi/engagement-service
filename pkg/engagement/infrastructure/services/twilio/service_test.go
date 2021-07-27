@@ -41,7 +41,7 @@ func newTwilioService(ctx context.Context) (*twilio.Service, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
 	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)

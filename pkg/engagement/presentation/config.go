@@ -43,6 +43,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/presentation/rest"
 	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )
@@ -110,7 +111,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
 	}
-	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr)
+	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 
 	notification := usecases.NewNotification(
 		fr,
@@ -160,7 +161,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
 	}
 
-	h := rest.NewPresentationHandlers(i)
+	husbspotHandlers := hubspotHandlers.NewHandlers(hubspotUsecases)
+	h := rest.NewPresentationHandlers(i, husbspotHandlers)
 
 	r := mux.NewRouter() // gorilla mux
 	r.Use(otelmux.Middleware(serverutils.MetricsCollectorService("engagement")))
@@ -209,6 +211,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/contact_list_contacts").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.GetContactsInAList())
+	r.Path("/sync_contacts").Methods(
+		http.MethodPost,
+	).HandlerFunc(h.HubSpotFirestoreSync())
 
 	// Callbacks
 	r.Path("/ait_callback").
