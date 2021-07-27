@@ -315,42 +315,42 @@ func aTestNudge(t *testing.T) *feedlib.Nudge {
 	}
 }
 
-// func TestHandleItemPublish(t *testing.T) {
-// 	item := getTheTestItem(t)
-// 	ctx := firebasetools.GetAuthenticatedContext(t)
-// 	notify, err := InitializeTestNewNotification(ctx)
-// 	assert.Nil(t, err)
-// 	type args struct {
-// 		m *pubsubutils.PubSubPayload
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		args    args
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name: "nil payload",
-// 			args: args{
-// 				m: nil,
-// 			},
-// 			wantErr: true,
-// 		},
-// 		{
-// 			name: "non nil payload",
-// 			args: args{
-// 				m: getTestPubsubPayload(t, &item),
-// 			},
-// 			wantErr: false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			if err := notify.HandleItemPublish(ctx, tt.args.m); (err != nil) != tt.wantErr {
-// 				t.Errorf("HandleItemPublish() error = %v, wantErr %v", err, tt.wantErr)
-// 			}
-// 		})
-// 	}
-// }
+func TestHandleItemPublish(t *testing.T) {
+	item := getTheTestItem(t)
+	ctx := firebasetools.GetAuthenticatedContext(t)
+	notify, err := InitializeTestNewNotification(ctx)
+	assert.Nil(t, err)
+	type args struct {
+		m *pubsubtools.PubSubPayload
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "nil payload",
+			args: args{
+				m: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "non nil payload",
+			args: args{
+				m: getTestPubsubPayload(t, &item),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := notify.HandleItemPublish(ctx, tt.args.m); (err != nil) != tt.wantErr {
+				t.Errorf("HandleItemPublish() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
 
 func TestHandleItemDelete(t *testing.T) {
 	item := getTheTestItem(t)
