@@ -28,12 +28,12 @@ import (
 var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/otp")
 
 const (
-	issuer        = "Savannah Informatics Limited"
-	accountName   = "info@healthcloud.co.ke"
-	subject       = "Be.Well Verification Code"
-	whatsappStep  = 1
-	twilioStep    = 2
-	appIdentifier = "qKW6RBxMor4"
+	issuer           = "Savannah Informatics Limited"
+	accountName      = "info@healthcloud.co.ke"
+	subject          = "Be.Well Verification Code"
+	whatsappStep     = 1
+	twilioStep       = 2
+	appIdentifierEnv = "APP_IDENTIFIER"
 )
 
 // These constants are here to support Integration Testing
@@ -141,7 +141,7 @@ func (s Service) SendOTP(
 	ctx, span := tracer.Start(ctx, "SendOTP")
 	defer span.End()
 
-	msg := fmt.Sprintf("%s is your Be.Well verification code %s", code, appIdentifier)
+	msg := fmt.Sprintf("%s is your Be.Well verification code %s", code, serverutils.MustGetEnvVar(appIdentifierEnv))
 
 	if interserviceclient.IsKenyanNumber(normalizedPhoneNumber) {
 		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg, enumutils.SenderIDBewell)
