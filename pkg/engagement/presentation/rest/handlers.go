@@ -38,7 +38,7 @@ const (
 
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
-	bewellURL            = "https://bwl.mobi/get_bewell_app"
+	bewellURL            = "https://bewell.co.ke/data_deletion.html/?id="
 )
 
 var errNotFound = fmt.Errorf("not found")
@@ -2022,9 +2022,10 @@ func (p PresentationHandlersImpl) HubSpotFirestoreSync() http.HandlerFunc {
 // DataDeletionRequestCallback is a Facebook's data deletion request callback
 func (p PresentationHandlersImpl) DataDeletionRequestCallback() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userID := r.FormValue("user_id")
 		data := map[string]interface{}{
-			"url":               bewellURL,
-			"confirmation_code": time.Now().Unix(),
+			"url":               bewellURL + userID,
+			"confirmation_code": userID,
 		}
 		resp, err := json.Marshal(data)
 		if err != nil {
