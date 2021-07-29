@@ -228,6 +228,10 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/twilio_fallback").
 		Methods(http.MethodPost).
 		HandlerFunc(h.GetFallbackHandler())
+	r.Path("/facebook_data_deletion_callback").Methods(
+		http.MethodPost,
+	).HandlerFunc(h.DataDeletionRequestCallback())
+
 	r.Path("/collect_email_address").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.CollectEmailAddress())

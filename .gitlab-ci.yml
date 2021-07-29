@@ -68,10 +68,10 @@ lint_and_test:
 deploy_cloud_function:
   image: eu.gcr.io/savannah-emr/gcloud-docker-in-docker:0.0.1
   before_script:
-    - /google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $GCLOUD_STAGING_SERVICE_ACCOUNT
-    - /google-cloud-sdk/bin/gcloud config set project bewell-app-testing
-    - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_STAGING_SERVICE_ACCOUNT
-    - export CLOUDSDK_CORE_PROJECT=bewell-app-testing
+    - /google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $GCLOUD_FUNCTION_DEPLOY_SA
+    - /google-cloud-sdk/bin/gcloud config set project bewell-app
+    - docker login -u _json_key --password-stdin https://eu.gcr.io < $GCLOUD_FUNCTION_DEPLOY_SA
+    - export CLOUDSDK_CORE_PROJECT=bewell-app
   stage: deploy
   only:
     - master

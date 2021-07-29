@@ -38,6 +38,7 @@ const (
 
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120
+	bewellURL            = "https://bwl.mobi/get_bewell_app"
 )
 
 var errNotFound = fmt.Errorf("not found")
@@ -137,6 +138,8 @@ type PresentationHandlers interface {
 	GetSladerData() http.HandlerFunc
 
 	HubSpotFirestoreSync() http.HandlerFunc
+
+	DataDeletionRequestCallback() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -2013,5 +2016,21 @@ func (p PresentationHandlersImpl) GetSladerData() http.HandlerFunc {
 func (p PresentationHandlersImpl) HubSpotFirestoreSync() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		p.hubspotHandlers.HubspotFireStoreSync(w, r)
+	}
+}
+
+// DataDeletionRequestCallback is a Facebook's data deletion request callback
+func (p PresentationHandlersImpl) DataDeletionRequestCallback() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"url":               bewellURL,
+			"confirmation_code": time.Now().Unix(),
+		}
+		resp, err := json.Marshal(data)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(w, http.StatusOK, resp)
 	}
 }
