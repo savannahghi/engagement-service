@@ -2150,83 +2150,80 @@ func TestService_SaveOutgoingEmails(t *testing.T) {
 }
 
 func TestRepository_UpdateMailgunDeliveryStatus(t *testing.T) {
-	ctx := context.Background()
-	fr, err := db.NewFirebaseRepository(ctx)
-	if err != nil {
-		t.Errorf("an error ocurred")
-	}
+    ctx := context.Background()
+    fr, err := db.NewFirebaseRepository(ctx)
+    if err != nil {
+        t.Errorf("an error ocurred")
+    }
+    emailLog := &dto.OutgoingEmailsLog{
+        UUID:        uuid.NewString(),
+        To:          []string{"test@bewell.co.ke"},
+        From:        "test@bewell.co.ke",
+        Subject:     "Test",
+        Text:        "Test",
+        MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
+        EmailSentOn: time.Time{},
+        Event: &dto.MailgunEventOutput{
+            EventName:   "accepted",
+            DeliveredOn: time.Time{},
+        },
+    }
+    err = fr.SaveOutgoingEmails(ctx, emailLog)
+    if err != nil {
+        t.Errorf("unable to save outgoing email: %w",
+            err,
+        )
+        return
+    }
 
-	type args struct {
-		ctx     context.Context
-		payload *dto.MailgunEvent
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *dto.OutgoingEmailsLog
-		wantErr bool
-	}{
-		{
-			name: "Happy case",
-			args: args{
-				ctx: ctx,
-				payload: &dto.MailgunEvent{
-					EventName:   "delivered",
-					DeliveredOn: "123456789.12456",
-					MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Sad case",
-			args: args{
-				ctx: ctx,
-				payload: &dto.MailgunEvent{
-					EventName:   "delivered",
-					DeliveredOn: "123456789.12456",
-					MessageID:   "",
-				},
-			},
-			want:    &dto.OutgoingEmailsLog{},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_ = helpers.EpochTimetoStandardTime("123456789.12456")
-
-			emailLog := &dto.OutgoingEmailsLog{
-				UUID:        uuid.NewString(),
-				To:          []string{"test@bewell.co.ke"},
-				From:        "test@bewell.co.ke",
-				Subject:     "Test",
-				Text:        "Test",
-				MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
-				EmailSentOn: time.Time{},
-				Event: &dto.MailgunEventOutput{
-					EventName:   "accepted",
-					DeliveredOn: time.Time{},
-				},
-			}
-
-			err = fr.SaveOutgoingEmails(tt.args.ctx, emailLog)
-			if err != nil {
-				t.Errorf("unable to save outgoing email: %w",
-					err,
-				)
-				return
-			}
-
-			got, err := fr.UpdateMailgunDeliveryStatus(tt.args.ctx, tt.args.payload)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Repository.UpdateMailgunDeliveryStatus() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr && got == nil {
-				t.Errorf("expected to get a nudge")
-				return
-			}
-		})
-	}
+    type args struct {
+        ctx     context.Context
+        payload *dto.MailgunEvent
+    }
+    tests := []struct {
+        name    string
+        args    args
+        want    *dto.OutgoingEmailsLog
+        wantErr bool
+    }{
+        {
+            name: "Happy case",
+            args: args{
+                ctx: ctx,
+                payload: &dto.MailgunEvent{
+                    EventName:   "delivered",
+                    DeliveredOn: "123456789.12456",
+                    MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
+                },
+            },
+            wantErr: false,
+        },
+        {
+            name: "Sad case",
+            args: args{
+                ctx: ctx,
+                payload: &dto.MailgunEvent{
+                    EventName:   "delivered",
+                    DeliveredOn: "123456789.12456",
+                    MessageID:   "",
+                },
+            },
+            want:    &dto.OutgoingEmailsLog{},
+            wantErr: true,
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            _ = helpers.EpochTimetoStandardTime("123456789.12456")
+            got, err := fr.UpdateMailgunDeliveryStatus(tt.args.ctx, tt.args.payload)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("Repository.UpdateMailgunDeliveryStatus() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !tt.wantErr && got == nil {
+                t.Errorf("expected to get a nudge")
+                return
+            }
+        })
+    }
 }
