@@ -7,10 +7,24 @@ const SendOtpToEmailTemplate = `
 <html>
 
 <head>
-    <title></title>
+    <title>Be.Well by Slade 360° </title>
+    <meta property="description" content="Be.Well One Time Pin">
+    <!--VIEWPORT-->
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=no;">
+    <meta name="viewport" content="width=600, initial-scale = 2.3, user-scalable=no">
+    <meta name="viewport" content="width=device-width">
+    <!--CHARSET-->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- IE=Edge and IE=X -->
+    <meta http-equiv="X-UA-Compatible" content="IE=7" />
+    <meta http-equiv="X-UA-Compatible" content="IE=8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--[if !mso]>-->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!--<![endif]-->
+    <!-- INLINE STYLES -->
     <style type="text/css">
         @media screen {
             @font-face {
@@ -177,21 +191,22 @@ const SendOtpToEmailTemplate = `
                 </table>
             </td>
         </tr>
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px">
             <tr>
                 <td bgcolor="#f4f4f4" align="center" style="
-                        padding: 40px 30px 40px 30px;
-                        border-radius: 0px 0px 4px 4px;
-                        color: #666666;
-                        font-family: 'Lato', Helvetica, Arial,
-                            sans-serif;
-                        font-size: 18px;
-                        font-weight: 400;
-                        line-height: 25px;
-
-                    ">
-                    <p style="margin: 0;">For more information or queries, contact us at <a
-                            href="mailto:feedback@bewell.co.ke">feedback@bewell.co.ke</a>
+              padding: 40px 30px 40px 30px;
+              border-radius: 0px 0px 4px 4px;
+              color: #000000;
+              font-family: 'Lato', Helvetica, Arial, sans-serif;
+              font-size: 18px;
+              font-weight: 400;
+              line-height: 25px;
+            ">
+                    <p style="margin: 0">
+                        For more information or queries, contact us at
+                        <a href="mailto:feedback@bewell.co.ke">feedback@bewell.co.ke</a>
+                        <br>
+                        or call <a href="tel:0790360360">0790 360 360</a>
                     </p>
                 </td>
             </tr>
@@ -199,7 +214,28 @@ const SendOtpToEmailTemplate = `
 
     </table>
     <script src="https://cdn.jsdelivr.net/npm/publicalbum@latest/embed-ui.min.js" async></script>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
 
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-analytics.js"></script>
+
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyAv2aRsSSHkOR6xGwwaw6-UTkvED3RNlBQ",
+            authDomain: "bewell-app.firebaseapp.com",
+            databaseURL: "https://bewell-app.firebaseio.com",
+            projectId: "bewell-app",
+            storageBucket: "bewell-app.appspot.com",
+            messagingSenderId: "841947754847",
+            appId: "1:841947754847:web:6304157d32c82fd96686ea",
+            measurementId: "G-6XTZEB5070"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const analytics = firebase.analytics();
+
+
+        analytics.logEvent('opened_otp_email');
+    </script>
 </body>
 
 </html>
