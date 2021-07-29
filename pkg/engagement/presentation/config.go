@@ -43,7 +43,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/presentation/rest"
+	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/pkg/presentation/rest"
 	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
 )

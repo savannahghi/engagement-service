@@ -24,7 +24,7 @@ import (
 
 	errorcode "github.com/savannahghi/errorcodeutil"
 
-	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/presentation/rest"
+	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/pkg/presentation/rest"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
@@ -1605,13 +1605,13 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		msisdn, err := otp.ValidateSendOTPPayload(w, r)
+		payload, err := otp.ValidateSendOTPPayload(w, r)
 		if err != nil {
 			errorcode.ReportErr(w, err, http.StatusBadRequest)
 			return
 		}
 
-		code, err := p.interactor.OTP.GenerateAndSendOTP(ctx, msisdn)
+		code, err := p.interactor.OTP.GenerateAndSendOTP(ctx, payload.Msisdn, payload.AppID)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -1642,6 +1642,7 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler() http.HandlerFunc {
 			ctx,
 			payload.Msisdn,
 			payload.RetryStep,
+			payload.AppID,
 		)
 		if err != nil {
 			err := errorcode.ErrorMap(

@@ -28,12 +28,12 @@ import (
 var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/otp")
 
 const (
-	issuer           = "Savannah Informatics Limited"
-	accountName      = "info@healthcloud.co.ke"
-	subject          = "Be.Well Verification Code"
-	whatsappStep     = 1
-	twilioStep       = 2
-	appIdentifierEnv = "APP_IDENTIFIER"
+	issuer       = "Savannah Informatics Limited"
+	accountName  = "info@healthcloud.co.ke"
+	subject      = "Be.Well Verification Code"
+	whatsappStep = 1
+	twilioStep   = 2
+	otpMsg       = "%s is your Be.Well verification code %s"
 )
 
 // These constants are here to support Integration Testing
@@ -47,12 +47,12 @@ const (
 
 // ServiceOTP is an interface that defines all interactions with OTP service
 type ServiceOTP interface {
-	GenerateAndSendOTP(ctx context.Context, msisdn string) (string, error)
-	SendOTPToEmail(ctx context.Context, msisdn, email *string) (string, error)
+	GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error)
+	SendOTPToEmail(ctx context.Context, msisdn, email *string, appID *string) (string, error)
 	SaveOTPToFirestore(otp dto.OTP) error
 	VerifyOtp(ctx context.Context, msisdn, verificationCode *string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email, verificationCode *string) (bool, error)
-	GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int) (string, error)
+	GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int, appID *string) (string, error)
 	EmailVerificationOtp(ctx context.Context, email *string) (string, error)
 	GenerateOTP(ctx context.Context) (string, error)
 }
@@ -137,11 +137,16 @@ func (s Service) SendOTP(
 	ctx context.Context,
 	normalizedPhoneNumber string,
 	code string,
+	appID *string,
 ) (string, error) {
 	ctx, span := tracer.Start(ctx, "SendOTP")
 	defer span.End()
 
-	msg := fmt.Sprintf("%s is your Be.Well verification code %s", code, serverutils.MustGetEnvVar(appIdentifierEnv))
+	var appidentifier string
+	if appID == nil {
+		appID = &appidentifier
+	}
+	msg := fmt.Sprintf(otpMsg, code, *appID)
 
 	if interserviceclient.IsKenyanNumber(normalizedPhoneNumber) {
 		_, err := s.sms.Send(ctx, normalizedPhoneNumber, msg, enumutils.SenderIDBewell)
@@ -163,7 +168,7 @@ func (s Service) SendOTP(
 
 // GenerateAndSendOTP creates an OTP and sends it to the
 // supplied phone number as a text message
-func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string) (string, error) {
+func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string, appID *string) (string, error) {
 	cleanNo, err := converterandformatter.NormalizeMSISDN(msisdn)
 	if err != nil {
 
@@ -189,7 +194,11 @@ func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string) (string,
 		return "", errors.Wrap(err, "Unable to generate OTP")
 	}
 
-	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
+	var appidentifier string
+	if appID == nil {
+		appID = &appidentifier
+	}
+	msg := fmt.Sprintf(otpMsg, code, *appID)
 	otp := dto.OTP{
 		MSISDN:            msisdn,
 		Message:           msg,
@@ -203,7 +212,7 @@ func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string) (string,
 		return code, fmt.Errorf("unable to save OTP: %v", err)
 	}
 
-	code, err = s.SendOTP(ctx, *cleanNo, code)
+	code, err = s.SendOTP(ctx, *cleanNo, code, appID)
 	if err != nil {
 
 		log.Printf("OTP send error: %s", err)
@@ -214,10 +223,10 @@ func (s Service) GenerateAndSendOTP(ctx context.Context, msisdn string) (string,
 
 //SendOTPToEmail is a companion to GenerateAndSendOTP function
 //It will send the generated OTP to the provided email address
-func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string) (string, error) {
+func (s Service) SendOTPToEmail(ctx context.Context, msisdn, email *string, appID *string) (string, error) {
 	_, span := tracer.Start(ctx, "SendOTPToEmail")
 	defer span.End()
-	code, err := s.GenerateAndSendOTP(ctx, *msisdn)
+	code, err := s.GenerateAndSendOTP(ctx, *msisdn, appID)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
 		log.Printf("error: %s", err)
@@ -367,6 +376,7 @@ func (s Service) GenerateRetryOTP(
 	ctx context.Context,
 	msisdn *string,
 	retryStep int,
+	appID *string,
 ) (string, error) {
 	ctx, span := tracer.Start(ctx, "GenerateRetryOTP")
 	defer span.End()
@@ -396,7 +406,11 @@ func (s Service) GenerateRetryOTP(
 		return "", fmt.Errorf("OTP generation failed: %w", err)
 	}
 
-	msg := fmt.Sprintf("Your phone number verification code is %s. ", code)
+	var appidentifier string
+	if appID == nil {
+		appID = &appidentifier
+	}
+	msg := fmt.Sprintf(otpMsg, code, *appID)
 
 	otp := dto.OTP{
 		MSISDN:            *msisdn,

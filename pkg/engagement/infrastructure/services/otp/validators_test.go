@@ -36,7 +36,6 @@ func TestValidateSendOTPPayload(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    string
 		wantErr bool
 	}{
 		{
@@ -45,7 +44,6 @@ func TestValidateSendOTPPayload(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: validRequest,
 			},
-			want:    "+254723002959",
 			wantErr: false,
 		},
 		{
@@ -54,7 +52,6 @@ func TestValidateSendOTPPayload(t *testing.T) {
 				w: httptest.NewRecorder(),
 				r: emptyDataRequest,
 			},
-			want:    "",
 			wantErr: true,
 		},
 	}
@@ -65,8 +62,17 @@ func TestValidateSendOTPPayload(t *testing.T) {
 				t.Errorf("ValidateSendOTPPayload() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("ValidateSendOTPPayload() = %v, want %v", got, tt.want)
+			if tt.name == "valid data" {
+				if got == nil {
+					t.Errorf("expected msisdn payload")
+					return
+				}
+			}
+			if tt.name == "invalid data" {
+				if got != nil {
+					t.Errorf("did not expect msisdn payload")
+					return
+				}
 			}
 		})
 	}

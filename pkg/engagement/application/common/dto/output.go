@@ -105,7 +105,8 @@ type OTP struct {
 
 // Msisdn is an input struct for a generating and sending an otp request
 type Msisdn struct {
-	Msisdn string `json:"msisdn"`
+	Msisdn string  `json:"msisdn"`
+	AppID  *string `json:"appId"`
 }
 
 // GenerateRetryOTP is an input struct for generating and
@@ -113,6 +114,7 @@ type Msisdn struct {
 type GenerateRetryOTP struct {
 	Msisdn    *string `json:"msisdn"`
 	RetryStep int     `json:"retryStep"`
+	AppID     *string `json:"appId"`
 }
 
 // VerifyOTP is an input struct for confirming an otp

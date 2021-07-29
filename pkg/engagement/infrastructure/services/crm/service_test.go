@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
 	hubspotDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
@@ -103,7 +102,7 @@ func TestHubspot_CollectEmails(t *testing.T) {
 			args: args{
 				ctx:         ctx,
 				email:       newEmail,
-				phonenumber: gofakeit.Phone(),
+				phonenumber: "",
 			},
 			wantErr: true,
 		},
@@ -169,7 +168,7 @@ func TestHubspot_BeWellAware(t *testing.T) {
 			name: "bewell aware sad case",
 			args: args{
 				ctx:   ctx,
-				email: gofakeit.Email(),
+				email: "",
 			},
 			wantErr: true,
 		},

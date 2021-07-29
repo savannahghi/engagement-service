@@ -23,7 +23,7 @@ def test_client():
 
 def _encode_email():
     """Base64 encodes a test email."""
-    email = "something@users.bewell.co.ke"
+    email = "info+test@savannahinformatics.com"
     bs = bytes(email, "utf-8")
     return base64.b64encode(bs)
 

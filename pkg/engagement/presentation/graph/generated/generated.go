@@ -359,9 +359,9 @@ type ComplexityRoot struct {
 	Query struct {
 		EmailVerificationOtp  func(childComplexity int, email string) int
 		FindUploadByID        func(childComplexity int, id string) int
-		GenerateAndEmailOtp   func(childComplexity int, msisdn string, email *string) int
-		GenerateOtp           func(childComplexity int, msisdn string) int
-		GenerateRetryOtp      func(childComplexity int, msisdn string, retryStep int) int
+		GenerateAndEmailOtp   func(childComplexity int, msisdn string, email *string, appID *string) int
+		GenerateOtp           func(childComplexity int, msisdn string, appID *string) int
+		GenerateRetryOtp      func(childComplexity int, msisdn string, retryStep int, appID *string) int
 		GetFaqsContent        func(childComplexity int, flavour feedlib.Flavour) int
 		GetFeed               func(childComplexity int, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
@@ -465,9 +465,9 @@ type QueryResolver interface {
 	GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour feedlib.Flavour) (int, error)
-	GenerateOtp(ctx context.Context, msisdn string) (string, error)
-	GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string) (string, error)
-	GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int) (string, error)
+	GenerateOtp(ctx context.Context, msisdn string, appID *string) (string, error)
+	GenerateAndEmailOtp(ctx context.Context, msisdn string, email *string, appID *string) (string, error)
+	GenerateRetryOtp(ctx context.Context, msisdn string, retryStep int, appID *string) (string, error)
 	EmailVerificationOtp(ctx context.Context, email string) (string, error)
 	ListNPSResponse(ctx context.Context) ([]*dto.NPSResponse, error)
 	TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error)
@@ -2207,7 +2207,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GenerateAndEmailOtp(childComplexity, args["msisdn"].(string), args["email"].(*string)), true
+		return e.complexity.Query.GenerateAndEmailOtp(childComplexity, args["msisdn"].(string), args["email"].(*string), args["appId"].(*string)), true
 
 	case "Query.generateOTP":
 		if e.complexity.Query.GenerateOtp == nil {
@@ -2219,7 +2219,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GenerateOtp(childComplexity, args["msisdn"].(string)), true
+		return e.complexity.Query.GenerateOtp(childComplexity, args["msisdn"].(string), args["appId"].(*string)), true
 
 	case "Query.generateRetryOTP":
 		if e.complexity.Query.GenerateRetryOtp == nil {
@@ -2231,7 +2231,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GenerateRetryOtp(childComplexity, args["msisdn"].(string), args["retryStep"].(int)), true
+		return e.complexity.Query.GenerateRetryOtp(childComplexity, args["msisdn"].(string), args["retryStep"].(int), args["appId"].(*string)), true
 
 	case "Query.getFaqsContent":
 		if e.complexity.Query.GetFaqsContent == nil {
@@ -2995,9 +2995,9 @@ type Query {
 extend type Query {
   # the msisdn should be a fully qualified phone number
   # e.g +254723002959
-  generateOTP(msisdn: String!): String!
-  generateAndEmailOTP(msisdn: String!, email: String): String!
-  generateRetryOTP(msisdn: String!, retryStep: Int!): String!
+  generateOTP(msisdn: String!, appId: String): String!
+  generateAndEmailOTP(msisdn: String!, email: String, appId: String): String!
+  generateRetryOTP(msisdn: String!, retryStep: Int!, appId: String): String!
   emailVerificationOTP(email: String!): String!
 }
 
@@ -3005,7 +3005,6 @@ extend type Mutation {
   verifyOTP(msisdn: String!, otp: String!): Boolean!
   verifyEmailOTP(email: String!, otp: String!): Boolean!
 }
-
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/sms.graphql", Input: `extend type Mutation {
   send(to: String!, message: String!): SendMessageResponse!
@@ -4513,6 +4512,15 @@ func (ec *executionContext) field_Query_generateAndEmailOTP_args(ctx context.Con
 		}
 	}
 	args["email"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["appId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("appId"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["appId"] = arg2
 	return args, nil
 }
 
@@ -4528,6 +4536,15 @@ func (ec *executionContext) field_Query_generateOTP_args(ctx context.Context, ra
 		}
 	}
 	args["msisdn"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["appId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("appId"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["appId"] = arg1
 	return args, nil
 }
 
@@ -4552,6 +4569,15 @@ func (ec *executionContext) field_Query_generateRetryOTP_args(ctx context.Contex
 		}
 	}
 	args["retryStep"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["appId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("appId"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["appId"] = arg2
 	return args, nil
 }
 
@@ -12719,7 +12745,7 @@ func (ec *executionContext) _Query_generateOTP(ctx context.Context, field graphq
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GenerateOtp(rctx, args["msisdn"].(string))
+		return ec.resolvers.Query().GenerateOtp(rctx, args["msisdn"].(string), args["appId"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12761,7 +12787,7 @@ func (ec *executionContext) _Query_generateAndEmailOTP(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GenerateAndEmailOtp(rctx, args["msisdn"].(string), args["email"].(*string))
+		return ec.resolvers.Query().GenerateAndEmailOtp(rctx, args["msisdn"].(string), args["email"].(*string), args["appId"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12803,7 +12829,7 @@ func (ec *executionContext) _Query_generateRetryOTP(ctx context.Context, field g
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GenerateRetryOtp(rctx, args["msisdn"].(string), args["retryStep"].(int))
+		return ec.resolvers.Query().GenerateRetryOtp(rctx, args["msisdn"].(string), args["retryStep"].(int), args["appId"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

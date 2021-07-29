@@ -10,15 +10,15 @@ import (
 )
 
 // ValidateSendOTPPayload checks the validity of the request payload
-func ValidateSendOTPPayload(w http.ResponseWriter, r *http.Request) (string, error) {
+func ValidateSendOTPPayload(w http.ResponseWriter, r *http.Request) (*dto.Msisdn, error) {
 	payload := &dto.Msisdn{}
 	serverutils.DecodeJSONToTargetStruct(w, r, payload)
 	if payload.Msisdn == "" {
 		err := fmt.Errorf("invalid generate and send otp payload")
 		errorcodeutil.ReportErr(w, err, http.StatusBadRequest)
-		return "", err
+		return nil, err
 	}
-	return payload.Msisdn, nil
+	return payload, nil
 }
 
 // ValidateGenerateRetryOTPPayload checks the validity of the request payload
