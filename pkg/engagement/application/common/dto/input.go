@@ -94,12 +94,6 @@ type PrimaryEmailAddressPayload struct {
 	EmailAddress string `json:"email"`
 }
 
-// MarketingMessagePayload is used when retrieving the segmented data from the database
-type MarketingMessagePayload struct {
-	Wing           string `json:"wing" firestore:"wing"`
-	InitialSegment string `json:"initialSegment" firestore:"initialSegment"`
-}
-
 // UpdateContactPSMessage represents CRM update contact Pub/Sub message
 type UpdateContactPSMessage struct {
 	Properties domain.ContactProperties `json:"properties"`

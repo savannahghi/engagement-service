@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"testing"
 	"time"
 
@@ -113,27 +112,24 @@ func TestHubspot_CollectEmails(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			contact, err := g.CollectEmails(tt.args.ctx, tt.args.email, tt.args.phonenumber)
 			if (err != nil) != tt.wantErr {
-				if strings.Contains(err.Error(), "Sandbox subdomains are for test purposes only") {
-					if tt.name == "collect email happy case" {
-						if contact == nil {
-							t.Errorf("expected a contact")
-							return
-						}
-						if contact.Properties.Email != newEmail {
-							t.Errorf("expected a contact email to be collected")
-							return
-						}
-					}
-					if tt.name == "collect email sad case" {
-						if contact != nil {
-							t.Errorf("did not expect a contact")
-							return
-						}
-					}
-					return
-				}
 				t.Errorf("Hubspot.CollectEmails() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			if tt.name == "collect email happy case" {
+				if contact == nil {
+					t.Errorf("expected a contact")
+					return
+				}
+				if contact.Properties.Email != newEmail {
+					t.Errorf("expected a contact email to be collected")
+					return
+				}
+			}
+			if tt.name == "collect email sad case" {
+				if contact != nil {
+					t.Errorf("did not expect a contact")
+					return
+				}
 			}
 		})
 	}

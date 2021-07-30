@@ -135,9 +135,3 @@ var SendMessage = profileutils.PermissionInput{
 	Resource: "send_message",
 	Action:   "create",
 }
-
-// LoadMarketingData describes the create permissions on a message
-var LoadMarketingData = profileutils.PermissionInput{
-	Resource: "load_marketing_data",
-	Action:   "create",
-}

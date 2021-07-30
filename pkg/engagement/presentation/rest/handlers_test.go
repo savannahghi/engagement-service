@@ -29,11 +29,9 @@ import (
 	"github.com/segmentio/ksuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/apiclient"
 	"google.golang.org/api/idtoken"
 
 	"github.com/savannahghi/interserviceclient"
-	CRMDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
@@ -136,60 +134,6 @@ func RegisterPushToken(
 	}
 
 	return true, nil
-}
-
-func composeMarketingDataPayload(initialSegment, wing, phoneNumber, email string) *apiclient.Segment {
-	return &apiclient.Segment{
-		Properties: CRMDomain.ContactProperties{
-			BeWellEnrolled:        "NO",
-			OptOut:                "NO",
-			BeWellAware:           "NO",
-			BeWellPersona:         "SLADER",
-			HasWellnessCard:       "YES",
-			HasCover:              "YES",
-			Payor:                 "Jubilee Insuarance Kenya",
-			FirstChannelOfContact: "SMS",
-			InitialSegment:        initialSegment,
-			HasVirtualCard:        "NO",
-			Email:                 email,
-			Phone:                 phoneNumber,
-			FirstName:             gofakeit.FirstName(),
-			LastName:              gofakeit.LastName(),
-		},
-
-		Wing:        wing,
-		MessageSent: "FALSE",
-		IsSynced:    "FALSE",
-	}
-
-}
-
-func loadTestMarketingData(ctx context.Context, marketingData apiclient.Segment) error {
-	repository, err := database.NewFirebaseRepository(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to initialize Firebase Repository: %s", err)
-	}
-
-	_, err = repository.LoadMarketingData(ctx, marketingData)
-	if err != nil {
-		return fmt.Errorf("unable to load market data: %s", err)
-	}
-
-	return nil
-}
-
-func rollBackTestMarketingData(ctx context.Context, marketingData apiclient.Segment) error {
-	repository, err := database.NewFirebaseRepository(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to initialize Firebase Repository: %s", err)
-	}
-
-	err = repository.RollBackMarketingData(ctx, marketingData)
-	if err != nil {
-		return fmt.Errorf("unable to roll back market data: %s", err)
-	}
-
-	return nil
 }
 
 func TestMain(m *testing.M) {
@@ -6375,290 +6319,63 @@ func TestPresentationHandlersImpl_GetContactsInAList(t *testing.T) {
 
 }
 
-func TestGetMarketingData(t *testing.T) {
-	assert := assert.New(t)
-	ctx := context.Background()
-
-	// Setup test data
-	marketingData := composeMarketingDataPayload(
-		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
-		fmt.Sprintf("WING %s", ksuid.New().String()),
-		gofakeit.PhoneFormatted(),
-		gofakeit.Email(),
-	)
-	err := loadTestMarketingData(ctx, *marketingData)
-	if !assert.Nilf(err, "Error: unable to setup test data: %s", err) {
-		return
-	}
-
-	uploadData1 := dto.MarketingMessagePayload{
-		InitialSegment: marketingData.Properties.InitialSegment,
-		Wing:           marketingData.Wing,
-	}
-	uploadData2 := dto.MarketingMessagePayload{
-		InitialSegment: fmt.Sprintf("SIL Segment %s", ksuid.New().String()),
-		Wing:           fmt.Sprintf("WING %s", ksuid.New().String()),
-	}
-	uploadData3 := dto.MarketingMessagePayload{}
-
-	payload1, err := json.Marshal(uploadData1)
-	if !assert.Nilf(err, "Error, unable to marshal upload data 1 to JSON: %s", err) {
-		return
-	}
-	payload2, err := json.Marshal(uploadData2)
-	if !assert.Nilf(err, "Error, unable to marshal upload data 2 to JSON: %s", err) {
-		return
-	}
-	payload3, err := json.Marshal(uploadData3)
-	if !assert.Nilf(err, "Error, unable to marshal upload data 3 to JSON: %s", err) {
-		return
-	}
-
-	headers := getDefaultHeaders(ctx, t, baseURL)
-	getUrl := fmt.Sprintf("%s/marketing_data", baseURL)
-
-	tests := []struct {
-		name       string
-		body       io.Reader
-		wantStatus int
-		wantErr    bool
-	}{
-		{
-			name:       "Get marketing data with valid request",
-			body:       bytes.NewBuffer(payload1),
-			wantStatus: http.StatusOK,
-			wantErr:    false,
-		},
-		{
-			name:       "Get marketing data of non existent segments",
-			body:       bytes.NewBuffer(payload2),
-			wantStatus: http.StatusBadRequest,
-			wantErr:    false,
-		},
-		{
-			name:       "Get marketing data with empty request",
-			body:       bytes.NewBuffer(payload3),
-			wantStatus: http.StatusBadRequest,
-			wantErr:    false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			request, err := http.NewRequest(
-				http.MethodPost,
-				getUrl,
-				tt.body,
-			)
-
-			if !assert.Nilf(err, "Error, unable to compose request: %s", err) {
-				return
-			}
-			if !assert.NotNil(request, "Error, nil request") {
-				return
-			}
-
-			for key, val := range headers {
-				request.Header.Add(key, val)
-			}
-
-			response, err := http.DefaultClient.Do(request)
-			assert.Nilf(err, "Error, unable to make http request: %s", err)
-			assert.False(!tt.wantErr && response == nil, "Error, nil response")
-			if response == nil {
-				return
-			}
-
-			data, err := io.ReadAll(response.Body)
-			if !assert.Nilf(err, "Error, can't read request body: %s", err) {
-				return
-			}
-			if !assert.NotNil(data, "Error, nil response data") {
-				return
-			}
-
-			// assert.Equalf(tt.wantStatus, response.StatusCode, "expected http status %v, but got %v", tt.wantStatus, response.StatusCode)
-		})
-	}
-
-	// Teardown test data
-	err = rollBackTestMarketingData(ctx, *marketingData)
-	if !assert.Nilf(err, "Error: unable to teardown test data: %s", err) {
-		return
-	}
-}
-
 func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
-    ctx := context.Background()
-    headers := getDefaultHeaders(ctx, t, baseURL)
-    fr, err := database.NewFirebaseRepository(ctx)
-    if err != nil {
-        t.Errorf("can't initialize Firebase Repository: %s", err)
-        return
-    }
-
-    event := dto.MailgunEvent{
-        EventName:   "delivered",
-        DeliveredOn: "12345637.11222",
-        MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
-    }
-
-    emailLog := &dto.OutgoingEmailsLog{
-        UUID:        uuid.NewString(),
-        To:          []string{"test@bewell.co.ke"},
-        From:        "test@bewell.co.ke",
-        Subject:     "Test",
-        Text:        "Test",
-        MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
-        EmailSentOn: time.Time{},
-        Event: &dto.MailgunEventOutput{
-            EventName:   "accepted",
-            DeliveredOn: time.Time{},
-        },
-    }
-
-    err = fr.SaveOutgoingEmails(ctx, emailLog)
-    if err != nil {
-        t.Errorf("unable to save outgoing email: %w",
-            err,
-        )
-        return
-    }
-
-    _, err = fr.UpdateMailgunDeliveryStatus(ctx, &event)
-    if err != nil {
-        t.Errorf("unable to update email delivery status: %w",
-            err,
-        )
-        return
-    }
-
-    bs, err := json.Marshal(event)
-    if err != nil {
-        t.Errorf("unable to marshal event input to JSON: %s", err)
-    }
-    payload := bytes.NewBuffer(bs)
-
-    type args struct {
-        url        string
-        httpMethod string
-        headers    map[string]string
-        body       io.Reader
-    }
-    tests := []struct {
-        name       string
-        args       args
-        wantStatus int
-        wantErr    bool
-    }{
-        {
-            name: "valid event",
-            args: args{
-                url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
-                httpMethod: http.MethodPost,
-                headers:    headers,
-                body:       payload,
-            },
-            wantStatus: http.StatusOK,
-            wantErr:    false,
-        },
-        {
-            name: "nil event",
-            args: args{
-                url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
-                httpMethod: http.MethodPost,
-                headers:    headers,
-                body:       nil,
-            },
-            wantStatus: http.StatusBadRequest,
-            wantErr:    false,
-        },
-    }
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            r, err := http.NewRequest(
-                tt.args.httpMethod,
-                tt.args.url,
-                tt.args.body,
-            )
-            if err != nil {
-                t.Errorf("unable to compose request: %s", err)
-                return
-            }
-
-            if r == nil {
-                t.Errorf("nil request")
-                return
-            }
-
-            for k, v := range tt.args.headers {
-                r.Header.Add(k, v)
-            }
-            client := http.DefaultClient
-            resp, err := client.Do(r)
-            if err != nil {
-                t.Errorf("request error: %s", err)
-                return
-            }
-
-            if resp == nil && !tt.wantErr {
-                t.Errorf("nil response")
-                return
-            }
-
-            data, err := ioutil.ReadAll(resp.Body)
-            if err != nil {
-                t.Errorf("can't read request body: %s", err)
-                return
-            }
-            if data == nil {
-                t.Errorf("nil response data")
-                return
-            }
-
-            if (err != nil) != tt.wantErr {
-                t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-
-            if resp.StatusCode != tt.wantStatus {
-                t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
-                return
-            }
-        })
-    }
-}
-
-func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
-	ctx, _, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
-		t,
-		onboardingISCClient(t),
-	)
-	if err != nil {
-		t.Errorf("failed to create a test user: %v", err)
-		return
-	}
+	ctx := context.Background()
 	headers := getDefaultHeaders(ctx, t, baseURL)
-
-	testNumber := interserviceclient.TestUserPhoneNumber
-	// Setup test data
-	marketingData := composeMarketingDataPayload(
-		fmt.Sprintf("Test SIL Segment %s", ksuid.New().String()),
-		fmt.Sprintf("WING %s", ksuid.New().String()),
-		testNumber,
-		gofakeit.Email(),
-	)
-	err = loadTestMarketingData(ctx, *marketingData)
+	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
-		t.Errorf("failed to create test data")
+		t.Errorf("can't initialize Firebase Repository: %s", err)
 		return
 	}
+
+	event := dto.MailgunEvent{
+		EventName:   "delivered",
+		DeliveredOn: "12345637.11222",
+		MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
+	}
+
+	emailLog := &dto.OutgoingEmailsLog{
+		UUID:        uuid.NewString(),
+		To:          []string{"test@bewell.co.ke"},
+		From:        "test@bewell.co.ke",
+		Subject:     "Test",
+		Text:        "Test",
+		MessageID:   "20210715172955.1.63EC29EF167F09B9@sandboxb30d61fba25641a9983c3b3a3c84abde.mailgun.org",
+		EmailSentOn: time.Time{},
+		Event: &dto.MailgunEventOutput{
+			EventName:   "accepted",
+			DeliveredOn: time.Time{},
+		},
+	}
+
+	err = fr.SaveOutgoingEmails(ctx, emailLog)
+	if err != nil {
+		t.Errorf("unable to save outgoing email: %w",
+			err,
+		)
+		return
+	}
+
+	_, err = fr.UpdateMailgunDeliveryStatus(ctx, &event)
+	if err != nil {
+		t.Errorf("unable to update email delivery status: %w",
+			err,
+		)
+		return
+	}
+
+	bs, err := json.Marshal(event)
+	if err != nil {
+		t.Errorf("unable to marshal event input to JSON: %s", err)
+	}
+	payload := bytes.NewBuffer(bs)
 
 	type args struct {
 		url        string
 		httpMethod string
+		headers    map[string]string
 		body       io.Reader
 	}
-
 	tests := []struct {
 		name       string
 		args       args
@@ -6666,30 +6383,25 @@ func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "Happy Case: Successfully retrieve data",
+			name: "valid event",
 			args: args{
-				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, interserviceclient.TestUserPhoneNumber),
-				httpMethod: http.MethodGet,
+				url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       payload,
 			},
 			wantStatus: http.StatusOK,
 			wantErr:    false,
 		},
 		{
-			name: "Sad Case: Fail to retrieve data - missing number",
+			name: "nil event",
 			args: args{
-				url:        fmt.Sprintf("%s/internal/slader_data", baseURL),
-				httpMethod: http.MethodGet,
-			},
-			wantStatus: http.StatusInternalServerError,
-			wantErr:    false,
-		},
-		{
-			name: "Sad Case: Method not allowed",
-			args: args{
-				url:        fmt.Sprintf("%s/internal/slader_data?phoneNumber=%s", baseURL, interserviceclient.TestUserPhoneNumber),
+				url:        fmt.Sprintf("%s/internal/mailgun_delivery_webhook", baseURL),
 				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       nil,
 			},
-			wantStatus: http.StatusMethodNotAllowed,
+			wantStatus: http.StatusBadRequest,
 			wantErr:    false,
 		},
 	}
@@ -6710,7 +6422,7 @@ func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
 				return
 			}
 
-			for k, v := range headers {
+			for k, v := range tt.args.headers {
 				r.Header.Add(k, v)
 			}
 			client := http.DefaultClient
@@ -6740,17 +6452,10 @@ func TestPresentationHandlersImpl_GetSladerData(t *testing.T) {
 				return
 			}
 
-			// if tt.wantStatus != resp.StatusCode {
-			// 	t.Errorf("expected %v, but got %v", tt.wantStatus, resp.StatusCode)
-			// 	return
-			// }
+			if resp.StatusCode != tt.wantStatus {
+				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
+				return
+			}
 		})
-	}
-
-	// Teardown test data
-	err = rollBackTestMarketingData(ctx, *marketingData)
-	if err != nil {
-		t.Errorf("failed to teardown test data")
-		return
 	}
 }

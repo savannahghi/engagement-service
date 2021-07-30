@@ -138,7 +138,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	twilio := twilio.NewService(sms)
 	otp := otp.NewService(whatsapp, mail, sms, twilio)
 	surveys := surveys.NewService(fr)
-	marketing := usecases.NewMarketing(fr, hubspotService, mail)
 
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
@@ -154,7 +153,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		fcm,
 		surveys,
 		hubspotService,
-		marketing,
 		crmExt,
 	)
 	if err != nil {
@@ -181,7 +179,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
 	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
-	r.Path("/load_data").Methods(http.MethodPost).HandlerFunc(h.LoadCampaignData())
 
 	r.Path(pubsubtools.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
@@ -195,11 +192,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 		http.MethodOptions,
 	).HandlerFunc(h.SendMarketingSMS())
-
-	// Get Marketing Data (Segments) from collections
-	r.Path("/marketing_data").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.GetMarketingData())
 
 	// HubSpot CRM specific endpoints
 	r.Path("/contact_lists").Methods(
@@ -478,9 +470,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost, http.MethodOptions,
 	).HandlerFunc(h.SendNotificationHandler())
 
-	isc.Path("/slader_data").Methods(
-		http.MethodGet, http.MethodOptions,
-	).HandlerFunc(h.GetSladerData())
 	// return the combined router
 	return r, nil
 }
