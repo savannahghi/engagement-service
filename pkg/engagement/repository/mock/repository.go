@@ -6,7 +6,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -251,11 +250,6 @@ type FakeEngagementRepository struct {
 		data *dto.MarketingSMS,
 	) (*dto.MarketingSMS, error)
 
-	RetrieveMarketingDataFn func(
-		ctx context.Context,
-		data *dto.MarketingMessagePayload,
-	) ([]*apiclient.Segment, error)
-
 	UpdateMessageSentStatusFn func(
 		ctx context.Context,
 		phonenumber string,
@@ -265,15 +259,8 @@ type FakeEngagementRepository struct {
 	UpdateUserCRMEmailFn       func(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
 	UpdateUserCRMBewellAwareFn func(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
 
-	LoadMarketingDataFn     func(ctx context.Context, data apiclient.Segment) (int, error)
-	RollBackMarketingDataFn func(ctx context.Context, data apiclient.Segment) error
-
 	SaveOutgoingEmailsFn          func(ctx context.Context, payload *dto.OutgoingEmailsLog) error
 	UpdateMailgunDeliveryStatusFn func(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
-	GetSladerDataByPhoneFn        func(
-		ctx context.Context,
-		phonenumber string,
-	) (*apiclient.Segment, error)
 
 	GetMarketingSMSByIDFn func(
 		ctx context.Context,
@@ -604,14 +591,6 @@ func (f *FakeEngagementRepository) UpdateMarketingMessage(
 	return f.UpdateMarketingMessageFn(ctx, data)
 }
 
-// RetrieveMarketingData ..
-func (f *FakeEngagementRepository) RetrieveMarketingData(
-	ctx context.Context,
-	data *dto.MarketingMessagePayload,
-) ([]*apiclient.Segment, error) {
-	return f.RetrieveMarketingDataFn(ctx, data)
-}
-
 // UpdateMessageSentStatus ..
 func (f *FakeEngagementRepository) UpdateMessageSentStatus(
 	ctx context.Context,
@@ -631,16 +610,6 @@ func (f *FakeEngagementRepository) UpdateUserCRMBewellAware(ctx context.Context,
 	return f.UpdateUserCRMBewellAwareFn(ctx, email, payload)
 }
 
-// LoadMarketingData ...
-func (f *FakeEngagementRepository) LoadMarketingData(ctx context.Context, data apiclient.Segment) (int, error) {
-	return f.LoadMarketingDataFn(ctx, data)
-}
-
-// RollBackMarketingData ...
-func (f *FakeEngagementRepository) RollBackMarketingData(ctx context.Context, data apiclient.Segment) error {
-	return f.RollBackMarketingDataFn(ctx, data)
-}
-
 // SaveOutgoingEmails ...
 func (f *FakeEngagementRepository) SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error {
 	return f.SaveOutgoingEmailsFn(ctx, payload)
@@ -649,14 +618,6 @@ func (f *FakeEngagementRepository) SaveOutgoingEmails(ctx context.Context, paylo
 // UpdateMailgunDeliveryStatus ...
 func (f *FakeEngagementRepository) UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error) {
 	return f.UpdateMailgunDeliveryStatusFn(ctx, payload)
-}
-
-// GetSladerDataByPhone ...
-func (f *FakeEngagementRepository) GetSladerDataByPhone(
-	ctx context.Context,
-	phonenumber string,
-) (*apiclient.Segment, error) {
-	return f.GetSladerDataByPhoneFn(ctx, phonenumber)
 }
 
 // GetMarketingSMSByPhone ..

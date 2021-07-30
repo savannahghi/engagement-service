@@ -6,7 +6,6 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/apiclient"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
@@ -263,25 +262,12 @@ type Repository interface {
 		response *dto.NPSResponse,
 	) error
 
-	RetrieveMarketingData(
-		ctx context.Context,
-		data *dto.MarketingMessagePayload,
-	) ([]*apiclient.Segment, error)
-
 	UpdateMessageSentStatus(
 		ctx context.Context,
 		phonenumber string,
 		segment string,
 	) error
 
-	LoadMarketingData(ctx context.Context, data apiclient.Segment) (int, error)
-
-	RollBackMarketingData(ctx context.Context, data apiclient.Segment) error
 	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
 	UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
-
-	GetSladerDataByPhone(
-		ctx context.Context,
-		phonenumber string,
-	) (*apiclient.Segment, error)
 }

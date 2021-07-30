@@ -130,12 +130,7 @@ type PresentationHandlers interface {
 	CollectEmailAddress() http.HandlerFunc
 	SetBewellAware() http.HandlerFunc
 
-	GetMarketingData() http.HandlerFunc
-
-	LoadCampaignData() http.HandlerFunc
 	UpdateMailgunDeliveryStatus() http.HandlerFunc
-
-	GetSladerData() http.HandlerFunc
 
 	HubSpotFirestoreSync() http.HandlerFunc
 
@@ -1868,84 +1863,6 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 	}
 }
 
-// GetMarketingData retrieves all the marketing data from the collection
-func (p PresentationHandlersImpl) GetMarketingData() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		payload := &dto.MarketingMessagePayload{}
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-
-		if payload.Wing == "" {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("expected `wing` to be defined"),
-			)
-			return
-		}
-
-		if payload.InitialSegment == "" {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("expected `initial segment` to be defined"),
-			)
-			return
-		}
-
-		resp, err := p.interactor.Marketing.GetMarketingData(
-			ctx,
-			payload,
-		)
-		if err != nil {
-			errorcode.RespondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("failed to retrieve data %v", err),
-			)
-			return
-		}
-
-		marshalled, err := json.Marshal(resp)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-		respondWithJSON(w, http.StatusOK, marshalled)
-	}
-}
-
-//LoadCampaignData loads a prepared campaign dataset into firestore and CRM
-// todo write automated tests for this (it has already been hand-tested to work)
-func (p PresentationHandlersImpl) LoadCampaignData() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		payload := &dto.LoadCampgainDataInput{}
-
-		serverutils.DecodeJSONToTargetStruct(w, r, payload)
-
-		if payload == nil || payload.PhoneNumber == nil || len(payload.Emails) == 0 {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("expected `phoneNumber` and `email` to be defined"),
-			)
-			return
-		}
-
-		// running the processing in an async fashion. Is the process can take a long time, on the account of
-		// sleeps in-place. HTTP may timeout before a response is received.
-		go p.interactor.Marketing.LoadCampaignDataset(ctx, *payload.PhoneNumber, payload.Emails)
-
-		res, _ := json.Marshal(dto.OKResp{Status: "REQUEST PROCESSING ONGOING"})
-
-		respondWithJSON(w, http.StatusOK, res)
-	}
-
-}
-
 // UpdateMailgunDeliveryStatus gets the status of the sent emails and logs them in the database
 func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
@@ -1967,48 +1884,6 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc
 			return
 		}
 		respondWithJSON(rw, http.StatusOK, marshalled)
-	}
-}
-
-// GetSladerData get the details of a single slader by their phonenumber
-func (p PresentationHandlersImpl) GetSladerData() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		phoneNumber := r.URL.Query().Get("phoneNumber")
-
-		if phoneNumber == "" {
-			err := fmt.Errorf("expected `phoneNumber` to be defined in the query parameters")
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		phone, err := converterandformatter.NormalizeMSISDN(phoneNumber)
-		if err != nil {
-			err := fmt.Errorf("failed to normalize phone number: %s", err)
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		sladerData, err := p.interactor.Marketing.GetUserMarketingData(
-			ctx,
-			*phone,
-		)
-
-		if err != nil {
-			respondWithError(
-				w,
-				http.StatusBadRequest,
-				fmt.Errorf("failed to retrieve data %v", err),
-			)
-			return
-		}
-		marshalled, err := json.Marshal(sladerData)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err)
-			return
-		}
-		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }
 

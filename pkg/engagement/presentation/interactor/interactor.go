@@ -31,7 +31,6 @@ type Interactor struct {
 	FCM          fcm.ServiceFCM
 	Surveys      surveys.ServiceSurveys
 	CRM          hubspot.ServiceHubSpotInterface
-	Marketing    usecases.MarketingDataUseCases
 	CrmExt       crm.ServiceCrm
 }
 
@@ -49,7 +48,6 @@ func NewEngagementInteractor(
 	fcm fcm.ServiceFCM,
 	surveys surveys.ServiceSurveys,
 	CRM hubspot.ServiceHubSpotInterface,
-	marketing usecases.MarketingDataUseCases,
 	crmExt crm.ServiceCrm,
 ) (*Interactor, error) {
 	return &Interactor{
@@ -65,7 +63,6 @@ func NewEngagementInteractor(
 		FCM:          fcm,
 		Surveys:      surveys,
 		CRM:          CRM,
-		Marketing:    marketing,
 		CrmExt:       crmExt,
 	}, nil
 }
