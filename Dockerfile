@@ -33,7 +33,6 @@ RUN apk add --no-cache ca-certificates
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/server /server
 COPY --from=builder /app/deps.yaml /deps.yaml   
-COPY --from=builder /app/launch/dataset/campaign.dataset.csv /campaign.dataset.csv
 
 COPY --from=builder /app/pkg/engagement/application/authorization/rbac_model.conf /app/pkg/engagement/application/authorization/rbac_model.conf
 COPY --from=builder /app/pkg/engagement/application/authorization/data/rbac_policy.csv /app/pkg/engagement/application/authorization/data/rbac_policy.csv
