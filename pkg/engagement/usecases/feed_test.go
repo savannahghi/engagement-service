@@ -21,6 +21,8 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
+	mockEDI "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 	mockFCM "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm/mock"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
@@ -72,6 +74,7 @@ var fakeEngagement mockEngagement.FakeEngagementRepository
 var fakeOnboarding mockOnboarding.FakeServiceOnboarding
 var fakeMessaging mockMessaging.FakeServiceMessaging
 var fakeFCM mockFCM.FakeServiceFcm
+var fakeEDI mockEDI.FakeEDIService
 
 // InitializeFakeEngagementInteractor represents a fake engagement interactor
 func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
@@ -79,6 +82,8 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	var onboardingSvc onboarding.ProfileService = &fakeOnboarding
 	var messagingSvc messaging.NotificationService = &fakeMessaging
 	var fcmSvc fcm.PushService = &fakeFCM
+	var ediSvc edi.ServiceEdi = &fakeEDI
+
 	ctx := context.Background()
 
 	feed := usecases.NewFeed(r, messagingSvc)
@@ -96,7 +101,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	}
 	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(r, crmExt, messagingSvc)
+	sms := sms.NewService(r, crmExt, messagingSvc, ediSvc)
 	whatsapp := whatsapp.NewService()
 	twilio := twilio.NewService(sms)
 	otp := otp.NewService(whatsapp, mail, sms, twilio)

@@ -488,8 +488,9 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-gitlab.slade360emr.com/go/apiclient v0.0.13 h1:aeHDH97qPAlejW3Z0vY7iJANAWGugV+yXgFQAcEF34w=
 gitlab.slade360emr.com/go/apiclient v0.0.13/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
+gitlab.slade360emr.com/go/apiclient v0.0.15 h1:88yz10xqZ60Sk4I/HqOIuCAjmgMv/pLMo5JUY+2BRtE=
+gitlab.slade360emr.com/go/apiclient v0.0.15/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210723104410-83cc1c03500f/go.mod h1:tddM7JGi1PR5sBLt8sOnxs8QBGigSQSiyoSyMfQ5ySw=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210730074631-6915424f7694 h1:UCIvAagxezUSRTff4+TOSOh1pe07Ob5r5wNPNnmCgRU=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210730074631-6915424f7694/go.mod h1:bSJZ5WjxqHNx+2uwWHqrx0H2SJ0ICqGFrBRQDUzqTEo=

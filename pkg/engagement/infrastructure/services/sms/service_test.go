@@ -18,6 +18,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -47,6 +48,7 @@ func newTestSMSService() (*sms.Service, error) {
 	hubspotUsecases := newHubSpotService(ctx)
 	mail := mail.NewService(fr)
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
+	edi := edi.NewEdiService(edi.NewEDIClient())
 	ps, err := messaging.NewPubSubNotificationService(
 		ctx,
 		serverutils.MustGetEnvVar(serverutils.GoogleCloudProjectIDEnvVarName),
@@ -57,7 +59,7 @@ func newTestSMSService() (*sms.Service, error) {
 			err,
 		)
 	}
-	return sms.NewService(fr, crmExt, ps), nil
+	return sms.NewService(fr, crmExt, ps, edi), nil
 }
 
 func TestSendToMany(t *testing.T) {

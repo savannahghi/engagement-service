@@ -14,6 +14,7 @@ import (
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
 	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
@@ -47,8 +48,9 @@ func newTwilioService(ctx context.Context) (*twilio.Service, error) {
 		return nil, fmt.Errorf("can't instantiate firebase repository in resolver: %w", err)
 	}
 	mail := mail.NewService(fr)
+	edi := edi.NewEdiService(edi.NewEDIClient())
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(repo, crmExt, ns)
+	sms := sms.NewService(repo, crmExt, ns, edi)
 
 	return twilio.NewService(sms), nil
 }

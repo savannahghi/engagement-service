@@ -11,6 +11,7 @@ import (
 	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
@@ -105,6 +106,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
 	fcm := fcm.NewService(fr)
 	mail := mail.NewService(fr)
+	edi := edi.NewEdiService(edi.NewEDIClient())
 
 	hubspotService := hubspot.NewHubSpotService()
 	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
@@ -132,7 +134,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	}
 
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
-	sms := sms.NewService(fr, crmExt, ns)
+	sms := sms.NewService(fr, crmExt, ns, edi)
 	feed := usecases.NewFeed(fr, ns)
 	whatsapp := whatsapp.NewService()
 	twilio := twilio.NewService(sms)

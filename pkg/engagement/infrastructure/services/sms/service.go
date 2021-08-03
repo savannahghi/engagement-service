@@ -21,6 +21,7 @@ import (
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
+	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
@@ -84,6 +85,7 @@ type Service struct {
 	Repository repository.Repository
 	Crm        crm.ServiceCrm
 	PubSub     messaging.NotificationService
+	Edi        edi.ServiceEdi
 }
 
 // GetSmsURL is the sms endpoint
@@ -112,9 +114,10 @@ func NewService(
 	repository repository.Repository,
 	crm crm.ServiceCrm,
 	pubsub messaging.NotificationService,
+	edi edi.ServiceEdi,
 ) *Service {
 	env := serverutils.MustGetEnvVar(AITEnvVarName)
-	return &Service{env, repository, crm, pubsub}
+	return &Service{env, repository, crm, pubsub, edi}
 }
 
 // SaveMarketingMessage saves the callback data for future analysis
@@ -340,7 +343,7 @@ func (s Service) SendMarketingSMS(
 			)
 		}
 
-		if err := s.UpdateMessageSentStatus(
+		if _, err := s.Edi.UpdateMessageSent(
 			ctx,
 			data.PhoneNumber,
 			segment,
