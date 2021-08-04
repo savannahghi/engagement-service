@@ -9,6 +9,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"github.com/savannahghi/engagement/pkg/engagement/usecases"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
@@ -16,14 +24,6 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
 )
 
 const (

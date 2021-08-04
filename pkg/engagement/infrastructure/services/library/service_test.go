@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 )
 
 const (

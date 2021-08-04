@@ -8,7 +8,7 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/savannahghi/firebasetools"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/interactor"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
 )
 
 // This file will not be regenerated automatically.

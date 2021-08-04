@@ -15,13 +15,13 @@ import (
 	"time"
 
 	"github.com/imroc/req"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
 )
 
 const (

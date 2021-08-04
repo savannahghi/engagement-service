@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 )
 
 func TestMain(m *testing.M) {

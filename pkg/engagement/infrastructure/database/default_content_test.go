@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 
 	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
 
-	db "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
+	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 )
 
 func TestSetDefaultActions(t *testing.T) {

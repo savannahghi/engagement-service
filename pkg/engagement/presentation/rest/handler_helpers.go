@@ -11,12 +11,12 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gorilla/mux"
 	"github.com/markbates/pkger"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/errorcodeutil"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	log "github.com/sirupsen/logrus"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 func respondWithError(w http.ResponseWriter, code int, err error) {
@@ -259,7 +259,7 @@ func getStringVar(r *http.Request, varName string) (string, error) {
 
 // SchemaHandler ...
 func SchemaHandler() (http.Handler, error) {
-	f, err := pkger.Open("gitlab.slade360emr.com/go/engagement:/static/")
+	f, err := pkger.Open("github.com/savannahghi/engagement:/static/")
 	if err != nil {
 		return nil, fmt.Errorf("can't open pkger schema dir: %w", err)
 	}

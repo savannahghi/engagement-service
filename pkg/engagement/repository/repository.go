@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 )
 
 // Repository defines methods for persistence and retrieval of feeds

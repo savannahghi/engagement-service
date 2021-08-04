@@ -8,6 +8,13 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	crmExt "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
@@ -15,13 +22,6 @@ import (
 	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
-	crmExt "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 )
 
 func TestMain(m *testing.M) {

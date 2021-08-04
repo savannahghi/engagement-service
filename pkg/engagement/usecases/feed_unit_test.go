@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/segmentio/ksuid"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
 )
 
 func TestPublishFeedItem(t *testing.T) {

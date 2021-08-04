@@ -8,14 +8,14 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/google/uuid"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/surveys")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/surveys")
 
 // NPSResponseCollectionName firestore collection name where nps responses are stored
 const NPSResponseCollectionName = "nps_response"

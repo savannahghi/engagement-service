@@ -11,14 +11,14 @@ import (
 	"firebase.google.com/go/messaging"
 	"github.com/google/uuid"
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/fcm")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/fcm")
 
 // Service provides methods for sending Firebase Cloud Messaging notifications
 type Service struct {

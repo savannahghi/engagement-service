@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
 )
 
 func TestNewPubSubNotificationService(t *testing.T) {

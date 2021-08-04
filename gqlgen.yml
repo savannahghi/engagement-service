@@ -19,12 +19,12 @@ resolver:
   package: graph
 
 autobind:
-  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
-  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
-  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/scheduling"
-  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
-  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-  - "gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+  - "github.com/savannahghi/engagement/pkg/engagement/domain"
+  - "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
+  - "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/scheduling"
+  - "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/uploads"
+  - "github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+  - "github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
   - "github.com/savannahghi/scalarutils"
   - "github.com/savannahghi/enumutils"
   - "github.com/savannahghi/feedlib"
@@ -62,7 +62,7 @@ models:
       - github.com/savannahghi/feedlib.Context
   FilterParamsInput:
     model:
-      - gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers.FilterParams
+      - github.com/savannahghi/engagement/pkg/engagement/application/common/helpers.FilterParams
   CalendarEvent:
     model:
       - "google.golang.org/api/calendar/v3.Event"

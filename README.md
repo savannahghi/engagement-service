@@ -1,7 +1,7 @@
 # Feed service
 
-[![pipeline status](https://gitlab.slade360emr.com/go/engagement/badges/develop/pipeline.svg)](https://gitlab.slade360emr.com/go/engagement/-/commits/develop)
-[![coverage report](https://gitlab.slade360emr.com/go/engagement/badges/develop/coverage.svg)](https://gitlab.slade360emr.com/go/engagement/-/commits/develop)
+[![pipeline status](https://github.com/savannahghi/engagement/badges/develop/pipeline.svg)](https://github.com/savannahghi/engagement/-/commits/develop)
+[![coverage report](https://github.com/savannahghi/engagement/badges/develop/coverage.svg)](https://github.com/savannahghi/engagement/-/commits/develop)
 
 A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app.
 
@@ -9,7 +9,6 @@ A service that fetches and preprocesses content for the feed,library and faqs se
 
 The project implements the `Clean Architecture` advocated by
 Robert Martin ('Uncle Bob').
-
 
 ### Clean Architecture
 
@@ -86,7 +85,6 @@ For more information, see:
 - [Onion Architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1/) by Jeffrey Palermo
 - [Implementing Domain-Driven Design](http://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577)
 
-
 ## Interservice API
 
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/d023a368982c38ed7c66)
@@ -96,25 +94,26 @@ For more information, see:
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/0f20d40221953b0b6708)
 
 ## JSON Schema Files
+
 This project uses JSON Schema to validate inputs and outputs.
 
 ### Schema file hosting
 
-In order for module references to work, the schema files in 
-`graph/feed/schema` need to be hosted. We use 
+In order for module references to work, the schema files in
+`graph/feed/schema` need to be hosted. We use
 https://firebase.google.com/docs/hosting for that.
 
 The schema files are hosted at https://schema.healthcloud.co.ke/
 e.g https://schema.healthcloud.co.ke//event.schema.json .
 
-This is in the `bewell-app` project. You need to 
+This is in the `bewell-app` project. You need to
 `npm install -g firebase-tools` and `firebase login` first. After that,
 any time the schema files change, run from the root `cd static && firebase deploy && cd ..` to host the
 updated files.
 
 ## Environment variables
 
-For local development, you need to *export* the following env vars:
+For local development, you need to _export_ the following env vars:
 
 ```bash
 # Google Cloud Settings
@@ -140,7 +139,7 @@ variables are:
 The design of this service aspires to follow the principles of _domain driven
 design_ and _hexagonal architecture_.
 
-For the feed, the domain object is _feed.Feed_ . The aggregate is 
+For the feed, the domain object is _feed.Feed_ . The aggregate is
 _feed.FeedAggregate_. There's a _feed.Repository_ interface that can be used
 to adapt to alternative databases. There's a _feed.NotificationService_
 interface that can be used to adapt to alternative message buses.

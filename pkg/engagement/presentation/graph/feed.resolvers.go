@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
 )
 
 func (r *mutationResolver) ResolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error) {

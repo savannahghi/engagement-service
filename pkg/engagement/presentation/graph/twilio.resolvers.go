@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
 func (r *queryResolver) TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error) {

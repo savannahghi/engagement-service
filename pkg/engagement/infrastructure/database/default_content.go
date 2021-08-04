@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 
 	"github.com/markbates/pkger"
 	"github.com/savannahghi/feedlib"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
 	"github.com/savannahghi/interserviceclient"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
 )
 
 func TestServiceEDIImpl_UpdateMessageSent(t *testing.T) {

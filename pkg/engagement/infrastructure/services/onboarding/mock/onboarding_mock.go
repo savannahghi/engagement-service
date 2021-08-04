@@ -3,8 +3,8 @@ package mock
 import (
 	"context"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/profileutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 )
 
 // FakeServiceOnboarding is an "onboarding" service mock

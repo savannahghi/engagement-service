@@ -7,15 +7,15 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/scheduling")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/scheduling")
 
 // calendar app constants
 const (

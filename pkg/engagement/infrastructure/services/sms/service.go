@@ -15,19 +15,19 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/edi"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/messaging"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/sms")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/sms")
 
 // AIT environment variables names
 const (

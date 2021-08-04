@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
 func (r *mutationResolver) Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error) {

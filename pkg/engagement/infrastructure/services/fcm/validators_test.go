@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/firebasetools"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 )
 
 func Test_validateFCMData(t *testing.T) {

@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	hubspotDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/usecases")
 
 // ServiceCrm represents commontools crm lib usecases extension
 type ServiceCrm interface {

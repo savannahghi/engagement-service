@@ -8,22 +8,22 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/engagement/pkg/engagement/application/authorization"
+	"github.com/savannahghi/engagement/pkg/engagement/application/authorization/permission"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/authorization/permission"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/pubsubtools"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
 )
 
 const (

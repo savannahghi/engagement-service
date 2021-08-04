@@ -3,18 +3,18 @@
 package interactor
 
 import (
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/uploads"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
+	"github.com/savannahghi/engagement/pkg/engagement/usecases"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/surveys"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/uploads"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/usecases"
 )
 
 // Interactor represents an assemble of all use cases into a single object that can be instantiated anywhere

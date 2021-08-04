@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
 )
 
 func TestMain(m *testing.M) {

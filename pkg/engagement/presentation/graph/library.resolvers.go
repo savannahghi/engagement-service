@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/library"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
 func (r *queryResolver) GetLibraryContent(ctx context.Context) ([]*library.GhostCMSPost, error) {

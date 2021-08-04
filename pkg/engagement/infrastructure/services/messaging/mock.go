@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 // NewMockNotificationService initializes a mock notification service

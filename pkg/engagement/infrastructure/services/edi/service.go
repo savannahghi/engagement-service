@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/interserviceclient"
 	"gitlab.slade360emr.com/go/apiclient"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 const (

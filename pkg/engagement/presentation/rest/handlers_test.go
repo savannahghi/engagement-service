@@ -31,14 +31,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/api/idtoken"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation/rest"
 	"github.com/savannahghi/interserviceclient"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/rest"
 )
 
 const (

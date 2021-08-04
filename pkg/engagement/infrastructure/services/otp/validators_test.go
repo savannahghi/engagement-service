@@ -9,10 +9,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
 )
 
 func TestValidateSendOTPPayload(t *testing.T) {

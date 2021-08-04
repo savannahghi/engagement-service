@@ -11,21 +11,21 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp/totp"
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/serverutils"
 	log "github.com/sirupsen/logrus"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/twilio"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/otp")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/otp")
 
 const (
 	issuer       = "Savannah Informatics Limited"

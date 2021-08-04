@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation"
 	"go.opencensus.io/stats/view"
 
 	"github.com/savannahghi/serverutils"

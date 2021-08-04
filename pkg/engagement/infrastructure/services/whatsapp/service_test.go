@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/stretchr/testify/assert"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/whatsapp"
 )
 
 func TestMain(m *testing.M) {

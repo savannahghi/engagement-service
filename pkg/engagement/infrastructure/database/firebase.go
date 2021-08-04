@@ -9,19 +9,19 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/sirupsen/logrus"
 	"gitlab.slade360emr.com/go/apiclient"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/exceptions"
 	"go.opentelemetry.io/otel"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -29,7 +29,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/database")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/database")
 
 const (
 	feedCollectionName           = "feed"

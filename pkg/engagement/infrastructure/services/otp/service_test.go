@@ -6,7 +6,7 @@ package otp_test
 // 	"os"
 // 	"testing"
 
-// 	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/otp"
+// 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
 
 // 	"github.com/stretchr/testify/assert"
 // 	"gitlab.slade360emr.com/go/base"

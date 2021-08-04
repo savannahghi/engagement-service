@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/onboarding"
 )
 
 func TestNewRemoteProfileService(t *testing.T) {

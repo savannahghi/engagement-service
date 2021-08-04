@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
 func (r *dummyResolver) ID(ctx context.Context, obj *dto.Dummy) (*string, error) {

@@ -15,16 +15,16 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/kevinburke/twilio-go"
 	"github.com/kevinburke/twilio-go/token"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/sms"
 	"go.opentelemetry.io/otel"
 	"moul.io/http2curl"
 )
 
-var tracer = otel.Tracer("gitlab.slade360emr.com/go/engagement/pkg/engagement/services/twilio")
+var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/twilio")
 
 /* #nosec */
 // DefaultTwilioRegion is set to global low latency auto-selection

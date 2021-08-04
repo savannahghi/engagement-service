@@ -7,11 +7,11 @@ import (
 	"log"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/helpers"
 )
 
 const (

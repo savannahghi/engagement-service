@@ -1,4 +1,4 @@
-module gitlab.slade360emr.com/go/engagement
+module github.com/savannahghi/engagement
 
 go 1.16
 

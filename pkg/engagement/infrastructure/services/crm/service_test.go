@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	hubspotDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/database"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/crm"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/mail"
 )
 
 const (

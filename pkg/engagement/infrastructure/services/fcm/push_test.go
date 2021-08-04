@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 
 	"github.com/rs/xid"
 	"github.com/savannahghi/firebasetools"

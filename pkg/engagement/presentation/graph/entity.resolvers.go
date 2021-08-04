@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/domain"
+	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/feedlib"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/application/common/dto"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/domain"
-	"gitlab.slade360emr.com/go/engagement/pkg/engagement/presentation/graph/generated"
 )
 
 func (r *entityResolver) FindAccessTokenByJwt(ctx context.Context, jwt string) (*dto.AccessToken, error) {
