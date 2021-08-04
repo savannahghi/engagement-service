@@ -7,6 +7,16 @@ extend type Mutation {
         ios: FirebaseAPNSConfigInput,
         web: FirebaseWebpushConfigInput
     ): Boolean!
+
+    sendFCMByPhoneOrEmail(
+        phoneNumber: String,
+        email: String,
+        data: Map!
+        notification: FirebaseSimpleNotificationInput!,
+        android: FirebaseAndroidConfigInput,
+        ios: FirebaseAPNSConfigInput,
+        web: FirebaseWebpushConfigInput
+    ):Boolean!
 }
 
 extend type Query {

@@ -9,7 +9,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,15 +20,42 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestNewService(t *testing.T) {
-	ctx := context.Background()
+func initializeTestService(ctx context.Context, t *testing.T) (*fcm.Service, error) {
 	fr, err := database.NewFirebaseRepository(ctx)
 	if err != nil {
 		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
+		return nil, err
+	}
+
+	deps, err := interserviceclient.LoadDepsFromYAML()
+	if err != nil {
+		t.Errorf("can't load inter-service config from YAML: %v", err)
+		return nil, err
+	}
+
+	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
+	if err != nil {
+		t.Errorf("can't set up profile interservice client: %v", err)
+		return nil, err
+	}
+	rps := onboarding.NewRemoteProfileService(profileClient)
+
+	s := fcm.NewService(fr, rps)
+	if s == nil {
+		t.Errorf("nil FCM service")
+		return nil, err
+	}
+	return s, nil
+}
+
+func TestNewService(t *testing.T) {
+	ctx := context.Background()
+	s, err := initializeTestService(ctx, t)
+	if err != nil {
+		t.Errorf("an error occured %v", err)
 		return
 	}
-	sampleService := fcm.NewService(fr)
-	assert.NotNil(t, sampleService)
+	assert.NotNil(t, s)
 
 	tests := []struct {
 		name string
@@ -34,12 +63,12 @@ func TestNewService(t *testing.T) {
 	}{
 		{
 			name: "good case",
-			want: sampleService,
+			want: s,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := fcm.NewService(fr)
+			got := s
 			assert.NotNil(t, got)
 		})
 	}
@@ -47,14 +76,9 @@ func TestNewService(t *testing.T) {
 
 func TestService_Notifications(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	fr, err := database.NewFirebaseRepository(ctx)
+	s, err := initializeTestService(ctx, t)
 	if err != nil {
-		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
-		return
-	}
-	s := fcm.NewService(fr)
-	if s == nil {
-		t.Errorf("nil FCM service")
+		t.Errorf("an error occured %v", err)
 		return
 	}
 	type args struct {
@@ -95,18 +119,15 @@ func TestService_Notifications(t *testing.T) {
 
 func TestService_SendNotification(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
-	fr, err := database.NewFirebaseRepository(ctx)
+	s, err := initializeTestService(ctx, t)
 	if err != nil {
-		t.Errorf("can't instantiate firebase repository in resolver: %w", err)
+		t.Errorf("an error occured %v", err)
 		return
 	}
+
 	fakeToken := uuid.New().String()
 	imgURL := "https://www.wxpr.org/sites/wxpr/files/styles/medium/public/202007/chipmunk-5401165_1920.jpg"
-	s := fcm.NewService(fr)
-	if s == nil {
-		t.Errorf("nil FCM service")
-		return
-	}
+
 	type args struct {
 		ctx                context.Context
 		registrationTokens []string
@@ -152,6 +173,83 @@ func TestService_SendNotification(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("Service.SendNotification() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService_SendFCMByPhoneOrEmail(t *testing.T) {
+	ctx := firebasetools.GetAuthenticatedContext(t)
+	s, err := initializeTestService(ctx, t)
+	if err != nil {
+		t.Errorf("an error occured %v", err)
+		return
+	}
+
+	phone := interserviceclient.TestUserPhoneNumber
+	validEmail := "test@bewell.co.ke"
+
+	type args struct {
+		ctx          context.Context
+		phoneNumber  *string
+		email        *string
+		data         map[string]interface{}
+		notification firebasetools.FirebaseSimpleNotificationInput
+		android      *firebasetools.FirebaseAndroidConfigInput
+		ios          *firebasetools.FirebaseAPNSConfigInput
+		web          *firebasetools.FirebaseWebpushConfigInput
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "non existent token using phone - should fail gracefully",
+			args: args{
+				ctx:         ctx,
+				phoneNumber: &phone,
+				email:       nil,
+				data: map[string]interface{}{
+					"more": "data",
+				},
+				notification: firebasetools.FirebaseSimpleNotificationInput{Title: "Test Notification", Body: "From Integration Tests", Data: map[string]interface{}{"more": "data"}},
+				android:      &firebasetools.FirebaseAndroidConfigInput{},
+				ios:          &firebasetools.FirebaseAPNSConfigInput{},
+				web:          &firebasetools.FirebaseWebpushConfigInput{},
+			},
+			want:    false,
+			wantErr: true,
+		},
+
+		{
+			name: "non existent token using email - should fail gracefully",
+			args: args{
+				ctx:         ctx,
+				phoneNumber: nil,
+				email:       &validEmail,
+				data: map[string]interface{}{
+					"more": "data",
+				},
+				notification: firebasetools.FirebaseSimpleNotificationInput{Title: "Test Notification", Body: "From Integration Tests", Data: map[string]interface{}{"more": "data"}},
+				android:      &firebasetools.FirebaseAndroidConfigInput{},
+				ios:          &firebasetools.FirebaseAPNSConfigInput{},
+				web:          &firebasetools.FirebaseWebpushConfigInput{},
+			},
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := s.SendFCMByPhoneOrEmail(tt.args.ctx, tt.args.phoneNumber, tt.args.email, tt.args.data, tt.args.notification, tt.args.android, tt.args.ios, tt.args.web)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.SendFCMByPhoneOrEmail() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Service.SendFCMByPhoneOrEmail() = %v, want %v", got, tt.want)
 			}
 		})
 	}
