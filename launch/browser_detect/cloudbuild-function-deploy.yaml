@@ -11,4 +11,4 @@ steps:
   - --trigger-http
   - --allow-unauthenticated
   - --region=europe-west3
-  - --runtime python38
+  - --runtime=python38

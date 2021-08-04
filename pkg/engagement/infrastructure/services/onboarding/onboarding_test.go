@@ -4,51 +4,25 @@ import (
 	"context"
 	"testing"
 
+	"firebase.google.com/go/auth"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
+	"github.com/savannahghi/profileutils"
 )
 
-func TestNewRemoteProfileService(t *testing.T) {
+func initializeTestService(t *testing.T) (onboarding.ProfileService, context.Context, *auth.Token, error) {
 	deps, err := interserviceclient.LoadDepsFromYAML()
 	if err != nil {
 		t.Errorf("can't load inter-service config from YAML: %v", err)
-		return
+		return nil, nil, nil, err
 	}
 
 	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
 	if err != nil {
 		t.Errorf("can't set up profile interservice client: %v", err)
-		return
-	}
-
-	if profileClient == nil {
-		t.Errorf("nil profile client")
-		return
-	}
-	if profileClient.RequestRootDomain == "" {
-		t.Errorf("blank request root domain")
-		return
-	}
-
-	rps := onboarding.NewRemoteProfileService(profileClient)
-	if rps == nil {
-		t.Errorf("got back nil remote profile service")
-		return
-	}
-}
-
-func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
-	deps, err := interserviceclient.LoadDepsFromYAML()
-	if err != nil {
-		t.Errorf("can't load inter-service config from YAML: %v", err)
-		return
-	}
-
-	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
-	if err != nil {
-		t.Errorf("can't set up profile interservice client: %v", err)
-		return
+		return nil, nil, nil, err
 	}
 	rps := onboarding.NewRemoteProfileService(profileClient)
 
@@ -58,6 +32,27 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 	)
 	if err != nil {
 		t.Errorf("can't get phone number user: %v", err)
+		return nil, nil, nil, err
+	}
+	return rps, ctx, token, nil
+}
+
+func TestNewRemoteProfileService(t *testing.T) {
+	rps, _, _, err := initializeTestService(t)
+	if err != nil {
+		t.Errorf("an error occurred %v", err)
+		return
+	}
+	if rps == nil {
+		t.Errorf("got back nil remote profile service")
+		return
+	}
+}
+
+func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
+	rps, ctx, token, err := initializeTestService(t)
+	if err != nil {
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
@@ -112,25 +107,9 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 }
 
 func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
-	deps, err := interserviceclient.LoadDepsFromYAML()
+	rps, ctx, token, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("can't load inter-service config from YAML: %v", err)
-		return
-	}
-
-	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
-	if err != nil {
-		t.Errorf("can't set up profile interservice client: %v", err)
-		return
-	}
-	rps := onboarding.NewRemoteProfileService(profileClient)
-
-	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
-		t,
-		profileClient,
-	)
-	if err != nil {
-		t.Errorf("can't get phone number user: %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
@@ -185,25 +164,9 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 }
 
 func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
-	deps, err := interserviceclient.LoadDepsFromYAML()
+	rps, ctx, token, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("can't load inter-service config from YAML: %v", err)
-		return
-	}
-
-	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
-	if err != nil {
-		t.Errorf("can't set up profile interservice client: %v", err)
-		return
-	}
-	rps := onboarding.NewRemoteProfileService(profileClient)
-
-	ctx, token, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
-		t,
-		profileClient,
-	)
-	if err != nil {
-		t.Errorf("can't get phone number user: %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
@@ -258,25 +221,9 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 }
 
 func TestRemoteProfileService_GetUserProfile(t *testing.T) {
-	deps, err := interserviceclient.LoadDepsFromYAML()
+	rps, ctx, _, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("can't load inter-service config from YAML: %v", err)
-		return
-	}
-
-	profileClient, err := interserviceclient.SetupISCclient(*deps, "profile")
-	if err != nil {
-		t.Errorf("can't set up profile interservice client: %v", err)
-		return
-	}
-	rps := onboarding.NewRemoteProfileService(profileClient)
-
-	ctx, _, err := interserviceclient.GetPhoneNumberAuthenticatedContextAndToken(
-		t,
-		profileClient,
-	)
-	if err != nil {
-		t.Errorf("can't get phone number user: %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 	type args struct {
@@ -323,6 +270,75 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 					t.Errorf("got back nil profile data")
 					return
 				}
+			}
+		})
+	}
+}
+
+func TestRemoteProfileService_GetUserProfileByPhoneOrEmail(t *testing.T) {
+	rps, ctx, _, err := initializeTestService(t)
+	if err != nil {
+		t.Errorf("an error occurred %v", err)
+		return
+	}
+
+	validPhone := interserviceclient.TestUserPhoneNumber
+	invalidPhone := "+2547+"
+	invalidEmail := "test"
+	type args struct {
+		ctx     context.Context
+		payload *dto.RetrieveUserProfileInput
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *profileutils.UserProfile
+		wantErr bool
+	}{
+		{
+			name: "Happy case:phone",
+			args: args{
+				ctx: ctx,
+				payload: &dto.RetrieveUserProfileInput{
+					PhoneNumber: &validPhone,
+				},
+			},
+			wantErr: false,
+		},
+
+		{
+			name: "Sad case:phone",
+			args: args{
+				ctx: context.Background(),
+				payload: &dto.RetrieveUserProfileInput{
+					PhoneNumber: &invalidPhone,
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+
+		{
+			name: "Sad case:email",
+			args: args{
+				ctx: context.Background(),
+				payload: &dto.RetrieveUserProfileInput{
+					EmailAddress: &invalidEmail,
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := rps.GetUserProfileByPhoneOrEmail(tt.args.ctx, tt.args.payload)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RemoteProfileService.GetUserProfileByPhoneOrEmail() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && got == nil {
+				t.Errorf("RemoteProfileService.GetUserProfileByPhoneOrEmail() = %v, want %v", got, tt.want)
 			}
 		})
 	}

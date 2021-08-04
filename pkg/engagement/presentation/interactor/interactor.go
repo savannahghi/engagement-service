@@ -7,6 +7,7 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
@@ -19,19 +20,20 @@ import (
 
 // Interactor represents an assemble of all use cases into a single object that can be instantiated anywhere
 type Interactor struct {
-	Feed         usecases.FeedUseCases
-	Notification usecases.NotificationUsecases
-	Uploads      uploads.ServiceUploads
-	Library      library.ServiceLibrary
-	SMS          sms.ServiceSMS
-	Mail         mail.ServiceMail
-	Whatsapp     whatsapp.ServiceWhatsapp
-	OTP          otp.ServiceOTP
-	Twilio       twilio.ServiceTwilio
-	FCM          fcm.ServiceFCM
-	Surveys      surveys.ServiceSurveys
-	CRM          hubspot.ServiceHubSpotInterface
-	CrmExt       crm.ServiceCrm
+	Feed          usecases.FeedUseCases
+	Notification  usecases.NotificationUsecases
+	Uploads       uploads.ServiceUploads
+	Library       library.ServiceLibrary
+	SMS           sms.ServiceSMS
+	Mail          mail.ServiceMail
+	Whatsapp      whatsapp.ServiceWhatsapp
+	OTP           otp.ServiceOTP
+	Twilio        twilio.ServiceTwilio
+	FCM           fcm.ServiceFCM
+	Surveys       surveys.ServiceSurveys
+	CRM           hubspot.ServiceHubSpotInterface
+	CrmExt        crm.ServiceCrm
+	OnboardingSvc onboarding.ProfileService
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -49,20 +51,22 @@ func NewEngagementInteractor(
 	surveys surveys.ServiceSurveys,
 	CRM hubspot.ServiceHubSpotInterface,
 	crmExt crm.ServiceCrm,
+	onboarding onboarding.ProfileService,
 ) (*Interactor, error) {
 	return &Interactor{
-		Feed:         feed,
-		Notification: notification,
-		Uploads:      uploads,
-		Library:      library,
-		SMS:          sms,
-		Mail:         mail,
-		Whatsapp:     whatsapp,
-		OTP:          otp,
-		Twilio:       twilio,
-		FCM:          fcm,
-		Surveys:      surveys,
-		CRM:          CRM,
-		CrmExt:       crmExt,
+		Feed:          feed,
+		Notification:  notification,
+		Uploads:       uploads,
+		Library:       library,
+		SMS:           sms,
+		Mail:          mail,
+		Whatsapp:      whatsapp,
+		OTP:           otp,
+		Twilio:        twilio,
+		FCM:           fcm,
+		Surveys:       surveys,
+		CRM:           CRM,
+		CrmExt:        crmExt,
+		OnboardingSvc: onboarding,
 	}, nil
 }

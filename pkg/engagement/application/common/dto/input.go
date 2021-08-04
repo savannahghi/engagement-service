@@ -148,3 +148,9 @@ type EngagementPubSubMessage struct {
 	PhoneNumber string                `json:"phoneNumber"`
 	MessageID   string                `json:"messageID"`
 }
+
+// RetrieveUserProfileInput used to retrieve user profile info using either email address or phone
+type RetrieveUserProfileInput struct {
+	PhoneNumber  *string `json:"phone"`
+	EmailAddress *string `json:"email"`
+}

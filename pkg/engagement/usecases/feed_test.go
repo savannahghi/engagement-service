@@ -87,7 +87,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	ctx := context.Background()
 
 	feed := usecases.NewFeed(r, messagingSvc)
-	fcm := fcm.NewService(r)
+	fcm := fcm.NewService(r, onboardingSvc)
 	mail := mail.NewService(r)
 	crm := hubspot.NewHubSpotService()
 	notification := usecases.NewNotification(r, fcmSvc, onboardingSvc, fcm, mail, crm)
@@ -121,6 +121,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 		surveys,
 		hubspotService,
 		crmExt,
+		onboardingSvc,
 	)
 
 	if err != nil {

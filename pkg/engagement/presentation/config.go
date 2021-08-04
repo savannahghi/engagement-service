@@ -104,7 +104,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Initialize new instances of the infrastructure services
 	onboarding := onboarding.NewRemoteProfileService(onboarding.NewOnboardingClient())
-	fcm := fcm.NewService(fr)
+	fcm := fcm.NewService(fr, onboarding)
 	mail := mail.NewService(fr)
 	edi := edi.NewEdiService(edi.NewEDIClient())
 
@@ -156,6 +156,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		surveys,
 		hubspotService,
 		crmExt,
+		onboarding,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
