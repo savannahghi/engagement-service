@@ -1,0 +1,17 @@
+# Build the browser detector function
+steps:
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args: [
+   'functions',
+   'deploy',
+   'detect_browser',
+   '--source=launch/browser_detect',
+   '--trigger-http',
+   '--region', 'europe-west3',
+   '--allow-unauthenticated',
+
+]
+
+timeout: 1200s
+queueTtl: 3600s
+
