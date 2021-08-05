@@ -6,6 +6,7 @@ env:
   DOCKER_BUILDKIT: 1 # Enable Buildkit and let compose use it to speed up image building
   COMPOSE_DOCKER_CLI_BUILD: 1
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PORT: ${{ secrets.PORT }}
   ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   GOOGLE_CLOUD_PROJECT: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
   FIREBASE_WEB_API_KEY: ${{ secrets.FIREBASE_WEB_API_KEY }}
@@ -57,8 +58,12 @@ env:
   AIT_BEWELL_API_KEY: ${{ secrets.AIT_BEWELL_API_KEY }}
   AIT_BEWELL_USERNAME: ${{ secrets.AIT_BEWELL_USERNAME }}
   AIT_BEWELL_SENDER_ID: ${{ secrets.AIT_BEWELL_SENDER_ID }}
+  TESTING_TWILIO_ACCOUNT_AUTH_TOKEN: ${{ secrets.TESTING_TWILIO_ACCOUNT_AUTH_TOKEN }}
+  TESTING_TWILIO_ACCOUNT_SID: ${{ secrets.TESTING_TWILIO_ACCOUNT_SID }}
+  TEST_TWILIO_SMS_NUMBER: ${{ secrets.TEST_TWILIO_SMS_NUMBER }}
   HUBSPOT_API_KEY: ${{ secrets.HUBSPOT_API_KEY }}
   HUBSPOT_API_URL: ${{ secrets.HUBSPOT_API_URL }}
+  SCHEMA_HOST: ${{ secrets.SCHEMA_HOST }}
 
 jobs:
   lint_and_test:
