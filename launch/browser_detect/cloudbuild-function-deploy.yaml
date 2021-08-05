@@ -1,11 +1,12 @@
-# Build the browser detector function
+# Deploy the browser detector function
 steps:
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   args: [
    'functions',
    'deploy',
-   'detect_browser',
-   '--source=launch/browser_detect',
+   '${_FUNCTION_NAME}',
+   '--source=.',
+   '--runtime python38',
    '--trigger-http',
    '--region', 'europe-west3',
    '--allow-unauthenticated',
