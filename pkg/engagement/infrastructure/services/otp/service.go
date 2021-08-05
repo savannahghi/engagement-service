@@ -72,7 +72,7 @@ type Service struct {
 // NewService initializes a valid OTP service
 // First we fetch the dependencies from dep.yaml file. Since this service has a predefined set
 // of dependencies, the same dependecies defined in the yaml should be defined in the service
-// struct definition explictly, No guess work.
+// struct definition explicitly, No guess work.
 func NewService(
 	whatsapp whatsapp.ServiceWhatsapp,
 	mail mail.ServiceMail,

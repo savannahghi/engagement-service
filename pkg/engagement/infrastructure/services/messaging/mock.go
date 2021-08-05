@@ -27,14 +27,17 @@ type MockNotificationService struct {
 
 func (mn MockNotificationService) checkPreconditions() error {
 	if mn.notifications == nil {
+		//lint:ignore SA4005  ineffective assignment
 		mn.notifications = make(map[string][]feedlib.Element)
 	}
 
 	if mn.topicIDs == nil {
+		//lint:ignore SA4005  ineffective assignment
 		mn.topicIDs = make([]string, 1)
 	}
 
 	if mn.subscriptions == nil {
+		//lint:ignore SA4005  ineffective assignment
 		mn.subscriptions = make(map[string]string)
 	}
 

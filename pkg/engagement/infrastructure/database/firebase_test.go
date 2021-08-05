@@ -1928,12 +1928,12 @@ func TestRepository_GetNudges(t *testing.T) {
 				return
 			}
 			if tt.wantErr && nudges != nil {
-				t.Errorf("nudge was not expected since an error occured: %v", err)
+				t.Errorf("nudge was not expected since an error occurred: %v", err)
 				return
 			}
 
 			if !tt.wantErr && nudges == nil {
-				t.Errorf("nudge was expected since no error occured: %v", err)
+				t.Errorf("nudge was expected since no error occurred: %v", err)
 				return
 			}
 		})
@@ -2020,12 +2020,12 @@ func TestRepository_GetItems(t *testing.T) {
 				return
 			}
 			if tt.wantErr && items != nil {
-				t.Errorf("nudge was not expected since an error occured: %v", err)
+				t.Errorf("nudge was not expected since an error occurred: %v", err)
 				return
 			}
 
 			if !tt.wantErr && items == nil {
-				t.Errorf("nudge was expected since no error occured: %v", err)
+				t.Errorf("nudge was expected since no error occurred: %v", err)
 				return
 			}
 		})
@@ -2096,7 +2096,7 @@ func TestService_SaveOutgoingEmails(t *testing.T) {
 	ctx := context.Background()
 	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
-		t.Errorf("an error ocurred")
+		t.Errorf("an error occurred")
 	}
 
 	to := "kathurima@healthcloud.co.ke"
@@ -2153,7 +2153,7 @@ func TestRepository_UpdateMailgunDeliveryStatus(t *testing.T) {
 	ctx := context.Background()
 	fr, err := db.NewFirebaseRepository(ctx)
 	if err != nil {
-		t.Errorf("an error ocurred")
+		t.Errorf("an error occurred")
 	}
 	emailLog := &dto.OutgoingEmailsLog{
 		UUID:        uuid.NewString(),

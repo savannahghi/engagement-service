@@ -70,7 +70,7 @@ var UnpinItem = profileutils.PermissionInput{
 	Action:   "unpin",
 }
 
-// HideItem decribes the hide permissions on an item
+// HideItem describes the hide permissions on an item
 var HideItem = profileutils.PermissionInput{
 	Resource: "hide_item",
 	Action:   "hide",
