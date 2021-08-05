@@ -40,9 +40,10 @@ const (
 // done by the Frontend team.
 // IT is shorthand for Integration Tests
 const (
-	ITCode        = "123456"
-	ITPhoneNumber = "0798000000"
-	ITEmail       = "test@healthcloud.co.ke"
+	ITCode              = "123456"
+	ITPhoneNumber       = "0798000000"
+	TestUserPhoneNumber = "+254798000000"
+	ITEmail             = "test@healthcloud.co.ke"
 )
 
 // ServiceOTP is an interface that defines all interactions with OTP service
