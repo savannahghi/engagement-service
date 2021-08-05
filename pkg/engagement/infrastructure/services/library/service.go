@@ -181,7 +181,7 @@ func (s Service) getCMSPosts(ctx context.Context, requestType requestType) ([]*G
 	resp, err := c.Do(req)
 	if err != nil {
 		helpers.RecordSpanError(span, err)
-		return nil, fmt.Errorf("error occured when posting to %v with err %v", url, err)
+		return nil, fmt.Errorf("error occurred when posting to %v with err %v", url, err)
 	}
 	defer resp.Body.Close()
 
@@ -244,7 +244,7 @@ func (s Service) GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([
 	}
 }
 
-// GetLibraryContent gets library content to be show under libary section of the app.
+// GetLibraryContent gets library content to be show under library section of the app.
 func (s Service) GetLibraryContent(ctx context.Context) ([]*GhostCMSPost, error) {
 	return s.getCMSPosts(ctx, libraryRequest)
 }

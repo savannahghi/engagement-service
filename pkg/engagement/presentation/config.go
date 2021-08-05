@@ -111,7 +111,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	hubspotService := hubspot.NewHubSpotService()
 	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize hubspot crm respository: %w", err)
+		return nil, fmt.Errorf("failed to initialize hubspot crm repository: %w", err)
 	}
 	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 

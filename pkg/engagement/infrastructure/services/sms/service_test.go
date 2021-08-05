@@ -33,7 +33,7 @@ func newHubSpotService(ctx context.Context) *hubspotUsecases.HubSpot {
 	hubspotService := hubspot.NewHubSpotService()
 	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
 	if err != nil {
-		log.Panic("failed to initialize hubspot crm respository: %w", err)
+		log.Panic("failed to initialize hubspot crm repository: %w", err)
 	}
 	return hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 }

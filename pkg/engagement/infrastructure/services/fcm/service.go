@@ -113,7 +113,7 @@ func (s Service) checkPreconditions() {
 // It returns:
 //
 //  - a list of registration tokens for which message sending failed
-//  - an error, if no message sending occured
+//  - an error, if no message sending occurred
 //
 // Notification messages can also be accompanied by custom `data`.
 //
