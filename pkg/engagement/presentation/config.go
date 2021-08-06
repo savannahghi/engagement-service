@@ -180,7 +180,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
 
 	r.Path(pubsubtools.PubSubHandlerPath).Methods(
 		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
@@ -225,10 +224,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/facebook_data_deletion_callback").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.DataDeletionRequestCallback())
-
-	r.Path("/collect_email_address").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.CollectEmailAddress())
 	// Upload route.
 	// The reason for the below endpoint is to help upload base64 data.
 	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
@@ -258,6 +253,16 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).HandlerFunc(GQLHandler(ctx, i))
 
 	// REST routes
+
+	//Collect emails
+	collectEmail := r.Path("/collect_email_address").Subrouter()
+	collectEmail.Use(interserviceclient.InterServiceAuthenticationMiddleware())
+	collectEmail.Methods(http.MethodPost).HandlerFunc(h.CollectEmailAddress())
+
+	//Set BeWellAware
+	bewellAware := r.Path("/set_bewell_aware").Subrouter()
+	bewellAware.Use(interserviceclient.InterServiceAuthenticationMiddleware())
+	bewellAware.Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
 
 	// Bulk routes
 	bulk := r.PathPrefix("/bulk/").Subrouter()
