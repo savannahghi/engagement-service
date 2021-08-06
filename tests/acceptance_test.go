@@ -12,6 +12,7 @@ import (
 
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -2436,6 +2437,196 @@ func TestGraphQLSimpleEmail(t *testing.T) {
 		},
 	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			body, err := mapToJSONReader(tt.args.query)
+
+			if err != nil {
+				t.Errorf("unable to get GQL JSON io Reader: %s", err)
+				return
+			}
+
+			r, err := http.NewRequest(
+				http.MethodPost,
+				graphQLURL,
+				body,
+			)
+
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
+
+			for k, v := range headers {
+				r.Header.Add(k, v)
+			}
+			client := http.Client{
+				Timeout: time.Second * testHTTPClientTimeout,
+			}
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			dataResponse, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			if dataResponse == nil {
+				t.Errorf("nil response data")
+				return
+			}
+
+			data := map[string]interface{}{}
+			err = json.Unmarshal(dataResponse, &data)
+			if err != nil {
+				t.Errorf("bad data returned")
+				return
+			}
+
+			if tt.wantErr {
+				errMsg, ok := data["errors"]
+				if !ok {
+					t.Errorf("GraphQL error: %s", errMsg)
+					return
+				}
+			}
+
+			if !tt.wantErr {
+				_, ok := data["errors"]
+				if ok {
+					t.Errorf("error not expected")
+					return
+				}
+			}
+			if tt.wantStatus != resp.StatusCode {
+				b, _ := httputil.DumpResponse(resp, true)
+				t.Errorf("Bad status response returned; %v ", string(b))
+				return
+			}
+		})
+	}
+}
+
+func TestGraphQLSendFCMByPhoneOrEmail(t *testing.T) {
+	graphQLURL := fmt.Sprintf("%s/%s", baseURL, "graphql")
+	headers := getGraphQLHeaders(t)
+	testUserPhone := interserviceclient.TestUserPhoneNumber
+
+	testUserEmail := "test@bewell.co.ke"
+	imageURL := "https:www.example.com/hey.png"
+
+	graphqlMutation := `mutation sendFCMByPhoneOrEmail(
+		$phoneNumber: String
+		$email: String
+		$data: Map!
+		$notification: FirebaseSimpleNotificationInput!
+		$android: FirebaseAndroidConfigInput
+		$ios: FirebaseAPNSConfigInput
+		$web: FirebaseWebpushConfigInput
+	  ) {
+		sendFCMByPhoneOrEmail(
+		  phoneNumber: $phoneNumber
+		  email: $email
+		  data: $data
+		  notification: $notification
+		  android: $android
+		  ios: $ios
+		  web: $web
+		)
+	  }
+	`
+
+	type args struct {
+		query map[string]interface{}
+	}
+
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "Happy case: phone",
+			args: args{
+				query: map[string]interface{}{
+					"query": graphqlMutation,
+					"variables": map[string]interface{}{
+						"phoneNumber": testUserPhone,
+						"email":       nil,
+						"data": map[string]interface{}{
+							"title": "Proof of concept that FCM works",
+							"body":  "Testing the hypothesis that FCM works without Pub/Sub :)",
+						},
+						"notification": map[string]interface{}{
+							"title":    "Proof of concept that FCM works",
+							"body":     "Testing the hypothesis that FCM works without Pub/Sub :)",
+							"imageURL": imageURL,
+							"data": map[string]interface{}{
+								"key": "value",
+							},
+						},
+						"android": map[string]interface{}{
+							"priority": "high",
+						},
+					},
+				},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    true,
+		},
+		{
+			name: "Happy case: email",
+			args: args{
+				query: map[string]interface{}{
+					"query": graphqlMutation,
+					"variables": map[string]interface{}{
+						"phoneNumber": nil,
+						"email":       testUserEmail,
+						"data": map[string]interface{}{
+							"title": "Proof of concept that FCM works",
+							"body":  "Testing the hypothesis that FCM works without Pub/Sub :)",
+						},
+						"notification": map[string]interface{}{
+							"title":    "Proof of concept that FCM works",
+							"body":     "Testing the hypothesis that FCM works without Pub/Sub :)",
+							"imageURL": imageURL,
+							"data": map[string]interface{}{
+								"key": "value",
+							},
+						},
+						"android": map[string]interface{}{
+							"priority": "high",
+						},
+					},
+				},
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    true,
+		},
+
+		{
+			name: "Bad case",
+			args: args{
+				query: map[string]interface{}{
+					"query": graphqlMutation,
+					"variables": map[string]interface{}{
+						"some": "key",
+					},
+				},
+			},
+			wantStatus: http.StatusUnprocessableEntity,
+			wantErr:    true,
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			body, err := mapToJSONReader(tt.args.query)
