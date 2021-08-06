@@ -1,18 +1,14 @@
 # Deploy the browser detector function
 steps:
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  args: [
-   'functions',
-   'deploy',
-   '${_FUNCTION_NAME}',
-   '--source=.',
-   '--runtime python38',
-   '--trigger-http',
-   '--region', 'europe-west3',
-   '--allow-unauthenticated',
-
-]
-
-timeout: 1200s
-queueTtl: 3600s
-
+  args:
+  - gcloud
+  - functions
+  - deploy
+  - ${_FUNCTION_NAME}
+  - --region=FUNCTION_REGION
+  - --source=.
+  - --trigger-http
+  - --allow-unauthenticated
+  - --region=europe-west3
+  - --runtime python38
