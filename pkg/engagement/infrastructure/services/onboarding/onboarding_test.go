@@ -40,7 +40,7 @@ func initializeTestService(t *testing.T) (onboarding.ProfileService, context.Con
 func TestNewRemoteProfileService(t *testing.T) {
 	rps, _, _, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 	if rps == nil {
@@ -52,7 +52,7 @@ func TestNewRemoteProfileService(t *testing.T) {
 func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 	rps, ctx, token, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
@@ -109,7 +109,7 @@ func TestRemoteProfileService_GetEmailAddresses(t *testing.T) {
 func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 	rps, ctx, token, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
@@ -166,7 +166,7 @@ func TestRemoteProfileService_GetPhoneNumbers(t *testing.T) {
 func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 	rps, ctx, token, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
@@ -223,7 +223,7 @@ func TestRemoteProfileService_GetDeviceTokens(t *testing.T) {
 func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 	rps, ctx, _, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 	type args struct {
@@ -278,7 +278,7 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 func TestRemoteProfileService_GetUserProfileByPhoneOrEmail(t *testing.T) {
 	rps, ctx, _, err := initializeTestService(t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 

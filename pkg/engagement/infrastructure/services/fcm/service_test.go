@@ -52,7 +52,7 @@ func TestNewService(t *testing.T) {
 	ctx := context.Background()
 	s, err := initializeTestService(ctx, t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 	assert.NotNil(t, s)
@@ -78,7 +78,7 @@ func TestService_Notifications(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 	s, err := initializeTestService(ctx, t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 	type args struct {
@@ -121,7 +121,7 @@ func TestService_SendNotification(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 	s, err := initializeTestService(ctx, t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
@@ -182,7 +182,7 @@ func TestService_SendFCMByPhoneOrEmail(t *testing.T) {
 	ctx := firebasetools.GetAuthenticatedContext(t)
 	s, err := initializeTestService(ctx, t)
 	if err != nil {
-		t.Errorf("an error occured %v", err)
+		t.Errorf("an error occurred %v", err)
 		return
 	}
 
