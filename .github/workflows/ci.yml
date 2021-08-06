@@ -65,6 +65,9 @@ env:
   HUBSPOT_API_URL: ${{ secrets.HUBSPOT_API_URL }}
   SCHEMA_HOST: ${{ secrets.SCHEMA_HOST }}
 
+concurrency:
+  group: lint-and-test
+
 jobs:
   lint_and_test:
     strategy:
