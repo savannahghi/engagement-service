@@ -57,7 +57,6 @@ def htmlTemplate(event, link):
     <!-- Start of HubSpot Embed Code -->
     <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/20198195.js"></script>
     <!-- End of HubSpot Embed Code -->
-
     <!-- The core Firebase JS SDK  -->
     <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-analytics.js"></script>
@@ -72,15 +71,11 @@ def htmlTemplate(event, link):
             appId: "1:841947754847:web:034e338de70038796686ea",
             measurementId: "G-WR8JPLG8ZH"
         }};
-
         firebase.initializeApp(firebaseConfig);
         var analytics = firebase.analytics();
-
         analytics.logEvent({event});
-
         window.location.replace({link});
     </script>
-
      <!-- AdRoll tracking pixel -->
     <script type="text/javascript">
       adroll_adv_id = "G34MBP2POFA2VKFCJHXOZ4";
@@ -102,7 +97,6 @@ def htmlTemplate(event, link):
         o.parentNode.insertBefore(e, o);
       }})(window, document); adroll.track("pageView");
     </script>
-
     <!-- Facebook Pixel Code -->
     <script>
         !function (f, b, e, v, n, t, s) {{
@@ -124,7 +118,6 @@ def htmlTemplate(event, link):
         src="https://www.facebook.com/tr?id=400335678066977&ev=PageView&noscript=1" />
     </noscript>
     <!-- End Facebook Pixel Code -->
-
 </body>
 </html>
 """  # noqa

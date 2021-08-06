@@ -175,7 +175,6 @@ def get_segmented_contacts(wing, segment):
 def send_marketing_bulk_sms(segment, wing, message_data):
     """
     Send bulk SMS.
-
     The call is made to our engagement service to send bulk SMS
     to our segments using either our BeWell or Slade360 sender
     """

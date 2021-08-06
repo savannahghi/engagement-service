@@ -52,7 +52,6 @@ def _user_agent(os):
 def test_mark_as_bewell_aware():
     """
     Test mark as bewell aware.
-
     Scenario: Mark a user as Be.Well Aware
         Given the request sent has a base64 encoded email param
         Then the user with the email is marked as Be.Well Aware
@@ -66,7 +65,6 @@ def test_mark_as_bewell_aware():
 
 def test_detect_android_browser(test_client):
     """Test Android browser detection.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an Android device
         When the request contains the email param, mark them as bewell aware
@@ -83,7 +81,6 @@ def test_detect_android_browser(test_client):
 
 def test_detect_ios_browser(test_client):
     """Test iOS browser detection.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an iOS device
         When the request contains the email param, mark them as bewell aware
@@ -104,7 +101,6 @@ def test_detect_ios_browser(test_client):
 
 def test_detect_any_other_browser_with_email(test_client):
     """Test other browser detection.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is not from an iOS or Android device
         When the request contains the email param, mark them as bewell aware
@@ -122,7 +118,6 @@ def test_detect_any_other_browser_with_email(test_client):
 
 def test_detect_android_browser_without_email(test_client):
     """Test Android browser detection without an email.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from Android device
         When the request does not contain the email param
@@ -137,7 +132,6 @@ def test_detect_android_browser_without_email(test_client):
 
 def test_detect_ios_browser_without_email(test_client):
     """Test iOS browser detection without an email.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an iOS device
         When the request does not contain the email param
@@ -152,7 +146,6 @@ def test_detect_ios_browser_without_email(test_client):
 
 def test_detect_other_browser_without_email(test_client):
     """Test other browser detection without an email.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is is not from an iOS or Android device
         When the request does not contain the email param
@@ -186,7 +179,6 @@ def test_detect_other_browser_without_email(test_client):
 def test_detect_browser_cloud_func_on_ios_with_email():
     """
     Test ios browser cloud function calls.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is from an iOS device
         When the request contains the email param, mark them as bewell aware
@@ -205,7 +197,6 @@ def test_detect_browser_cloud_func_on_ios_with_email():
 def test_detect_browser_cloud_func_on_desktop():
     """
     Test other os families browser cloud function calls.
-
     Scenario: Detect a browser to get the device's os family
         Given the user-agent headers string is not from an iOS or Android device
         When the request contains the email param, mark them as bewell aware
