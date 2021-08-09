@@ -76,9 +76,9 @@ def htmlTemplate(event, link):
         firebase.initializeApp(firebaseConfig);
         var analytics = firebase.analytics();
 
-        analytics.logEvent({event});
+        analytics.logEvent("{event}");
 
-        window.location.replace({link});
+        window.location.replace("{link}");
     </script>
 
      <!-- AdRoll tracking pixel -->
@@ -149,7 +149,6 @@ def detect_browser(request):
     """
     user_agent = parse(request.headers.get("User-Agent"))
     os_family = user_agent.os.family
-    print(os_family)
     email = request.args.get("email")
     if email is not None:
         mark_bewell_aware(email)
