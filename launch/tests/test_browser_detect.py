@@ -49,19 +49,19 @@ def _user_agent(os):
     )
 
 
-# todo restore this test after coomontools ref
-# def test_mark_as_bewell_aware():
-#     """
-#     Test mark as bewell aware.
+def test_mark_as_bewell_aware():
+    """
+    Test mark as bewell aware.
 
-#     Scenario: Mark a user as Be.Well Aware
-#         Given the request sent has a base64 encoded email param
-#         Then the user with the email is marked as Be.Well Aware
-#     """
-#     resp = mark_bewell_aware(_encode_email())
+    Scenario: Mark a user as Be.Well Aware
+        Given the request sent has a base64 encoded email param
+        Then the user with the email is marked as Be.Well Aware
+    """
+    resp = mark_bewell_aware(_encode_email())
+    results = resp.json()
 
-#     assert resp.status_code == 200
-#     assert resp.json() == {"status": "success"}
+    assert resp.status_code == 200
+    assert results["properties"]["be_well_aware"] == "YES"
 
 
 def test_detect_android_browser(test_client):
@@ -165,22 +165,22 @@ def test_detect_other_browser_without_email(test_client):
     resp.data.decode() in htmlTemplate(events["IOS"], APPLE_STORE_LINK)
 
 
-def test_detect_browser_cloud_func_on_android_with_email():
-    """Test android browser cloud function calls.
+# def test_detect_browser_cloud_func_on_android_with_email():
+#     """Test android browser cloud function calls.
 
-    Scenario: Detect a browser to get the device's os family
-        Given the user-agent headers string is from an Android device
-        When the request contains the email param, mark them as bewell aware
-        Then render a page that redirects the user to playstore
-    """
-    headers = {"User-Agent": _user_agent("ANDROID")}
-    args = {"email": _encode_email()}
-    resp = requests.get(
-        f"{BASE_URL}/detect_browser", headers=headers, params=args
-    )
+#     Scenario: Detect a browser to get the device's os family
+#         Given the user-agent headers string is from an Android device
+#         When the request contains the email param, mark them as bewell aware
+#         Then render a page that redirects the user to playstore
+#     """
+#     headers = {"User-Agent": _user_agent("ANDROID")}
+#     args = {"email": _encode_email()}
+#     resp = requests.get(
+#         f"{BASE_URL}/detect_browser", headers=headers, params=args
+#     )
 
-    assert resp.status_code == 200
-    assert "redirected_to_android_playstore" in resp.text
+#     assert resp.status_code == 200
+#     assert "redirected_to_android_playstore" in resp.text
 
 
 def test_detect_browser_cloud_func_on_ios_with_email():
@@ -220,16 +220,16 @@ def test_detect_browser_cloud_func_on_desktop():
     assert resp.status_code == 200
 
 
-def test_detect_browser_cloud_func_without_email():
-    """
-    Test cloud function call with email in the request params.
+# def test_detect_browser_cloud_func_without_email():
+#     """
+#     Test cloud function call with email in the request params.
 
-    Scenario: Detect a browser to get the device's os family
-        Given the user-agent headers string is from Android device
-        When the request does not contain the email param
-        Then render a page that redirects the user to playstore
-    """
-    headers = {"User-Agent": _user_agent("ANDROID")}
-    resp = requests.get(f"{BASE_URL}/detect_browser", headers=headers)
+#     Scenario: Detect a browser to get the device's os family
+#         Given the user-agent headers string is from Android device
+#         When the request does not contain the email param
+#         Then render a page that redirects the user to playstore
+#     """
+#     headers = {"User-Agent": _user_agent("ANDROID")}
+#     resp = requests.get(f"{BASE_URL}/detect_browser", headers=headers)
 
-    assert resp.status_code == 200
+#     assert resp.status_code == 200
