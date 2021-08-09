@@ -24,6 +24,7 @@ import (
 
 	errorcode "github.com/savannahghi/errorcodeutil"
 
+	"github.com/savannahghi/engagement/pkg/engagement/application/authorization"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
@@ -135,6 +136,8 @@ type PresentationHandlers interface {
 	HubSpotFirestoreSync() http.HandlerFunc
 
 	DataDeletionRequestCallback() http.HandlerFunc
+
+	GetAuthorizationHeader() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1959,5 +1962,24 @@ func (p PresentationHandlersImpl) DataDeletionRequestCallback() http.HandlerFunc
 			return
 		}
 		respondWithJSON(w, http.StatusOK, resp)
+	}
+}
+
+// GetAuthorizationHeader get the authorization header
+func (p PresentationHandlersImpl) GetAuthorizationHeader() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		cxt := r.Context()
+		bearerToken, err := authorization.GetInterserviceBearerTokenHeader(cxt)
+		if err != nil {
+			respondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+
+		resp, err := json.Marshal(bearerToken)
+		if err != nil {
+			respondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(rw, http.StatusOK, resp)
 	}
 }

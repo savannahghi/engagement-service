@@ -179,6 +179,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Use(serverutils.CustomHTTPRequestMetricsMiddleware())
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
+	r.Path("/bearer_token").Methods(http.MethodGet).HandlerFunc(h.GetAuthorizationHeader())
 
 	// static files
 	schemaFileHandler, err := rest.SchemaHandler()

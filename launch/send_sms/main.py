@@ -2,6 +2,7 @@
 import base64
 import enum
 import json
+from launch.browser_detect.main import get_authorization_token
 import os
 import time
 from datetime import datetime
@@ -85,7 +86,9 @@ def convert_datetime_to_hours(date_time):
 def send_sms(payload):
     """Helper function to send the actual SMS."""
     url = BASE_URL + "send_marketing_sms"
-    response = requests.post(url=url, json=payload)
+    token = get_authorization_token()
+    headers = {'Authorization': token.strip('"')}
+    response = requests.post(url=url, json=payload, headers=headers)
     result = response.json()
     if response.status_code > 299:
         click.secho(

@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/casbin/casbin/v2"
 	"github.com/savannahghi/converterandformatter"
+	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/profileutils"
 )
 
@@ -74,4 +76,20 @@ func IsAuthorized(user *profileutils.UserInfo, permission profileutils.Permissio
 
 	}
 	return true, nil
+}
+
+// GetInterserviceBearerTokenHeader gets the Authorization header
+func GetInterserviceBearerTokenHeader(ctx context.Context) (string, error) {
+	service := interserviceclient.ISCService{} // name and domain not necessary for our use case
+	isc, err := interserviceclient.NewInterserviceClient(service)
+	if err != nil {
+		return "", fmt.Errorf("can't initialize interservice client: %w", err)
+	}
+
+	authToken, err := isc.CreateAuthToken(ctx)
+	if err != nil {
+		return "", fmt.Errorf("can't get auth token: %w", err)
+	}
+	bearerHeader := fmt.Sprintf("Bearer %s", authToken)
+	return bearerHeader, nil
 }

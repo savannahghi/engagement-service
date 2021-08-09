@@ -130,12 +130,21 @@ def htmlTemplate(event, link):
 """  # noqa
 
 
+def get_authorization_token():
+    """Generate authorization token."""
+    url = BASE_URL + "bearer_token"
+    resp = requests.get(url)
+    return resp.content.decode('utf-8')
+
+
 def mark_bewell_aware(email):
     """Mark a user as bewell aware."""
     url = BASE_URL + "set_bewell_aware"
+    token = get_authorization_token()
+    headers = {'Authorization': token.strip('"')}
     decoded_email = base64.b64decode(email)
     response = requests.post(
-        url=url, json={"email": decoded_email.decode("utf-8")}
+        url=url, json={"email": decoded_email.decode("utf-8")}, headers=headers
     )
     return response
 
