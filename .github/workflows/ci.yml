@@ -65,6 +65,9 @@ env:
   HUBSPOT_API_URL: ${{ secrets.HUBSPOT_API_URL }}
   SCHEMA_HOST: ${{ secrets.SCHEMA_HOST }}
 
+concurrency:
+  group: lint-and-test
+
 jobs:
   lint_and_test:
     strategy:
@@ -125,3 +128,34 @@ jobs:
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=coverage.out  -service=github
+
+  lint_and_test_launch_script:
+    strategy:
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install flake8 pytest
+          cd launch
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Lint with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with tox
+        run: |
+          cd launch
+          tox -r
