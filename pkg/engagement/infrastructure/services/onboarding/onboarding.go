@@ -22,6 +22,7 @@ const (
 	profilePhoneNumbers = "internal/contactdetails/phonenumbers/"
 	profileTokens       = "internal/contactdetails/tokens/"
 	userProfile         = "internal/user_profile"
+	retrieveUserProfile = "internal/retrieve_user_profile"
 	isOptedOut          = "internal/is_opted_out"
 
 	onboardingService = "profile"
@@ -48,6 +49,7 @@ type ProfileService interface {
 		uid UserUIDs,
 	) (map[string][]string, error)
 	GetUserProfile(ctx context.Context, uid string) (*profileutils.UserProfile, error)
+	GetUserProfileByPhoneOrEmail(ctx context.Context, payload *dto.RetrieveUserProfileInput) (*profileutils.UserProfile, error)
 }
 
 // NewRemoteProfileService initializes a connection to a remote profile service
@@ -158,6 +160,47 @@ func (rps RemoteProfileService) GetUserProfile(
 		http.MethodPost,
 		userProfile,
 		uidPayoload,
+	)
+
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return nil, fmt.Errorf("error calling profile service: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(
+			"user profile not found. Error code: %v",
+			resp.StatusCode,
+		)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return nil, fmt.Errorf("error reading profile response body: %w", err)
+	}
+	user := profileutils.UserProfile{}
+	err = json.Unmarshal(data, &user)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return nil, fmt.Errorf("error parsing user profile data: %w", err)
+	}
+	return &user, nil
+}
+
+// GetUserProfileByPhoneOrEmail gets the specified users' profile from the onboarding service
+func (rps RemoteProfileService) GetUserProfileByPhoneOrEmail(ctx context.Context, payload *dto.RetrieveUserProfileInput) (*profileutils.UserProfile, error) {
+	ctx, span := tracer.Start(ctx, "GetUserProfileByPhoneOrEmail")
+	defer span.End()
+	payload = &dto.RetrieveUserProfileInput{
+		PhoneNumber:  payload.PhoneNumber,
+		EmailAddress: payload.EmailAddress,
+	}
+	resp, err := rps.profileClient.MakeRequest(
+		ctx,
+		http.MethodPost,
+		retrieveUserProfile,
+		payload,
 	)
 
 	if err != nil {

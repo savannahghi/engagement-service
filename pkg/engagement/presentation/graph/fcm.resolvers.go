@@ -49,6 +49,39 @@ func (r *mutationResolver) SendNotification(ctx context.Context, registrationTok
 	return sent, nil
 }
 
+func (r *mutationResolver) SendFCMByPhoneOrEmail(ctx context.Context, phoneNumber *string, email *string, data map[string]interface{},
+	notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput,
+	ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error) {
+
+	startTime := time.Now()
+
+	r.checkPreconditions()
+	r.CheckUserTokenInContext(ctx)
+
+	sent, err := r.interactor.FCM.SendFCMByPhoneOrEmail(
+		ctx,
+		phoneNumber,
+		email,
+		data,
+		notification,
+		android,
+		ios,
+		web,
+	)
+	if err != nil {
+		return false, fmt.Errorf("failed to send an FCM notification by email or phone : %w", err)
+	}
+
+	defer serverutils.RecordGraphqlResolverMetrics(
+		ctx,
+		startTime,
+		"SendFCMByPhoneOrEmail",
+		err,
+	)
+
+	return sent, nil
+}
+
 func (r *queryResolver) Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error) {
 	startTime := time.Now()
 

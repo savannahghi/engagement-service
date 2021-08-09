@@ -25,12 +25,12 @@ def get_env(var_name):
 
 
 BASE_URL = get_env("BASE_URL")
+EDI_BASE_URL = get_env("EDI_BASE_URL")
 FIREBASE_WEB_API_KEY = get_env("FIREBASE_WEB_API_KEY")
 ANDROID_PACKAGE_NAME = get_env("ANDROID_PACKAGE_NAME")
 IOS_BUNDLE_ID = get_env("IOS_BUNDLE_ID")
 DOMAIN_URI_PREFIX = get_env("DOMAIN_URI_PREFIX")
 FIREBASE_DYNAMIC_LINK_URL = get_env("FIREBASE_DYNAMIC_LINK_URL")
-TRACKING_URL_A = get_env("TRACKING_URL_A")
 TRACKING_URL_B = get_env("TRACKING_URL_B")
 
 
@@ -50,18 +50,21 @@ class Wings(enum.Enum):
 
 MESSAGE_A = {
     "message": (
-        "Hi {}. Curious to know what benefits are under your "
-        "{} medical cover? Download Be.Well now to access this and more: {}. "
+        "Did you know you can now link your {} medical cover "
+        "on the Be.Well App and view your benefits? "
+        "To get started, Download Now {}. "
         "For more information, call 0790 360 360. "
         "To opt-out dial *384*600# Be.Well by Slade360"
     ),
-    "tracking_url": TRACKING_URL_A,
+    "tracking_url": TRACKING_URL_B,
 }
+
 
 MESSAGE_B = {
     "message": (
-        "Hello {}, you can now easily view all the hospitals and medical "
-        "specialists under your {} cover. Download Be.Well {}. "
+        "Did you know you can now link your {} medical cover on "
+        "the Be.Well App and view your benefits? To get started, "
+        "Download Now {}. "
         "For more information, call 0790 360 360. "
         "To opt-out dial *384*600# Be.Well by Slade360"
     ),
@@ -146,15 +149,16 @@ def get_segmented_contacts(wing, segment):
     Get segmented contacts details from a data store.
     """
     headers = {"Content-Type": "application/json"}
-    url = BASE_URL + "marketing_data"
-    payload = {
+    url = EDI_BASE_URL + "marketing_data"
+    params = {
         "wing": wing,
-        "initialSegment": segment,
+        "segment": segment,
     }
     click.secho(
         "We are about to fetch contacts from our table ... \n", fg="green"
     )
-    response = requests.post(url=url, json=payload, headers=headers)
+    response = requests.get(url=url, params=params, headers=headers)
+
     result = response.json()
     if response.status_code > 299:
         click.secho(
@@ -201,15 +205,13 @@ def send_marketing_bulk_sms(segment, wing, message_data):
     try:
         with click.progressbar(contacts, length=contacts_found) as contacts:
             for contact in contacts:
-                phone = contact["properties"]["phone"]
-                first_name = contact["properties"]["firstname"]
-                payer_name = contact["properties"]["payor"]
-                email = contact["properties"]["email"]
+                phone = contact["phone"]
+                payer_name = contact["payor"]
+                email = contact["email"]
 
                 phone_message_dict = {
                     "phone_number": phone,
                     "message": message_data["message"].format(
-                        first_name,
                         payer_name,
                         generate_shortened_dynamic_links(
                             generate_marketing_url(
@@ -239,7 +241,7 @@ def send_marketing_bulk_sms(segment, wing, message_data):
                 sms_rate = f"{sms_time_in_secs}s/message"
 
                 click.secho(
-                    f"Message has been sent to phone number {to}. "
+                    f"\nMessage has been sent to phone number {to}. "
                     f"Message count {contact_count + 1} out of {contacts_found} "
                     f"with {sms_time_in_secs} seconds"
                 )
@@ -265,15 +267,15 @@ def send_marketing_bulk_sms(segment, wing, message_data):
                         bold=True,
                     )
     except:
-        click.secho(f"Exiting gracefully!", fg="red")
+        click.secho(f"\nExiting gracefully!", fg="red")
 
     if contact_count == contacts_found:
         click.secho(
-            f"{contacts_found} contacts engaged successfully!", fg="green"
+            f"\n{contacts_found} contacts engaged successfully!", fg="green"
         )
     else:
         click.secho(
-            f"{contact_count} contacts engaged successfully!", fg="green"
+            f"\n{contact_count} contacts engaged successfully!", fg="green"
         )
 
 
@@ -282,7 +284,6 @@ def send_marketing_bulk_sms(segment, wing, message_data):
 @click.argument("wing")
 def run_campaign(segment, wing):
     """Run the campaign."""
-    print(type(wing))
     if "WING A" in wing:
         send_marketing_bulk_sms(segment, wing, MESSAGE_A)
         return

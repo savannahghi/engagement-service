@@ -141,7 +141,7 @@ func (s Service) GetMarketingSMSByPhone(
 	ctx context.Context,
 	phoneNumber string,
 ) (*dto.MarketingSMS, error) {
-	return s.Repository.GetMarketingSMSByID(ctx, phoneNumber)
+	return s.Repository.GetMarketingSMSByPhone(ctx, phoneNumber)
 }
 
 // UpdateMessageSentStatus updates the message sent field to true when a message

@@ -17,11 +17,23 @@ IOS = "iOS"
 ANDROID = "Android"
 BASE_URL = "https://engagement-prod.healthcloud.co.ke/"
 A_LANDING_PAGE = "https://a.bewell.co.ke"
+PLAY_STORE_LINK = (
+    "https://play.google.com/store/apps/details?id=com.savannah.bewell"
+)
+APPLE_STORE_LINK = (
+    "https://apps.apple.com/ke/app/be-well-by-slade360/id1496576692"
+)
 
 
-def htmlTemplate(eventString, link):
+events = {
+    "android": "redirected_to_android_playstore",
+    "IOS": "redirected_to_iOS_appstore",
+}
+
+
+def htmlTemplate(event, link):
     """Format and return a html template."""
-    return """
+    return f""" 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -64,9 +76,9 @@ def htmlTemplate(eventString, link):
         firebase.initializeApp(firebaseConfig);
         var analytics = firebase.analytics();
 
-        analytics.logEvent(%s);
+        analytics.logEvent("{event}");
 
-        window.location.replace(%s);
+        window.location.replace("{link}");
     </script>
 
      <!-- AdRoll tracking pixel -->
@@ -115,19 +127,7 @@ def htmlTemplate(eventString, link):
 
 </body>
 </html>
-""" % (eventString, link)  # noqa
-
-
-PLAY_STORE_LINK = """https://play.google.com/store/
-apps/details?id=com.savannah.bewell"""
-APPLE_STORE_LINK = """https://apps.apple.com/ke/app/
-be-well-by-slade360/id1496576692"""
-
-
-events = {
-    'android': 'redirected_to_android_playstore',
-    'IOS': 'redirected_to_iOS_appstore',
-}
+"""  # noqa
 
 
 def mark_bewell_aware(email):
@@ -149,18 +149,19 @@ def detect_browser(request):
     """
     user_agent = parse(request.headers.get("User-Agent"))
     os_family = user_agent.os.family
-    print(os_family)
     email = request.args.get("email")
     if email is not None:
         mark_bewell_aware(email)
 
     if os_family == IOS:
-        return flask.render_template_string(htmlTemplate(events['IOS'],
-                                                         PLAY_STORE_LINK))
+        return flask.render_template_string(
+            htmlTemplate(events["IOS"], APPLE_STORE_LINK)
+        )
 
     if os_family == ANDROID:
-        return flask.render_template_string(htmlTemplate(events['android'],
-                                                         PLAY_STORE_LINK))
+        return flask.render_template_string(
+            htmlTemplate(events["android"], PLAY_STORE_LINK)
+        )
 
     else:
         return flask.redirect(A_LANDING_PAGE)

@@ -13,6 +13,7 @@ import (
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"go.opentelemetry.io/otel"
@@ -25,6 +26,7 @@ type Service struct {
 	fcmClient       *messaging.Client
 	firestoreClient *firestore.Client
 	Repository      repository.Repository
+	onboarding      onboarding.ProfileService
 }
 
 func initializeFirestoreClient() (*firestore.Client, error) {
@@ -76,10 +78,21 @@ type ServiceFCM interface {
 		newerThan time.Time,
 		limit int,
 	) ([]*dto.SavedNotification, error)
+
+	SendFCMByPhoneOrEmail(
+		ctx context.Context,
+		phoneNumber *string,
+		email *string,
+		data map[string]interface{},
+		notification firebasetools.FirebaseSimpleNotificationInput,
+		android *firebasetools.FirebaseAndroidConfigInput,
+		ios *firebasetools.FirebaseAPNSConfigInput,
+		web *firebasetools.FirebaseWebpushConfigInput,
+	) (bool, error)
 }
 
 // NewService initializes a service to interact with Firebase Cloud Messaging
-func NewService(repository repository.Repository) *Service {
+func NewService(repository repository.Repository, onboarding onboarding.ProfileService) *Service {
 	fcmClient, err := initializeFCMClient()
 	if err != nil {
 		log.Panicf("error getting Messaging client: %v\n", err)
@@ -94,6 +107,7 @@ func NewService(repository repository.Repository) *Service {
 		fcmClient:       fcmClient,
 		firestoreClient: firestoreClient,
 		Repository:      repository,
+		onboarding:      onboarding,
 	}
 	srv.checkPreconditions()
 	return srv
@@ -271,4 +285,54 @@ func (s Service) Notifications(
 ) ([]*dto.SavedNotification, error) {
 	s.checkPreconditions()
 	return s.Repository.RetrieveNotification(ctx, s.firestoreClient, registrationToken, newerThan, limit)
+}
+
+// SendFCMByPhoneOrEmail is used to send FCM notification by phone or email
+func (s Service) SendFCMByPhoneOrEmail(
+	ctx context.Context,
+	phoneNumber *string,
+	email *string,
+	data map[string]interface{},
+	notification firebasetools.FirebaseSimpleNotificationInput,
+	android *firebasetools.FirebaseAndroidConfigInput,
+	ios *firebasetools.FirebaseAPNSConfigInput,
+	web *firebasetools.FirebaseWebpushConfigInput,
+) (bool, error) {
+	ctx, span := tracer.Start(ctx, "SendFCMByPhoneOrEmail")
+	defer span.End()
+	s.checkPreconditions()
+
+	payload := &dto.RetrieveUserProfileInput{
+		PhoneNumber:  phoneNumber,
+		EmailAddress: email,
+	}
+
+	userProfile, err := s.onboarding.GetUserProfileByPhoneOrEmail(ctx, payload)
+	if err != nil {
+		return false, err
+	}
+
+	if userProfile.PushTokens == nil {
+		return false, fmt.Errorf("can't send FCM notifications to nil registration tokens")
+	}
+
+	notificationData, err := converterandformatter.MapInterfaceToMapString(data)
+	if err != nil {
+		return false, err
+	}
+
+	notificationSent, err := s.SendNotification(
+		ctx,
+		userProfile.PushTokens,
+		notificationData,
+		&notification,
+		android,
+		ios,
+		web,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	return notificationSent, nil
 }

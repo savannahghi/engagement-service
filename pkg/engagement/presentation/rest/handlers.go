@@ -144,7 +144,10 @@ type PresentationHandlersImpl struct {
 }
 
 // NewPresentationHandlers initializes a new rest handlers usecase
-func NewPresentationHandlers(i *interactor.Interactor, hubspotHandlers hubspotHandlers.Handlers) PresentationHandlers {
+func NewPresentationHandlers(
+	i *interactor.Interactor,
+	hubspotHandlers hubspotHandlers.Handlers,
+) PresentationHandlers {
 	return &PresentationHandlersImpl{i, hubspotHandlers}
 }
 
@@ -157,13 +160,21 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 
 	m, err := pubsubtools.VerifyPubSubJWTAndDecodePayload(w, r)
 	if err != nil {
-		serverutils.WriteJSONResponse(w, errorcode.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(
+			w,
+			errorcode.ErrorMap(err),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	topicID, err := pubsubtools.GetPubSubTopic(m)
 	if err != nil {
-		serverutils.WriteJSONResponse(w, errorcode.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(
+			w,
+			errorcode.ErrorMap(err),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -171,7 +182,11 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 	var envelope dto.NotificationEnvelope
 	err = json.Unmarshal(m.Message.Data, &envelope)
 	if err != nil {
-		serverutils.WriteJSONResponse(w, errorcode.ErrorMap(err), http.StatusBadRequest)
+		serverutils.WriteJSONResponse(
+			w,
+			errorcode.ErrorMap(err),
+			http.StatusBadRequest,
+		)
 		return
 	}
 	ctx = addUIDToContext(ctx, envelope.UID)
@@ -388,7 +403,10 @@ func (p PresentationHandlersImpl) GoogleCloudPubSubHandler(
 			return
 		}
 	case helpers.AddPubSubNamespace(common.EngagementCreateTopic):
-		engagement, err := p.interactor.Notification.HandleEngagementCreate(ctx, m)
+		engagement, err := p.interactor.Notification.HandleEngagementCreate(
+			ctx,
+			m,
+		)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -791,7 +809,10 @@ func (p PresentationHandlersImpl) PublishNudge() http.HandlerFunc {
 			nudge,
 		)
 		if err != nil {
-			if strings.Contains(err.Error(), "found an existing nudge with same title") {
+			if strings.Contains(
+				err.Error(),
+				"found an existing nudge with same title",
+			) {
 				respondWithError(w, http.StatusConflict, err)
 				return
 			}
@@ -1428,9 +1449,14 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 			return
 		}
 
+		phoneNumber := r.Form.Get("phoneNumber")
+		log.Printf(
+			"AT callback URL has been called for phone number %s",
+			phoneNumber,
+		)
+
 		networkCode := r.Form.Get("networkCode")
 		failureReason := r.Form.Get("failureReason")
-		phoneNumber := r.Form.Get("phoneNumber")
 		retryCount, err := strconv.Atoi(r.Form.Get("retryCount"))
 		if err != nil {
 			log.Printf("unable to convert retry count to int")
@@ -1452,6 +1478,11 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
+		log.Printf(
+			"SMS with id %s for phone number %s has been retrieved",
+			sms.ID,
+			phoneNumber,
+		)
 
 		sms.DeliveryReport = deliveryReport
 		updatedSms, err := p.interactor.SMS.UpdateMarketingMessage(
@@ -1462,6 +1493,12 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 			respondWithError(w, http.StatusBadRequest, err)
 			return
 		}
+		log.Printf(
+			"SMS with id %s for phone number %s has been updated with delivery report with id %s",
+			sms.ID,
+			phoneNumber,
+			deliveryReport.ID,
+		)
 
 		marshalled, err := json.Marshal(updatedSms)
 		if err != nil {
@@ -1611,7 +1648,11 @@ func (p PresentationHandlersImpl) SendOTPHandler() http.HandlerFunc {
 			return
 		}
 
-		code, err := p.interactor.OTP.GenerateAndSendOTP(ctx, payload.Msisdn, payload.AppID)
+		code, err := p.interactor.OTP.GenerateAndSendOTP(
+			ctx,
+			payload.Msisdn,
+			payload.AppID,
+		)
 		if err != nil {
 			serverutils.WriteJSONResponse(
 				w,
@@ -1651,7 +1692,11 @@ func (p PresentationHandlersImpl) SendRetryOTPHandler() http.HandlerFunc {
 					err,
 				),
 			)
-			serverutils.WriteJSONResponse(w, err, http.StatusInternalServerError)
+			serverutils.WriteJSONResponse(
+				w,
+				err,
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
@@ -1836,7 +1881,9 @@ func (p PresentationHandlersImpl) CollectEmailAddress() http.HandlerFunc {
 		payload := &dto.PrimaryEmailAddressPayload{}
 		serverutils.DecodeJSONToTargetStruct(w, r, payload)
 		if payload.PhoneNumber == "" || payload.EmailAddress == "" {
-			err := fmt.Errorf("expected either a phone number or an email to be defined")
+			err := fmt.Errorf(
+				"expected either a phone number or an email to be defined",
+			)
 			serverutils.WriteJSONResponse(w, errorcode.CustomError{
 				Err:     err,
 				Message: err.Error(),
@@ -1872,7 +1919,10 @@ func (p PresentationHandlersImpl) UpdateMailgunDeliveryStatus() http.HandlerFunc
 		payload := &dto.MailgunEvent{}
 		serverutils.DecodeJSONToTargetStruct(rw, r, payload)
 
-		emailLog, err := p.interactor.Mail.UpdateMailgunDeliveryStatus(ctx, payload)
+		emailLog, err := p.interactor.Mail.UpdateMailgunDeliveryStatus(
+			ctx,
+			payload,
+		)
 		if err != nil {
 			err := fmt.Errorf("email not sent: %s", err)
 			respondWithError(rw, http.StatusInternalServerError, err)
