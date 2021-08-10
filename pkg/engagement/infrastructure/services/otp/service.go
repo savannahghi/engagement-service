@@ -34,6 +34,12 @@ const (
 	whatsappStep = 1
 	twilioStep   = 2
 	otpMsg       = "%s is your Be.Well verification code %s"
+
+	//PINSMS is the sms formart to be send
+	PINSMS = "You have been successfully registered on Be.Well. Please use this One Time PIN: %s to log in using your phone number and set a new PIN on login."
+
+	//PINWhatsApp is the whatsapp formart to be send
+	PINWhatsApp = "Hi %s, welcome to Be.Well. Please use this One Time PIN: %s to log in using your phone number. You will be prompted to set a new PIN on login."
 )
 
 // These constants are here to support Integration Testing
@@ -55,6 +61,7 @@ type ServiceOTP interface {
 	GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int, appID *string) (string, error)
 	EmailVerificationOtp(ctx context.Context, email *string) (string, error)
 	GenerateOTP(ctx context.Context) (string, error)
+	SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error
 }
 
 // Service is an OTP generation and validation service
@@ -522,4 +529,43 @@ func (s Service) GenerateOTP(ctx context.Context) (string, error) {
 		return "", errors.Wrap(err, "generateOTP > GenerateCode")
 	}
 	return code, nil
+}
+
+// SendTemporaryPIN sends a temporary PIN message to user via whatsapp and SMS
+func (s Service) SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error {
+	ctx, span := tracer.Start(ctx, "SendTemporaryPIN")
+	defer span.End()
+	cleanNo, err := converterandformatter.NormalizeMSISDN(input.PhoneNumber)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return errors.Wrap(err, "unable to normalize the recipient phone number")
+	}
+
+	if input.Channel == whatsappStep {
+		msg := fmt.Sprintf(PINWhatsApp, input.FirstName, input.PIN)
+
+		sent, err := s.whatsapp.TemporaryPIN(ctx, *cleanNo, msg)
+		if err != nil {
+			helpers.RecordSpanError(span, err)
+			return fmt.Errorf("unable to send otp via whatsapp: %w", err)
+		}
+
+		if !sent {
+			return fmt.Errorf("otp message not sent: %w", err)
+		}
+
+		return nil
+
+	} else if input.Channel == twilioStep {
+		msg := fmt.Sprintf(PINSMS, input.PIN)
+		err := s.twilio.SendSMS(ctx, *cleanNo, msg)
+		if err != nil {
+			helpers.RecordSpanError(span, err)
+			return fmt.Errorf("unable to send otp via sms: %w", err)
+		}
+		return nil
+
+	} else {
+		return fmt.Errorf("invalid messaging channel")
+	}
 }

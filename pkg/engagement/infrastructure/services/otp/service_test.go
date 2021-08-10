@@ -868,3 +868,130 @@ func Test_sendOtp(t *testing.T) {
 		})
 	}
 }
+
+func TestService_SendTemporaryPIN(t *testing.T) {
+	ctx := context.Background()
+	service := otp.NewService(whatsappSvc, mailSvc, smsSvs, twilioSvc)
+	phone := interserviceclient.TestUserPhoneNumber
+
+	type args struct {
+		ctx   context.Context
+		input dto.TemporaryPIN
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "sad: error when sending via whatsapp",
+			args: args{
+				ctx: ctx,
+				input: dto.TemporaryPIN{
+					PhoneNumber: phone,
+					FirstName:   "Test",
+					PIN:         "1234",
+					Channel:     1,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "sad: unable to send whatsapp",
+			args: args{
+				ctx: ctx,
+				input: dto.TemporaryPIN{
+					PhoneNumber: phone,
+					FirstName:   "Test",
+					PIN:         "1234",
+					Channel:     1,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "happy: sent whatsapp",
+			args: args{
+				ctx: ctx,
+				input: dto.TemporaryPIN{
+					PhoneNumber: phone,
+					FirstName:   "Test",
+					PIN:         "1234",
+					Channel:     1,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "sad: error when sending via sms",
+			args: args{
+				ctx: ctx,
+				input: dto.TemporaryPIN{
+					PhoneNumber: phone,
+					FirstName:   "Test",
+					PIN:         "1234",
+					Channel:     2,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "happy: sent via sms",
+			args: args{
+				ctx: ctx,
+				input: dto.TemporaryPIN{
+					PhoneNumber: phone,
+					FirstName:   "Test",
+					PIN:         "1234",
+					Channel:     2,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "sad: invalid retry step",
+			args: args{
+				ctx: ctx,
+				input: dto.TemporaryPIN{
+					PhoneNumber: phone,
+					FirstName:   "Test",
+					PIN:         "1234",
+					Channel:     0,
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "sad: error when sending via whatsapp" {
+				fakeWhatsapp.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
+					return false, fmt.Errorf("unable to send whatsapp")
+				}
+			}
+			if tt.name == "sad: unable to send whatsapp" {
+				fakeWhatsapp.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
+					return false, nil
+				}
+			}
+			if tt.name == "happy: sent whatsapp" {
+				fakeWhatsapp.TemporaryPINFn = func(ctx context.Context, to, message string) (bool, error) {
+					return true, nil
+				}
+			}
+			if tt.name == "sad: error when sending via sms" {
+				fakeTwilio.SendSMSFn = func(ctx context.Context, to, msg string) error {
+					return fmt.Errorf("unable to send sms")
+				}
+			}
+			if tt.name == "happy: sent via sms" {
+				fakeTwilio.SendSMSFn = func(ctx context.Context, to, msg string) error {
+					return nil
+				}
+			}
+			if err := service.SendTemporaryPIN(tt.args.ctx, tt.args.input); (err != nil) != tt.wantErr {
+				t.Errorf("Service.SendTemporaryPIN() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
