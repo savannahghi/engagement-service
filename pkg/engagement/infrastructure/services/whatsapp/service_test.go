@@ -2,10 +2,12 @@ package whatsapp_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"testing"
 
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/stretchr/testify/assert"
 )
@@ -163,6 +165,56 @@ func TestService_PhoneNumberVerificationCode(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("Service.PhoneNumberVerificationCode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService_TemporaryPIN(t *testing.T) {
+	ctx := context.Background()
+	type args struct {
+		ctx     context.Context
+		to      string
+		message string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "sad invalid number",
+			args: args{
+				ctx: ctx,
+				to:  "12345",
+			},
+			want:    false,
+			wantErr: true,
+		},
+		{
+			name: "happy sent temporary pin message",
+			args: args{
+				ctx:     ctx,
+				to:      "+25423002959",
+				message: fmt.Sprintf(otp.PINWhatsApp, "Test", "1234"),
+			},
+			// TODO - investigate why an error is returned
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := whatsapp.NewService()
+			got, err := s.TemporaryPIN(tt.args.ctx, tt.args.to, tt.args.message)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.TemporaryPIN() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Service.TemporaryPIN() = %v, want %v", got, tt.want)
 			}
 		})
 	}

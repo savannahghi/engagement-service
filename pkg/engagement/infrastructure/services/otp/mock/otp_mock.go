@@ -16,6 +16,8 @@ type FakeServiceOTP struct {
 	GenerateRetryOTPFn     func(ctx context.Context, msisdn *string, retryStep int, appID *string) (string, error)
 	EmailVerificationOtpFn func(ctx context.Context, email *string) (string, error)
 	GenerateOTPFn          func(ctx context.Context) (string, error)
+
+	SendTemporaryPINFn func(ctx context.Context, input dto.TemporaryPIN) error
 }
 
 // GenerateAndSendOTP ...
@@ -56,4 +58,9 @@ func (f *FakeServiceOTP) EmailVerificationOtp(ctx context.Context, email *string
 // GenerateOTP ...
 func (f *FakeServiceOTP) GenerateOTP(ctx context.Context) (string, error) {
 	return f.GenerateOTPFn(ctx)
+}
+
+// SendTemporaryPIN ...
+func (f *FakeServiceOTP) SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error {
+	return f.SendTemporaryPINFn(ctx, input)
 }

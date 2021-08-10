@@ -2,6 +2,7 @@ package mock
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 )
@@ -109,6 +110,20 @@ type FakeServiceWhatsapp struct {
 		ctx context.Context,
 		data dto.Message,
 	) error
+
+	MakeTwilioRequestFn func(
+		ctx context.Context,
+		method string,
+		urlPath string,
+		content url.Values,
+		target interface{},
+	) error
+
+	TemporaryPINFn func(
+		ctx context.Context,
+		to string,
+		message string,
+	) (bool, error)
 }
 
 // PhoneNumberVerificationCode ...
@@ -291,4 +306,24 @@ func (f *FakeServiceWhatsapp) SaveTwilioCallbackResponse(
 	data dto.Message,
 ) error {
 	return f.SaveTwilioCallbackResponseFn(ctx, data)
+}
+
+// MakeTwilioRequest ...
+func (f *FakeServiceWhatsapp) MakeTwilioRequest(
+	ctx context.Context,
+	method string,
+	urlPath string,
+	content url.Values,
+	target interface{},
+) error {
+	return f.MakeTwilioRequestFn(ctx, method, urlPath, content, target)
+}
+
+// TemporaryPIN ...
+func (f *FakeServiceWhatsapp) TemporaryPIN(
+	ctx context.Context,
+	to string,
+	message string,
+) (bool, error) {
+	return f.TemporaryPINFn(ctx, to, message)
 }

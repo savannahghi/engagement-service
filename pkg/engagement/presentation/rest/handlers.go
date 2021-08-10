@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -135,6 +136,8 @@ type PresentationHandlers interface {
 	HubSpotFirestoreSync() http.HandlerFunc
 
 	DataDeletionRequestCallback() http.HandlerFunc
+
+	SendTemporaryPIN() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1959,5 +1962,21 @@ func (p PresentationHandlersImpl) DataDeletionRequestCallback() http.HandlerFunc
 			return
 		}
 		respondWithJSON(w, http.StatusOK, resp)
+	}
+}
+
+// SendTemporaryPIN is a twilio endpoint to send PIN via whatsapp and SMS
+func (p PresentationHandlersImpl) SendTemporaryPIN() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
+		payload := dto.TemporaryPIN{}
+		serverutils.DecodeJSONToTargetStruct(rw, r, payload)
+
+		err := p.interactor.OTP.SendTemporaryPIN(ctx, payload)
+		if err != nil {
+			respondWithError(rw, http.StatusInternalServerError, err)
+			return
+		}
+		respondWithJSON(rw, http.StatusOK, nil)
 	}
 }

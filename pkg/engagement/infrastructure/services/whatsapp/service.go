@@ -56,6 +56,14 @@ func NewService() *Service {
 
 // ServiceWhatsapp defines the interactions with the whatsapp service
 type ServiceWhatsapp interface {
+	MakeTwilioRequest(
+		ctx context.Context,
+		method string,
+		urlPath string,
+		content url.Values,
+		target interface{},
+	) error
+
 	PhoneNumberVerificationCode(
 		ctx context.Context,
 		to string,
@@ -157,6 +165,12 @@ type ServiceWhatsapp interface {
 		ctx context.Context,
 		data dto.Message,
 	) error
+
+	TemporaryPIN(
+		ctx context.Context,
+		to string,
+		message string,
+	) (bool, error)
 }
 
 // Service is a WhatsApp service. The receivers implement the query and mutation resolvers.
@@ -441,4 +455,48 @@ func (s Service) SaveTwilioCallbackResponse(
 	data dto.Message,
 ) error {
 	return s.Repository.SaveTwilioResponse(ctx, data)
+}
+
+//TemporaryPIN send PIN via whatsapp to user
+func (s Service) TemporaryPIN(
+	ctx context.Context,
+	to string,
+	message string,
+) (bool, error) {
+	ctx, span := tracer.Start(ctx, "TemporaryPIN")
+	defer span.End()
+
+	s.CheckPreconditions()
+
+	normalizedPhoneNo, err := converterandformatter.NormalizeMSISDN(to)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("%s is not a valid E164 phone number: %w", to, err)
+	}
+
+	msgFrom := fmt.Sprintf("whatsapp:%s", s.Sender)
+	msgTo := fmt.Sprintf("whatsapp:%s", *normalizedPhoneNo)
+	msg := fmt.Sprintf("Your phone number verification code is %s", message)
+
+	payload := url.Values{}
+	payload.Add("From", msgFrom)
+	payload.Add("Body", msg)
+	payload.Add("To", msgTo)
+
+	target := dto.Message{}
+	path := fmt.Sprintf("%s/Messages.json", s.AccountSID)
+
+	err = s.MakeTwilioRequest(ctx, http.MethodPost, path, payload, &target)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("error from Twilio: %w", err)
+	}
+
+	// save Twilio response for audit purposes
+	_, _, err = firebasetools.CreateNode(ctx, &target)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return false, fmt.Errorf("unable to save Twilio response: %w", err)
+	}
+	return true, nil
 }
