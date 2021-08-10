@@ -487,3 +487,35 @@ package otp_test
 // 		})
 // 	}
 // }
+
+// func TestService_SendTemporaryPIN(t *testing.T) {
+// 	s := otp.NewService()
+// 	ctx := context.Background()
+// 	type args struct {
+// 		ctx   context.Context
+// 		input dto.TemporaryPIN
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		args    args
+// 		wantErr bool
+// 	}{
+// 		{
+// 			name: "sad unable to normalize mobile number",
+// 			args: args{ctx: ctx,
+// 				input: dto.TemporaryPIN{
+// 					PhoneNumber: "",
+// 					PIN:         "1234",
+// 					RetryStep:   2,
+// 				},
+// 			},
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			if err := s.SendTemporaryPIN(tt.args.ctx, tt.args.input); (err != nil) != tt.wantErr {
+// 				t.Errorf("Service.SendTemporaryPIN() error = %v, wantErr %v", err, tt.wantErr)
+// 			}
+// 		})
+// 	}
+// }

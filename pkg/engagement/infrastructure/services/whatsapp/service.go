@@ -153,6 +153,12 @@ type ServiceWhatsapp interface {
 		marketingMessage string,
 	) (bool, error)
 
+	TemporaryPIN(
+		ctx context.Context,
+		to string,
+		pin string,
+	) (bool, error)
+
 	SaveTwilioCallbackResponse(
 		ctx context.Context,
 		data dto.Message,
@@ -430,6 +436,16 @@ func (s Service) SladeOTP(
 ) (bool, error) {
 	s.CheckPreconditions()
 
+	// TODO Implement Slade OTP
+	return false, nil
+}
+
+//TemporaryPIN send PIN via whatsapp to user
+func (s Service) TemporaryPIN(
+	ctx context.Context,
+	to string,
+	pin string,
+) (bool, error) {
 	// TODO Implement Slade OTP
 	return false, nil
 }

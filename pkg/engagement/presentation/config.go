@@ -460,6 +460,10 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost, http.MethodOptions,
 	).HandlerFunc(h.SendNotificationHandler())
 
+	isc.Path("/send_temporary_pin/").Methods(
+		http.MethodPost, http.MethodOptions,
+	).HandlerFunc(h.SendTemporaryPIN())
+
 	// return the combined router
 	return r, nil
 }

@@ -34,6 +34,7 @@ const (
 	whatsappStep = 1
 	twilioStep   = 2
 	otpMsg       = "%s is your Be.Well verification code %s"
+	pinMsg       = "%s is your Be.Well temporary PIN %s, Login to your account to change it."
 )
 
 // These constants are here to support Integration Testing
@@ -55,6 +56,7 @@ type ServiceOTP interface {
 	GenerateRetryOTP(ctx context.Context, msisdn *string, retryStep int, appID *string) (string, error)
 	EmailVerificationOtp(ctx context.Context, email *string) (string, error)
 	GenerateOTP(ctx context.Context) (string, error)
+	SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error
 }
 
 // Service is an OTP generation and validation service
@@ -457,6 +459,53 @@ func (s Service) GenerateRetryOTP(
 		return "", fmt.Errorf("invalid retry step")
 	}
 
+}
+
+// SendTemporaryPIN sends a temporary PIN message to user via whatsapp and SMS
+func (s Service) SendTemporaryPIN(ctx context.Context, input dto.TemporaryPIN) error {
+	ctx, span := tracer.Start(ctx, "SendTemporaryPIN")
+	defer span.End()
+	cleanNo, err := converterandformatter.NormalizeMSISDN(input.PhoneNumber)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return errors.Wrap(err, "generateOTP > NormalizeMSISDN")
+	}
+
+	var appidentifier string
+	if input.AppID == nil {
+		input.AppID = &appidentifier
+	}
+	msg := fmt.Sprintf(pinMsg, input.PIN, *input.AppID)
+
+	if input.RetryStep == whatsappStep {
+
+		sent, err := s.whatsapp.TemporaryPIN(
+			ctx,
+			*cleanNo,
+			input.PIN,
+		)
+		if err != nil {
+			helpers.RecordSpanError(span, err)
+			return fmt.Errorf("unable to send a phone verification pin :%w", err)
+		}
+
+		if !sent {
+			return fmt.Errorf("unable to send OTP whatsapp message : %w", err)
+		}
+
+		return nil
+
+	} else if input.RetryStep == twilioStep {
+		err := s.twilio.SendSMS(ctx, *cleanNo, msg)
+		if err != nil {
+			helpers.RecordSpanError(span, err)
+			return fmt.Errorf("otp send retry failed: %w", err)
+		}
+		return nil
+
+	} else {
+		return fmt.Errorf("invalid retry step")
+	}
 }
 
 // EmailVerificationOtp generates an OTP to the supplied email for verification
