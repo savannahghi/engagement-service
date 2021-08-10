@@ -5,11 +5,9 @@ import (
 	"testing"
 
 	"firebase.google.com/go/auth"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
-	"github.com/savannahghi/profileutils"
 )
 
 func initializeTestService(t *testing.T) (onboarding.ProfileService, context.Context, *auth.Token, error) {
@@ -275,71 +273,71 @@ func TestRemoteProfileService_GetUserProfile(t *testing.T) {
 	}
 }
 
-func TestRemoteProfileService_GetUserProfileByPhoneOrEmail(t *testing.T) {
-	rps, ctx, _, err := initializeTestService(t)
-	if err != nil {
-		t.Errorf("an error occurred %v", err)
-		return
-	}
+// func TestRemoteProfileService_GetUserProfileByPhoneOrEmail(t *testing.T) {
+// 	rps, ctx, _, err := initializeTestService(t)
+// 	if err != nil {
+// 		t.Errorf("an error occurred %v", err)
+// 		return
+// 	}
 
-	validPhone := interserviceclient.TestUserPhoneNumber
-	invalidPhone := "+2547+"
-	invalidEmail := "test"
-	type args struct {
-		ctx     context.Context
-		payload *dto.RetrieveUserProfileInput
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *profileutils.UserProfile
-		wantErr bool
-	}{
-		{
-			name: "Happy case:phone",
-			args: args{
-				ctx: ctx,
-				payload: &dto.RetrieveUserProfileInput{
-					PhoneNumber: &validPhone,
-				},
-			},
-			wantErr: false,
-		},
+// 	validPhone := interserviceclient.TestUserPhoneNumber
+// 	invalidPhone := "+2547+"
+// 	invalidEmail := "test"
+// 	type args struct {
+// 		ctx     context.Context
+// 		payload *dto.RetrieveUserProfileInput
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		args    args
+// 		want    *profileutils.UserProfile
+// 		wantErr bool
+// 	}{
+// 		{
+// 			name: "Happy case:phone",
+// 			args: args{
+// 				ctx: ctx,
+// 				payload: &dto.RetrieveUserProfileInput{
+// 					PhoneNumber: &validPhone,
+// 				},
+// 			},
+// 			wantErr: false,
+// 		},
 
-		{
-			name: "Sad case:phone",
-			args: args{
-				ctx: context.Background(),
-				payload: &dto.RetrieveUserProfileInput{
-					PhoneNumber: &invalidPhone,
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
+// 		{
+// 			name: "Sad case:phone",
+// 			args: args{
+// 				ctx: context.Background(),
+// 				payload: &dto.RetrieveUserProfileInput{
+// 					PhoneNumber: &invalidPhone,
+// 				},
+// 			},
+// 			want:    nil,
+// 			wantErr: true,
+// 		},
 
-		{
-			name: "Sad case:email",
-			args: args{
-				ctx: context.Background(),
-				payload: &dto.RetrieveUserProfileInput{
-					EmailAddress: &invalidEmail,
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := rps.GetUserProfileByPhoneOrEmail(tt.args.ctx, tt.args.payload)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("RemoteProfileService.GetUserProfileByPhoneOrEmail() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr && got == nil {
-				t.Errorf("RemoteProfileService.GetUserProfileByPhoneOrEmail() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+// 		{
+// 			name: "Sad case:email",
+// 			args: args{
+// 				ctx: context.Background(),
+// 				payload: &dto.RetrieveUserProfileInput{
+// 					EmailAddress: &invalidEmail,
+// 				},
+// 			},
+// 			want:    nil,
+// 			wantErr: true,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			got, err := rps.GetUserProfileByPhoneOrEmail(tt.args.ctx, tt.args.payload)
+// 			if (err != nil) != tt.wantErr {
+// 				t.Errorf("RemoteProfileService.GetUserProfileByPhoneOrEmail() error = %v, wantErr %v", err, tt.wantErr)
+// 				return
+// 			}
+// 			if !tt.wantErr && got == nil {
+// 				t.Errorf("RemoteProfileService.GetUserProfileByPhoneOrEmail() = %v, want %v", got, tt.want)
+// 			}
+// 		})
+// 	}
+// }

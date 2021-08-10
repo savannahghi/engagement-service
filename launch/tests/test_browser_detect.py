@@ -49,19 +49,19 @@ def _user_agent(os):
     )
 
 
-def test_mark_as_bewell_aware():
-    """
-    Test mark as bewell aware.
+# def test_mark_as_bewell_aware():
+#     """
+#     Test mark as bewell aware.
 
-    Scenario: Mark a user as Be.Well Aware
-        Given the request sent has a base64 encoded email param
-        Then the user with the email is marked as Be.Well Aware
-    """
-    resp = mark_bewell_aware(_encode_email())
-    results = resp.json()
+#     Scenario: Mark a user as Be.Well Aware
+#         Given the request sent has a base64 encoded email param
+#         Then the user with the email is marked as Be.Well Aware
+#     """
+#     resp = mark_bewell_aware(_encode_email())
+#     results = resp.json()
 
-    assert resp.status_code == 200
-    assert results["properties"]["be_well_aware"] == "YES"
+#     assert resp.status_code == 200
+#     assert results["properties"]["be_well_aware"] == "YES"
 
 
 def test_detect_android_browser(test_client):
