@@ -64,6 +64,7 @@ env:
   HUBSPOT_API_KEY: ${{ secrets.HUBSPOT_API_KEY }}
   HUBSPOT_API_URL: ${{ secrets.HUBSPOT_API_URL }}
   SCHEMA_HOST: ${{ secrets.SCHEMA_HOST }}
+  BEWELL_CLI_VERSION: v0.0.1 #explicit version -> avoid breakages that might occur with different versions
 
 concurrency:
   group: lint-and-test
@@ -76,6 +77,8 @@ jobs:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 80
+    env:
+      REGISTRY_URL: ${{ secrets.TEST_SCHEMA_REGISTRY_URL }} 
     steps:
       - uses: actions/checkout@v2
       - run: git config --global url."https://${user}:${ACCESS_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
@@ -103,10 +106,12 @@ jobs:
           go get github.com/fzipp/gocyclo
           go get github.com/stretchr/testify/assert@v1.7.0
           go get github.com/ory/go-acc
+          go install github.com/savannahghi/bewellcli@$BEWELL_CLI_VERSION
 
       - name: Run lint and test
         run: |
           staticcheck  ./...
+          bewellcli service validate-schema --name engage --version $CI_COMMIT_SHA --url $REGISTRY_URL
           go fmt $(go list ./... | grep -v /vendor/)
           go vet $(go list ./... | grep -v /vendor/)
           golint -set_exit_status $(go list ./... | grep -v /vendor/)
