@@ -50,9 +50,9 @@ class Wings(enum.Enum):
 
 MESSAGE_A = {
     "message": (
-        "Did you know you can now link your {} medical cover "
-        "on the Be.Well App and view your benefits? "
-        "To get started, Download Now {}. "
+        "You can now have FULL access to your's and your family's "
+        "{} virtual medical wellness cards here! "
+        "Download Be.Well to gain access {}. "
         "For more information, call 0790 360 360. "
         "To opt-out dial *384*600# Be.Well by Slade360"
     ),
