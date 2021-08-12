@@ -16,7 +16,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
-	"github.com/savannahghi/pubsubtools"
 	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
@@ -27,6 +26,7 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
+	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
@@ -177,47 +177,38 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// Add Middleware that records the metrics for our HTTP routes
 	r.Use(serverutils.CustomHTTPRequestMetricsMiddleware())
+
+	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
+	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
 
-	// static files
-	schemaFileHandler, err := rest.SchemaHandler()
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't instantiate schema file handler: %w",
-			err,
-		)
-	}
-	r.PathPrefix("/schema/").Handler(schemaFileHandler)
-
-	//Authenticated engagement routes
+	r.Path(pubsubtools.PubSubHandlerPath).Methods(
+		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
 
 	// Expose a bulk SMS sending endpoint
-	engagementAuthenticatedRoutes := r.PathPrefix("").Subrouter()
-	engagementAuthenticatedRoutes.Use(interserviceclient.InterServiceAuthenticationMiddleware())
-	engagementAuthenticatedRoutes.Methods(
+	r.Path("/send_sms").Methods(
 		http.MethodPost,
 		http.MethodOptions,
-	).Path("/send_marketing_sms").HandlerFunc(h.SendMarketingSMS())
+	).HandlerFunc(h.SendToMany())
+	r.Path("/send_marketing_sms").Methods(
+		http.MethodPost,
+		http.MethodOptions,
+	).HandlerFunc(h.SendMarketingSMS())
 
 	// HubSpot CRM specific endpoints
-	engagementAuthenticatedRoutes.Methods(
+	r.Path("/contact_lists").Methods(
+		http.MethodGet,
+	).HandlerFunc(h.GetContactLists())
+	r.Path("/contact_list").Methods(
 		http.MethodPost,
-	).Path("/sync_contacts").HandlerFunc(h.HubSpotFirestoreSync())
-
-	// Upload route.
-	engagementAuthenticatedRoutes.Methods(
+	).HandlerFunc(h.GetContactListByID())
+	r.Path("/contact_list_contacts").Methods(
 		http.MethodPost,
-		http.MethodOptions,
-	).Path("/upload").HandlerFunc(h.Upload())
-
-	engagementAuthenticatedRoutes.Methods(
+	).HandlerFunc(h.GetContactsInAList())
+	r.Path("/sync_contacts").Methods(
 		http.MethodPost,
-	).Path("/set_bewell_aware").HandlerFunc(h.SetBewellAware())
-
-	engagementAuthenticatedRoutes.Methods(
-		http.MethodPost,
-	).Path("/collect_email_address").HandlerFunc(h.CollectEmailAddress())
+	).HandlerFunc(h.HubSpotFirestoreSync())
 
 	// Callbacks
 	r.Path("/ait_callback").
@@ -235,12 +226,31 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/facebook_data_deletion_callback").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.DataDeletionRequestCallback())
-	r.Path(pubsubtools.PubSubHandlerPath).Methods(
-		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
 
-	//Authenticated routes
+	r.Path("/collect_email_address").Methods(
+		http.MethodPost,
+	).HandlerFunc(h.CollectEmailAddress())
+	// Upload route.
+	// The reason for the below endpoint is to help upload base64 data.
+	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
+	// that occurs in https://graph-test.bewell.co.ke/ while trying to upload large sized photos
+	// This patch allows for the upload of a photo of any size.
+	r.Path("/upload").Methods(
+		http.MethodPost,
+		http.MethodOptions,
+	).HandlerFunc(h.Upload())
 
-	// GraphQL
+	// static files
+	schemaFileHandler, err := rest.SchemaHandler()
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't instantiate schema file handler: %w",
+			err,
+		)
+	}
+	r.PathPrefix("/schema/").Handler(schemaFileHandler)
+
+	// Authenticated routes
 	authR := r.Path("/graphql").Subrouter()
 	authR.Use(firebasetools.AuthenticationMiddleware(firebaseApp))
 	authR.Methods(
@@ -250,7 +260,11 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 	// REST routes
 
-	// Feed Interservice Authenticated routes
+	// Bulk routes
+	bulk := r.PathPrefix("/bulk/").Subrouter()
+	bulk.Use(interserviceclient.InterServiceAuthenticationMiddleware())
+
+	// Interservice Authenticated routes
 	feedISC := r.PathPrefix("/feed/{uid}/{flavour}/{isAnonymous}/").Subrouter()
 	feedISC.Use(interserviceclient.InterServiceAuthenticationMiddleware())
 
@@ -402,7 +416,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		h.HideNudge(),
 	).Name("hideNudge")
 
-	// Internal ISC routes
 	isc := r.PathPrefix("/internal/").Subrouter()
 	isc.Use(interserviceclient.InterServiceAuthenticationMiddleware())
 
