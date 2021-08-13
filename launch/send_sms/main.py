@@ -54,7 +54,7 @@ MESSAGE_A = {
         "{} virtual medical wellness cards here! "
         "Download Be.Well to gain access {}. "
         "For more information, call 0790 360 360. "
-        "To opt-out dial *384*600# Be.Well by Slade360"
+        "To opt-out dial *384*600# Be.Well by Slade360."
     ),
     "tracking_url": TRACKING_URL_B,
 }
@@ -63,10 +63,10 @@ MESSAGE_A = {
 MESSAGE_B = {
     "message": (
         "Did you know you can now link your {} medical cover on "
-        "the Be.Well App and view your benefits? To get started, "
-        "Download Now {}. "
+        "the Be.Well App and view your benefits? "
+        "To get started, download now {}. "
         "For more information, call 0790 360 360. "
-        "To opt-out dial *384*600# Be.Well by Slade360"
+        "To opt-out dial *384*600# Be.Well by Slade360."
     ),
     "tracking_url": TRACKING_URL_B,
 }
