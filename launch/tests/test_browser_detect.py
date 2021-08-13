@@ -1,5 +1,8 @@
 """Browser detect main test file."""
 import base64
+from launch.send_sms.main import authetication
+import io
+import sys
 
 import pytest
 import requests
@@ -11,6 +14,8 @@ from launch.browser_detect.main import (
     htmlTemplate,
     mark_bewell_aware,
 )
+from unittest import mock
+from io import StringIO
 
 BASE_URL = "https://europe-west3-bewell-app.cloudfunctions.net/"
 

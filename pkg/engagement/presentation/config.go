@@ -16,7 +16,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
-	"github.com/savannahghi/pubsubtools"
 	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
@@ -181,34 +180,49 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	// Unauthenticated routes
 	r.Path("/ide").HandlerFunc(playground.Handler("GraphQL IDE", "/graphql"))
 	r.Path("/health").HandlerFunc(HealthStatusCheck)
-	r.Path("/set_bewell_aware").Methods(http.MethodPost).HandlerFunc(h.SetBewellAware())
 
-	r.Path(pubsubtools.PubSubHandlerPath).Methods(
-		http.MethodPost).HandlerFunc(h.GoogleCloudPubSubHandler)
+	// static files
+	schemaFileHandler, err := rest.SchemaHandler()
+	if err != nil {
+		return nil, fmt.Errorf(
+			"can't instantiate schema file handler: %w",
+			err,
+		)
+	}
+	r.PathPrefix("/schema/").Handler(schemaFileHandler)
 
-	// Expose a bulk SMS sending endpoint
-	r.Path("/send_sms").Methods(
+	// Upload route.
+	// The reason for the below endpoint is to help upload base64 data.
+	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
+	// that occurs in https://graph-test.bewell.co.ke/ while trying to upload large sized photos
+	// This patch allows for the upload of a photo of any size.
+	r.Path("/upload").Methods(
 		http.MethodPost,
 		http.MethodOptions,
-	).HandlerFunc(h.SendToMany())
+	).HandlerFunc(h.Upload())
+
 	r.Path("/send_marketing_sms").Methods(
 		http.MethodPost,
 		http.MethodOptions,
 	).HandlerFunc(h.SendMarketingSMS())
 
+	r.Path("/set_bewell_aware").Methods(
+		http.MethodPost,
+	).HandlerFunc(h.SetBewellAware())
+
+	//Authenticated engagement routes
+
+	// Expose a bulk SMS sending endpoint
+	engagementAuthenticatedRoutes := r.PathPrefix("").Subrouter()
+	engagementAuthenticatedRoutes.Use(interserviceclient.InterServiceAuthenticationMiddleware())
 	// HubSpot CRM specific endpoints
-	r.Path("/contact_lists").Methods(
-		http.MethodGet,
-	).HandlerFunc(h.GetContactLists())
-	r.Path("/contact_list").Methods(
+	engagementAuthenticatedRoutes.Methods(
 		http.MethodPost,
-	).HandlerFunc(h.GetContactListByID())
-	r.Path("/contact_list_contacts").Methods(
+	).Path("/sync_contacts").HandlerFunc(h.HubSpotFirestoreSync())
+
+	engagementAuthenticatedRoutes.Methods(
 		http.MethodPost,
-	).HandlerFunc(h.GetContactsInAList())
-	r.Path("/sync_contacts").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.HubSpotFirestoreSync())
+	).Path("/collect_email_address").HandlerFunc(h.CollectEmailAddress())
 
 	// Callbacks
 	r.Path("/ait_callback").
@@ -227,29 +241,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		http.MethodPost,
 	).HandlerFunc(h.DataDeletionRequestCallback())
 
-	r.Path("/collect_email_address").Methods(
-		http.MethodPost,
-	).HandlerFunc(h.CollectEmailAddress())
-	// Upload route.
-	// The reason for the below endpoint is to help upload base64 data.
-	// It is solving a problem ("error": "Unexpected token u in JSON at position 0")
-	// that occurs in https://graph-test.bewell.co.ke/ while trying to upload large sized photos
-	// This patch allows for the upload of a photo of any size.
-	r.Path("/upload").Methods(
-		http.MethodPost,
-		http.MethodOptions,
-	).HandlerFunc(h.Upload())
-
-	// static files
-	schemaFileHandler, err := rest.SchemaHandler()
-	if err != nil {
-		return nil, fmt.Errorf(
-			"can't instantiate schema file handler: %w",
-			err,
-		)
-	}
-	r.PathPrefix("/schema/").Handler(schemaFileHandler)
-
 	// Authenticated routes
 	authR := r.Path("/graphql").Subrouter()
 	authR.Use(firebasetools.AuthenticationMiddleware(firebaseApp))
@@ -259,10 +250,6 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).HandlerFunc(GQLHandler(ctx, i))
 
 	// REST routes
-
-	// Bulk routes
-	bulk := r.PathPrefix("/bulk/").Subrouter()
-	bulk.Use(interserviceclient.InterServiceAuthenticationMiddleware())
 
 	// Interservice Authenticated routes
 	feedISC := r.PathPrefix("/feed/{uid}/{flavour}/{isAnonymous}/").Subrouter()

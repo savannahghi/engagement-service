@@ -32,6 +32,7 @@ IOS_BUNDLE_ID = get_env("IOS_BUNDLE_ID")
 DOMAIN_URI_PREFIX = get_env("DOMAIN_URI_PREFIX")
 FIREBASE_DYNAMIC_LINK_URL = get_env("FIREBASE_DYNAMIC_LINK_URL")
 TRACKING_URL_B = get_env("TRACKING_URL_B")
+LOGIN_AUTHENTICATION_URL = get_env("LOGIN_AUTHENTICATION_URL")
 
 
 class SenderID(enum.Enum):
@@ -80,6 +81,31 @@ def current_time():
 def convert_datetime_to_hours(date_time):
     """Convert a date time to hours"""
     return date_time / 3600
+
+
+def authetication():
+    """Authentication
+    This function implements basic http auth to verify the identity
+    of who is sending the marketing messages
+    """
+    username = input("Enter your email as the username\n")
+    password = input("Enter your password\n")
+    creds = {
+        "username": username,
+        "password": password
+    }
+    url = LOGIN_AUTHENTICATION_URL
+    headers = {"Content-Type": "application/json"}
+    resp = requests.post(url, json=creds, headers=headers)
+    if resp.status_code != 200:
+        click.secho(
+            "\nRequest unauthorized "
+            f"{resp.status_code}",
+            fg="red",
+            bold=True,
+        )
+        raise Exception("Request unauthorized\n")
+    print(resp.status_code)
 
 
 def send_sms(payload):
@@ -303,4 +329,5 @@ def run_campaign(segment, wing):
 
 
 if __name__ == "__main__":
+    authetication()
     run_campaign()
