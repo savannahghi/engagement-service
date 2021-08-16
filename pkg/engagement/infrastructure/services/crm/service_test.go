@@ -112,9 +112,7 @@ func TestHubspot_CollectEmails(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			contact, err := g.CollectEmails(tt.args.ctx, tt.args.email, tt.args.phonenumber)
 			if (err != nil) != tt.wantErr {
-				// todo: @kathurima restore one mailgun is back
-				log.Printf("failed to send welcome email to %s: %v", email, err)
-				//t.Errorf("Hubspot.CollectEmails() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Hubspot.CollectEmails() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if tt.name == "collect email happy case" {

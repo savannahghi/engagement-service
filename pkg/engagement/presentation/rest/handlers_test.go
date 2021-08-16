@@ -5855,9 +5855,7 @@ func TestSendEmail(t *testing.T) {
 				tt.args.body,
 			)
 			if err != nil {
-				// todo: @kathurima restore one mailgun is back
-				log.Print("failed to send welcome email", err)
-				//t.Errorf("unable to compose request: %s", err)
+				t.Errorf("unable to compose request: %s", err)
 				return
 			}
 
@@ -5872,9 +5870,7 @@ func TestSendEmail(t *testing.T) {
 			client := http.DefaultClient
 			resp, err := client.Do(r)
 			if err != nil {
-				// todo: @kathurima restore one mailgun is back
-				log.Print("failed to send welcome email", err)
-				//t.Errorf("request error: %s", err)
+				t.Errorf("request error: %s", err)
 				return
 			}
 
@@ -5885,9 +5881,7 @@ func TestSendEmail(t *testing.T) {
 
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				// todo: @kathurima restore one mailgun is back
-				log.Print("failed to send welcome email", err)
-				//t.Errorf("can't read request body: %s", err)
+				t.Errorf("can't read request body: %s", err)
 				return
 			}
 			if data == nil {
@@ -5896,16 +5890,12 @@ func TestSendEmail(t *testing.T) {
 			}
 
 			if (err != nil) != tt.wantErr {
-				// todo: @kathurima restore one mailgun is back
-				log.Print("failed to send welcome email", err)
-				//t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if resp.StatusCode != tt.wantStatus {
-				// todo: @kathurima restore one mailgun is back
-				log.Print("failed to send welcome email", err)
-				//t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
+				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
 				return
 			}
 		})
