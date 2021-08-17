@@ -9,7 +9,6 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagement/pkg/engagement/repository"
-	"github.com/sirupsen/logrus"
 )
 
 func TestMain(m *testing.M) {
@@ -92,9 +91,7 @@ func TestService_SendEmail(t *testing.T) {
 			}
 			if !tt.expectErr {
 				if err != nil {
-					// todo: @kathurima restore one mailgun is back
-					logrus.Print("failed to send welcome email", err)
-					//t.Errorf("an error was not expected")
+					t.Errorf("an error was not expected")
 					return
 				}
 				if msg == "" && id == "" {
