@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"	
+	"github.com/savannahghi/firebasetools" 
+	"github.com/savannahghi/interserviceclient"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 )
@@ -22,12 +24,12 @@ func TestService_RecordNPSResponse(t *testing.T) {
 		ctx   context.Context
 		input dto.NPSInput
 	}
-	// feedback := &dto.FeedbackInput{
-	// 	Question: "How is it",
-	// 	Answer:   "It is what it is",
-	// }
-	// email := converterandformatter.TestUserEmail
-	// phoneNumber := interserviceclient.TestUserPhoneNumber
+	feedback := &dto.FeedbackInput{
+		Question: "How is it",
+		Answer:   "It is what it is",
+	}
+	email := firebasetools.TestUserEmail
+	phoneNumber := interserviceclient.TestUserPhoneNumber
 
 	tests := []struct {
 		name    string
@@ -35,22 +37,22 @@ func TestService_RecordNPSResponse(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		// TODO - Find out why it fails
-		// {
-		// 	name: "Successful save nps response",
-		// 	args: args{
-		// 		input: dto.NPSInput{
-		// 			Name:        "Seleman Bungara",
-		// 			Score:       8,
-		// 			SladeCode:   "50",
-		// 			Email:       &email,
-		// 			PhoneNumber: &phoneNumber,
-		// 			Feedback:    []*dto.FeedbackInput{feedback},
-		// 		},
-		// 	},
-		// 	want:    true,
-		// 	wantErr: false,
-		// },
+		{
+			name: "Successfully save NPS response",
+			args: args{
+				ctx:   context.Background(),
+				input: dto.NPSInput{
+					Name:        "Seleman Bungara",
+					Score:       8,
+					SladeCode:   "50",
+					Email:       &email,
+					PhoneNumber: &phoneNumber,
+					Feedback:    []*dto.FeedbackInput{feedback},
+				},
+			},
+			want:    true,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -61,6 +63,7 @@ func TestService_RecordNPSResponse(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("Service.RecordNPSResponse() = %v, want %v", got, tt.want)
+				return
 			}
 		})
 	}
