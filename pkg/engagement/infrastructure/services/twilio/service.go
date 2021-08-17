@@ -18,6 +18,7 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
+	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
@@ -57,10 +58,15 @@ type ServiceTwilio interface {
 	TwilioAccessToken(ctx context.Context) (*dto.AccessToken, error)
 
 	SendSMS(ctx context.Context, to string, msg string) error
+
+	SaveTwilioVideoCallbackStatus(
+		ctx context.Context,
+		data dto.CallbackData,
+	) error
 }
 
 // NewService initializes a service to interact with Twilio
-func NewService(sms sms.ServiceSMS) *Service {
+func NewService(sms sms.ServiceSMS, repo repository.Repository) *Service {
 	region := serverutils.MustGetEnvVar(TwilioRegionEnvVarName)
 	videoBaseURL := serverutils.MustGetEnvVar(TwilioVideoAPIURLEnvVarName)
 	videoAPIKeySID := serverutils.MustGetEnvVar(TwilioVideoAPIKeySIDEnvVarName)
@@ -86,6 +92,7 @@ func NewService(sms sms.ServiceSMS) *Service {
 		callbackURL:       callbackURL,
 		smsNumber:         smsNumber,
 		sms:               sms,
+		repository:        repo,
 	}
 	srv.checkPreconditions()
 	return srv
@@ -105,6 +112,7 @@ type Service struct {
 	callbackURL       string
 	smsNumber         string
 	sms               sms.ServiceSMS
+	repository        repository.Repository
 }
 
 func (s Service) checkPreconditions() {
@@ -314,4 +322,12 @@ func (s Service) SendSMS(ctx context.Context, to string, msg string) error {
 
 	fmt.Printf("Raw Twilio SMS response: %v", t)
 	return nil
+}
+
+// SaveTwilioVideoCallbackStatus saves status callback data
+func (s Service) SaveTwilioVideoCallbackStatus(
+	ctx context.Context,
+	data dto.CallbackData,
+) error {
+	return s.repository.SaveTwilioVideoCallbackStatus(ctx, data)
 }

@@ -135,6 +135,8 @@ type PresentationHandlers interface {
 	HubSpotFirestoreSync() http.HandlerFunc
 
 	DataDeletionRequestCallback() http.HandlerFunc
+
+	GetTwilioVideoCallbackFunc() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1959,5 +1961,25 @@ func (p PresentationHandlersImpl) DataDeletionRequestCallback() http.HandlerFunc
 			return
 		}
 		respondWithJSON(w, http.StatusOK, resp)
+	}
+}
+
+// GetTwilioVideoCallbackFunc generates a Twilio Video callback handling function.
+//
+// Twilio sends the data with the "Content-Type" header to “application/x-www-urlencoded”.
+func (p PresentationHandlersImpl) GetTwilioVideoCallbackFunc() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Form == nil || len(r.Form) == 0 {
+			return
+		}
+		if err := p.interactor.Twilio.SaveTwilioVideoCallbackStatus(
+			r.Context(),
+			dto.CallbackData{Values: r.Form},
+		); err != nil {
+			log.Printf(
+				"Twilio video callback error: unable to save callback response: %v",
+				err,
+			)
+		}
 	}
 }

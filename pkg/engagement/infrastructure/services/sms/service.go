@@ -144,16 +144,6 @@ func (s Service) GetMarketingSMSByPhone(
 	return s.Repository.GetMarketingSMSByPhone(ctx, phoneNumber)
 }
 
-// UpdateMessageSentStatus updates the message sent field to true when a message
-// is sent to a user
-func (s Service) UpdateMessageSentStatus(
-	ctx context.Context,
-	phonenumber string,
-	segment string,
-) error {
-	return s.Repository.UpdateMessageSentStatus(ctx, phonenumber, segment)
-}
-
 // SendToMany is a utility method to send to many recipients at the same time
 func (s Service) SendToMany(
 	ctx context.Context,
