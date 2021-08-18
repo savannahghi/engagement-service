@@ -11,3 +11,5 @@ __pycache__/
 .coverage
 htmlcov/
 coverage/
+coverage.out
+coverage.txt

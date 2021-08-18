@@ -105,3 +105,44 @@ func TestCheckAuthorization(t *testing.T) {
 		})
 	}
 }
+
+func TestIsAuthorized(t *testing.T) {
+	type args struct {
+		userInfo   *profileutils.UserInfo
+		permission profileutils.PermissionInput
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    bool
+	}{
+		{
+			name: "valid: permission is set and subject has permission",
+			args: args{
+				userInfo: &profileutils.UserInfo{
+					DisplayName: "test",
+				},
+				permission: profileutils.PermissionInput{
+					Resource: "update_primary_phone",
+					Action:   "edit",
+				},
+			},
+			wantErr: false,
+			want:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := IsAuthorized(tt.args.userInfo, tt.args.permission)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("IsAuthorized() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("IsAuthorized() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

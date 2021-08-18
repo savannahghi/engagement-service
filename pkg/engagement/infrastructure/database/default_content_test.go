@@ -48,6 +48,26 @@ func TestSetDefaultActions(t *testing.T) {
 				repository: fr,
 			},
 		},
+		{
+			name: "fail: missing UID in PRO",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    feedlib.FlavourPro,
+				repository: fr,
+			},
+			wantErr: true,
+		},
+		{
+			name: "fail: missing UID in CONSUMER",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    feedlib.FlavourConsumer,
+				repository: fr,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -120,6 +140,26 @@ func TestSetDefaultNudges(t *testing.T) {
 				flavour:    feedlib.FlavourPro,
 				repository: fr,
 			},
+		},
+		{
+			name: "fail: missing UID in PRO",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    feedlib.FlavourPro,
+				repository: fr,
+			},
+			wantErr: true,
+		},
+		{
+			name: "fail: missing UID in CONSUMER",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    feedlib.FlavourConsumer,
+				repository: fr,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -199,6 +239,26 @@ func TestSetDefaultItems(t *testing.T) {
 				flavour:    feedlib.FlavourPro,
 				repository: fr,
 			},
+		},
+		{
+			name: "fail: missing UID in PRO",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    feedlib.FlavourPro,
+				repository: fr,
+			},
+			wantErr: true,
+		},
+		{
+			name: "fail: missing UID in CONSUMER",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    feedlib.FlavourConsumer,
+				repository: fr,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
