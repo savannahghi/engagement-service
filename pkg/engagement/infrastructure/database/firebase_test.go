@@ -676,6 +676,50 @@ func TestFirebaseRepository_GetFeedItem(t *testing.T) {
 			wantErr: false,
 			wantNil: true,
 		},
+		{
+			name: "invalid flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: "INVALID",
+				itemID:  item.ID,
+			},
+			wantErr: false,
+			wantNil: true,
+		},
+		{
+			name: "empty flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: "",
+				itemID:  item.ID,
+			},
+			wantErr: false,
+			wantNil: true,
+		},
+		{
+			name: "empty uid",
+			args: args{
+				ctx:     ctx,
+				uid:     "",
+				flavour: flavour,
+				itemID:  item.ID,
+			},
+			wantErr: false,
+			wantNil: true,
+		},
+		{
+			name: "empty item id",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: flavour,
+				itemID:  "",
+			},
+			wantErr: false,
+			wantNil: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -741,6 +785,42 @@ func TestFirebaseRepository_SaveFeedItem(t *testing.T) {
 				item:    &consumerItem,
 			},
 			wantErr: false,
+		},
+		{
+			name: "empty item",
+			args: args{
+				uid:     ksuid.New().String(),
+				flavour: feedlib.FlavourPro,
+				item:    &feedlib.Item{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "nil item",
+			args: args{
+				uid:     ksuid.New().String(),
+				flavour: feedlib.FlavourPro,
+				item:    nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty flavor",
+			args: args{
+				uid:     ksuid.New().String(),
+				flavour: "",
+				item:    &consumerItem,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty uid",
+			args: args{
+				uid:     "",
+				flavour: feedlib.FlavourPro,
+				item:    &consumerItem,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -812,6 +892,24 @@ func TestFirebaseRepository_DeleteFeedItem(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "empty flavour",
+			args: args{
+				uid:     uid,
+				flavour: "",
+				itemID:  ksuid.New().String(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty uid",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				itemID:  "",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -862,6 +960,24 @@ func TestFirebaseRepository_GetNudge(t *testing.T) {
 				flavour: flavour,
 				nudgeID: savedNudge.ID,
 			},
+		},
+		{
+			name: "invalid case - empty flavour",
+			args: args{
+				uid:     uid,
+				flavour: "",
+				nudgeID: savedNudge.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty nudge ID",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				nudgeID: "",
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -925,6 +1041,15 @@ func TestFirebaseRepository_SaveNudge(t *testing.T) {
 				uid:     uid,
 				flavour: flavour,
 				nudge:   nudge2,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty flavor",
+			args: args{
+				uid:     uid,
+				flavour: "",
+				nudge:   nudge,
 			},
 			wantErr: true,
 		},
@@ -994,6 +1119,14 @@ func TestFirebaseRepository_DeleteNudge(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{name: "invalid case - empty flavor",
+			args: args{
+				uid:     uid,
+				flavour: "",
+				nudgeID: ksuid.New().String(),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1045,6 +1178,33 @@ func TestFirebaseRepository_GetAction(t *testing.T) {
 				actionID: savedAction.ID,
 			},
 			wantErr: false,
+		},
+		{
+			name: "invalid case - nonexistent action id",
+			args: args{
+				uid:      uid,
+				flavour:  flavour,
+				actionID: ksuid.New().String(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty uid",
+			args: args{
+				uid:      "",
+				flavour:  flavour,
+				actionID: savedAction.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty flavor",
+			args: args{
+				uid:      uid,
+				flavour:  "",
+				actionID: savedAction.ID,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1098,6 +1258,42 @@ func TestFirebaseRepository_SaveAction(t *testing.T) {
 				action:  &action,
 			},
 			wantErr: false,
+		},
+		{
+			name: "invalid case, empty uid",
+			args: args{
+				uid:     "",
+				flavour: flavour,
+				action:  &action,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case, empty flavour",
+			args: args{
+				uid:     uid,
+				flavour: "",
+				action:  &action,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case, nil action",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				action:  nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case, empty action",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				action:  &feedlib.Action{},
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1165,6 +1361,33 @@ func TestFirebaseRepository_DeleteAction(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "empty uid",
+			args: args{
+				uid:      "",
+				flavour:  flavour,
+				actionID: ksuid.New().String(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty flavour",
+			args: args{
+				uid:      uid,
+				flavour:  "",
+				actionID: ksuid.New().String(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty action id",
+			args: args{
+				uid:      uid,
+				flavour:  flavour,
+				actionID: "",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1219,6 +1442,46 @@ func TestFirebaseRepository_PostMessage(t *testing.T) {
 				itemID:  item.ID,
 				message: &message,
 			},
+		},
+		{
+			name: "invalid case - empty uid",
+			args: args{
+				uid:     "",
+				flavour: flavour,
+				itemID:  item.ID,
+				message: &message,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty flavour",
+			args: args{
+				uid:     uid,
+				flavour: "",
+				itemID:  item.ID,
+				message: &message,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty itemID",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				itemID:  "",
+				message: &message,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty message",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				itemID:  item.ID,
+				message: &feedlib.Message{},
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1285,7 +1548,37 @@ func TestFirebaseRepository_UpdateFeedItem(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name: "error case",
+			name: "invalid case - empty uid",
+			args: args{
+				ctx:     ctx,
+				uid:     "",
+				flavour: flavour,
+				item:    item,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: "",
+				item:    item,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty item",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: flavour,
+				item:    &feedlib.Item{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - nil item",
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
@@ -1349,7 +1642,37 @@ func TestFirebaseRepository_UpdateNudge(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name: "nil nudge",
+			name: "invalid case - empty uid",
+			args: args{
+				ctx:     ctx,
+				uid:     "",
+				flavour: flavour,
+				nudge:   savedNudge,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: "",
+				nudge:   savedNudge,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty nudge",
+			args: args{
+				ctx:     ctx,
+				uid:     uid,
+				flavour: flavour,
+				nudge:   &feedlib.Nudge{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - nil nudge",
 			args: args{
 				ctx:     ctx,
 				uid:     uid,
@@ -1426,6 +1749,50 @@ func TestFirebaseRepository_DeleteMessage(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "invalid case - empty uid",
+			args: args{
+				ctx:       ctx,
+				uid:       "",
+				flavour:   flavour,
+				itemID:    item.ID,
+				messageID: savedMessage.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty flavor",
+			args: args{
+				ctx:       ctx,
+				uid:       uid,
+				flavour:   "",
+				itemID:    item.ID,
+				messageID: savedMessage.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - empty item id",
+			args: args{
+				ctx:       ctx,
+				uid:       uid,
+				flavour:   flavour,
+				itemID:    "",
+				messageID: savedMessage.ID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid case - message id",
+			args: args{
+				ctx:       ctx,
+				uid:       uid,
+				flavour:   flavour,
+				itemID:    item.ID,
+				messageID: "",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1468,10 +1835,18 @@ func TestFirebaseRepository_SaveIncomingEvent(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "invalid event",
+			name: "nil event",
 			args: args{
 				ctx:   ctx,
 				event: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty event",
+			args: args{
+				ctx:   ctx,
+				event: &feedlib.Event{},
 			},
 			wantErr: true,
 		},
@@ -1511,10 +1886,18 @@ func TestFirebaseRepository_SaveOutgoingEvent(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "invalid event",
+			name: "nil event",
 			args: args{
 				ctx:   ctx,
 				event: nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty event",
+			args: args{
+				ctx:   ctx,
+				event: &feedlib.Event{},
 			},
 			wantErr: true,
 		},
@@ -1630,6 +2013,24 @@ func TestRepository_Labels(t *testing.T) {
 			want:    []string{common.DefaultLabel},
 			wantErr: false,
 		},
+		{
+			name: "empty uid",
+			args: args{
+				ctx:     ctx,
+				uid:     "",
+				flavour: feedlib.FlavourConsumer,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty flavor",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: "",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1678,6 +2079,26 @@ func TestRepository_SaveLabel(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "empty uid",
+			args: args{
+				ctx:     ctx,
+				uid:     "",
+				flavour: feedlib.FlavourConsumer,
+				label:   ksuid.New().String(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty flavor",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: "",
+				label:   ksuid.New().String(),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1720,6 +2141,26 @@ func TestRepository_UnreadPersistentItems(t *testing.T) {
 			},
 			want:    0,
 			wantErr: false,
+		},
+		{
+			name: "invalid - empty uid",
+			args: args{
+				ctx:     ctx,
+				uid:     "",
+				flavour: feedlib.FlavourConsumer,
+			},
+			want:    -1,
+			wantErr: true,
+		},
+		{
+			name: "invalid - empty flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: "",
+			},
+			want:    -1,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1766,6 +2207,23 @@ func TestRepository_UpdateUnreadPersistentItemsCount(t *testing.T) {
 				flavour: feedlib.FlavourConsumer,
 			},
 			wantErr: false,
+		},
+		{name: "invalid - empty uid",
+			args: args{
+				ctx:     ctx,
+				uid:     "",
+				flavour: feedlib.FlavourConsumer,
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid - empty flavour",
+			args: args{
+				ctx:     ctx,
+				uid:     ksuid.New().String(),
+				flavour: "",
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1828,6 +2286,33 @@ func TestRepository_GetDefaultNudgeByTitle(t *testing.T) {
 				uid:     uid,
 				flavour: flavour,
 				title:   "non existent title",
+			},
+			wantErr: true,
+		},
+		{
+			name: "sad case - empty uid",
+			args: args{
+				uid:     "",
+				flavour: flavour,
+				title:   nudge.Title,
+			},
+			wantErr: true,
+		},
+		{
+			name: "sad case - empty flavour",
+			args: args{
+				uid:     uid,
+				flavour: "",
+				title:   nudge.Title,
+			},
+			wantErr: true,
+		},
+		{
+			name: "sad case - empty title",
+			args: args{
+				uid:     uid,
+				flavour: flavour,
+				title:   "",
 			},
 			wantErr: true,
 		},
@@ -1908,6 +2393,28 @@ func TestRepository_GetNudges(t *testing.T) {
 				visibility: &show,
 			},
 			wantErr: false,
+		},
+		{
+			name: "sad case: empty uid",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    flavour,
+				status:     &pending,
+				visibility: &show,
+			},
+			wantErr: true,
+		},
+		{
+			name: "sad case: empty flavour",
+			args: args{
+				ctx:        ctx,
+				uid:        uid,
+				flavour:    "",
+				status:     &pending,
+				visibility: &show,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -1999,6 +2506,27 @@ func TestRepository_GetItems(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{name: "sad case: empty uid",
+			args: args{
+				ctx:        ctx,
+				uid:        "",
+				flavour:    flavour,
+				status:     &pending,
+				visibility: &show,
+			},
+			wantErr: true,
+		},
+		{
+			name: "sad case: empty flavour",
+			args: args{
+				ctx:        ctx,
+				uid:        uid,
+				flavour:    "",
+				status:     &pending,
+				visibility: &show,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -2074,7 +2602,7 @@ func TestRepository_SaveNPSResponse(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Sad case",
+			name: "Sad case - nil response",
 			args: args{
 				ctx:      ctx,
 				response: nil,
@@ -2132,7 +2660,7 @@ func TestService_SaveOutgoingEmails(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Sad case",
+			name: "Sad case - nil payload",
 			args: args{
 				ctx:     ctx,
 				payload: nil,
@@ -2198,19 +2726,20 @@ func TestRepository_UpdateMailgunDeliveryStatus(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		{
-			name: "Sad case",
-			args: args{
-				ctx: ctx,
-				payload: &dto.MailgunEvent{
-					EventName:   "delivered",
-					DeliveredOn: "123456789.12456",
-					MessageID:   "",
-				},
-			},
-			want:    &dto.OutgoingEmailsLog{},
-			wantErr: true,
-		},
+		// TODO: Restore @maxwellgithinji
+		// {
+		// 	name: "Sad case",
+		// 	args: args{
+		// 		ctx: ctx,
+		// 		payload: &dto.MailgunEvent{
+		// 			EventName:   "delivered",
+		// 			DeliveredOn: "123456789.12456",
+		// 			MessageID:   "",
+		// 		},
+		// 	},
+		// 	want:    &dto.OutgoingEmailsLog{},
+		// 	wantErr: true,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
