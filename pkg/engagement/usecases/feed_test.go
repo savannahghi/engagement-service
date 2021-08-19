@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
 	db "github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	crmExt "github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
@@ -1659,6 +1660,170 @@ func TestEvent_ValidateAndMarshal(t *testing.T) {
 			}
 			if !tt.wantErr {
 				assert.NotZero(t, got)
+			}
+		})
+	}
+}
+
+func TestFeed_GetFeed(t *testing.T) {
+	ctx := firebasetools.GetAuthenticatedContext(t)
+	agg, err := InitializeTestNewFeed(ctx); assert.Nil(t, err)
+	uid := ksuid.New().String()
+	flavour := feedlib.FlavourConsumer
+	anonymous := false
+	status := feedlib.StatusPending
+	visibility := feedlib.VisibilityShow
+	expired := feedlib.BooleanFilterTrue
+	notExpired := feedlib.BooleanFilterFalse
+	filterParams := helpers.FilterParams{
+				Labels: []string{ksuid.New().String()},
+				}
+	
+	fe, err := agg.GetThinFeed(ctx, &uid, &anonymous, flavour)
+	assert.Nil(t, err)
+	assert.NotNil(t, fe)
+
+	testItem := testItem()
+	feed, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	assert.NotNil(t, feed)
+	assert.Nil(t, err)
+
+	type args struct {
+		ctx          context.Context
+		uid          string
+		isAnonymous  bool
+		flavour      feedlib.Flavour
+		persistent   feedlib.BooleanFilter
+		status       *feedlib.Status
+		visibility   *feedlib.Visibility
+		expired      *feedlib.BooleanFilter
+		filterParams *helpers.FilterParams
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    *domain.Feed
+	}{
+		{
+			name: "success case",
+			args: args{
+				ctx:          ctx,
+				uid:          uid,
+				isAnonymous:  false,
+				flavour:      flavour,
+				persistent:   feedlib.BooleanFilterBoth,
+				status:       &status,
+				visibility:   &visibility,
+				expired:      &notExpired, 
+				filterParams: &filterParams,
+			},
+			wantErr: false,
+		},
+		{
+			name: "failure case",
+			args: args{
+				ctx:          ctx,
+				uid:          uid,
+				isAnonymous:  false,
+				flavour:      flavour,
+				persistent:   feedlib.BooleanFilterBoth,
+				status:       &status,
+				visibility:   &visibility,
+				expired:      &expired, 
+				filterParams: &filterParams,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := agg.GetFeed(tt.args.ctx, &tt.args.uid, &tt.args.isAnonymous, tt.args.flavour, tt.args.persistent, tt.args.status, tt.args.visibility, tt.args.expired, tt.args.filterParams)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Feed.GetFeed() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != nil && err != nil {
+				// assert.NotNil(t, got.Expiry)
+				// expirytext := getTextExpiry()
+				// got.Expiry = expirytext
+				// tt.want.Expiry = expirytext
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("Feed.GetFeed() = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func TestFeed_GetThinFeed(t *testing.T) {
+	ctx := firebasetools.GetAuthenticatedContext(t)
+	agg, err := InitializeTestNewFeed(ctx)
+	assert.Nil(t, err)
+
+	uid := ksuid.New().String()
+	flavour := feedlib.FlavourConsumer
+	// anonymous := false
+
+	testItem := testItem()
+	feed, err := agg.Repository.SaveFeedItem(ctx, uid, flavour, testItem)
+	assert.NotNil(t, feed)
+	assert.Nil(t, err)
+
+	type args struct {
+		ctx         context.Context
+		uid         string
+		isAnonymous bool
+		flavour     feedlib.Flavour
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    *domain.Feed
+	}{
+		// {
+		// 	name: "succcess case",
+		// 	args: args{
+		// 		ctx:         ctx,
+		// 		uid:         uid,
+		// 		isAnonymous: false,
+		// 		flavour:     flavour,
+		// 	},
+		// 	wantErr: false,
+		// },
+		// {
+		// 	name: "failure case",
+		// 	args: args{
+		// 		ctx:         ctx,
+		// 		uid:         uid,
+		// 		isAnonymous: true,
+		// 		flavour:     flavour,
+		// 	},
+		// 	wantErr: true,
+		// },
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := agg.GetThinFeed(tt.args.ctx, &tt.args.uid, &tt.args.isAnonymous, tt.args.flavour)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Feed.GetThinFeed() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != nil && err != nil {
+				// assert.NotNil(t, got.Expiry)
+				// expirytext := getTextExpiry()
+				// got.Expiry = expirytext
+				// tt.want.Expiry = expirytext
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("Feed.GetThinFeed() = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
