@@ -137,8 +137,8 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	sms := sms.NewService(fr, crmExt, ns, edi)
 	feed := usecases.NewFeed(fr, ns)
 	whatsapp := whatsapp.NewService()
-	twilio := twilio.NewService(sms)
-	otp := otp.NewService(whatsapp, mail, sms, twilio)
+	tw := twilio.NewService(sms, fr)
+	otp := otp.NewService(whatsapp, mail, sms, tw)
 	surveys := surveys.NewService(fr)
 
 	// Initialize the interactor
@@ -151,7 +151,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 		*mail,
 		whatsapp,
 		otp,
-		twilio,
+		tw,
 		fcm,
 		surveys,
 		hubspotService,
@@ -223,6 +223,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/twilio_fallback").
 		Methods(http.MethodPost).
 		HandlerFunc(h.GetFallbackHandler())
+	r.Path(twilio.TwilioCallbackPath).
+		Methods(http.MethodPost).
+		HandlerFunc(h.GetTwilioVideoCallbackFunc())
 	r.Path("/facebook_data_deletion_callback").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.DataDeletionRequestCallback())

@@ -287,3 +287,8 @@ type MailgunEventOutput struct {
 	EventName   string    `json:"event" firestore:"event"`
 	DeliveredOn time.Time `json:"timestamp" firestore:"deliveredOn"`
 }
+
+// CallbackData records data sent back from the Twilio API to our HTTP callback URL
+type CallbackData struct {
+	Values map[string][]string `json:"values,omitempty" firestore:"values,omitempty"`
+}

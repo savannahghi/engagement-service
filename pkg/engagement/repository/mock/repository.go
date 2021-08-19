@@ -250,12 +250,6 @@ type FakeEngagementRepository struct {
 		data *dto.MarketingSMS,
 	) (*dto.MarketingSMS, error)
 
-	UpdateMessageSentStatusFn func(
-		ctx context.Context,
-		phonenumber string,
-		segment string,
-	) error
-
 	UpdateUserCRMEmailFn       func(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error
 	UpdateUserCRMBewellAwareFn func(ctx context.Context, email string, payload *dto.UpdateContactPSMessage) error
 
@@ -271,6 +265,11 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		phoneNumber string,
 	) (*dto.MarketingSMS, error)
+
+	SaveTwilioVideoCallbackStatusFn func(
+		ctx context.Context,
+		data dto.CallbackData,
+	) error
 }
 
 // GetFeed ...
@@ -591,15 +590,6 @@ func (f *FakeEngagementRepository) UpdateMarketingMessage(
 	return f.UpdateMarketingMessageFn(ctx, data)
 }
 
-// UpdateMessageSentStatus ..
-func (f *FakeEngagementRepository) UpdateMessageSentStatus(
-	ctx context.Context,
-	phonenumber string,
-	segment string,
-) error {
-	return f.UpdateMessageSentStatusFn(ctx, phonenumber, segment)
-}
-
 // UpdateUserCRMEmail ..
 func (f *FakeEngagementRepository) UpdateUserCRMEmail(ctx context.Context, phoneNumber string, payload *dto.UpdateContactPSMessage) error {
 	return f.UpdateUserCRMEmailFn(ctx, phoneNumber, payload)
@@ -631,4 +621,12 @@ func (f *FakeEngagementRepository) GetMarketingSMSByID(
 	id string,
 ) (*dto.MarketingSMS, error) {
 	return f.GetMarketingSMSByIDFn(ctx, id)
+}
+
+// SaveTwilioVideoCallbackStatus ..
+func (f *FakeEngagementRepository) SaveTwilioVideoCallbackStatus(
+	ctx context.Context,
+	data dto.CallbackData,
+) error {
+	return f.SaveTwilioVideoCallbackStatusFn(ctx, data)
 }

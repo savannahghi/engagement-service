@@ -15,7 +15,6 @@ import (
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/sirupsen/logrus"
-	"gitlab.slade360emr.com/go/apiclient"
 	"go.opentelemetry.io/otel"
 
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
@@ -40,7 +39,6 @@ const (
 	messagesSubcollectionName    = "messages"
 	incomingEventsCollectionName = "incoming_events"
 	outgoingEventsCollectionName = "outgoing_events"
-	marketingDataCollectionName  = "marketing_data"
 	//AITMarketingMessageName is the name of a Cloud Firestore collection into which AIT
 	// callback data will be saved for future analysis
 	AITMarketingMessageName = "ait_marketing_sms"
@@ -49,6 +47,8 @@ const (
 	NPSResponseCollectionName = "nps_response"
 
 	twilioCallbackCollectionName = "twilio_callbacks"
+
+	twilioVideoCallbackCollectionName = "twilio_video_callbacks"
 
 	notificationCollectionName = "notifications"
 
@@ -908,11 +908,6 @@ func (fr Repository) getTwilioCallbackCollectionName() string {
 	return suffixed
 }
 
-func (fr Repository) getMarketingDataCollectionName() string {
-	suffixed := firebasetools.SuffixCollection(marketingDataCollectionName)
-	return suffixed
-}
-
 func (fr Repository) getOutgoingEmailsCollectionName() string {
 	return firebasetools.SuffixCollection(outgoingEmails)
 }
@@ -966,6 +961,11 @@ func (fr Repository) getMessagesCollection(
 	itemsColl := fr.getElementCollection(uid, flavour, itemsSubcollectionName)
 	messagesColl := itemsColl.Doc(itemID).Collection(messagesSubcollectionName)
 	return messagesColl
+}
+
+func (fr Repository) getTwilioVideoCallbackCollectionName() string {
+	suffixed := firebasetools.SuffixCollection(twilioVideoCallbackCollectionName)
+	return suffixed
 }
 
 func (fr Repository) elementExists(
@@ -1809,44 +1809,6 @@ func (fr Repository) SaveNPSResponse(
 	return nil
 }
 
-// UpdateMessageSentStatus updates the message sent status to true
-func (fr Repository) UpdateMessageSentStatus(
-	ctx context.Context,
-	phonenumber string,
-	segment string,
-) error {
-	ctx, span := tracer.Start(ctx, "UpdateMessageSentStatus")
-	defer span.End()
-	query := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Where("message_sent", "==", "FALSE").
-		Where("properties.Phone", "==", phonenumber).
-		Where("properties.InitialSegment", "==", segment)
-
-	docs, err := fetchQueryDocs(ctx, query, true)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-
-	var marketingData apiclient.Segment
-	err = docs[0].DataTo(&marketingData)
-	if err != nil {
-		helpers.RecordSpanError(span, err)
-		return fmt.Errorf(
-			"unable to unmarshal marketing Data from doc snapshot: %w", err)
-	}
-
-	marketingData.MessageSent = "TRUE"
-
-	doc := fr.firestoreClient.Collection(fr.getMarketingDataCollectionName()).
-		Doc(docs[0].Ref.ID)
-	if _, err = doc.Set(ctx, marketingData); err != nil {
-		helpers.RecordSpanError(span, err)
-		return err
-	}
-	return nil
-}
-
 // SaveOutgoingEmails saves all the outgoing emails
 func (fr Repository) SaveOutgoingEmails(
 	ctx context.Context,
@@ -1907,4 +1869,26 @@ func (fr Repository) UpdateMailgunDeliveryStatus(
 	}
 
 	return &emailLogData, nil
+}
+
+// SaveTwilioVideoCallbackStatus saves the callback data
+func (fr Repository) SaveTwilioVideoCallbackStatus(
+	ctx context.Context,
+	data dto.CallbackData,
+) error {
+	ctx, span := tracer.Start(ctx, "SaveTwilioVideoCallbackStatus")
+	defer span.End()
+	if err := fr.checkPreconditions(); err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("repository precondition check failed: %w", err)
+	}
+
+	collectionName := fr.getTwilioVideoCallbackCollectionName()
+	_, _, err := fr.firestoreClient.Collection(collectionName).Add(ctx, data)
+	if err != nil {
+		helpers.RecordSpanError(span, err)
+		return fmt.Errorf("unable to save callback response")
+	}
+
+	return nil
 }
