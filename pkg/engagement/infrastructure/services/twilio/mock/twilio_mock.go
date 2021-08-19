@@ -21,6 +21,11 @@ type FakeServiceTwilio struct {
 	TwilioAccessTokenFn func(ctx context.Context) (*dto.AccessToken, error)
 
 	SendSMSFn func(ctx context.Context, to string, msg string) error
+
+	SaveTwilioVideoCallbackStatusFn func(
+		ctx context.Context,
+		data dto.CallbackData,
+	) error
 }
 
 // MakeTwilioRequest ...
@@ -46,4 +51,12 @@ func (f *FakeServiceTwilio) TwilioAccessToken(ctx context.Context) (*dto.AccessT
 // SendSMS ...
 func (f *FakeServiceTwilio) SendSMS(ctx context.Context, to string, msg string) error {
 	return f.SendSMSFn(ctx, to, msg)
+}
+
+// SaveTwilioVideoCallbackStatus ..
+func (f *FakeServiceTwilio) SaveTwilioVideoCallbackStatus(
+	ctx context.Context,
+	data dto.CallbackData,
+) error {
+	return f.SaveTwilioVideoCallbackStatusFn(ctx, data)
 }

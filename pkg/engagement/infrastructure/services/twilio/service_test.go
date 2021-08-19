@@ -52,7 +52,7 @@ func newTwilioService(ctx context.Context) (*twilio.Service, error) {
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
 	sms := sms.NewService(repo, crmExt, ns, edi)
 
-	return twilio.NewService(sms), nil
+	return twilio.NewService(sms, repo), nil
 }
 
 func TestNewService(t *testing.T) {

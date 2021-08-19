@@ -262,12 +262,17 @@ type Repository interface {
 		response *dto.NPSResponse,
 	) error
 
-	UpdateMessageSentStatus(
+	SaveOutgoingEmails(
 		ctx context.Context,
-		phonenumber string,
-		segment string,
+		payload *dto.OutgoingEmailsLog,
 	) error
+	UpdateMailgunDeliveryStatus(
+		ctx context.Context,
+		payload *dto.MailgunEvent,
+	) (*dto.OutgoingEmailsLog, error)
 
-	SaveOutgoingEmails(ctx context.Context, payload *dto.OutgoingEmailsLog) error
-	UpdateMailgunDeliveryStatus(ctx context.Context, payload *dto.MailgunEvent) (*dto.OutgoingEmailsLog, error)
+	SaveTwilioVideoCallbackStatus(
+		ctx context.Context,
+		data dto.CallbackData,
+	) error
 }
