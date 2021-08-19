@@ -4,7 +4,7 @@
 
 
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) ![Linting and Tests](https://github.com/savannahghi/engagement/actions/workflows/ci.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/savannahghi/engagement/badge.svg?branch=main)](https://coveralls.io/github/savannahghi/engagement?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/savannahghi/engagement/badge.svg?branch=develop)](https://coveralls.io/github/savannahghi/engagement?branch=develop)
 
 A service that fetches and preprocesses content for the feed,library and faqs section in Bewell app.
 

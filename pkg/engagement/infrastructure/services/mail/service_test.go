@@ -6,9 +6,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/mailgun/mailgun-go/v4"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/firebasetools"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
@@ -122,7 +125,7 @@ func TestService_SendInBlue(t *testing.T) {
 			args: args{
 				subject: "Test Email",
 				text:    "This is a test email",
-				to:      []string{"ngure@hyperionconsult.com"},
+				to:      []string{firebasetools.TestUserEmail},
 			},
 			wantStatus: "ok",
 			wantErr:    false,
@@ -141,6 +144,78 @@ func TestService_SendInBlue(t *testing.T) {
 					t.Errorf("Service.SendInBlue() got = %v, want %v", got, tt.wantStatus)
 				}
 			}
+		})
+	}
+}
+
+func TestService_CheckPreconditions(t *testing.T) {
+	var repo repository.Repository
+	type fields struct {
+		Mg                *mailgun.MailgunImpl
+		From              string
+		SendInBlueEnabled bool
+		SendInBlueAPIKey  string
+		Repository        repository.Repository
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		panics bool
+	}{
+		{
+			name: "invalid: missing mailgin implementation",
+			fields: fields{
+				From:              "test@example",
+				SendInBlueEnabled: false,
+				SendInBlueAPIKey:  "key",
+				Repository:        repo,
+			},
+			panics: true,
+		},
+		{
+			name: "invalid: missing from",
+			fields: fields{
+				Mg:                &mailgun.MailgunImpl{},
+				SendInBlueEnabled: false,
+				SendInBlueAPIKey:  "key",
+				Repository:        repo,
+			},
+			panics: true,
+		},
+		{
+			name: "invalid: missing sendiblue api key",
+			fields: fields{
+				Mg:                &mailgun.MailgunImpl{},
+				From:              "test@example",
+				SendInBlueEnabled: false,
+				Repository:        repo,
+			},
+			panics: true,
+		},
+		{
+			name: "invalid: missing repo",
+			fields: fields{
+				Mg:                &mailgun.MailgunImpl{},
+				From:              "test@example",
+				SendInBlueEnabled: false,
+				SendInBlueAPIKey:  "key",
+			},
+			panics: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := mail.Service{
+				Mg:                tt.fields.Mg,
+				From:              tt.fields.From,
+				SendInBlueEnabled: tt.fields.SendInBlueEnabled,
+				SendInBlueAPIKey:  tt.fields.SendInBlueAPIKey,
+				Repository:        tt.fields.Repository,
+			}
+			if tt.panics {
+				assert.Panics(t, s.CheckPreconditions)
+			}
+
 		})
 	}
 }
