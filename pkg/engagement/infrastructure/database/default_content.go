@@ -1176,13 +1176,13 @@ func getFeedWelcomeVideos(flavour feedlib.Flavour) []feedlib.Link {
 		// Videos for Consumer
 		consumerVideos := []feedlib.Link{
 			feedlib.GetYoutubeVideoLink(
-				"https://youtu.be/-mlr9rjRXmc",
+				"https://bewell.co.ke/what_you_can_do.mp4",
 				"Slade 360",
 				" View your health insurance cover benefits on your Be.Well app.",
 				common.StaticBase+"/items/videos/thumbs/01_lead.png",
 			),
 			feedlib.GetYoutubeVideoLink(
-				"https://youtu.be/-iSB8yrSIps",
+				"https://bewell.co.ke/how_to_add_cover.mp4  ",
 				"Slade 360",
 				"How to add your health insurance cover to your Be.Well app.",
 				common.StaticBase+"/items/videos/thumbs/01_lead.png",
@@ -1227,12 +1227,12 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour) []fee
 		text := ""
 		sequenceNumber := int(time.Now().Unix())
 
-		if videoLink.URL == "https://youtu.be/-mlr9rjRXmc" {
+		if videoLink.URL == "https://bewell.co.ke/what_you_can_do.mp4" {
 			tagline = "See what you can do on your Be.Well app"
 			summary = "See what you can do on your Be.Well app"
 			text = "How to add your health insurance cover to your Be.Well app."
 		}
-		if videoLink.URL == "https://youtu.be/-iSB8yrSIps" {
+		if videoLink.URL == "https://bewell.co.ke/how_to_add_cover.mp4" {
 			tagline = "Learn how to add your cover in 3 easy steps"
 			summary = "Learn how to add your cover in 3 easy steps"
 			text = "View your health insurance cover benefits on your Be.Well app."
@@ -1297,7 +1297,7 @@ func feedItemsFromCMSFeedTag(ctx context.Context, flavour feedlib.Flavour) []fee
 		TextType:       feedlib.TextTypeHTML,
 		Links: []feedlib.Link{
 			feedlib.GetYoutubeVideoLink(
-				"https://youtu.be/mKnlXcS3_Z0",
+				" https://bewell.co.ke/healthcare_simplified.mp4 ",
 				"Slade 360",
 				"Slade 360. HealthCare. Simplified.",
 				common.StaticBase+"/items/videos/thumbs/04_slade.png",
