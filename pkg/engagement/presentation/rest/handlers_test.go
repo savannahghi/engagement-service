@@ -21,16 +21,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/imroc/req"
 	"github.com/markbates/pkger"
-	"github.com/savannahghi/enumutils"
-	"github.com/savannahghi/feedlib"
-	"github.com/savannahghi/firebasetools"
-	"github.com/savannahghi/profileutils"
-	"github.com/savannahghi/pubsubtools"
-	"github.com/segmentio/ksuid"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/api/idtoken"
-
 	"github.com/savannahghi/engagement/pkg/engagement/application/common"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
@@ -38,7 +28,16 @@ import (
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation"
 	"github.com/savannahghi/engagement/pkg/engagement/presentation/rest"
+	"github.com/savannahghi/enumutils"
+	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
+	"github.com/savannahghi/profileutils"
+	"github.com/savannahghi/pubsubtools"
+	"github.com/segmentio/ksuid"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/api/idtoken"
 )
 
 const (
@@ -6156,6 +6155,96 @@ func TestPresentationHandlersImpl_UpdateMailgunDelivery(t *testing.T) {
 
 			if resp.StatusCode != tt.wantStatus {
 				t.Errorf("expected status %d, got %s", tt.wantStatus, resp.Status)
+				return
+			}
+		})
+	}
+}
+
+func TestPresentationHandlersImpl_ReceiveInboundMessages(t *testing.T) {
+	ctx := context.Background()
+	headers := req.Header{
+		"Accept":        "application/json",
+		"Content-Type":  "application/x-www-form-urlencoded",
+		"Authorization": getInterserviceBearerTokenHeader(ctx, t, baseURL),
+	}
+	type args struct {
+		url        string
+		httpMethod string
+		headers    map[string]string
+		body       io.Reader
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus int
+		wantErr    bool
+	}{
+		{
+			name: "Inbound whatsapp messages :)",
+			args: args{
+				url: fmt.Sprintf(
+					"%s/inbound_whatsapp_messages",
+					baseURL,
+				),
+				httpMethod: http.MethodPost,
+				headers:    headers,
+				body:       nil,
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, err := http.NewRequest(
+				tt.args.httpMethod,
+				tt.args.url,
+				tt.args.body,
+			)
+			if err != nil {
+				t.Errorf("unable to compose request: %s", err)
+				return
+			}
+
+			if r == nil {
+				t.Errorf("nil request")
+				return
+			}
+
+			for k, v := range tt.args.headers {
+				r.Header.Add(k, v)
+			}
+			client := http.DefaultClient
+			resp, err := client.Do(r)
+			if err != nil {
+				t.Errorf("request error: %s", err)
+				return
+			}
+
+			if resp == nil && !tt.wantErr {
+				t.Errorf("nil response")
+				return
+			}
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("can't read request body: %s", err)
+				return
+			}
+			assert.NotNil(t, data)
+			if data == nil {
+				t.Errorf("nil response data")
+				return
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			log.Print(resp.StatusCode)
+			if tt.wantStatus != resp.StatusCode {
+				t.Errorf("bad status code returned")
 				return
 			}
 		})

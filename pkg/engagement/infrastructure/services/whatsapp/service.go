@@ -8,15 +8,18 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
 	"github.com/savannahghi/engagement/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
+	hubspotDomain "gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"go.opentelemetry.io/otel"
 )
 
@@ -38,7 +41,7 @@ const (
 )
 
 // NewService initializes a properly set up WhatsApp service
-func NewService() *Service {
+func NewService(r repository.Repository, crm crm.ServiceCrm) *Service {
 	sid := serverutils.MustGetEnvVar(TwilioWhatsappSIDEnvVarName)
 	authToken := serverutils.MustGetEnvVar(TwilioWhatsappAuthTokenEnvVarName)
 	sender := serverutils.MustGetEnvVar(TwilioWhatsappSenderEnvVarName)
@@ -51,6 +54,8 @@ func NewService() *Service {
 		AccountAuthToken: authToken,
 		Sender:           sender,
 		HTTPClient:       httpClient,
+		Repository:       r,
+		Crm:              crm,
 	}
 }
 
@@ -62,6 +67,11 @@ type ServiceWhatsapp interface {
 		code string,
 		marketingMessage string,
 	) (bool, error)
+
+	ReceiveInboundMessages(
+		ctx context.Context,
+		message *dto.TwilioMessage,
+	) (*dto.TwilioMessage, error)
 
 	WellnessCardActivationDependant(
 		ctx context.Context,
@@ -167,6 +177,7 @@ type Service struct {
 	Sender           string
 	HTTPClient       *http.Client
 	Repository       repository.Repository
+	Crm              crm.ServiceCrm
 }
 
 // CheckPreconditions ...
@@ -295,6 +306,68 @@ func (s Service) PhoneNumberVerificationCode(
 	// TODO Find out why /ide is not working (401s)
 	// TODO deploy UAT, deploy prod, tag (semver)
 	return true, nil
+}
+
+// ReceiveInboundMessages save Twilio whatsapp's inbound messsage to firestore and hubspot
+func (s Service) ReceiveInboundMessages(
+	ctx context.Context,
+	message *dto.TwilioMessage,
+) (*dto.TwilioMessage, error) {
+	if message == nil {
+		return nil, fmt.Errorf("nil inbound message")
+	}
+
+	inboundMsg, err := s.Repository.SaveInboundWAMessages(ctx, *message)
+	if err != nil {
+		return nil, fmt.Errorf("failed to save inbound whatsapp message: %w", err)
+	}
+
+	phoneNumber := strings.ReplaceAll(message.From, "whatsapp:", "")
+	contact, err := s.Crm.GetContactByPhone(ctx, phoneNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get contacts by phone %s: %w", phoneNumber, err)
+	}
+
+	if contact.Properties.FirstChannelOfContact == "" {
+		contact.Properties.FirstChannelOfContact = hubspotDomain.ChannelOfContact("WHATSAPP")
+		_, err := s.Crm.UpdateHubSpotContact(ctx, contact)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update contact with First channel of contact as WHATSAPP: %w", err)
+		}
+	}
+
+	searchResp, err := s.Crm.SearchContactByPhone(phoneNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search for phone %s: %w", phoneNumber, err)
+	}
+	contactID, err := strconv.Atoi(searchResp.Results[0].ContactID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to convert contact ID to int")
+	}
+
+	engagementData := &hubspotDomain.EngagementData{
+		Engagement: hubspotDomain.Engagement{
+			Active:    true,
+			Type:      hubspotDomain.EngagementTypeNOTE,
+			Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
+		},
+		Metadata: map[string]interface{}{
+			"body": message.Body,
+		},
+		Associations: hubspotDomain.Associations{
+			ContactIDs: []int{contactID},
+		},
+	}
+	engagement, err := s.Crm.CreateHubspotEngagement(ctx, engagementData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create engagement for contact %s: %w", phoneNumber, err)
+	}
+	if engagement == nil {
+		return nil, fmt.Errorf("nil engagement returned")
+	}
+
+	// add to the conversation inbox
+	return inboundMsg, nil
 }
 
 // WellnessCardActivationDependant sends wellness card activation messages via WhatsApp

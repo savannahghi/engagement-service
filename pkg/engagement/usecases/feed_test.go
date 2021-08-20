@@ -102,7 +102,7 @@ func InitializeFakeEngagementInteractor() (*interactor.Interactor, error) {
 	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
 	sms := sms.NewService(r, crmExt, messagingSvc, ediSvc)
-	whatsapp := whatsapp.NewService()
+	whatsapp := whatsapp.NewService(r, crmExt)
 	twilio := twilio.NewService(sms, r)
 	otp := otp.NewService(whatsapp, mail, sms, twilio)
 	surveys := surveys.NewService(r)

@@ -14,6 +14,10 @@ type FakeServiceWhatsapp struct {
 		code string,
 		marketingMessage string,
 	) (bool, error)
+	ReceiveInboundMessagesFn func(
+		ctx context.Context,
+		message *dto.TwilioMessage,
+	) (*dto.TwilioMessage, error)
 
 	WellnessCardActivationDependantFn func(
 		ctx context.Context,
@@ -291,4 +295,12 @@ func (f *FakeServiceWhatsapp) SaveTwilioCallbackResponse(
 	data dto.Message,
 ) error {
 	return f.SaveTwilioCallbackResponseFn(ctx, data)
+}
+
+// ReceiveInboundMessages ..
+func (f *FakeServiceWhatsapp) ReceiveInboundMessages(
+	ctx context.Context,
+	message *dto.TwilioMessage,
+) (*dto.TwilioMessage, error) {
+	return f.ReceiveInboundMessagesFn(ctx, message)
 }

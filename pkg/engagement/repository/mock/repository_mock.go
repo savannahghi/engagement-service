@@ -270,6 +270,11 @@ type FakeEngagementRepository struct {
 		ctx context.Context,
 		data dto.CallbackData,
 	) error
+
+	SaveInboundWAMessagesFn func(
+		ctx context.Context,
+		message dto.TwilioMessage,
+	) (*dto.TwilioMessage, error)
 }
 
 // GetFeed ...
@@ -629,4 +634,12 @@ func (f *FakeEngagementRepository) SaveTwilioVideoCallbackStatus(
 	data dto.CallbackData,
 ) error {
 	return f.SaveTwilioVideoCallbackStatusFn(ctx, data)
+}
+
+// SaveInboundWAMessages ..
+func (f *FakeEngagementRepository) SaveInboundWAMessages(
+	ctx context.Context,
+	message dto.TwilioMessage,
+) (*dto.TwilioMessage, error) {
+	return f.SaveInboundWAMessagesFn(ctx, message)
 }

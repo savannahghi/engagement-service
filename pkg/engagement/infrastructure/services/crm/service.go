@@ -26,6 +26,21 @@ type ServiceCrm interface {
 		ctx context.Context,
 		email string,
 	) (*hubspotDomain.CRMContact, error)
+	GetContactByPhone(
+		ctx context.Context,
+		phone string,
+	) (*hubspotDomain.CRMContact, error)
+	UpdateHubSpotContact(
+		ctx context.Context,
+		contact *hubspotDomain.CRMContact,
+	) (*hubspotDomain.CRMContact, error)
+	CreateHubspotEngagement(
+		ctx context.Context,
+		eng *hubspotDomain.EngagementData,
+	) (*hubspotDomain.EngagementData, error)
+	SearchContactByPhone(
+		phone string,
+	) (*hubspotDomain.ContactSearchResponse, error)
 }
 
 // Hubspot interacts with `HubSpot` CRM usecases
@@ -139,4 +154,35 @@ func (h *Hubspot) BeWellAware(
 		)
 	}
 	return updatedContact, nil
+}
+
+// GetContactByPhone gets or creates a hubspot contact by phone
+func (h *Hubspot) GetContactByPhone(
+	ctx context.Context,
+	phone string,
+) (*hubspotDomain.CRMContact, error) {
+	return h.hubSpotUsecases.GetContactByPhone(ctx, phone)
+}
+
+// UpdateHubSpotContact updates a hubspot contact
+func (h *Hubspot) UpdateHubSpotContact(
+	ctx context.Context,
+	contact *hubspotDomain.CRMContact,
+) (*hubspotDomain.CRMContact, error) {
+	return h.hubSpotUsecases.UpdateHubSpotContact(ctx, contact)
+}
+
+// CreateHubspotEngagement creates a hubspot's engagement
+func (h *Hubspot) CreateHubspotEngagement(
+	ctx context.Context,
+	eng *hubspotDomain.EngagementData,
+) (*hubspotDomain.EngagementData, error) {
+	return h.hubSpotUsecases.CreateHubspotEngagement(ctx, eng)
+}
+
+// SearchContactByPhone does a search for a hubspot's phone nnumber
+func (h *Hubspot) SearchContactByPhone(
+	phone string,
+) (*hubspotDomain.ContactSearchResponse, error) {
+	return h.hubSpotUsecases.SearchContactByPhone(phone)
 }

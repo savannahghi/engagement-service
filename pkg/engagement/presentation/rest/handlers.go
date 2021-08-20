@@ -124,6 +124,7 @@ type PresentationHandlers interface {
 
 	SendNotificationHandler() http.HandlerFunc
 
+	// todo: clean this up in subsequent MR (@mathenge)
 	GetContactLists() http.HandlerFunc
 	GetContactListByID() http.HandlerFunc
 	GetContactsInAList() http.HandlerFunc
@@ -137,6 +138,8 @@ type PresentationHandlers interface {
 	DataDeletionRequestCallback() http.HandlerFunc
 
 	GetTwilioVideoCallbackFunc() http.HandlerFunc
+
+	ReceiveInboundMessages() http.HandlerFunc
 }
 
 // PresentationHandlersImpl represents the usecase implementation object
@@ -1513,6 +1516,7 @@ func (p PresentationHandlersImpl) GetAITSMSDeliveryCallback() http.HandlerFunc {
 }
 
 // GetNotificationHandler returns a handler that processes an Africa's Talking payment notification
+// todo: clean this up in subsequent MR (@mathenge)
 func (p PresentationHandlersImpl) GetNotificationHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -1981,5 +1985,51 @@ func (p PresentationHandlersImpl) GetTwilioVideoCallbackFunc() http.HandlerFunc 
 				err,
 			)
 		}
+	}
+}
+
+// ReceiveInboundMessages is Twilio's webhook for inbound messages
+func (p PresentationHandlersImpl) ReceiveInboundMessages() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		if err := r.ParseForm(); err != nil {
+			log.Printf("unable to parse request data %v", err)
+			return
+		}
+		if r.Form == nil || len(r.Form) == 0 {
+			return
+		}
+
+		message := &dto.TwilioMessage{
+			AccountSID:       r.Form.Get("AccountSid"),
+			From:             r.Form.Get("From"),
+			To:               r.Form.Get("To"),
+			Body:             r.Form.Get("Body"),
+			NumMedia:         r.Form.Get("NumMedia"),
+			NumSegments:      r.Form.Get("NumSegments"),
+			APIVersion:       r.Form.Get("ApiVersion"),
+			ProfileName:      r.Form.Get("ProfileName"),
+			SmsMessageSID:    r.Form.Get("SmsMessageSid"),
+			SmsSid:           r.Form.Get("SmsSid"),
+			SmsStatus:        r.Form.Get("SmsStatus"),
+			WaID:             r.Form.Get("WaID"),
+			MediaContentType: r.Form.Get("MediaContentType0"),
+			MediaURL:         r.Form.Get("MediaUrl0"),
+			TimeReceived:     time.Now(),
+		}
+
+		inboundMessage, err := p.interactor.Whatsapp.ReceiveInboundMessages(ctx, message)
+		if err != nil {
+			log.Printf("failed to receive inbound message: %v", err)
+			respondWithError(w, http.StatusBadRequest, err)
+			return
+		}
+		marshalled, err := json.Marshal(inboundMessage)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		respondWithJSON(w, http.StatusOK, marshalled)
 	}
 }

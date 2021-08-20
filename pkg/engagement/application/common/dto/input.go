@@ -154,3 +154,22 @@ type RetrieveUserProfileInput struct {
 	PhoneNumber  *string `json:"phone"`
 	EmailAddress *string `json:"email"`
 }
+
+// TwilioMessage represents an inbound whatsapp message
+type TwilioMessage struct {
+	AccountSID       string    `json:"accountSid" firestore:"accountSid"`
+	From             string    `json:"from" firestore:"from"`
+	To               string    `json:"to" firestore:"to"`
+	Body             string    `json:"body" firestore:"body"`
+	NumMedia         string    `json:"numMedia" firestore:"numMedia"`
+	NumSegments      string    `json:"num_segments" firestore:"num_segments"`
+	APIVersion       string    `json:"apiVersion" firestore:"apiVersion"`
+	ProfileName      string    `json:"profileName" firestore:"profieName"`
+	SmsMessageSID    string    `json:"smsMessageSid" firestore:"smsMessageSid"`
+	SmsSid           string    `json:"smsSid" firestore:"smsSid"`
+	SmsStatus        string    `json:"smsStatus" firestore:"smsStatus"`
+	WaID             string    `json:"waId" firestore:"waId"`
+	MediaContentType string    `json:"mediaContentType" firestore:"mediaContentType"`
+	MediaURL         string    `json:"mediaUrl" firestore:"mediaUrl"`
+	TimeReceived     time.Time `json:"timeReceived" firestore:"timeReceived"`
+}

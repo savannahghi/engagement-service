@@ -38,6 +38,7 @@ type SendMessageResponse struct {
 }
 
 // Message is a Twilio WhatsApp or SMS message
+// todo: clean this up in subsequent MR (@mathenge)
 type Message struct {
 	ID                  string            `json:"id" firestore:"id"`
 	AccountSID          string            `json:"account_sid" firestore:"account_sid"`

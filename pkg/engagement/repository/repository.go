@@ -275,4 +275,9 @@ type Repository interface {
 		ctx context.Context,
 		data dto.CallbackData,
 	) error
+
+	SaveInboundWAMessages(
+		ctx context.Context,
+		message dto.TwilioMessage,
+	) (*dto.TwilioMessage, error)
 }

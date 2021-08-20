@@ -34,7 +34,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/xid v1.3.0
-	github.com/savannahghi/bewellcli v0.0.1 // indirect
 	github.com/savannahghi/converterandformatter v0.0.9
 	github.com/savannahghi/enumutils v0.0.2
 	github.com/savannahghi/errorcodeutil v0.0.1
@@ -51,7 +50,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
 	gitlab.slade360emr.com/go/apiclient v0.0.15
-	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210812143204-e6a6342f5f94
+	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210818070635-3acae324425d
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.21.0
 	go.opentelemetry.io/otel v1.0.0-RC1

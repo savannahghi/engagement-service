@@ -2,17 +2,49 @@ package whatsapp_test
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/google/uuid"
+	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
+	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
 	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/stretchr/testify/assert"
+	hubspotRepo "gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/database/fs"
+	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
+	hubspotUsecases "gitlab.slade360emr.com/go/commontools/crm/pkg/usecases"
 )
 
 func TestMain(m *testing.M) {
 	os.Setenv("ROOT_COLLECTION_SUFFIX", "testing")
 	m.Run()
+}
+
+func newService() *whatsapp.Service {
+	ctx := context.Background()
+	fr, err := database.NewFirebaseRepository(ctx)
+	if err != nil {
+		log.Panicf(
+			"can't instantiate firebase repository in resolver: %v",
+			err,
+		)
+	}
+	hubspotService := hubspot.NewHubSpotService()
+	hubspotfr, err := hubspotRepo.NewHubSpotFirebaseRepository(ctx, hubspotService)
+	if err != nil {
+		log.Panicf("failed to initialize hubspot crm repository: %v", err)
+	}
+	hubspotUsecases := hubspotUsecases.NewHubSpotUsecases(hubspotfr, hubspotService)
+
+	mail := mail.NewService(fr)
+	crmExt := crm.NewCrmService(hubspotUsecases, mail)
+	return whatsapp.NewService(fr, crmExt)
 }
 
 func TestNewService(t *testing.T) {
@@ -25,7 +57,7 @@ func TestNewService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := whatsapp.NewService()
+			got := newService()
 			assert.NotNil(t, got)
 
 			// should not panic
@@ -155,7 +187,7 @@ func TestService_PhoneNumberVerificationCode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := whatsapp.NewService()
+			s := newService()
 			got, err := s.PhoneNumberVerificationCode(tt.args.ctx, tt.args.to, tt.args.code, tt.args.marketingMessage)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Service.PhoneNumberVerificationCode() error = %v, wantErr %v", err, tt.wantErr)
@@ -163,6 +195,71 @@ func TestService_PhoneNumberVerificationCode(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("Service.PhoneNumberVerificationCode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestService_ReceiveInboundMessages(t *testing.T) {
+	ctx := context.Background()
+	message := &dto.TwilioMessage{
+		AccountSID:       uuid.New().String(),
+		From:             gofakeit.Phone(),
+		To:               gofakeit.Phone(),
+		Body:             gofakeit.Sentence(10),
+		NumMedia:         "1",
+		NumSegments:      "1",
+		APIVersion:       uuid.New().String(),
+		ProfileName:      gofakeit.FirstName(),
+		SmsMessageSID:    uuid.New().String(),
+		SmsSid:           uuid.New().String(),
+		SmsStatus:        "delivered",
+		WaID:             uuid.New().String(),
+		MediaContentType: "image/jpeg",
+		MediaURL:         gofakeit.URL(),
+		TimeReceived:     time.Now(),
+	}
+	type args struct {
+		ctx     context.Context
+		message *dto.TwilioMessage
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "happy inboud WA message :)",
+			args: args{
+				ctx:     ctx,
+				message: message,
+			},
+			wantErr: false,
+		},
+		{
+			name: "sad inboud WA message :)",
+			args: args{
+				ctx:     ctx,
+				message: nil,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newService()
+			msg, err := s.ReceiveInboundMessages(tt.args.ctx, tt.args.message)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Service.ReceiveInboundMessages() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && msg == nil {
+				t.Errorf("expected inbound message to be returned")
+				return
+			}
+			if tt.wantErr && msg != nil {
+				t.Errorf("did not expect an inbound message to be returned")
+				return
 			}
 		})
 	}

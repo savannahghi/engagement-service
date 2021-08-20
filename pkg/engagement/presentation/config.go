@@ -136,7 +136,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	crmExt := crmExt.NewCrmService(hubspotUsecases, mail)
 	sms := sms.NewService(fr, crmExt, ns, edi)
 	feed := usecases.NewFeed(fr, ns)
-	whatsapp := whatsapp.NewService()
+	whatsapp := whatsapp.NewService(fr, crmExt)
 	tw := twilio.NewService(sms, fr)
 	otp := otp.NewService(whatsapp, mail, sms, tw)
 	surveys := surveys.NewService(fr)
@@ -197,6 +197,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	).HandlerFunc(h.SendMarketingSMS())
 
 	// HubSpot CRM specific endpoints
+	// todo: clean this up in subsequent MR (@mathenge)
 	r.Path("/contact_lists").Methods(
 		http.MethodGet,
 	).HandlerFunc(h.GetContactLists())
@@ -206,6 +207,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/contact_list_contacts").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.GetContactsInAList())
+
 	r.Path("/sync_contacts").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.HubSpotFirestoreSync())
@@ -229,6 +231,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	r.Path("/facebook_data_deletion_callback").Methods(
 		http.MethodPost,
 	).HandlerFunc(h.DataDeletionRequestCallback())
+	r.Path("/inbound_whatsapp_messages").Methods(
+		http.MethodPost,
+	).HandlerFunc(h.ReceiveInboundMessages())
 
 	r.Path("/collect_email_address").Methods(
 		http.MethodPost,

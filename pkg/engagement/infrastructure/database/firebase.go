@@ -46,19 +46,15 @@ const (
 	// NPSResponseCollectionName firestore collection name where nps responses are stored
 	NPSResponseCollectionName = "nps_response"
 
-	twilioCallbackCollectionName = "twilio_callbacks"
-
+	twilioCallbackCollectionName      = "twilio_callbacks"
 	twilioVideoCallbackCollectionName = "twilio_video_callbacks"
-
-	notificationCollectionName = "notifications"
-
-	labelsDocID            = "item_labels"
-	unreadInboxCountsDocID = "unread_inbox_counts"
+	notificationCollectionName        = "notifications"
+	labelsDocID                       = "item_labels"
+	unreadInboxCountsDocID            = "unread_inbox_counts"
+	outgoingEmails                    = "outgoing_emails"
+	inboundWhatsappMessages           = "inbound_whatsapp_messages"
 
 	itemsLimit = 1000
-
-	// outgoingEmails represent all the sent emails
-	outgoingEmails = "outgoing_emails"
 )
 
 // NewFirebaseRepository initializes a Firebase repository
@@ -965,6 +961,10 @@ func (fr Repository) getMessagesCollection(
 func (fr Repository) getTwilioVideoCallbackCollectionName() string {
 	suffixed := firebasetools.SuffixCollection(twilioVideoCallbackCollectionName)
 	return suffixed
+}
+
+func (fr Repository) getInboundWAMessagesCollection() string {
+	return firebasetools.SuffixCollection(inboundWhatsappMessages)
 }
 
 func (fr Repository) elementExists(
@@ -1890,4 +1890,24 @@ func (fr Repository) SaveTwilioVideoCallbackStatus(
 	}
 
 	return nil
+}
+
+// SaveInboundWAMessages saves inbound Twilio whatsapp messages
+func (fr Repository) SaveInboundWAMessages(
+	ctx context.Context,
+	message dto.TwilioMessage,
+) (*dto.TwilioMessage, error) {
+	ctx, span := tracer.Start(ctx, "SaveInboundWAMessages")
+	defer span.End()
+
+	collection := fr.getInboundWAMessagesCollection()
+	_, _, err := fr.firestoreClient.Collection(collection).Add(
+		ctx,
+		message,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to save inbound Twilio whatsapp messages")
+	}
+
+	return &message, nil
 }
