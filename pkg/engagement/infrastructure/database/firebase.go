@@ -182,9 +182,8 @@ func (fr Repository) GetFeed(
 	// only add default content if...
 	// - the `persistent` filter is set to "BOTH"
 	// - all other filters are nil
-	noFilters := persistent == feedlib.BooleanFilterBoth && status == nil &&
+	noFilters := persistent == feedlib.BooleanFilterBoth &&
 		visibility == nil &&
-		expired == nil &&
 		filterParams == nil
 	noActions := len(actions) == 0
 	noNudges := len(nudges) == 0
