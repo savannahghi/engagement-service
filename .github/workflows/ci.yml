@@ -65,6 +65,11 @@ env:
   HUBSPOT_API_URL: ${{ secrets.HUBSPOT_API_URL }}
   SCHEMA_HOST: ${{ secrets.SCHEMA_HOST }}
 
+  # Schema Registry CLI command version
+  CLI_VERSION: v0.0.1
+  # Schema Registry URL
+  REGISTRY_URL: ${{ secrets.TEST_SCHEMA_REGISTRY_URL }}
+
 concurrency:
   group: lint-and-test
 
@@ -103,10 +108,12 @@ jobs:
           go get github.com/fzipp/gocyclo
           go get github.com/stretchr/testify/assert@v1.7.0
           go get github.com/ory/go-acc
+          go install github.com/savannahghi/bewellcli@$CLI_VERSION
 
       - name: Run lint and test
         run: |
           staticcheck  ./...
+          bewellcli service validate-schema --name engagement --version $GITHUB_SHA --url ${{ secrets.SERVICE_GRAPHQL_URL }}
           go fmt $(go list ./... | grep -v /vendor/)
           go vet $(go list ./... | grep -v /vendor/)
           golint -set_exit_status $(go list ./... | grep -v /vendor/)
