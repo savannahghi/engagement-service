@@ -3,8 +3,8 @@ package helpers_test
 import (
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	mock "github.com/savannahghi/engagement/pkg/engagement/application/common/helpers/mock"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
+	mock "github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers/mock"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/stretchr/testify/assert"
 )

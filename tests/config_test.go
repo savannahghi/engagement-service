@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/imroc/req"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"

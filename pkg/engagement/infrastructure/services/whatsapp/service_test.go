@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/stretchr/testify/assert"
 )
 

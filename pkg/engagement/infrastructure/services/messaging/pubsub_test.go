@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/messaging"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/messaging"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
 	"github.com/segmentio/ksuid"

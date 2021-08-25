@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
 	"github.com/stretchr/testify/assert"
 )
 

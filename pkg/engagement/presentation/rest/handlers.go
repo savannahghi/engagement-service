@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/otp"
 
 	"net/http"
 
@@ -24,17 +24,17 @@ import (
 
 	errorcode "github.com/savannahghi/errorcodeutil"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/interactor"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/exceptions"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/interactor"
 	hubspotHandlers "gitlab.slade360emr.com/go/commontools/crm/pkg/presentation/rest"
 )
 
 const (
 	// StaticDir is the directory that contains schemata, default images etc
-	StaticDir = "github.com/savannahghi/engagement:/static/"
+	StaticDir = "github.com/savannahghi/engagement-service:/static/"
 
 	mbBytes              = 1048576
 	serverTimeoutSeconds = 120

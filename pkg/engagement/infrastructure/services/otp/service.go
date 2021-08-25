@@ -11,12 +11,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp/totp"
 	"github.com/savannahghi/converterandformatter"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/sms"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/twilio"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/whatsapp"
 	"github.com/savannahghi/enumutils"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
@@ -25,7 +25,7 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/otp")
+var tracer = otel.Tracer("github.com/savannahghi/engagement-service/pkg/engagement/services/otp")
 
 const (
 	issuer       = "Savannah Informatics Limited"

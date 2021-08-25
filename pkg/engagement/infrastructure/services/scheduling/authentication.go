@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
 	"gitlab.slade360emr.com/go/apiclient"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"

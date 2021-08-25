@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/edi"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/edi"
 	"github.com/savannahghi/interserviceclient"
 )
 
