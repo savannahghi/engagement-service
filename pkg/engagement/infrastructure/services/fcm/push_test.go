@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/fcm"
 
 	"github.com/rs/xid"
 	"github.com/savannahghi/firebasetools"

@@ -4,8 +4,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/authorization"
-	"github.com/savannahghi/engagement/pkg/engagement/application/authorization/mock"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/authorization"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/authorization/mock"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/profileutils"
 	"github.com/stretchr/testify/assert"

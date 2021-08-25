@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
 )
 
 // FakeServiceTwilio defines the interaction with the twilio service

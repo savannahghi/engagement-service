@@ -11,8 +11,8 @@ import (
 	"firebase.google.com/go/auth"
 	"github.com/gorilla/mux"
 	"github.com/markbates/pkger"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/exceptions"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/exceptions"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/errorcodeutil"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
@@ -259,7 +259,7 @@ func getStringVar(r *http.Request, varName string) (string, error) {
 
 // SchemaHandler ...
 func SchemaHandler() (http.Handler, error) {
-	f, err := pkger.Open("github.com/savannahghi/engagement:/static/")
+	f, err := pkger.Open("github.com/savannahghi/engagement-service:/static/")
 	if err != nil {
 		return nil, fmt.Errorf("can't open pkger schema dir: %w", err)
 	}

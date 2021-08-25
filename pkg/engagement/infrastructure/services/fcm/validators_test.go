@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/fcm"
 	"github.com/savannahghi/firebasetools"
 )
 

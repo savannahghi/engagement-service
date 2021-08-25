@@ -7,14 +7,14 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/profileutils"
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/onboarding")
+var tracer = otel.Tracer("github.com/savannahghi/engagement-service/pkg/engagement/services/onboarding")
 
 // specific endpoint paths for ISC
 const (
