@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"firebase.google.com/go/auth"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/onboarding"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/interserviceclient"
 	"github.com/savannahghi/profileutils"

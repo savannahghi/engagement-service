@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/mailgun/mailgun-go/v4"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/database"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/database"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement-service/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/stretchr/testify/assert"
 )

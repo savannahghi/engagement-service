@@ -3,18 +3,18 @@
 package interactor
 
 import (
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/crm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/fcm"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/library"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/mail"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/onboarding"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/otp"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/surveys"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/twilio"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/uploads"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/whatsapp"
-	"github.com/savannahghi/engagement/pkg/engagement/usecases"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/crm"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/fcm"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/library"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/mail"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/onboarding"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/otp"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/sms"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/surveys"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/twilio"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/uploads"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/whatsapp"
+	"github.com/savannahghi/engagement-service/pkg/engagement/usecases"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/infrastructure/services/hubspot"
 )
 

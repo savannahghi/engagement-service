@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	mock "github.com/savannahghi/engagement/pkg/engagement/application/common/helpers/mock"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
+	mock "github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers/mock"
 	"github.com/savannahghi/feedlib"
 	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"

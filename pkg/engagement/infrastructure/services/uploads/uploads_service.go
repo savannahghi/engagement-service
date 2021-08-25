@@ -15,7 +15,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"cloud.google.com/go/storage"
 	"github.com/rs/xid"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
 	"github.com/savannahghi/serverutils"
@@ -23,7 +23,7 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/uploads")
+var tracer = otel.Tracer("github.com/savannahghi/engagement-service/pkg/engagement/services/uploads")
 
 // Constants used to save and retrieve upload content
 const (

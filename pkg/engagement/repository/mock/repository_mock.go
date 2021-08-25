@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/domain"
 	"github.com/savannahghi/feedlib"
 )
 

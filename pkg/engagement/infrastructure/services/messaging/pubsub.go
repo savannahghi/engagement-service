@@ -6,21 +6,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/pubsubtools"
 	"github.com/savannahghi/serverutils"
 	"gitlab.slade360emr.com/go/commontools/crm/pkg/domain"
 	"go.opentelemetry.io/otel"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
 
-	"github.com/savannahghi/engagement/pkg/engagement/application/common"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common"
 
 	"cloud.google.com/go/pubsub"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/messaging")
+var tracer = otel.Tracer("github.com/savannahghi/engagement-service/pkg/engagement/services/messaging")
 
 // messaging related constants
 const (

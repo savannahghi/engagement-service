@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 )

@@ -15,17 +15,17 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/kevinburke/twilio-go"
 	"github.com/kevinburke/twilio-go/token"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
-	"github.com/savannahghi/engagement/pkg/engagement/infrastructure/services/sms"
-	"github.com/savannahghi/engagement/pkg/engagement/repository"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/dto"
+	"github.com/savannahghi/engagement-service/pkg/engagement/application/common/helpers"
+	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure/services/sms"
+	"github.com/savannahghi/engagement-service/pkg/engagement/repository"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 	"go.opentelemetry.io/otel"
 	"moul.io/http2curl"
 )
 
-var tracer = otel.Tracer("github.com/savannahghi/engagement/pkg/engagement/services/twilio")
+var tracer = otel.Tracer("github.com/savannahghi/engagement-service/pkg/engagement/services/twilio")
 
 /* #nosec */
 // DefaultTwilioRegion is set to global low latency auto-selection
