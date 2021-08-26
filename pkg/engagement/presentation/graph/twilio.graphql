@@ -1,7 +1,0 @@
-extend type Query {
-  """
-  twilioAccessToken requests for the creation of a Twilio room and the
-  issuance of an access token that is linked to that room.
-  """
-  twilioAccessToken: AccessToken!
-}
