@@ -1,0 +1,98 @@
+extend type Mutation {
+  # Your phone number verification code is {{1}}
+  phoneNumberVerificationCode(
+    to: String!
+    code: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}}, your {{2}} card has been activated. {{3}}
+  wellnessCardActivationDependant(
+    to: String!
+    memberName: String!
+    cardName: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}}, your {{2}} card has been activated. Cards for minors under {{3}} years have also been activated. {{4}}
+  wellnessCardActivationPrincipal(
+    to: String!
+    memberName: String!
+    cardName: String!
+    minorAgeThreshold: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Hello your {{1}} bill for {{2}} of {{3}} is ready. Make payment via {{4}} to continue enjoying the platform. {{5}}
+  billNotification(
+    to: String!
+    productName: String!
+    billingPeriod: String!
+    billAmount: String!
+    paymentInstruction: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Slade 360 virtual Wellness Cards for {{1}} have been created. You can access the virtual cards at {{2}}. {{3}}
+  virtualCards(
+    to: String!
+    wellnessCardFamily: String!
+    virtualCardLink: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}} {{2}} visit has been started at {{3}} on {{4}}.  Your balance is {{5}}. {{6}}
+  visitStart(
+    to: String!
+    memberName: String!
+    benefitName: String!
+    locationName: String!
+    startTime: String!
+    balance: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # A claim of {{1}} {{2}} was lodged by {{3}} for {{4}} visit on {{5}}. {{6}}
+  claimNotification(
+    to: String!
+    claimReference: String!
+    claimTypeParenthesized: String!
+    provider: String!
+    visitType: String!
+    claimTime: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Preauth approval of {{1}} {{2}} for {{3}} benefit at {{4}} for {{5}} has been granted. Contact your care manager at {{6}} for any queries. {{7}}
+  preauthApproval(
+    to: String!
+    currency: String!
+    amount: String!
+    benefit: String!
+    provider: String!
+    member: String!
+    careContact: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Preauth request of {{1}} {{2}} for {{3}} benefit was lodged by {{4}} on {{5}} for the visit by {{6}}. Contact your care manager at {{7}} for any queries. {{8}}
+  preauthRequest(
+    to: String!
+    currency: String!
+    amount: String!
+    benefit: String!
+    provider: String!
+    requestTime: String!
+    member: String!
+    careContact: String!
+    marketingMessage: String!
+  ): Boolean!
+
+  # Dear {{1}}, your SladeID OTP is {{2}}. {{3}}
+  sladeOTP(
+    to: String!
+    name: String!
+    otp: String!
+    marketingMessage: String!
+  ): Boolean!
+}

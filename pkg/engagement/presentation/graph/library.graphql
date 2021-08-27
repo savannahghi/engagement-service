@@ -1,0 +1,44 @@
+scalar Date
+
+type GhostCMSPost {
+  id: ID!
+  slug: String!
+  uuid: String!
+  title: String!
+  html: String!
+  excerpt: String!
+  url: String!
+  featureImage: String!
+  readingTime: Int!
+  tags: [GhostCMSTag!]!
+  createdAt: Time!
+  publishedAt: Time!
+  updatedAt: Time!
+  commentID: String!
+}
+
+type GhostCMSTag {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  visibility: String!
+  url: String!
+}
+
+type GhostCMSAuthor {
+  id: ID!
+  name: String!
+  slug: String!
+  url: String!
+  profileImage: String
+  website: String
+  location: String
+  facebook: String
+  twitter: String
+}
+
+type Query {
+  getLibraryContent: [GhostCMSPost!]!
+  getFaqsContent(flavour: Flavour!): [GhostCMSPost!]!
+}

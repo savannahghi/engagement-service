@@ -1,0 +1,31 @@
+
+# this input is used to CREATE a new upload
+input UploadInput {
+  title: String!
+  contentType: String!
+  language: String!
+  base64data: String!
+  filename: String!
+}
+
+# this input is used to SERIALIZE back an already created upload
+type Upload {
+  id: ID!
+  url: String!
+  size: Int!
+  hash: String!
+  creation: Time!
+
+  title: String!
+  contentType: String!
+  language: String!
+  base64data: String!
+}
+
+extend type Query {
+  findUploadByID(id: String!): Upload!
+}
+
+extend type Mutation {
+  upload(input: UploadInput!): Upload!
+}
