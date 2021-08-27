@@ -1,0 +1,4 @@
+extend type Mutation {
+  simpleEmail(subject: String!, text: String!, to: [String!]!): String!
+  testFeature: Boolean!
+}

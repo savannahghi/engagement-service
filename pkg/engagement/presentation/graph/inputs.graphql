@@ -1,0 +1,23 @@
+
+input FirebaseSimpleNotificationInput {
+    title: String!
+    body: String!
+    imageURL: String!
+    data: Map
+}
+
+input FirebaseAndroidConfigInput {
+    priority: String!
+    collapseKey: String
+    restrictedPackageName: String
+    data: Map
+}
+
+input FirebaseWebpushConfigInput {
+    headers: Map
+    data: Map
+}
+
+input FirebaseAPNSConfigInput {
+    headers: Map
+}
