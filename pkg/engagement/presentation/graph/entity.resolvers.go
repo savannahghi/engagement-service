@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	generated1 "github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
 	"github.com/savannahghi/feedlib"
@@ -53,7 +53,7 @@ func (r *entityResolver) FindSavedNotificationByID(ctx context.Context, id strin
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Entity returns generated1.EntityResolver implementation.
-func (r *Resolver) Entity() generated1.EntityResolver { return &entityResolver{r} }
+// Entity returns generated.EntityResolver implementation.
+func (r *Resolver) Entity() generated.EntityResolver { return &entityResolver{r} }
 
 type entityResolver struct{ *Resolver }

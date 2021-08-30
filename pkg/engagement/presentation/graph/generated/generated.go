@@ -429,6 +429,7 @@ type EntityResolver interface {
 	FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error)
 }
 type MutationResolver interface {
+	TestFeature(ctx context.Context) (bool, error)
 	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error)
 	SendFCMByPhoneOrEmail(ctx context.Context, phoneNumber *string, email *string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error)
 	ResolveFeedItem(ctx context.Context, flavour feedlib.Flavour, itemID string) (*feedlib.Item, error)
@@ -443,7 +444,6 @@ type MutationResolver interface {
 	DeleteMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, messageID string) (bool, error)
 	ProcessEvent(ctx context.Context, flavour feedlib.Flavour, event feedlib.Event) (bool, error)
 	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
-	TestFeature(ctx context.Context) (bool, error)
 	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
 	Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error)
@@ -2594,7 +2594,21 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "pkg/engagement/presentation/graph/calendar.graphql", Input: `
+	{Name: "pkg/engagement/presentation/graph/mailgun.graphql", Input: `extend type Mutation {
+  testFeature: Boolean!
+}
+`, BuiltIn: false},
+	{Name: "federation/directives.graphql", Input: `
+scalar _Any
+scalar _FieldSet
+
+directive @external on FIELD_DEFINITION
+directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
+directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
+directive @extends on OBJECT
+`, BuiltIn: true},
+	{Name: "opensource.graphql", Input: `
 """
 EventAttachment is used to serialize Google Calendar event attachments.
 """
@@ -2677,8 +2691,7 @@ type CalendarEvent {
     updated: String!
     visibility: String!
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/fcm.graphql", Input: `extend type Mutation {
+extend type Mutation {
     sendNotification(
         registrationTokens: [String!]!,
         data: Map!,
@@ -2706,8 +2719,7 @@ extend type Query {
         limit: Int!
     ): [SavedNotification!]!
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/feed.graphql", Input: `scalar Time
+scalar Time
 scalar Map
 
 enum BooleanFilter {
@@ -2948,8 +2960,7 @@ extend type Mutation {
   ): Boolean!
   processEvent(flavour: Flavour!, event: EventInput!): Boolean!
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/inputs.graphql", Input: `
+
 input FirebaseSimpleNotificationInput {
     title: String!
     body: String!
@@ -2971,8 +2982,7 @@ input FirebaseWebpushConfigInput {
 
 input FirebaseAPNSConfigInput {
     headers: Map
-}`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/library.graphql", Input: `scalar Date
+}scalar Date
 
 type GhostCMSPost {
   id: ID!
@@ -3016,13 +3026,9 @@ type Query {
   getLibraryContent: [GhostCMSPost!]!
   getFaqsContent(flavour: Flavour!): [GhostCMSPost!]!
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/mailgun.graphql", Input: `extend type Mutation {
+extend type Mutation {
   simpleEmail(subject: String!, text: String!, to: [String!]!): String!
-  testFeature: Boolean!
-}
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/otp.graphql", Input: `type Dummy @key(fields: "id") {
+}type Dummy @key(fields: "id") {
   id: ID
 }
 
@@ -3039,8 +3045,7 @@ extend type Mutation {
   verifyOTP(msisdn: String!, otp: String!): Boolean!
   verifyEmailOTP(email: String!, otp: String!): Boolean!
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/sms.graphql", Input: `extend type Mutation {
+extend type Mutation {
   send(to: String!, message: String!): SendMessageResponse!
 
   sendToMany(message: String!, to: [String!]!): SendMessageResponse!
@@ -3065,8 +3070,7 @@ enum SenderID {
   SLADE360
   BEWELL
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/surveys.graphql", Input: `input FeedbackInput {
+input FeedbackInput {
     question: String!
     answer: String!
 }
@@ -3102,16 +3106,14 @@ extend type Mutation {
 
 extend type Query {
     listNPSResponse:[NPSResponse!]!
-}`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/twilio.graphql", Input: `extend type Query {
+}extend type Query {
   """
   twilioAccessToken requests for the creation of a Twilio room and the
   issuance of an access token that is linked to that room.
   """
   twilioAccessToken: AccessToken!
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/types.graphql", Input: `"""
+"""
 AccessToken is used to return the credentials that are needed in order
 to access a Twilio video room.
 """
@@ -3160,8 +3162,7 @@ type SavedNotification @key(fields: "id") {
   webpushConfig: FirebaseWebpushConfig
   apnsConfig: FirebaseAPNSConfig
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/uploads.graphql", Input: `
+
 # this input is used to CREATE a new upload
 input UploadInput {
   title: String!
@@ -3192,8 +3193,7 @@ extend type Query {
 extend type Mutation {
   upload(input: UploadInput!): Upload!
 }
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/whatsapp.graphql", Input: `extend type Mutation {
+extend type Mutation {
   # Your phone number verification code is {{1}}
   phoneNumberVerificationCode(
     to: String!
@@ -3292,16 +3292,6 @@ extend type Mutation {
   ): Boolean!
 }
 `, BuiltIn: false},
-	{Name: "federation/directives.graphql", Input: `
-scalar _Any
-scalar _FieldSet
-
-directive @external on FIELD_DEFINITION
-directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
-directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
-directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
-directive @extends on OBJECT
-`, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
 union _Entity = AccessToken | Dummy | Feed | SavedNotification
@@ -10445,6 +10435,41 @@ func (ec *executionContext) _Msg_timestamp(ctx context.Context, field graphql.Co
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_testFeature(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().TestFeature(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_sendNotification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11031,41 +11056,6 @@ func (ec *executionContext) _Mutation_simpleEmail(ctx context.Context, field gra
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_testFeature(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TestFeature(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_verifyOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -17069,6 +17059,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "testFeature":
+			out.Values[i] = ec._Mutation_testFeature(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "sendNotification":
 			out.Values[i] = ec._Mutation_sendNotification(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -17136,11 +17131,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "simpleEmail":
 			out.Values[i] = ec._Mutation_simpleEmail(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "testFeature":
-			out.Values[i] = ec._Mutation_testFeature(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
