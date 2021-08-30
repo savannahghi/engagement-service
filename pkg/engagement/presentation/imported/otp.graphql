@@ -1,7 +1,3 @@
-type Dummy @key(fields: "id") {
-  id: ID
-}
-
 extend type Query {
   # the msisdn should be a fully qualified phone number
   # e.g +254723002959
