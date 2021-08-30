@@ -148,9 +148,8 @@ func TestService_PhoneNumberVerificationCode(t *testing.T) {
 				code:             "345",
 				marketingMessage: "This is a test",
 			},
-			want: false,
-			// TODO - investigate why an error is returned
-			wantErr: true,
+			want:    true,
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
