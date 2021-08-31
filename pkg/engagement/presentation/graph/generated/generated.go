@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
+	"github.com/savannahghi/engagement-service/pkg/engagement/domain/model"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/helpers"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
@@ -44,7 +45,6 @@ type Config struct {
 }
 
 type ResolverRoot interface {
-	Dummy() DummyResolver
 	Entity() EntityResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -121,10 +121,7 @@ type ComplexityRoot struct {
 	}
 
 	Entity struct {
-		FindAccessTokenByJwt      func(childComplexity int, jwt string) int
-		FindDummyByID             func(childComplexity int, id *string) int
-		FindFeedByID              func(childComplexity int, id string) int
-		FindSavedNotificationByID func(childComplexity int, id string) int
+		FindDummyByID func(childComplexity int, id string) int
 	}
 
 	Event struct {
@@ -306,7 +303,6 @@ type ComplexityRoot struct {
 		ShowNudge                       func(childComplexity int, flavour feedlib.Flavour, nudgeID string) int
 		SimpleEmail                     func(childComplexity int, subject string, text string, to []string) int
 		SladeOtp                        func(childComplexity int, to string, name string, otp string, marketingMessage string) int
-		TestFeature                     func(childComplexity int) int
 		UnpinFeedItem                   func(childComplexity int, flavour feedlib.Flavour, itemID string) int
 		UnresolveFeedItem               func(childComplexity int, flavour feedlib.Flavour, itemID string) int
 		Upload                          func(childComplexity int, input profileutils.UploadInput) int
@@ -419,14 +415,8 @@ type ComplexityRoot struct {
 	}
 }
 
-type DummyResolver interface {
-	ID(ctx context.Context, obj *dto.Dummy) (*string, error)
-}
 type EntityResolver interface {
-	FindAccessTokenByJwt(ctx context.Context, jwt string) (*dto.AccessToken, error)
-	FindDummyByID(ctx context.Context, id *string) (*dto.Dummy, error)
-	FindFeedByID(ctx context.Context, id string) (*domain.Feed, error)
-	FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error)
+	FindDummyByID(ctx context.Context, id string) (*model.Dummy, error)
 }
 type MutationResolver interface {
 	SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error)
@@ -443,7 +433,6 @@ type MutationResolver interface {
 	DeleteMessage(ctx context.Context, flavour feedlib.Flavour, itemID string, messageID string) (bool, error)
 	ProcessEvent(ctx context.Context, flavour feedlib.Flavour, event feedlib.Event) (bool, error)
 	SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error)
-	TestFeature(ctx context.Context) (bool, error)
 	VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error)
 	VerifyEmailOtp(ctx context.Context, email string, otp string) (bool, error)
 	Send(ctx context.Context, to string, message string) (*dto.SendMessageResponse, error)
@@ -849,18 +838,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Dummy.ID(childComplexity), true
 
-	case "Entity.findAccessTokenByJwt":
-		if e.complexity.Entity.FindAccessTokenByJwt == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findAccessTokenByJwt_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindAccessTokenByJwt(childComplexity, args["jwt"].(string)), true
-
 	case "Entity.findDummyByID":
 		if e.complexity.Entity.FindDummyByID == nil {
 			break
@@ -871,31 +848,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Entity.FindDummyByID(childComplexity, args["id"].(*string)), true
-
-	case "Entity.findFeedByID":
-		if e.complexity.Entity.FindFeedByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findFeedByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindFeedByID(childComplexity, args["id"].(string)), true
-
-	case "Entity.findSavedNotificationByID":
-		if e.complexity.Entity.FindSavedNotificationByID == nil {
-			break
-		}
-
-		args, err := ec.field_Entity_findSavedNotificationByID_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Entity.FindSavedNotificationByID(childComplexity, args["id"].(string)), true
+		return e.complexity.Entity.FindDummyByID(childComplexity, args["id"].(string)), true
 
 	case "Event.context":
 		if e.complexity.Event.Context == nil {
@@ -1891,13 +1844,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SladeOtp(childComplexity, args["to"].(string), args["name"].(string), args["otp"].(string), args["marketingMessage"].(string)), true
 
-	case "Mutation.testFeature":
-		if e.complexity.Mutation.TestFeature == nil {
-			break
-		}
-
-		return e.complexity.Mutation.TestFeature(childComplexity), true
-
 	case "Mutation.unpinFeedItem":
 		if e.complexity.Mutation.UnpinFeedItem == nil {
 			break
@@ -2594,6 +2540,10 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "pkg/engagement/presentation/graph/types.graphql", Input: `type Dummy @key(fields: "id") {
+  id: ID!
+}
+`, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/calendar.graphql", Input: `
 """
 EventAttachment is used to serialize Google Calendar event attachments.
@@ -2774,7 +2724,7 @@ enum TextType {
 }
 
 # Feed is the top level access point for a user's feed.
-type Feed @key(fields: "id") {
+type Feed {
   id: String!
   sequenceNumber: Int!
   uid: String!
@@ -3019,14 +2969,8 @@ type Query {
 `, BuiltIn: false},
 	{Name: "pkg/engagement/presentation/graph/mailgun.graphql", Input: `extend type Mutation {
   simpleEmail(subject: String!, text: String!, to: [String!]!): String!
-  testFeature: Boolean!
-}
-`, BuiltIn: false},
-	{Name: "pkg/engagement/presentation/graph/otp.graphql", Input: `type Dummy @key(fields: "id") {
-  id: ID
-}
-
-extend type Query {
+}`, BuiltIn: false},
+	{Name: "pkg/engagement/presentation/graph/otp.graphql", Input: `extend type Query {
   # the msisdn should be a fully qualified phone number
   # e.g +254723002959
   generateOTP(msisdn: String!, appId: String): String!
@@ -3115,7 +3059,7 @@ extend type Query {
 AccessToken is used to return the credentials that are needed in order
 to access a Twilio video room.
 """
-type AccessToken @key(fields: "jwt") @key(fields: "uniqueName") {
+type AccessToken {
   jwt: String!
   uniqueName: String!
   sid: String!
@@ -3149,7 +3093,7 @@ type FirebaseAPNSConfig {
   headers: Map
 }
 
-type SavedNotification @key(fields: "id") {
+type SavedNotification {
   id: String!
   registrationToken: String!
   messageID: String!
@@ -3304,14 +3248,11 @@ directive @extends on OBJECT
 `, BuiltIn: true},
 	{Name: "federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = AccessToken | Dummy | Feed | SavedNotification
+union _Entity = Dummy
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
-		findAccessTokenByJwt(jwt: String!,): AccessToken!
-	findDummyByID(id: ID,): Dummy!
-	findFeedByID(id: String!,): Feed!
-	findSavedNotificationByID(id: String!,): SavedNotification!
+		findDummyByID(id: ID!,): Dummy!
 
 }
 
@@ -3331,58 +3272,13 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Entity_findAccessTokenByJwt_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["jwt"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("jwt"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["jwt"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Entity_findDummyByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalOID2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findFeedByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
 	var arg0 string
 	if tmp, ok := rawArgs["id"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Entity_findSavedNotificationByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -6601,7 +6497,7 @@ func (ec *executionContext) _Context_timestamp(ctx context.Context, field graphq
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.CollectedField, obj *dto.Dummy) (ret graphql.Marshaler) {
+func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.CollectedField, obj *model.Dummy) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6612,53 +6508,14 @@ func (ec *executionContext) _Dummy_id(ctx context.Context, field graphql.Collect
 		Object:     "Dummy",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Dummy().ID(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findAccessTokenByJwt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findAccessTokenByJwt_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindAccessTokenByJwt(rctx, args["jwt"].(string))
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6670,9 +6527,9 @@ func (ec *executionContext) _Entity_findAccessTokenByJwt(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*dto.AccessToken)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNAccessToken2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐAccessToken(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6700,7 +6557,7 @@ func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindDummyByID(rctx, args["id"].(*string))
+		return ec.resolvers.Entity().FindDummyByID(rctx, args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6712,93 +6569,9 @@ func (ec *executionContext) _Entity_findDummyByID(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*dto.Dummy)
+	res := resTmp.(*model.Dummy)
 	fc.Result = res
-	return ec.marshalNDummy2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findFeedByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findFeedByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindFeedByID(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*domain.Feed)
-	fc.Result = res
-	return ec.marshalNFeed2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋdomainᚐFeed(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Entity_findSavedNotificationByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Entity_findSavedNotificationByID_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindSavedNotificationByID(rctx, args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*dto.SavedNotification)
-	fc.Result = res
-	return ec.marshalNSavedNotification2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx, field.Selections, res)
+	return ec.marshalNDummy2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚑserviceᚋpkgᚋengagementᚋdomainᚋmodelᚐDummy(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Event) (ret graphql.Marshaler) {
@@ -11031,41 +10804,6 @@ func (ec *executionContext) _Mutation_simpleEmail(ctx context.Context, field gra
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_testFeature(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().TestFeature(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_verifyOTP(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -15744,34 +15482,13 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case dto.AccessToken:
-		return ec._AccessToken(ctx, sel, &obj)
-	case *dto.AccessToken:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._AccessToken(ctx, sel, obj)
-	case dto.Dummy:
+	case model.Dummy:
 		return ec._Dummy(ctx, sel, &obj)
-	case *dto.Dummy:
+	case *model.Dummy:
 		if obj == nil {
 			return graphql.Null
 		}
 		return ec._Dummy(ctx, sel, obj)
-	case domain.Feed:
-		return ec._Feed(ctx, sel, &obj)
-	case *domain.Feed:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Feed(ctx, sel, obj)
-	case dto.SavedNotification:
-		return ec._SavedNotification(ctx, sel, &obj)
-	case *dto.SavedNotification:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._SavedNotification(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -15781,7 +15498,7 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 
 // region    **************************** object.gotpl ****************************
 
-var accessTokenImplementors = []string{"AccessToken", "_Entity"}
+var accessTokenImplementors = []string{"AccessToken"}
 
 func (ec *executionContext) _AccessToken(ctx context.Context, sel ast.SelectionSet, obj *dto.AccessToken) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, accessTokenImplementors)
@@ -16103,7 +15820,7 @@ func (ec *executionContext) _Context(ctx context.Context, sel ast.SelectionSet, 
 
 var dummyImplementors = []string{"Dummy", "_Entity"}
 
-func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, obj *dto.Dummy) graphql.Marshaler {
+func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, obj *model.Dummy) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, dummyImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -16113,16 +15830,10 @@ func (ec *executionContext) _Dummy(ctx context.Context, sel ast.SelectionSet, ob
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Dummy")
 		case "id":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Dummy_id(ctx, field, obj)
-				return res
-			})
+			out.Values[i] = ec._Dummy_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -16149,20 +15860,6 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
-		case "findAccessTokenByJwt":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findAccessTokenByJwt(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
 		case "findDummyByID":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -16172,34 +15869,6 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 					}
 				}()
 				res = ec._Entity_findDummyByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findFeedByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findFeedByID(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "findSavedNotificationByID":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findSavedNotificationByID(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -16408,7 +16077,7 @@ func (ec *executionContext) _EventDateTime(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var feedImplementors = []string{"Feed", "_Entity"}
+var feedImplementors = []string{"Feed"}
 
 func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj *domain.Feed) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, feedImplementors)
@@ -17139,11 +16808,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "testFeature":
-			out.Values[i] = ec._Mutation_testFeature(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "verifyOTP":
 			out.Values[i] = ec._Mutation_verifyOTP(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -17737,7 +17401,7 @@ func (ec *executionContext) _SMS(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
-var savedNotificationImplementors = []string{"SavedNotification", "_Entity"}
+var savedNotificationImplementors = []string{"SavedNotification"}
 
 func (ec *executionContext) _SavedNotification(ctx context.Context, sel ast.SelectionSet, obj *dto.SavedNotification) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, savedNotificationImplementors)
@@ -18268,11 +17932,11 @@ func (ec *executionContext) unmarshalNContextInput2githubᚗcomᚋsavannahghiᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDummy2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx context.Context, sel ast.SelectionSet, v dto.Dummy) graphql.Marshaler {
+func (ec *executionContext) marshalNDummy2githubᚗcomᚋsavannahghiᚋengagementᚑserviceᚋpkgᚋengagementᚋdomainᚋmodelᚐDummy(ctx context.Context, sel ast.SelectionSet, v model.Dummy) graphql.Marshaler {
 	return ec._Dummy(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDummy2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐDummy(ctx context.Context, sel ast.SelectionSet, v *dto.Dummy) graphql.Marshaler {
+func (ec *executionContext) marshalNDummy2ᚖgithubᚗcomᚋsavannahghiᚋengagementᚑserviceᚋpkgᚋengagementᚋdomainᚋmodelᚐDummy(ctx context.Context, sel ast.SelectionSet, v *model.Dummy) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -18815,10 +18479,6 @@ func (ec *executionContext) marshalNSMS2ᚖgithubᚗcomᚋsavannahghiᚋengageme
 		return graphql.Null
 	}
 	return ec._SMS(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNSavedNotification2githubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotification(ctx context.Context, sel ast.SelectionSet, v dto.SavedNotification) graphql.Marshaler {
-	return ec._SavedNotification(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNSavedNotification2ᚕᚖgithubᚗcomᚋsavannahghiᚋengagementᚋpkgᚋengagementᚋapplicationᚋcommonᚋdtoᚐSavedNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*dto.SavedNotification) graphql.Marshaler {
@@ -19651,21 +19311,6 @@ func (ec *executionContext) unmarshalOFirebaseWebpushConfigInput2ᚖgithubᚗcom
 	}
 	res, err := ec.unmarshalInputFirebaseWebpushConfigInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalID(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return graphql.MarshalID(*v)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

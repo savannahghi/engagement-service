@@ -21,7 +21,7 @@ require (
 	github.com/kevinburke/go-types v0.0.0-20210723172823-2deba1f80ba7 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/savannahghi/converterandformatter v0.0.11
-	github.com/savannahghi/engagement v0.0.4
+	github.com/savannahghi/engagement v0.0.8
 	github.com/savannahghi/enumutils v0.0.3
 	github.com/savannahghi/errorcodeutil v0.0.3
 	github.com/savannahghi/feedlib v0.0.4

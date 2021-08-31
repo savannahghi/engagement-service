@@ -5636,7 +5636,7 @@ func TestResolveDefaultNudge(t *testing.T) {
 		ctx,
 		uid,
 		fl,
-		fr,
+		*fr,
 	)
 
 	if err != nil {

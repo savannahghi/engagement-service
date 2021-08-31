@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	generated1 "github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/engagement/pkg/engagement/domain"
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/serverutils"
@@ -40,7 +40,7 @@ func (r *queryResolver) GetFaqsContent(ctx context.Context, flavour feedlib.Flav
 	return faqs, nil
 }
 
-// Query returns generated1.QueryResolver implementation.
-func (r *Resolver) Query() generated1.QueryResolver { return &queryResolver{r} }
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }

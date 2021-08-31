@@ -8,14 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	generated1 "github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/serverutils"
 )
-
-func (r *dummyResolver) ID(ctx context.Context, obj *dto.Dummy) (*string, error) {
-	return nil, nil
-}
 
 func (r *mutationResolver) VerifyOtp(ctx context.Context, msisdn string, otp string) (bool, error) {
 	startTime := time.Now()
@@ -139,8 +133,3 @@ func (r *queryResolver) EmailVerificationOtp(ctx context.Context, email string) 
 
 	return otp, nil
 }
-
-// Dummy returns generated1.DummyResolver implementation.
-func (r *Resolver) Dummy() generated1.DummyResolver { return &dummyResolver{r} }
-
-type dummyResolver struct{ *Resolver }

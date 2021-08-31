@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/savannahghi/converterandformatter"
-	generated1 "github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
@@ -100,7 +100,7 @@ func (r *queryResolver) Notifications(ctx context.Context, registrationToken str
 	return notification, nil
 }
 
-// Mutation returns generated1.MutationResolver implementation.
-func (r *Resolver) Mutation() generated1.MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }

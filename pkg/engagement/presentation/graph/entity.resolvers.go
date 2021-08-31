@@ -5,55 +5,16 @@ package graph
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
-	generated1 "github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
-	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
-	"github.com/savannahghi/engagement/pkg/engagement/domain"
-	"github.com/savannahghi/feedlib"
+	"github.com/savannahghi/engagement-service/pkg/engagement/domain/model"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 )
 
-func (r *entityResolver) FindAccessTokenByJwt(ctx context.Context, jwt string) (*dto.AccessToken, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *entityResolver) FindDummyByID(ctx context.Context, id string) (*model.Dummy, error) {
+	return nil, nil
 }
 
-func (r *entityResolver) FindDummyByID(ctx context.Context, id *string) (*dto.Dummy, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *entityResolver) FindFeedByID(ctx context.Context, id string) (*domain.Feed, error) {
-	r.checkPreconditions()
-
-	components := strings.Split(id, "|")
-	if len(components) != 2 {
-		return nil, fmt.Errorf(
-			"expected `id` to be a string with exactly two parts separated by a | i.e the uid and flavour as `uid|flavour`")
-	}
-
-	uid := components[0]
-	flavour := feedlib.Flavour(components[1])
-	if !flavour.IsValid() {
-		return nil, fmt.Errorf("%s is not a valid flavour", flavour)
-	}
-	anonymous := false
-	return r.usecases.GetFeed(ctx,
-		&uid,
-		&anonymous,
-		flavour,
-		feedlib.BooleanFilterBoth,
-		nil,
-		nil,
-		nil,
-		nil,
-	)
-}
-
-func (r *entityResolver) FindSavedNotificationByID(ctx context.Context, id string) (*dto.SavedNotification, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-// Entity returns generated1.EntityResolver implementation.
-func (r *Resolver) Entity() generated1.EntityResolver { return &entityResolver{r} }
+// Entity returns generated.EntityResolver implementation.
+func (r *Resolver) Entity() generated.EntityResolver { return &entityResolver{r} }
 
 type entityResolver struct{ *Resolver }

@@ -30,7 +30,3 @@ func (r *mutationResolver) SimpleEmail(ctx context.Context, subject string, text
 
 	return status, nil
 }
-
-func (r *mutationResolver) TestFeature(ctx context.Context) (bool, error) {
-	return r.usecases.TestFeature(ctx)
-}
