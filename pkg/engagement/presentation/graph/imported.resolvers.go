@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/savannahghi/converterandformatter"
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/engagement/pkg/engagement/application/common/dto"
@@ -20,7 +21,8 @@ import (
 )
 
 func (r *dummyResolver) ID(ctx context.Context, obj *dto.Dummy) (*string, error) {
-	panic(fmt.Errorf("not implemented"))
+	id := uuid.New().String()
+	return &id, nil
 }
 
 func (r *mutationResolver) SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error) {

@@ -2608,7 +2608,7 @@ directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
 directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
 directive @extends on OBJECT
 `, BuiltIn: true},
-	{Name: "opensource.graphql", Input: `
+	{Name: "imported.graphql", Input: `
 """
 EventAttachment is used to serialize Google Calendar event attachments.
 """
