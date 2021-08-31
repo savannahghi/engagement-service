@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/99designs/gqlgen/plugin"
 
@@ -22,7 +24,7 @@ func main() {
 	engagementSources := engagementLib.Sources()
 
 	err = api.Generate(cfg,
-		api.AddPlugin(NewImportPlugin(engagementSources, nil)),
+		api.AddPlugin(NewImportPlugin(engagementSources, nil, true, "pkg/engagement/presentation")),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -31,11 +33,24 @@ func main() {
 }
 
 // NewImportPlugin initializes a new import plugin
-func NewImportPlugin(earlySources, lateSources []*ast.Source) plugin.Plugin {
-	return &ImportPlugin{
+//
+// early sources are the source files to add before loading the service schema
+// late sources are the source files to add after loading the service schema
+// generate is a flag to determine whether to generate schema files or not
+// path represents the path to store the imported schema files the folder name is `exported`
+func NewImportPlugin(earlySources, lateSources []*ast.Source, generate bool, path string) plugin.Plugin {
+
+	p := &ImportPlugin{
 		earlySources: earlySources,
 		lateSources:  lateSources,
+		generate:     generate,
 	}
+
+	if generate {
+		p.directory = p.Directory(path)
+	}
+
+	return p
 }
 
 // ImportPlugin is a gqlgen plugin that hooks into the gqlgen code generation lifecycle
@@ -43,6 +58,8 @@ func NewImportPlugin(earlySources, lateSources []*ast.Source) plugin.Plugin {
 type ImportPlugin struct {
 	// the additional sources i.e "graphql files"
 	earlySources, lateSources []*ast.Source
+	directory                 string
+	generate                  bool
 }
 
 // Name is the name of the plugin
@@ -77,6 +94,11 @@ func (m *ImportPlugin) InjectSourceEarly() *ast.Source {
 		}
 		// Contents of the source file
 		o.Input += source.Input
+
+		if m.generate {
+			m.GenerateSchemaFile(m.directory, source)
+		}
+
 	}
 
 	return &o
@@ -104,7 +126,54 @@ func (m *ImportPlugin) InjectSourceLate(schema *ast.Schema) *ast.Source {
 		}
 		// Contents of the source file
 		o.Input += source.Input
+
+		if m.generate {
+			m.GenerateSchemaFile(m.directory, source)
+		}
 	}
 
 	return &o
+}
+
+func (m *ImportPlugin) Directory(path string) string {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+
+	dir = filepath.Join(dir, path, "imported")
+
+	// remove the old generated files if they exist
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		err = os.RemoveAll(dir)
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
+	// create a new generated folder
+	err = os.Mkdir(dir, 0755)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return dir
+}
+
+func (m *ImportPlugin) GenerateSchemaFile(dir string, source *ast.Source) {
+
+	fileName := filepath.Base(source.Name)
+	file := filepath.Join(dir, fileName)
+
+	f, err := os.Create(file)
+	if err != nil {
+		log.Println(err)
+	}
+
+	defer f.Close()
+
+	_, err = f.WriteString(source.Input)
+	if err != nil {
+		log.Println(err)
+	}
 }

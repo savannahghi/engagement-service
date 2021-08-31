@@ -1,0 +1,83 @@
+
+"""
+EventAttachment is used to serialize Google Calendar event attachments.
+"""
+type EventAttachment {
+    fileID: String!
+    fileURL: String!
+    iconLink: String!
+    mimeType: String!
+    title: String!
+}
+
+
+"""
+EventAttendee is used to serialize Google Calendar event attendees.
+"""
+type EventAttendee {
+    id: String!
+    additionalGuests: Int!
+    comment: String!
+    displayName: String!
+    email: String!
+    optional: Boolean!
+    organizer: Boolean!
+    resource: Boolean!
+    responseStatus: String!
+    self: Boolean!
+}
+
+"""
+EventDateTime is used to serialize Google Calendar event dates and times.
+"""
+type EventDateTime {
+    date: String!
+    dateTime: String!
+    timeZone: String!
+}
+
+
+"""
+CalendarEvent is used to serialize Google Calendar events.
+
+Some fields have been omitted:
+
+- extended properties
+- gadget
+- organizer
+- reminders
+- event source
+- conference data
+"""
+type CalendarEvent {
+    id: ID!
+    anyoneCanAddSelf: Boolean!
+    attachments: [EventAttachment!]!
+    attendees: [EventAttendee!]!
+    attendeesOmitted: Boolean!
+    colorId: String!
+    description: String!
+    endTimeUnspecified: Boolean!
+    etag: String!
+    guestsCanInviteOthers: Boolean
+    guestsCanModify: Boolean!
+    guestsCanSeeOtherGuests: Boolean
+    hangoutLink: String!
+    htmlLink: String!
+    iCalUID: String!
+    kind: String!
+    location: String!
+    locked: Boolean!
+    originalStartTime: EventDateTime
+    privateCopy: Boolean!
+    recurrence: [String!]!
+    recurringEventId: String!
+    sequence: Int!
+    start: EventDateTime
+    end: EventDateTime
+    status: String!
+    summary: String!
+    transparency: String!
+    updated: String!
+    visibility: String!
+}

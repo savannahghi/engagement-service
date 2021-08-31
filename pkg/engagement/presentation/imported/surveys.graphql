@@ -1,0 +1,37 @@
+input FeedbackInput {
+    question: String!
+    answer: String!
+}
+
+type Feedback {
+    question: String!
+    answer: String!
+}
+
+input NPSInput {
+    name: String!
+    score: Int!
+    sladeCode: String!
+
+    email: String
+    phoneNumber: String
+    feedback: [FeedbackInput]
+}
+
+type NPSResponse {
+	id: String!
+	name: String!
+	score: Int!
+	sladeCode: String!
+	email: String
+	msisdn: String
+	feedback: [Feedback]
+}
+
+extend type Mutation {
+    recordNPSResponse(input: NPSInput!): Boolean!
+}
+
+extend type Query {
+    listNPSResponse:[NPSResponse!]!
+}
