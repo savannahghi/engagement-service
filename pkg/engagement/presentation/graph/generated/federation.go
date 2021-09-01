@@ -5,7 +5,6 @@ package generated
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
@@ -28,76 +27,4 @@ func (ec *executionContext) __resolve__service(ctx context.Context) (fedruntime.
 	return fedruntime.Service{
 		SDL: strings.Join(sdl, "\n"),
 	}, nil
-}
-
-func (ec *executionContext) __resolve_entities(ctx context.Context, representations []map[string]interface{}) ([]fedruntime.Entity, error) {
-	list := []fedruntime.Entity{}
-	for _, rep := range representations {
-		typeName, ok := rep["__typename"].(string)
-		if !ok {
-			return nil, errors.New("__typename must be an existing string")
-		}
-		switch typeName {
-
-		case "AccessToken":
-			id0, err := ec.unmarshalNString2string(ctx, rep["jwt"])
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "jwt"))
-			}
-
-			entity, err := ec.resolvers.Entity().FindAccessTokenByJwt(ctx,
-				id0)
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, entity)
-
-		case "Dummy":
-			id0, err := ec.unmarshalOID2ᚖstring(ctx, rep["id"])
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
-			}
-
-			entity, err := ec.resolvers.Entity().FindDummyByID(ctx,
-				id0)
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, entity)
-
-		case "Feed":
-			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
-			}
-
-			entity, err := ec.resolvers.Entity().FindFeedByID(ctx,
-				id0)
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, entity)
-
-		case "SavedNotification":
-			id0, err := ec.unmarshalNString2string(ctx, rep["id"])
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "id"))
-			}
-
-			entity, err := ec.resolvers.Entity().FindSavedNotificationByID(ctx,
-				id0)
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, entity)
-
-		default:
-			return nil, errors.New("unknown type: " + typeName)
-		}
-	}
-	return list, nil
 }

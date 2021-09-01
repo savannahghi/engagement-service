@@ -2,7 +2,7 @@
 AccessToken is used to return the credentials that are needed in order
 to access a Twilio video room.
 """
-type AccessToken @key(fields: "jwt") @key(fields: "uniqueName") {
+type AccessToken {
   jwt: String!
   uniqueName: String!
   sid: String!
@@ -36,7 +36,7 @@ type FirebaseAPNSConfig {
   headers: Map
 }
 
-type SavedNotification @key(fields: "id") {
+type SavedNotification {
   id: String!
   registrationToken: String!
   messageID: String!
