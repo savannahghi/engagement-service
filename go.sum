@@ -412,8 +412,8 @@ github.com/savannahghi/converterandformatter v0.0.9/go.mod h1:DNqyfHojHOrll1/l6Y
 github.com/savannahghi/converterandformatter v0.0.10/go.mod h1:DNqyfHojHOrll1/l6Y9UUSl97/TBiB08zcRWjaXbXRM=
 github.com/savannahghi/converterandformatter v0.0.11 h1:N9UPNhabmrxKAnM4E68qrP6/urijMBr0/1EzSWPX3C4=
 github.com/savannahghi/converterandformatter v0.0.11/go.mod h1:PjKS+eAlw+z/3aZFN1brsX+jxpTlLgs7boOY7EbUbhs=
-github.com/savannahghi/engagement v0.0.11 h1:JLI5K9rZzHkErKL9VYVUC9P+twW6d/rSQEyazuJ38i8=
-github.com/savannahghi/engagement v0.0.11/go.mod h1:QrSa2R4Mkqj0vAiyFsjxQgW48gfOv0KE/b4JLd3ESls=
+github.com/savannahghi/engagement v0.0.12 h1:VZqHQPo4NYfrS1gnegSNnt8Jg8GR7Uz4D/UXK+TBAlE=
+github.com/savannahghi/engagement v0.0.12/go.mod h1:As1zjtrHxf7k00K2cF8U6YUwH38sP/B/9BsOJxcdTjw=
 github.com/savannahghi/enumutils v0.0.0-20210622094023-d347744e1825/go.mod h1:DDdjQBO1qyf5BxLzhTs1uN91drCIHH2Lvr8aLdJwu/o=
 github.com/savannahghi/enumutils v0.0.2/go.mod h1:DDdjQBO1qyf5BxLzhTs1uN91drCIHH2Lvr8aLdJwu/o=
 github.com/savannahghi/enumutils v0.0.3 h1:0IPGS/Q27B8mZw+0YOb1r7Au1MgJQldfuwYid3byUx0=
@@ -526,13 +526,8 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-gitlab.slade360emr.com/go/apiclient v0.0.13/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
 gitlab.slade360emr.com/go/apiclient v0.0.15/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
-gitlab.slade360emr.com/go/apiclient v0.0.17/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210723104410-83cc1c03500f/go.mod h1:tddM7JGi1PR5sBLt8sOnxs8QBGigSQSiyoSyMfQ5ySw=
-gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210812143204-e6a6342f5f94/go.mod h1:ib22r2KYSZiAtdIdtGQGVCNfSdRcK6yBGZwS15JjvH4=
-gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210820122023-7a581f80cb5f h1:Ns9MvKiMJL9NH8XVZysNGyrOKPNVyF3nDeU6nb4bYC0=
-gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210820122023-7a581f80cb5f/go.mod h1:d3qDaPAABIZYd3cAeiRgDXDM2sxuP9ONnbHeJ21TqUc=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=
