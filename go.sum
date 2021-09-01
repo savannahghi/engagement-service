@@ -108,8 +108,6 @@ github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc/go.mod h1:paBW
 github.com/boombuler/barcode v1.0.1 h1:NDBbPmhS+EqABEs5Kg3n/5ZNjy73Pz7SIV+KCeqyXcs=
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/brianvoe/gofakeit/v6 v6.5.0/go.mod h1:palrJUk4Fyw38zIFB/uBZqsgzW5VsNllhHKKwAebzew=
-github.com/brianvoe/gofakeit/v6 v6.7.1 h1:b7qWTFee06udGZL8yw9XQd+gtMD2WRLBPILBt6yVbMM=
-github.com/brianvoe/gofakeit/v6 v6.7.1/go.mod h1:palrJUk4Fyw38zIFB/uBZqsgzW5VsNllhHKKwAebzew=
 github.com/casbin/casbin/v2 v2.33.0/go.mod h1:vByNa/Fchek0KZUgG5wEsl7iFsiviAYKRtgrQfcJqHg=
 github.com/casbin/casbin/v2 v2.36.1 h1:6b7PQuOEcNR4ZGvQcN82+E1o/n2KMNSUk+np9iryU8A=
 github.com/casbin/casbin/v2 v2.36.1/go.mod h1:vByNa/Fchek0KZUgG5wEsl7iFsiviAYKRtgrQfcJqHg=
@@ -414,8 +412,8 @@ github.com/savannahghi/converterandformatter v0.0.9/go.mod h1:DNqyfHojHOrll1/l6Y
 github.com/savannahghi/converterandformatter v0.0.10/go.mod h1:DNqyfHojHOrll1/l6Y9UUSl97/TBiB08zcRWjaXbXRM=
 github.com/savannahghi/converterandformatter v0.0.11 h1:N9UPNhabmrxKAnM4E68qrP6/urijMBr0/1EzSWPX3C4=
 github.com/savannahghi/converterandformatter v0.0.11/go.mod h1:PjKS+eAlw+z/3aZFN1brsX+jxpTlLgs7boOY7EbUbhs=
-github.com/savannahghi/engagement v0.0.9 h1:dNFHQNiWWrlD64TiJEHCcV/0M5xDU6Arslcn9IMsyUk=
-github.com/savannahghi/engagement v0.0.9/go.mod h1:n5lrc53l8EUp9wXPK6Lbk7vbaKPWJNey9EtpgSCSVRQ=
+github.com/savannahghi/engagement v0.0.11 h1:JLI5K9rZzHkErKL9VYVUC9P+twW6d/rSQEyazuJ38i8=
+github.com/savannahghi/engagement v0.0.11/go.mod h1:QrSa2R4Mkqj0vAiyFsjxQgW48gfOv0KE/b4JLd3ESls=
 github.com/savannahghi/enumutils v0.0.0-20210622094023-d347744e1825/go.mod h1:DDdjQBO1qyf5BxLzhTs1uN91drCIHH2Lvr8aLdJwu/o=
 github.com/savannahghi/enumutils v0.0.2/go.mod h1:DDdjQBO1qyf5BxLzhTs1uN91drCIHH2Lvr8aLdJwu/o=
 github.com/savannahghi/enumutils v0.0.3 h1:0IPGS/Q27B8mZw+0YOb1r7Au1MgJQldfuwYid3byUx0=
@@ -530,7 +528,6 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 gitlab.slade360emr.com/go/apiclient v0.0.13/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
 gitlab.slade360emr.com/go/apiclient v0.0.15/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
-gitlab.slade360emr.com/go/apiclient v0.0.17 h1:Ty3JG+K26koN03PU31ZonClexkSxwLFBYGRec+8N5Us=
 gitlab.slade360emr.com/go/apiclient v0.0.17/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210723104410-83cc1c03500f/go.mod h1:tddM7JGi1PR5sBLt8sOnxs8QBGigSQSiyoSyMfQ5ySw=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210812143204-e6a6342f5f94/go.mod h1:ib22r2KYSZiAtdIdtGQGVCNfSdRcK6yBGZwS15JjvH4=
