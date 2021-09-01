@@ -5,28 +5,15 @@ package graph
 
 import (
 	"context"
-	"fmt"
-	"time"
 
-	"github.com/savannahghi/serverutils"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 )
 
-func (r *mutationResolver) SimpleEmail(ctx context.Context, subject string, text string, to []string) (string, error) {
-	startTime := time.Now()
-
-	r.checkPreconditions()
-	r.CheckUserTokenInContext(ctx)
-	status, err := r.interactor.Mail.SimpleEmail(ctx, subject, text, nil, to...)
-	if err != nil {
-		return "", fmt.Errorf("unable to send an email: %v", err)
-	}
-
-	defer serverutils.RecordGraphqlResolverMetrics(
-		ctx,
-		startTime,
-		"simpleEmail",
-		err,
-	)
-
-	return status, nil
+func (r *mutationResolver) TestFeature(ctx context.Context) (bool, error) {
+	return r.usecases.TestFeature(ctx)
 }
+
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+
+type mutationResolver struct{ *Resolver }

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/savannahghi/engagement/pkg/engagement/presentation"
+	engLibPresentation "github.com/savannahghi/engagement/pkg/engagement/presentation"
 	"go.opencensus.io/stats/view"
 
 	"github.com/savannahghi/serverutils"
@@ -50,7 +50,7 @@ func main() {
 	if err != nil {
 		serverutils.LogStartupError(ctx, err)
 	}
-	srv := presentation.PrepareServer(ctx, port, presentation.AllowedOrigins)
+	srv := engLibPresentation.PrepareServer(ctx, port, engLibPresentation.AllowedOrigins)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			serverutils.LogStartupError(ctx, err)

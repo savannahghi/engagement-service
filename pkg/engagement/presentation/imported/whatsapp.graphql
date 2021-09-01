@@ -1,0 +1,8 @@
+extend type Mutation {
+  # Your phone number verification code is {{1}}
+  phoneNumberVerificationCode(
+    to: String!
+    code: String!
+    marketingMessage: String!
+  ): Boolean!
+}
