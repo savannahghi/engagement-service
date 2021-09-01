@@ -11,24 +11,21 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/99designs/gqlgen v0.13.0
 	github.com/aws/aws-sdk-go v1.40.29 // indirect
-	github.com/brianvoe/gofakeit/v6 v6.7.1 // indirect
 	github.com/casbin/casbin/v2 v2.36.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.0 // indirect
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/imroc/req v0.3.0
 	github.com/kevinburke/go-types v0.0.0-20210723172823-2deba1f80ba7 // indirect
-	github.com/markbates/pkger v0.17.1
+	github.com/labstack/gommon v0.3.0
 	github.com/savannahghi/converterandformatter v0.0.11
-	github.com/savannahghi/engagement v0.0.9
+	github.com/savannahghi/engagement v0.0.11
 	github.com/savannahghi/feedlib v0.0.4
 	github.com/savannahghi/firebasetools v0.0.15
-	github.com/savannahghi/interserviceclient v0.0.16
+	github.com/savannahghi/interserviceclient v0.0.16 // indirect
 	github.com/savannahghi/profileutils v0.0.17
 	github.com/savannahghi/pubsubtools v0.0.3 // indirect
 	github.com/savannahghi/serverutils v0.0.6
-	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
 	github.com/vektah/gqlparser/v2 v2.1.0
 	gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210820122023-7a581f80cb5f // indirect
 	go.opencensus.io v0.23.0
