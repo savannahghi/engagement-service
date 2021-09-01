@@ -414,8 +414,8 @@ github.com/savannahghi/converterandformatter v0.0.9/go.mod h1:DNqyfHojHOrll1/l6Y
 github.com/savannahghi/converterandformatter v0.0.10/go.mod h1:DNqyfHojHOrll1/l6Y9UUSl97/TBiB08zcRWjaXbXRM=
 github.com/savannahghi/converterandformatter v0.0.11 h1:N9UPNhabmrxKAnM4E68qrP6/urijMBr0/1EzSWPX3C4=
 github.com/savannahghi/converterandformatter v0.0.11/go.mod h1:PjKS+eAlw+z/3aZFN1brsX+jxpTlLgs7boOY7EbUbhs=
-github.com/savannahghi/engagement v0.0.8 h1:LGxuBPpxkFnrjXU2yDIZ+El8syalpK2c6NDC2ZgdK48=
-github.com/savannahghi/engagement v0.0.8/go.mod h1:n5lrc53l8EUp9wXPK6Lbk7vbaKPWJNey9EtpgSCSVRQ=
+github.com/savannahghi/engagement v0.0.9 h1:dNFHQNiWWrlD64TiJEHCcV/0M5xDU6Arslcn9IMsyUk=
+github.com/savannahghi/engagement v0.0.9/go.mod h1:n5lrc53l8EUp9wXPK6Lbk7vbaKPWJNey9EtpgSCSVRQ=
 github.com/savannahghi/enumutils v0.0.0-20210622094023-d347744e1825/go.mod h1:DDdjQBO1qyf5BxLzhTs1uN91drCIHH2Lvr8aLdJwu/o=
 github.com/savannahghi/enumutils v0.0.2/go.mod h1:DDdjQBO1qyf5BxLzhTs1uN91drCIHH2Lvr8aLdJwu/o=
 github.com/savannahghi/enumutils v0.0.3 h1:0IPGS/Q27B8mZw+0YOb1r7Au1MgJQldfuwYid3byUx0=
