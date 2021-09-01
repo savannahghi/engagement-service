@@ -528,11 +528,9 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 gitlab.slade360emr.com/go/apiclient v0.0.13/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
 gitlab.slade360emr.com/go/apiclient v0.0.15/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
-gitlab.slade360emr.com/go/apiclient v0.0.17/go.mod h1:Mf8poMYJMkJVOiR1LFR9JJJbm9oeB564NA8CzkjdGCI=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210723104410-83cc1c03500f/go.mod h1:tddM7JGi1PR5sBLt8sOnxs8QBGigSQSiyoSyMfQ5ySw=
+gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210812143204-e6a6342f5f94 h1:q/fzto9T+GLk60G0C2lhKxwZpLTVCOr8HtgfO7UyXls=
 gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210812143204-e6a6342f5f94/go.mod h1:ib22r2KYSZiAtdIdtGQGVCNfSdRcK6yBGZwS15JjvH4=
-gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210820122023-7a581f80cb5f h1:Ns9MvKiMJL9NH8XVZysNGyrOKPNVyF3nDeU6nb4bYC0=
-gitlab.slade360emr.com/go/commontools/crm v0.0.0-20210820122023-7a581f80cb5f/go.mod h1:d3qDaPAABIZYd3cAeiRgDXDM2sxuP9ONnbHeJ21TqUc=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

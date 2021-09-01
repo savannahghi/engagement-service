@@ -14,10 +14,6 @@ CMD go mod download
 # Now copy the rest.
 COPY . /app/
 
-# Set up the credentials needed to fetch private code
-ARG ACCESS_TOKEN
-RUN git config --global url."https://${user}:${ACCESS_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
-
 # Retrieve application dependencies.
 RUN go mod download
 

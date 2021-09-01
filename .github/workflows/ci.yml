@@ -83,7 +83,6 @@ jobs:
     timeout-minutes: 80
     steps:
       - uses: actions/checkout@v2
-      - run: git config --global url."https://${user}:${ACCESS_TOKEN}@gitlab.slade360emr.com".insteadOf "https://gitlab.slade360emr.com"
       - uses: google-github-actions/setup-gcloud@master
         with:
             project_id: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
