@@ -1,20 +1,6 @@
-staging:
-  - depName: profile
-    depRootDomain: https://profile-staging.healthcloud.co.ke
-  - depName: edi
-    depRootDomain: https://edi-staging.healthcloud.co.ke
 testing:
   - depName: profile
-    depRootDomain: https://profile-testing.healthcloud.co.ke
-  - depName: edi
-    depRootDomain: https://edi-testing.healthcloud.co.ke
-demo:
-  - depName: profile
-    depRootDomain: https://profile-demo.healthcloud.co.ke
-  - depName: edi
-    depRootDomain: https://edi-demo.healthcloud.co.ke
+    depRootDomain:  https://onboarding-testing.savannahghi.org
 production:
   - depName: profile
-    depRootDomain: https://profile-prod.healthcloud.co.ke
-  - depName: edi
-    depRootDomain: https://edi-prod.healthcloud.co.ke
+    depRootDomain: https://onboarding-prod.savannahghi.org
