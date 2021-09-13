@@ -5,12 +5,13 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 )
 
 func (r *mutationResolver) TestFeature(ctx context.Context) (bool, error) {
-	return r.usecases.TestFeature(ctx)
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

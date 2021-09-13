@@ -6,7 +6,7 @@ import (
 
 	"github.com/99designs/gqlgen/api"
 	"github.com/99designs/gqlgen/codegen/config"
-	engagementLib "github.com/savannahghi/engagement/pkg/engagement/presentation/graph/generated"
+	engagementLib "github.com/savannahghi/engagementcore/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/serverutils"
 )
 
