@@ -87,32 +87,9 @@ For more information, see:
 - [Onion Architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1/) by Jeffrey Palermo
 - [Implementing Domain-Driven Design](http://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577)
 
-## Interservice API
-
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/d023a368982c38ed7c66)
-
-## GraphQL API
-
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/0f20d40221953b0b6708)
-
 ## JSON Schema Files
 
 This project uses JSON Schema to validate inputs and outputs.
-
-### Schema file hosting
-
-In order for module references to work, the schema files in
-`graph/feed/schema` need to be hosted. We use
-https://firebase.google.com/docs/hosting for that.
-
-The schema files are hosted at https://schema.healthcloud.co.ke/
-e.g https://schema.healthcloud.co.ke//event.schema.json .
-
-This is in the `bewell-app` project. You need to
-`npm install -g firebase-tools` and `firebase login` first. After that,
-any time the schema files change, run from the root `cd static && firebase deploy && cd ..` to host the
-updated files.
-
 ## Environment variables
 
 For local development, you need to _export_ the following env vars:
@@ -122,12 +99,6 @@ For local development, you need to _export_ the following env vars:
 export GOOGLE_APPLICATION_CREDENTIALS="<a path to a Google service account JSON file>"
 export GOOGLE_CLOUD_PROJECT="<the name of the project that the service account above belongs to>"
 export FIREBASE_WEB_API_KEY="<an API key from the Firebase console for the project mentioned above>"
-
-# Go private modules
-export GOPRIVATE="gitlab.slade360emr.com/go/*,gitlab.slade360emr.com/optimalhealth/*"
-
-export SCHEMA_HOST=https://schema.healthcloud.co.ke
-export SERVICE_HOST=https://feed-testing.healthcloud.co.ke
 ```
 
 The server deploys to Google Cloud Run. For Cloud Run, the necessary environment
