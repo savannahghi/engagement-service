@@ -11,14 +11,13 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/99designs/gqlgen v0.13.0
 	github.com/aws/aws-sdk-go v1.40.29 // indirect
-	github.com/casbin/casbin/v2 v2.36.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.0 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/kevinburke/go-types v0.0.0-20210723172823-2deba1f80ba7 // indirect
 	github.com/labstack/gommon v0.3.0
-	github.com/savannahghi/converterandformatter v0.0.11
-	github.com/savannahghi/engagement v0.0.12
+	github.com/savannahghi/converterandformatter v0.0.11 // indirect
+	github.com/savannahghi/engagementcore v0.0.20
 	github.com/savannahghi/feedlib v0.0.4
 	github.com/savannahghi/firebasetools v0.0.15
 	github.com/savannahghi/interserviceclient v0.0.16 // indirect

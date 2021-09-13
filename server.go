@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	engLibPresentation "github.com/savannahghi/engagement/pkg/engagement/presentation"
+	engLibPresentation "github.com/savannahghi/engagementcore/pkg/engagement/presentation"
 	"go.opencensus.io/stats/view"
 
 	"github.com/savannahghi/serverutils"

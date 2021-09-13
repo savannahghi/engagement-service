@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/labstack/gommon/log"
-	"github.com/savannahghi/engagement-service/pkg/engagement/infrastructure"
-	"github.com/savannahghi/engagement-service/pkg/engagement/usecases"
-	engLibPresentation "github.com/savannahghi/engagement/pkg/engagement/presentation"
+	osinfra "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
+	engLibPresentation "github.com/savannahghi/engagementcore/pkg/engagement/presentation"
+	osusecases "github.com/savannahghi/engagementcore/pkg/engagement/usecases"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph"
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
+	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/interactor"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 
@@ -54,8 +55,18 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	}
 
 	// Initialize new instances of the infrastructure services
-	infrastructure := infrastructure.NewInfrastructureInteractor()
-	usecases := usecases.NewUsecasesInteractor(infrastructure)
+	// Initialize new open source interactors
+	infrastructure := osinfra.NewInteractor()
+	openSourceUsecases := osusecases.NewUsecasesInteractor(infrastructure)
+
+	// Initialize the interactor
+	i, err := interactor.NewEngagementInteractor(
+		infrastructure,
+		openSourceUsecases,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("can't instantiate service : %w", err)
+	}
 
 	r := mux.NewRouter() // gorilla mux
 	engLibPresentation.SharedUnauthenticatedRoutes(ctx, r)
@@ -66,7 +77,7 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	authR.Methods(
 		http.MethodPost,
 		http.MethodGet,
-	).HandlerFunc(GQLHandler(ctx, usecases))
+	).HandlerFunc(GQLHandler(ctx, i))
 
 	engLibPresentation.SharedAuthenticatedISCRoutes(ctx, r)
 	return r, nil
@@ -74,9 +85,9 @@ func Router(ctx context.Context) (*mux.Router, error) {
 
 // GQLHandler sets up a GraphQL resolver
 func GQLHandler(ctx context.Context,
-	usecases usecases.Usecases,
+	service *interactor.Interactor,
 ) http.HandlerFunc {
-	resolver, err := graph.NewResolver(ctx, usecases)
+	resolver, err := graph.NewResolver(ctx, service)
 	if err != nil {
 		serverutils.LogStartupError(ctx, err)
 	}
