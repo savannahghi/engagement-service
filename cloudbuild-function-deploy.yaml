@@ -1,5 +1,0 @@
-# Deploy the browser detector function
-steps:
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    args: ["./scripts/deploy-detect-browser.sh"]
-    waitFor: ["-"]
