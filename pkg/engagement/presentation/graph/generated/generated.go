@@ -148,6 +148,7 @@ type ComplexityRoot struct {
 
 	Feed struct {
 		Actions        func(childComplexity int) int
+		FeatureImage   func(childComplexity int) int
 		Flavour        func(childComplexity int) int
 		ID             func(childComplexity int) int
 		IsAnonymous    func(childComplexity int) int
@@ -954,6 +955,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Feed.Actions(childComplexity), true
+
+	case "Feed.featureImage":
+		if e.complexity.Feed.FeatureImage == nil {
+			break
+		}
+
+		return e.complexity.Feed.FeatureImage(childComplexity), true
 
 	case "Feed.flavour":
 		if e.complexity.Feed.Flavour == nil {
@@ -2558,6 +2566,7 @@ type Feed {
   nudges: [Nudge!]!
   items: [Item!]!
   isAnonymous: Boolean!
+  featureImage: String
 }
 
 type Nudge {
@@ -6665,6 +6674,38 @@ func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql
 	res := resTmp.(*bool)
 	fc.Result = res
 	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Feed_featureImage(ctx context.Context, field graphql.CollectedField, obj *domain.Feed) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Feed",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FeatureImage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Feedback_question(ctx context.Context, field graphql.CollectedField, obj *dto.Feedback) (ret graphql.Marshaler) {
@@ -14642,6 +14683,8 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "featureImage":
+			out.Values[i] = ec._Feed_featureImage(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
