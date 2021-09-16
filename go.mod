@@ -17,8 +17,8 @@ require (
 	github.com/kevinburke/go-types v0.0.0-20210723172823-2deba1f80ba7 // indirect
 	github.com/labstack/gommon v0.3.0
 	github.com/savannahghi/converterandformatter v0.0.11 // indirect
-	github.com/savannahghi/engagementcore v0.0.21
-	github.com/savannahghi/feedlib v0.0.4
+	github.com/savannahghi/engagementcore v0.0.22
+	github.com/savannahghi/feedlib v0.0.5
 	github.com/savannahghi/firebasetools v0.0.15
 	github.com/savannahghi/interserviceclient v0.0.16 // indirect
 	github.com/savannahghi/profileutils v0.0.17
