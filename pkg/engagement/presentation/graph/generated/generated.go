@@ -341,7 +341,7 @@ type ComplexityRoot struct {
 		GenerateOtp           func(childComplexity int, msisdn string, appID *string) int
 		GenerateRetryOtp      func(childComplexity int, msisdn string, retryStep int, appID *string) int
 		GetFaqsContent        func(childComplexity int, flavour feedlib.Flavour) int
-		GetFeed               func(childComplexity int, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) int
+		GetFeed               func(childComplexity int, flavour feedlib.Flavour, playMp4 bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) int
 		GetLibraryContent     func(childComplexity int) int
 		Labels                func(childComplexity int, flavour feedlib.Flavour) int
 		ListNPSResponse       func(childComplexity int) int
@@ -418,7 +418,7 @@ type QueryResolver interface {
 	GetLibraryContent(ctx context.Context) ([]*domain.GhostCMSPost, error)
 	GetFaqsContent(ctx context.Context, flavour feedlib.Flavour) ([]*domain.GhostCMSPost, error)
 	Notifications(ctx context.Context, registrationToken string, newerThan time.Time, limit int) ([]*dto.SavedNotification, error)
-	GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
+	GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error)
 	Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error)
 	UnreadPersistentItems(ctx context.Context, flavour feedlib.Flavour) (int, error)
 	GenerateOtp(ctx context.Context, msisdn string, appID *string) (string, error)
@@ -2074,7 +2074,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feedlib.Flavour), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams)), true
+		return e.complexity.Query.GetFeed(childComplexity, args["flavour"].(feedlib.Flavour), args["playMP4"].(bool), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams)), true
 
 	case "Query.getLibraryContent":
 		if e.complexity.Query.GetLibraryContent == nil {
@@ -2703,6 +2703,7 @@ input FilterParamsInput {
 extend type Query {
   getFeed(
     flavour: Flavour!
+    playMP4: Boolean!
     isAnonymous: Boolean!
     persistent: BooleanFilter!
     status: Status
@@ -3743,59 +3744,68 @@ func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArg
 	}
 	args["flavour"] = arg0
 	var arg1 bool
-	if tmp, ok := rawArgs["isAnonymous"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isAnonymous"))
+	if tmp, ok := rawArgs["playMP4"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playMP4"))
 		arg1, err = ec.unmarshalNBoolean2bool(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["isAnonymous"] = arg1
-	var arg2 feedlib.BooleanFilter
+	args["playMP4"] = arg1
+	var arg2 bool
+	if tmp, ok := rawArgs["isAnonymous"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isAnonymous"))
+		arg2, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["isAnonymous"] = arg2
+	var arg3 feedlib.BooleanFilter
 	if tmp, ok := rawArgs["persistent"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("persistent"))
-		arg2, err = ec.unmarshalNBooleanFilter2githubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx, tmp)
+		arg3, err = ec.unmarshalNBooleanFilter2githubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["persistent"] = arg2
-	var arg3 *feedlib.Status
+	args["persistent"] = arg3
+	var arg4 *feedlib.Status
 	if tmp, ok := rawArgs["status"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-		arg3, err = ec.unmarshalOStatus2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx, tmp)
+		arg4, err = ec.unmarshalOStatus2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐStatus(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["status"] = arg3
-	var arg4 *feedlib.Visibility
+	args["status"] = arg4
+	var arg5 *feedlib.Visibility
 	if tmp, ok := rawArgs["visibility"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-		arg4, err = ec.unmarshalOVisibility2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx, tmp)
+		arg5, err = ec.unmarshalOVisibility2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐVisibility(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["visibility"] = arg4
-	var arg5 *feedlib.BooleanFilter
+	args["visibility"] = arg5
+	var arg6 *feedlib.BooleanFilter
 	if tmp, ok := rawArgs["expired"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expired"))
-		arg5, err = ec.unmarshalOBooleanFilter2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx, tmp)
+		arg6, err = ec.unmarshalOBooleanFilter2ᚖgithubᚗcomᚋsavannahghiᚋfeedlibᚐBooleanFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["expired"] = arg5
-	var arg6 *helpers.FilterParams
+	args["expired"] = arg6
+	var arg7 *helpers.FilterParams
 	if tmp, ok := rawArgs["filterParams"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filterParams"))
-		arg6, err = ec.unmarshalOFilterParamsInput2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋhelpersᚐFilterParams(ctx, tmp)
+		arg7, err = ec.unmarshalOFilterParamsInput2ᚖgithubᚗcomᚋsavannahghiᚋengagementcoreᚋpkgᚋengagementᚋapplicationᚋcommonᚋhelpersᚐFilterParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["filterParams"] = arg6
+	args["filterParams"] = arg7
 	return args, nil
 }
 
@@ -11284,7 +11294,7 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feedlib.Flavour), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams))
+		return ec.resolvers.Query().GetFeed(rctx, args["flavour"].(feedlib.Flavour), args["playMP4"].(bool), args["isAnonymous"].(bool), args["persistent"].(feedlib.BooleanFilter), args["status"].(*feedlib.Status), args["visibility"].(*feedlib.Visibility), args["expired"].(*feedlib.BooleanFilter), args["filterParams"].(*helpers.FilterParams))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

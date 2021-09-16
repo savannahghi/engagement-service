@@ -2,8 +2,10 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/interactor"
+	"github.com/savannahghi/firebasetools"
 )
 
 // This file will not be regenerated automatically.
@@ -25,4 +27,12 @@ func NewResolver(
 	return &Resolver{
 		interactor: interactor,
 	}, nil
+}
+
+func (r Resolver) getLoggedInUserUID(ctx context.Context) (string, error) {
+	authToken, err := firebasetools.GetUserTokenFromContext(ctx)
+	if err != nil {
+		return "", fmt.Errorf("auth token not found in context: %w", err)
+	}
+	return authToken.UID, nil
 }

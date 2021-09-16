@@ -15,6 +15,7 @@ import (
 	"github.com/savannahghi/feedlib"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/profileutils"
+	"github.com/savannahghi/serverutils"
 )
 
 func (r *mutationResolver) SendNotification(ctx context.Context, registrationTokens []string, data map[string]interface{}, notification firebasetools.FirebaseSimpleNotificationInput, android *firebasetools.FirebaseAndroidConfigInput, ios *firebasetools.FirebaseAPNSConfigInput, web *firebasetools.FirebaseWebpushConfigInput) (bool, error) {
@@ -113,8 +114,32 @@ func (r *queryResolver) Notifications(ctx context.Context, registrationToken str
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) GetFeed(ctx context.Context, flavour feedlib.Flavour, playMp4 bool, isAnonymous bool, persistent feedlib.BooleanFilter, status *feedlib.Status, visibility *feedlib.Visibility, expired *feedlib.BooleanFilter, filterParams *helpers.FilterParams) (*domain.Feed, error) {
+	startTime := time.Now()
+
+	uid, err := r.getLoggedInUserUID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("can't get logged in user UID")
+	}
+	feed, err := r.interactor.OpenSourceUsecases.GetFeed(
+		ctx,
+		&uid,
+		&isAnonymous,
+		flavour,
+		playMp4,
+		persistent,
+		status,
+		visibility,
+		expired,
+		filterParams,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("can't get Feed: %w", err)
+	}
+
+	defer serverutils.RecordGraphqlResolverMetrics(ctx, startTime, "getFeed", err)
+
+	return feed, nil
 }
 
 func (r *queryResolver) Labels(ctx context.Context, flavour feedlib.Flavour) ([]string, error) {
