@@ -148,7 +148,6 @@ type ComplexityRoot struct {
 
 	Feed struct {
 		Actions        func(childComplexity int) int
-		FeatureImage   func(childComplexity int) int
 		Flavour        func(childComplexity int) int
 		ID             func(childComplexity int) int
 		IsAnonymous    func(childComplexity int) int
@@ -233,6 +232,7 @@ type ComplexityRoot struct {
 		Author               func(childComplexity int) int
 		Conversations        func(childComplexity int) int
 		Expiry               func(childComplexity int) int
+		FeatureImage         func(childComplexity int) int
 		Groups               func(childComplexity int) int
 		ID                   func(childComplexity int) int
 		Icon                 func(childComplexity int) int
@@ -956,13 +956,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Feed.Actions(childComplexity), true
 
-	case "Feed.featureImage":
-		if e.complexity.Feed.FeatureImage == nil {
-			break
-		}
-
-		return e.complexity.Feed.FeatureImage(childComplexity), true
-
 	case "Feed.flavour":
 		if e.complexity.Feed.Flavour == nil {
 			break
@@ -1340,6 +1333,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Item.Expiry(childComplexity), true
+
+	case "Item.featureImage":
+		if e.complexity.Item.FeatureImage == nil {
+			break
+		}
+
+		return e.complexity.Item.FeatureImage(childComplexity), true
 
 	case "Item.groups":
 		if e.complexity.Item.Groups == nil {
@@ -2566,7 +2566,6 @@ type Feed {
   nudges: [Nudge!]!
   items: [Item!]!
   isAnonymous: Boolean!
-  featureImage: String
 }
 
 type Nudge {
@@ -2606,6 +2605,7 @@ type Item {
   users: [String]
   groups: [String]
   notificationChannels: [Channel]
+  featureImage: String
 }
 
 type Action {
@@ -6686,38 +6686,6 @@ func (ec *executionContext) _Feed_isAnonymous(ctx context.Context, field graphql
 	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Feed_featureImage(ctx context.Context, field graphql.CollectedField, obj *domain.Feed) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Feed",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FeatureImage, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Feedback_question(ctx context.Context, field graphql.CollectedField, obj *dto.Feedback) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8864,6 +8832,38 @@ func (ec *executionContext) _Item_notificationChannels(ctx context.Context, fiel
 	res := resTmp.([]feedlib.Channel)
 	fc.Result = res
 	return ec.marshalOChannel2ᚕgithubᚗcomᚋsavannahghiᚋfeedlibᚐChannel(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Item_featureImage(ctx context.Context, field graphql.CollectedField, obj *feedlib.Item) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Item",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FeatureImage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Link_id(ctx context.Context, field graphql.CollectedField, obj *feedlib.Link) (ret graphql.Marshaler) {
@@ -14693,8 +14693,6 @@ func (ec *executionContext) _Feed(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "featureImage":
-			out.Values[i] = ec._Feed_featureImage(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15173,6 +15171,8 @@ func (ec *executionContext) _Item(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Item_groups(ctx, field, obj)
 		case "notificationChannels":
 			out.Values[i] = ec._Item_notificationChannels(ctx, field, obj)
+		case "featureImage":
+			out.Values[i] = ec._Item_featureImage(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

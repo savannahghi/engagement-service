@@ -74,7 +74,6 @@ type Feed {
   nudges: [Nudge!]!
   items: [Item!]!
   isAnonymous: Boolean!
-  featureImage: String
 }
 
 type Nudge {
@@ -114,6 +113,7 @@ type Item {
   users: [String]
   groups: [String]
   notificationChannels: [Channel]
+  featureImage: String
 }
 
 type Action {
