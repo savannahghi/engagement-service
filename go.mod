@@ -20,11 +20,13 @@ require (
 	github.com/savannahghi/engagementcore v0.0.24
 	github.com/savannahghi/feedlib v0.0.6
 	github.com/savannahghi/firebasetools v0.0.15
-	github.com/savannahghi/interserviceclient v0.0.16 // indirect
+	github.com/savannahghi/interserviceclient v0.0.16
 	github.com/savannahghi/profileutils v0.0.17
-	github.com/savannahghi/pubsubtools v0.0.3 // indirect
+	github.com/savannahghi/pubsubtools v0.0.3
 	github.com/savannahghi/serverutils v0.0.6
+	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/testify v1.7.0
 	github.com/vektah/gqlparser/v2 v2.1.0
 	go.opencensus.io v0.23.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.22.0 // indirect

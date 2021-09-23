@@ -16,6 +16,7 @@ import (
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph"
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/graph/generated"
 	"github.com/savannahghi/engagement-service/pkg/engagement/presentation/interactor"
+	"github.com/savannahghi/engagement-service/pkg/engagement/usecases"
 	"github.com/savannahghi/firebasetools"
 	"github.com/savannahghi/serverutils"
 
@@ -59,10 +60,13 @@ func Router(ctx context.Context) (*mux.Router, error) {
 	infrastructure := osinfra.NewInteractor()
 	openSourceUsecases := osusecases.NewUsecasesInteractor(infrastructure)
 
+	var notification usecases.NotificationUsecases
+
 	// Initialize the interactor
 	i, err := interactor.NewEngagementInteractor(
 		infrastructure,
 		openSourceUsecases,
+		notification,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("can't instantiate service : %w", err)
