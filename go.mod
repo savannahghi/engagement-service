@@ -14,10 +14,11 @@ require (
 	github.com/googleapis/gax-go/v2 v2.1.0 // indirect
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
+	github.com/imroc/req v0.3.0
 	github.com/kevinburke/go-types v0.0.0-20210723172823-2deba1f80ba7 // indirect
 	github.com/labstack/gommon v0.3.0
 	github.com/savannahghi/converterandformatter v0.0.11 // indirect
-	github.com/savannahghi/engagementcore v0.0.24
+	github.com/savannahghi/engagementcore v0.0.30
 	github.com/savannahghi/feedlib v0.0.6
 	github.com/savannahghi/firebasetools v0.0.15
 	github.com/savannahghi/interserviceclient v0.0.16
