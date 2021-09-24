@@ -11,6 +11,7 @@ type Interactor struct {
 	OpenSourceInfra     infrastructure.Interactor
 	OpenSourceUsecases  sharelib.Interactor
 	UsecaseNotification usecases.NotificationUsecases
+	Feed                usecases.FeedUsecases
 }
 
 // NewEngagementInteractor returns a new engagement interactor
@@ -18,11 +19,13 @@ func NewEngagementInteractor(
 	openSourceInfra infrastructure.Interactor,
 	openSourceUsecases sharelib.Interactor,
 	notification usecases.NotificationUsecases,
+	feed usecases.FeedUsecases,
 
 ) (*Interactor, error) {
 	return &Interactor{
 		OpenSourceInfra:     openSourceInfra,
 		OpenSourceUsecases:  openSourceUsecases,
 		UsecaseNotification: notification,
+		Feed:                feed,
 	}, nil
 }

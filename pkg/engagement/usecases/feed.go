@@ -1,25 +1,28 @@
 package usecases
 
 import (
-	libRepository "github.com/savannahghi/engagementcore/pkg/engagement/repository"
+	libInfra "github.com/savannahghi/engagementcore/pkg/engagement/infrastructure"
 	libFeed "github.com/savannahghi/engagementcore/pkg/engagement/usecases/feed"
 )
 
-// FeedUsecases represents all the profile business logic
+// FeedUsecases represent logic required to make Feed
 type FeedUsecases interface {
 	libFeed.Usecases
 }
 
-// FeedImpl represents the feed usecase implementation
+// FeedImpl represents the Feed usecase implementation
 type FeedImpl struct {
-	repository libRepository.Repository
+	LibInfrastructure libInfra.Interactor
+	LibUsecases       libFeed.Usecases
 }
 
-// NewFeed initializes a user feed
+// NewFeed initializes a Feed usecase
 func NewFeed(
-	repository libRepository.Repository,
+	libInfra libInfra.Interactor,
+	libUsecases libFeed.Usecases,
 ) *FeedImpl {
 	return &FeedImpl{
-		repository: repository,
+		LibInfrastructure: libInfra,
+		LibUsecases:       libUsecases,
 	}
 }
